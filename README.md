@@ -1,9 +1,9 @@
 # Arduino based Field Oriented Control (FOC) for gimbal motors
 
-This project is based on widely used in Hobby world brushless gimbal controller HMBGC V2.0. 
+This project is based on widely used in Hobby world brushless gimbal controller HMBGC V2.2. 
 <p>
-	<img src="./Images/ebay.jpg" height="200px">
-	<img src="./Images/ebay2.jpg" height="200px">
+	<img src="./Images/ebay.jpg" height="400px">
+	<img src="./Images/ebay2.jpg" height="400px">
 </p>
 
 Proper low cost FOC supporting board is very hard to find these days even may not exist. The reason may be that the hobby community has not yet dug into it properly.
