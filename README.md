@@ -72,7 +72,7 @@ motor.setVelocity(float v)
 ```
 you can run BLDC motor in closed loop with desired velocity.
 <img src="./Images/velocity.png" >
-### Closed loop velocity control
+### Closed loop position control
 Using the fucntion 
 ```cpp
 motor.setPosition(float pos)
