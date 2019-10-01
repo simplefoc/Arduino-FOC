@@ -9,6 +9,8 @@ BLDCMotor motor = BLDCMotor(9,10,11,&counter[ENCODER_1],A0,A1,11,8196);
 //BLDCMotorint(phA,int phB,int phC, long* counter, int encA, int encB , int pp, int cpr)
 
 double angle_sp = PI/8;
+double voltage_sp = 2;
+double velocity_sp = 1;
 int t = 0;
 
 // encoder interrupt init
@@ -47,10 +49,17 @@ void loop() {
   if (!(t%100)){
     t = 0;
     angle_sp = -angle_sp;
+    voltage_sp = -voltage_sp;
+    velocity_sp = -velocity_sp;
   }
   
+  // Uncomment line to see different loop in action 
+  // Set phase voltages using FOC
+  //motor.setVoltage(voltage_sp);
+  // Set velocity of the motor
+  //motor.setVelocity(velocity_sp);
+  // Set referent position P+PI
   motor.setPosition(angle_sp);
-    //Serial.println(*motor._encoderPosition);
 }
 
 
