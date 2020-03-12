@@ -4,7 +4,7 @@
 long counter;
 
 /*
-BLDCMotorint(int phA,int phB,int phC, long* counter, int encA, int encB , int pp, int cpr)
+BLDCMotor(int phA,int phB,int phC, long* counter, int encA, int encB , int pp, int cpr)
 - phA, phB, phC - motor A,B,C phase pwm pins
 - *counter      - encoder counter variable
 - encA, encB    - encoder A and B pins
