@@ -169,7 +169,21 @@ void BLDCMotor::setPhaseVoltage(double Uq, double angle_el){
 	Set voltage to the pwm pin
 */
 void BLDCMotor::setPwm(int pinPwm, float U){
-	int U_pwm =   U <= U_MAX ? 255.0*U/U_MAX : 255;
+  // sets the voltage [0,12V(U_MAX)] to pwm [0,255]
+  // - U_MAX you can set in header file - default 12V
+  // - support for HMBGC controller
+	// int U_pwm =   255.0*U/U_MAX;
+
+  // sets the voltage [-U_MAX,U_MAX] to pwm [0,255]
+  // - U_MAX you can set in header file - default 12V
+  // - support for L6234 driver
+  int U_pwm = (U + U_MAX)/(2*U_MAX)*255;
+  
+  // limit the values between 0 and 255;
+  U_pwm = U_pwm < 0 ? 0 : U_pwm;
+  U_pwm = U_pwm > 255 ? 255 : U_pwm;
+
+  // write hardware pwm 
 	analogWrite(pinPwm, U_pwm);
 }
 
