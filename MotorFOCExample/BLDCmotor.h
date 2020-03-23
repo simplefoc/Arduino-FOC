@@ -4,9 +4,6 @@
 
 #include "Arduino.h"
 
-#define _2_SQRT3 1.15470053838
-#define _1_SQRT3 0.57735026919
-#define _120_D2R 2.09439510239
 
 // Power supply woltage
 #define U_MAX 12
@@ -28,6 +25,10 @@
 
 // sign funciton
 #define sign(a) ( ( (a) < 0 )  ?  -1   : ( (a) > 0 ) )
+// utility defines
+#define _2_SQRT3 1.15470053838
+#define _1_SQRT3 0.57735026919
+#define _120_D2R 2.09439510239
 
 
 // encoder measurement structure

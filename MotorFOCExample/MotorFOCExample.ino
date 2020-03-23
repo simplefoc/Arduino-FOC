@@ -1,5 +1,4 @@
-#include "BLDCMotor.h"
-
+#include "BLDCmotor.h"
 
 // Encoder variables
 #define CPR 600  // counts per revolution
@@ -8,7 +7,6 @@
 // Only pins 2 and 3 are supported
 #define encoderPinA 2             // Arduino UNO interrupt 0
 #define encoderPinB 3             // Arduino UNO interrupt 1
-
 
 /*
 BLDCMotorEncoder( int phA, int phB, int phC, int pp, int encA, int encB , int cpr, int en)
@@ -19,6 +17,11 @@ BLDCMotorEncoder( int phA, int phB, int phC, int pp, int encA, int encB , int cp
 - enable pin    - (optional input)
 */
 BLDCMotorEncoder motor = BLDCMotorEncoder(9, 10, 11, 11, encoderPinA,encoderPinB, PPR, 8);
+
+//  Encoder interrupt callback functions
+void doEncoderA() {motor.handleEncoderA();}
+// B channel
+void doEncoderB() {motor.handleEncoderB();}
 
 void setup() {
   // debugging port
@@ -75,12 +78,4 @@ void setPwmFrequency(int pin) {
 }
 
 
-//  Encoder interrupt callback functions
-void doEncoderA() {
-  motor.handleEncoderA();
-}
-// B channel
-void doEncoderB() {
-  motor.handleEncoderB();
-}
 
