@@ -1,44 +1,46 @@
 #include "BLDCMotor.h"
 
-// Encoder counter variable
-long counter;
+
+// Encoder variables
+#define CPR 600  // counts per revolution
+#define PPR (4*CPR) // pulses per revolution
+
+// Only pins 2 and 3 are supported
+#define encoderPinA 2             // Arduino UNO interrupt 0
+#define encoderPinB 3             // Arduino UNO interrupt 1
+
 
 /*
-BLDCMotor(int phA,int phB,int phC, long* counter, int encA, int encB , int pp, int cpr)
+BLDCMotorEncoder( int phA, int phB, int phC, int pp, int encA, int encB , int cpr, int en)
 - phA, phB, phC - motor A,B,C phase pwm pins
-- *counter      - encoder counter variable
-- encA, encB    - encoder A and B pins
 - pp            - pole pair number
+- encA, encB    - encoder A and B pins
 - cpr           - counts per rotation number (cpm=ppm*4)
 - enable pin    - (optional input)
 */
-BLDCMotor motor = BLDCMotor(9,10,11,&counter,2,3,11,8196,8);
-
-double angle_sp = PI/8;
-double voltage_sp = 2;
-double velocity_sp = 1;
-int t = 0;
+BLDCMotorEncoder motor = BLDCMotorEncoder(9, 10, 11, 11, encoderPinA,encoderPinB, PPR, 8);
 
 void setup() {
+  // debugging port
   Serial.begin(115200);
     
   // PWM pins
-  pinMode(motor._phA, OUTPUT); 
-  pinMode(motor._phB, OUTPUT); 
-  pinMode(motor._phC, OUTPUT); 
+  pinMode(motor.pwmA, OUTPUT); 
+  pinMode(motor.pwmB, OUTPUT); 
+  pinMode(motor.pwmC, OUTPUT); 
 
-  // Increase PWM frequency to 32 kHz  (make unaudible)
-  setPwmFrequency(motor._phA); 
-  setPwmFrequency(motor._phB);
-  setPwmFrequency(motor._phC);
+  // Increase PWM frequency to 32 kHz  
+  // make silent
+  setPwmFrequency(motor.pwmA); 
+  setPwmFrequency(motor.pwmB);
+  setPwmFrequency(motor.pwmC);
   
-  // Encoder PULLUP
-  pinMode(motor._encA, INPUT_PULLUP); 
-  pinMode(motor._encB, INPUT_PULLUP); 
-  // pina
-  attachInterrupt(digitalPinToInterrupt(motor._encA), doEncoderA, CHANGE);
-  // pinb
-  attachInterrupt(digitalPinToInterrupt(motor._encB), doEncoderB, CHANGE);
+  // Encoder - check if pullup needed for your encoder
+  pinMode(motor.encoder.pinA, INPUT_PULLUP); 
+  pinMode(motor.encoder.pinB, INPUT_PULLUP); 
+  // interrupt callback init
+  attachInterrupt(digitalPinToInterrupt(motor.encoder.pinA), doEncoderA, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(motor.encoder.pinB), doEncoderB, CHANGE);
   
   // Initialize motor
   motor.init();
@@ -48,21 +50,11 @@ void setup() {
 }
 
 void loop() { 
-  t++;
-  if (!(t%100)){
-    t = 0;
-    angle_sp = -angle_sp;
-    voltage_sp = -voltage_sp;
-    velocity_sp = -velocity_sp;
-  }
-  
-  // Uncomment line to see different loop in action 
-  // Set phase voltages using FOC
-  //motor.setVoltage(voltage_sp);
-  // Set velocity of the motor
-  //motor.setVelocity(velocity_sp);
-  // Set referent position P+PI
-  motor.setPosition(angle_sp);
+  double velocity_sp = 1;
+  // iterative state calculation velocity and angle
+  motor.updateStates();
+  // Set phase voltages using  FOC
+  motor.setVelocity(velocity_sp);
 }
 
 
@@ -83,38 +75,12 @@ void setPwmFrequency(int pin) {
 }
 
 
-/**
-  Encoder methods
-*/
-
-int A1_=0;
-int B1_=0;
-/*
-  A channel
-*/
-void doEncoderA(){
-  int A = digitalRead(motor._encA);
-  if( A!= A1_ ){
-    if(A1_ == B1_){
-      counter += 1;
-    }else{
-      counter -= 1;
-    }
-   A1_ = A;
-  }
+//  Encoder interrupt callback functions
+void doEncoderA() {
+  motor.handleEncoderA();
+}
+// B channel
+void doEncoderB() {
+  motor.handleEncoderB();
 }
 
-/*
-  B channel
-*/
-void doEncoderB(){
-  int B = digitalRead(motor._encB);
-  if( B!= B1_ ){
-    if( A1_ != B1_ ){
-      counter += 1;
-    }else{
-      counter -= 1;
-    }
-    B1_ = B;
-  }
-}
