@@ -1,86 +1,92 @@
-
 #ifndef BLDCMotor_h
 #define BLDCMotor_h
 
 #include "Arduino.h"
-
-
-// Power supply woltage
-#define U_MAX 12
-
-// dead-zone compensation 
-// minimal voltage to move the motor
-#define U_DEAD 1.5
-
-// Velocity loop config
-// PI contoroller constant
-#define M_Kr 0.25
-#define M_Ti 0.1
-
-// position loop config
-// P controller constant
-#define M_P 70
-// maximum angular velocity to be used for positioning 
-#define W_MAX 20
+#include "Encoder.h"
 
 // sign funciton
 #define sign(a) ( ( (a) < 0 )  ?  -1   : ( (a) > 0 ) )
 // utility defines
 #define _2_SQRT3 1.15470053838
 #define _1_SQRT3 0.57735026919
+#define _SQRT3_2 0.86602540378
 #define _120_D2R 2.09439510239
 
-
-// encoder measurement structure
-struct encoder_s{
-  long pulse_counter;       // current pulse counter
-  long pulse_timestamp;     // last impulse timestamp in us
-  int cpr;                  // impulse cpr
-  int pinA, pinB;           // encoder hardware pins
-  int A_active, B_active;   // current active states of A and B line
+enum ControlType{
+  voltage,
+  velocity,
+  velocity_ultra_slow,
+  angle
 };
 
+
+enum DriverType{
+  bipolar,    // L6234
+  unipolar    // HMBGC
+};
+
+// PI strucutre
+struct PI_s{
+  float K;
+  float Ti;
+  long timestamp;
+  float uk_1, ek_1;
+};
 
 /**
  BLDC motor class
 */
-class BLDCMotorEncoder
+class BLDCMotor
 {
   public:
-    BLDCMotorEncoder(int phA,int phB,int phC,int pp, int encA, int encB , int cpr);
-    BLDCMotorEncoder(int phA,int phB,int phC,int pp, int encA, int encB , int cpr, int en);
-  	void init();
-  	void disableMotor();
-    void enable_pinMotor();
+    BLDCMotor(int phA,int phB,int phC,int pp, int en = 0);
+  	void init(DriverType type = DriverType::bipolar);
+  	void disable();
+    void enable();
+
+    void linkEncoder(Encoder* enc);
+    
     // Set phase voltages using FOC
     void setVoltage(float Uq);
     // Set referent velocity PI
     void setVelocity(float vel);
+    void setVelocityUltraSlow(float vel);
     // Set referent position P+PI
     void setPosition(float pos);
     
+    void initFOC();
     // iterative method updating motor angles and velocity measurement
-    void updateStates();
-
-    // encoder measurement structure
-    encoder_s encoder;
-    //  Encoder interrupt callback functions
-    //  enabling CPR=4xPPR behaviour
-    // A channel
-    void handleEncoderA();
-    // B channel
-    void handleEncoderB();
+    void loopFOC();
+    void move(float target);
     
+
+    // variables
   	int pwmA;
   	int pwmB;
   	int pwmC;
     int enable_pin;
+
     int pole_pairs;
-  	
+
+    ControlType controller;
   	float elctric_angle;
   	float shaft_velocity;
   	float shaft_angle;
+
+    float shaft_velocity_sp;
+    float shaft_angle_sp;
+    float voltage_q;
+
+    // Power supply woltage
+    float U_max;
+    // maximum angular velocity to be used for positioning 
+    float velocity_max;
+
+    PI_s PI_velocity;
+    PI_s PI_velocity_ultra_slow;
+    PI_s P_angle;
   	
+    Encoder* encoder;
   	
 
   private:
@@ -100,6 +106,8 @@ class BLDCMotorEncoder
     /** FOC methods */
     //Method using FOC to set Uq to the motor at the optimal angle
     void setPhaseVoltage(double Uq, double angle_el);
+    void setPhaseVoltageUnipolar(double Uq, double angle_el);
+    void setPhaseVoltageBipolar(double Uq, double angle_el);
     
     /** Utility funcitons */
     //normalizing radian angle to [0,2PI]
@@ -109,11 +117,18 @@ class BLDCMotorEncoder
     
     /** Motor control functions */
     float velocityPI(float ek);
+    float velocityUltraSlowPI(float ek);
     float positionP(float ek);
     
     float Ua,Ub,Uc;
     float	Ualpha,Ubeta;
+    DriverType driver_type;
 };
 
+
+/*
+  High PWM frequency
+*/
+void setPwmFrequency(int pin);
 
 #endif

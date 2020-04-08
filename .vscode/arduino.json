@@ -1,0 +1,5 @@
+{
+    "board": "arduino:avr:uno",
+    "sketch": "MotorFOCExample\\MotorFOCExample.ino",
+    "port": "COM56"
+}
