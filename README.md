@@ -1,4 +1,6 @@
 # Arduino based Field Oriented Control (FOC) for gimbal motors
+![Compile](https://github.com/askuric/Arduino-FOC/workflows/Compile/badge.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)![Compile](https://github.com/askuric/Arduino-FOC/workflows/Compile/badge.svg)
 
 This project is based on widely used in Hobby world brushless gimbal controller HMBGC V2.2. 
 <p>
