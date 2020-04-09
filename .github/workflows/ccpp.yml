@@ -10,4 +10,4 @@ jobs:
     - name: Compile all examples
       uses: ArminJo/arduino-test-compile@v1.0.0
       with:
-        libraries:  PciManager BLDCMotor.h
+        libraries:  PciManager 
