@@ -1,29 +1,44 @@
-# Arduino based Field Oriented Control (FOC) for gimbal motors
+# ArduinoFOC library 
+### Arduino Field Oriented Control (FOC) for gimbal BLDC motors
 
 ![Library Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Compile/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This project is based on widely used in Hobby world brushless gimbal controller HMBGC V2.2. 
-<p>
-	<img src="extras/Images/ebay.jpg" height="400px">
-	<img src="extras/Images/ebay2.jpg" height="400px">
-</p>
+Proper low cost FOC supporting boards are very hard to find these days and even may not exist. The reason may be that the hobby community has not yet dug into it properly. Therefore this is the attempt to demistify the Field Oriented Control (FOC) algorithm and make a robust but simple implementation for usage with Arduino hadrware.
 
-Proper low cost FOC supporting board is very hard to find these days even may not exist. The reason may be that the hobby community has not yet dug into it properly.
-
-### The closest you can get to FOC support and low cost (I was able to find) is:
-- [Odrive   ![](https://static1.squarespace.com/static/58aff26de4fcb53b5efd2f02/t/5c2c766921c67c143049cbd3/1546417803031/?format=1200w)](https://odriverobotics.com/)
-- [Trinamic   ![](http://i3.ytimg.com/vi/g2BHEdvW9bU/maxresdefault.jpg)](https://www.youtube.com/watch?v=g2BHEdvW9bU)
-
-### There are two main probelms with these kinds of borads:
-- Both of them cost more than 100$. 
-- Both of them are oriented to high current operations.
-
-## This porject aims to close the gap in the areas:
+#### This project aims to close the gap in the areas:
 - Low cost applications <50$
 - Low current operation < 5A
 - Simple usage and scalability (Arduino)
  and demistify FOC control in a simple way. 
+
+
+
+
+
+
+#### The closest you can get to FOC support and low cost (I was able to find) is:
+
+<a href="https://odriverobotics.com/" >Odroid</a> | <a href="https://www.youtube.com/watch?v=g2BHEdvW9bU">Trinamic</a>
+------------ | -------------
+<img src="https://static1.squarespace.com/static/58aff26de4fcb53b5efd2f02/t/5c2c766921c67c143049cbd3/1546417803031/?format=1200w" width="400px"> | <img src="http://i3.ytimg.com/vi/g2BHEdvW9bU/maxresdefault.jpg" width="400px">
+:heavy_check_mark: Open Source | :x: Open Source
+:heavy_check_mark:Simple to use | :heavy_check_mark: Simple to use
+:x: Low cost | :x: Low cost
+
+<a href="https://www.infineon.com/cms/en/product/evaluation-boards/bldc_shield_tle9879/" >Infineon</a> | <a href="https://github.com/gouldpa/FOC-Arduino-Brushless">FOC-Arduino-Brushless</a>
+------------ | -------------
+<img src="https://www.infineon.com/export/sites/default/_images/product/evaluation-boards/BLDC_Motor_Shild_with_TLE9879QXA40.jpg_1711722916.jpg" width="400px"> | <img src="https://hackster.imgix.net/uploads/attachments/998086/dev_kit_89eygMekks.jpg?auto=compress%2Cformat&w=1280&h=960&fit=max" width="400px">
+:x: Open Source | :heavy_check_mark: Open Source
+:heavy_check_mark:Simple to use | :x: Simple to use
+:heavy_check_mark:Low cost | :heavy_check_mark: Low cost
+
+
+
+### There are two main probelms with these kinds of borads:
+- They cost more than 100$. 
+- They are oriented to high current operations.
+
 
 ## All you need for this project is (an exaple in brackets):
  - Brushless motor - 3 pahse    (IPower GBM4198H-120T [Ebay](https://www.ebay.com/itm/iPower-Gimbal-Brushless-Motor-GBM4108H-120T-for-5N-7N-GH2-ILDC-Aerial-photo-FPV/252025852824?hash=item3aade95398:g:q94AAOSwPcVVo571:rk:2:pf:1&frcectupt=true))
