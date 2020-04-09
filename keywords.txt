@@ -9,7 +9,7 @@ disable	KEYWORD2
 
 PI_velocity	KEYWIORD2
 PI_velocity_ultra_slow	KEYWIORD2
-PI_angle	KEYWIORD2
+P_angle	KEYWIORD2
 
 ControlType	LITERAL1
 DriverType	LITERAL1
@@ -28,6 +28,7 @@ shaft_velocity_sp	KEYWIORD2
 shaft_angle	KEYWIORD2
 shaft_velocity	KEYWIORD2
 controller	KEYWIORD2
+driver	KEYWIORD2
 
 
 voltage	KEYWIORD2
@@ -37,13 +38,15 @@ angle	KEYWIORD2
 
 K	KEYWIORD2
 Ti	KEYWIORD2
+u_limit	KEYWIORD2
+velocity_limit	KEYWIORD2
 
 pinA	LITERAL1
 pinB	LITERAL1
 index	LITERAL1
 
-INTERN	LITERAL1
-EXTERN	LITERAL1
+INTERN	KEYWORD2
+EXTERN	KEYWORD2
 
 unipolar	KEYWIORD2
 bipolar	KEYWIORD2
@@ -54,5 +57,4 @@ pwmC	LITERAL1
 enable_pin	LITERAL1
 pole_pairs	LITERAL1
 
-U_max	LITERAL1
-velocity_max	LITERAL1
+power_supply_voltage	LITERAL1

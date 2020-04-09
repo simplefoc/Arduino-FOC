@@ -4,14 +4,30 @@
 #include "Arduino.h"
 #include "Encoder.h"
 
+// default configuration values
+// power supply voltage
+#define DEF_POWER_SUPPLY 12.0
+// velocity PI controller params
+#define DEF_PI_VEL_K 1.0
+#define DEF_PI_VEL_TI 0.003
+// ultra slow velocity PI params
+#define DEF_PI_VEL_US_K 120.0
+#define DEF_PI_VEL_US_TI 100.0
+// angle P params
+#define DEF_P_ANGLE_K 20
+// angle velocity limit default
+#define DEF_P_ANGLE_VEL_LIM 20
+
 // sign funciton
 #define sign(a) ( ( (a) < 0 )  ?  -1   : ( (a) > 0 ) )
 // utility defines
 #define _2_SQRT3 1.15470053838
 #define _1_SQRT3 0.57735026919
 #define _SQRT3_2 0.86602540378
+#define _SQRT2 1.41421356237
 #define _120_D2R 2.09439510239
 
+// controller type configuration enum
 enum ControlType{
   voltage,
   velocity,
@@ -19,18 +35,20 @@ enum ControlType{
   angle
 };
 
-
+// driver type configuration enum
 enum DriverType{
   bipolar,    // L6234
   unipolar    // HMBGC
 };
 
-// PI strucutre
+// P/PI controller strucutre
 struct PI_s{
   float K;
   float Ti;
   long timestamp;
   float uk_1, ek_1;
+  float u_limit;
+  float velocity_limit;
 };
 
 /**
@@ -40,52 +58,47 @@ class BLDCMotor
 {
   public:
     BLDCMotor(int phA,int phB,int phC,int pp, int en = 0);
-  	void init(DriverType type = DriverType::bipolar);
+    // change driver state
+  	void init();
   	void disable();
     void enable();
-
+    // connect encoder
     void linkEncoder(Encoder* enc);
-    
-    // Set phase voltages using FOC
-    void setVoltage(float Uq);
-    // Set referent velocity PI
-    void setVelocity(float vel);
-    void setVelocityUltraSlow(float vel);
-    // Set referent position P+PI
-    void setPosition(float pos);
-    
+
+    //  initilise FOC  
     void initFOC();
     // iterative method updating motor angles and velocity measurement
     void loopFOC();
+    // iterative control loop defined by controller 
     void move(float target);
     
 
-    // variables
+    // hardware variables
   	int pwmA;
   	int pwmB;
   	int pwmC;
     int enable_pin;
-
     int pole_pairs;
 
-    ControlType controller;
+    // state variables
   	float elctric_angle;
   	float shaft_velocity;
   	float shaft_angle;
-
     float shaft_velocity_sp;
     float shaft_angle_sp;
     float voltage_q;
 
     // Power supply woltage
-    float U_max;
-    // maximum angular velocity to be used for positioning 
-    float velocity_max;
+    float power_supply_voltage;
 
+    // configuraion structures
+    DriverType driver;
+    ControlType controller;
     PI_s PI_velocity;
     PI_s PI_velocity_ultra_slow;
     PI_s P_angle;
   	
+    // encoder link
     Encoder* encoder;
   	
 
@@ -122,7 +135,6 @@ class BLDCMotor
     
     float Ua,Ub,Uc;
     float	Ualpha,Ubeta;
-    DriverType driver_type;
 };
 
 

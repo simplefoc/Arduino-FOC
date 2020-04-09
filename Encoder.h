@@ -3,6 +3,8 @@
 
 #include "Arduino.h"
 
+
+// Pullup configuation structure
 enum Pullup{
     INTERN,
     EXTERN
@@ -46,6 +48,7 @@ class Encoder{
     long pulse_timestamp;     // last impulse timestamp in us
     float cpr;                  // impulse cpr
     int A_active, B_active;   // current active states of A and B line
+    int I_active;  // index active
 
     // velocity calculation varibles
     float prev_Th, pulse_per_second;

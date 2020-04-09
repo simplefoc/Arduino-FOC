@@ -1,4 +1,4 @@
-#include "BLDCMotor.h"
+#include <SimpleFOC.h>
 
 // Only pins 2 and 3 are supported
 #define arduinoInt1 2             // Arduino UNO interrupt 0
@@ -20,7 +20,7 @@ void setup() {
   Serial.begin(115200);
 
   // check if you need internal pullups
-  // Pullup::EXTERN - external pullup added
+  // Pullup::EXTERN - external pullup added 
   // Pullup::INTERN - needs internal arduino pullup
   encoder.init(Pullup::EXTERN);
   // interupt intitialisation
@@ -32,34 +32,49 @@ void setup() {
     encoder.handleB();
   }, CHANGE);
 
-  // link the motor to the sensor
-  motor.linkEncoder(&encoder);
+  // set driver type
+  //  DriverType::unipolar
+  //  DriverType::bipolar    - default
+  motor.driver = DriverType::bipolar;
 
-  // intialise motor
-  motor.init(DriverType::bipolar);
-  motor.enable();
-  // align encoder and start FOC
-  motor.initFOC();
+  // power supply voltage
+  // default 12V
+  motor.power_supply_voltage = 12;
 
   // set FOC loop to be used
   // ControlType::voltage
   // ControlType::velocity
   // ControlType::velocity_ultra_slow
   // ControlType::angle
-  motor.controller = ControlType::velocity;
+  motor.controller = ControlType::angle;
 
   // velocity PI controller parameters
-  motor.PI_velocity.K = 1;
-  motor.PI_velocity.Ti = 0.003;
-  
-  // power supply voltage
-  motor.U_max = 12;
-  // maximal velocity allowed for position control
-  motor.velocity_max = 6;
+  // default K=1.0 Ti = 0.003
+  motor.PI_velocity.K = 0.5;
+  motor.PI_velocity.Ti = 0.01;
+  // angle P controller 
+  // default K=70
+  motor.P_angle.K = 20;
+  //  maximal velocity of the poisiiton control
+  // default 20
+  motor.P_angle.velocity_limit = 10;
+
+  // link the motor to the sensor
+  motor.linkEncoder(&encoder);
+
+  // intialise motor
+  motor.init();
+  motor.enable();
+  // align encoder and start FOC
+  motor.initFOC();
+
 
   Serial.println("Motor ready.");
   delay(1000);
 }
+
+// angle target variable
+float target_angle;
 
 void loop() {
 
@@ -69,11 +84,16 @@ void loop() {
   // in arduino loop it should have ~1kHz
   // the best would be to be in ~10kHz range
   motor.loopFOC();
+
+  
+  // 0.5 hertz sine wave
+  target_angle = sin( micros()*1e-6 *2*M_PI * 0.5 );
+
   // iterative function setting the outter loop target
   // velocity, position or voltage
   // this funciton can be run at much lower frequency than loopFOC funciton
   // it can go as low as ~50Hz
-  motor.move(4);
+  motor.move(target_angle);
 
 
   // function intended to be used with serial plotter to monitor motor variables

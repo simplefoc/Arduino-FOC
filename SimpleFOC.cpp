@@ -1,4 +1,4 @@
-#include "BLDCMotor.h"
+#include "SimpleFOC.h"
 
 
 /*
@@ -20,30 +20,32 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   // enable_pin pin
   enable_pin = en;
 
+  // Power supply woltage
+  power_supply_voltage = DEF_POWER_SUPPLY;
+
   // Velocity loop config
   // PI contoroller constant
-  PI_velocity.K = 0.4;
-  PI_velocity.Ti = 0.005;
+  PI_velocity.K = DEF_PI_VEL_K;
+  PI_velocity.Ti = DEF_PI_VEL_TI;
   PI_velocity.timestamp = micros();
+  PI_velocity.u_limit = DEF_POWER_SUPPLY;
 
   // Ultra slow velocity
   // PI contoroller
-  PI_velocity_ultra_slow.K = 120.0;
-  PI_velocity_ultra_slow.Ti = 100.0;
+  PI_velocity_ultra_slow.K = DEF_PI_VEL_US_K;
+  PI_velocity_ultra_slow.Ti = DEF_PI_VEL_US_TI;
   PI_velocity_ultra_slow.timestamp = micros();
+  PI_velocity_ultra_slow.u_limit = DEF_POWER_SUPPLY;
 
   // position loop config
   // P controller constant
-  P_angle.K = 15;
-
-  // Power supply woltage
-  U_max = 12;
+  P_angle.K = DEF_P_ANGLE_K;
   // maximum angular velocity to be used for positioning 
-  velocity_max = 20;
+  P_angle.velocity_limit = DEF_P_ANGLE_VEL_LIM;
 }
 
 // init hardware pins
-void BLDCMotor::init(DriverType type) {
+void BLDCMotor::init() {
   // PWM pins
   pinMode(pwmA, OUTPUT);
   pinMode(pwmB, OUTPUT);
@@ -57,7 +59,7 @@ void BLDCMotor::init(DriverType type) {
   setPwmFrequency(pwmB);
   setPwmFrequency(pwmC);
 
-  driver_type = type;
+  driver = DriverType::bipolar;
 
   delay(500);
 }
@@ -107,10 +109,12 @@ void BLDCMotor::linkEncoder(Encoder* enc) {
 	Encoder alignment to electrical 0 angle
 */
 void BLDCMotor::alignEncoder() {
-  setPhaseVoltage(12, M_PI / 2);
+  setPhaseVoltage(12, -M_PI/2);
   delay(1000);
   encoder->setCounterZero();
-  setPhaseVoltage(0, M_PI / 2);
+
+  
+  setPhaseVoltage(0, 0);
 }
 
 /**
@@ -131,7 +135,8 @@ float BLDCMotor::electricAngle(float shaftAngle) {
   return normalizeAngle(shaftAngle * pole_pairs);
 }
 /*
-	Update motor angles and set thr Uq voltage
+	Iterative function looping FOC algorithm, setting Uq on the Motor
+  The faster it can be run the better
 */
 void BLDCMotor::loopFOC() {
   // voltage open loop loop
@@ -140,7 +145,10 @@ void BLDCMotor::loopFOC() {
 }
 
 /*
-  Update motor angles and velocities
+  Iterative funciton running outer loop of the FOC algorithm
+  Bahvior of this funciton is determined by the motor.controller variable
+  It runs either angle, veloctiy, velocity ultra slow or voltage loop
+  - needs to be called iteratively it is asynchronious function
 */
 void BLDCMotor::move(float target) {
   // get angular velocity
@@ -176,6 +184,7 @@ void BLDCMotor::move(float target) {
 */
 /*
 	Method using FOC to set Uq to the motor at the optimal angle
+  - for unipolar drivers - only positive values
 */
 void BLDCMotor::setPhaseVoltageUnipolar(double Uq, double angle_el) {
 
@@ -212,12 +221,14 @@ void BLDCMotor::setPhaseVoltageUnipolar(double Uq, double angle_el) {
 }
 /*
   Method using FOC to set Uq to the motor at the optimal angle
+  - for bipolar drivers - posiitve and negative voltages
 */
 void BLDCMotor::setPhaseVoltageBipolar(double Uq, double angle_el) {
 
+  // q component angle
+  float angle = angle_el + M_PI/2;
   // Uq sign compensation
-  float angle;// = angle + shaft_velocity*0.0003;
-  angle = Uq > 0 ? angle_el : normalizeAngle( angle_el + M_PI );
+  angle = Uq > 0 ? angle : normalizeAngle( angle + M_PI );
 
   // Park transform
   Ualpha = abs(Uq) * cos(angle);
@@ -239,7 +250,7 @@ void BLDCMotor::setPhaseVoltageBipolar(double Uq, double angle_el) {
   Method using FOC to set Uq to the motor at the optimal angle
 */
 void BLDCMotor::setPhaseVoltage(double Uq, double angle_el) {
-  switch (driver_type) {
+  switch (driver) {
     case DriverType::bipolar :
       // L6234
       setPhaseVoltageBipolar(Uq, angle_el);
@@ -251,13 +262,15 @@ void BLDCMotor::setPhaseVoltage(double Uq, double angle_el) {
   }
 }
 
+
 /*
 	Set voltage to the pwm pin
 */
 void BLDCMotor::setPwm(int pinPwm, float U) {
   int U_pwm = 0;
+  int U_max = power_supply_voltage;
   // uniploar or bipolar FOC
-  switch (driver_type) {
+  switch (driver) {
     case DriverType::bipolar :
       // sets the voltage [-U_max,U_max] to pwm [0,255]
       // - U_max you can set in header file - default 12V
@@ -291,25 +304,12 @@ double BLDCMotor::normalizeAngle(double angle)
   double a = fmod(angle, 2 * M_PI);
   return a >= 0 ? a : (a + 2 * M_PI);
 }
-/*
-	Reference low pass filter
-  used to filter set point signal - to remove sharp changes
-*/
-float BLDCMotor::filterLP(float u) {
-  static float Ts, yk_1;
-  float M_Tau = 0.01;
-  Ts = (micros() - Ts) * 1e-6;
-  float y_k = Ts / (M_Tau + Ts) * u + (1 - Ts / (M_Tau + Ts)) * yk_1;
-  Ts = micros();
-  yk_1 = y_k;
-  return y_k;
-}
 
 
 
 
 /**
-	Motor `ntrol functions
+	Motor control functions
 */
 float BLDCMotor::velocityPI(float ek) {
   float Ts = (micros() - PI_velocity.timestamp) * 1e-6;
@@ -317,12 +317,12 @@ float BLDCMotor::velocityPI(float ek) {
   // u(s) = Kr(1 + 1/(Ti.s))
   float uk = PI_velocity.uk_1;
   uk += PI_velocity.K * (Ts / (2 * PI_velocity.Ti) + 1) * ek + PI_velocity.K * (Ts / (2 * PI_velocity.Ti) - 1) * PI_velocity.ek_1;
-  if (abs(uk) > U_max) uk = uk > 0 ? U_max : -U_max;
+  if (abs(uk) > PI_velocity.u_limit) uk = uk > 0 ? PI_velocity.u_limit : -PI_velocity.u_limit;
 
   PI_velocity.uk_1 = uk;
   PI_velocity.ek_1 = ek;
   PI_velocity.timestamp = micros();
-  return -uk;
+  return uk;
 }
 
 // PI controller for ultra slow velocity control
@@ -336,52 +336,19 @@ float BLDCMotor::velocityUltraSlowPI(float vel) {
   // u(s) = Kr(1 + 1/(Ti.s))
   float uk = PI_velocity_ultra_slow.uk_1;
   uk += PI_velocity_ultra_slow.K * (Ts / (2 * PI_velocity_ultra_slow.Ti) + 1) * ek + PI_velocity_ultra_slow.K * (Ts / (2 * PI_velocity_ultra_slow.Ti) - 1) * PI_velocity_ultra_slow.ek_1;
-  if (abs(uk) > U_max) uk = uk > 0 ? U_max : -U_max;
+  if (abs(uk) > PI_velocity_ultra_slow.u_limit) uk = uk > 0 ? PI_velocity_ultra_slow.u_limit : -PI_velocity_ultra_slow.u_limit;
 
   PI_velocity_ultra_slow.uk_1 = uk;
   PI_velocity_ultra_slow.ek_1 = ek;
   PI_velocity_ultra_slow.timestamp = micros();
-  return -uk;
+  return uk;
 }
 // P controller for position control loop
 float BLDCMotor::positionP(float ek) {
   float velk = P_angle.K * ek;
-  if (abs(velk) > velocity_max) velk = velk > 0 ? velocity_max : -velocity_max;
+  if (abs(velk) > P_angle.velocity_limit) velk = velk > 0 ? P_angle.velocity_limit : -P_angle.velocity_limit;
   return velk;
 }
-
-// voltage control loop api
-void BLDCMotor::setVoltage(float Uq) {
-  voltage_q = Uq;
-}
-// shaft velocity loop api
-void BLDCMotor::setVelocity(float vel) {
-  shaft_velocity_sp = vel;
-}
-
-// utra slow shaft velocity loop api
-void BLDCMotor::setVelocityUltraSlow(float vel) {
-  shaft_velocity_sp = vel;
-
-  shaft_velocity = shaftVelocity();
-  static long timestamp;
-  static float angle_1;
-  if (!timestamp) {
-    // init
-    timestamp = micros();
-    angle_1 = shaft_angle;
-  }
-  float dt = (micros() - timestamp) / 1e6;
-  angle_1 += vel * dt;
-  voltage_q = velocityUltraSlowPI(angle_1 - shaft_angle);
-  timestamp = micros();
-}
-
-// postion control loop
-void BLDCMotor::setPosition(float pos) {
-  shaft_angle_sp = pos;
-}
-
 
 
 /*

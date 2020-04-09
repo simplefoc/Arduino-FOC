@@ -2,8 +2,8 @@
 
 This project is based on widely used in Hobby world brushless gimbal controller HMBGC V2.2. 
 <p>
-	<img src="./Images/ebay.jpg" height="400px">
-	<img src="./Images/ebay2.jpg" height="400px">
+	<img src="extras/Images/ebay.jpg" height="400px">
+	<img src="extras/Images/ebay2.jpg" height="400px">
 </p>
 
 Proper low cost FOC supporting board is very hard to find these days even may not exist. The reason may be that the hobby community has not yet dug into it properly.
@@ -30,9 +30,9 @@ Proper low cost FOC supporting board is very hard to find these days even may no
 # Using the library
 ## Conneciton of encoder and motor
 <p>
-	<img src="./Images/connection.png" height="400px">
-	<img src="./Images/setup1.jpg" height="400px">
-	<img src="./Images/pinout.jpg" height="400px">
+	<img src="extras/Images/connection.png" height="400px">
+	<img src="extras/Images/setup1.jpg" height="400px">
+	<img src="extras/Images/pinout.jpg" height="400px">
 </p>
 To use HMBGC controller for vector control (FOC) you need to connect motor to one of the motor terminals and connect the Encoder. The shema of connection is shown on the figures above, I also took a (very bad) picture of my setup. 
 
@@ -64,18 +64,18 @@ Using the fucntion
 motor.setPhaseVoltage(float Uq)
 ```
 you can run BLDC motor as it is DC motor using Park transformation.
-<img src="./Images/voltage.png">
+<img src="extras/Images/voltage.png">
 ### Closed loop velocity control
 Using the fucntion 
 ```cpp 
 motor.setVelocity(float v)
 ```
 you can run BLDC motor in closed loop with desired velocity.
-<img src="./Images/velocity.png" >
+<img src="extras/Images/velocity.png" >
 ### Closed loop position control
 Using the fucntion 
 ```cpp
 motor.setPosition(float pos)
 ```
 you can run BLDC motor in closed loop with desired position.
-<img src="./Images/position.png">
+<img src="extras/Images/position.png">

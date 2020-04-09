@@ -20,6 +20,7 @@ Encoder::Encoder(int _encA, int _encB , float _cpr, int _index){
   cpr = _cpr;
   A_active = 0;
   B_active = 0;
+  I_active = 0;
   // index pin
   index = _index; // its 0 if not used
 
