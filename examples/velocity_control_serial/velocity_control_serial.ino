@@ -15,9 +15,12 @@ float target_velocity = 0;
 BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
 //  Encoder(int encA, int encB , int cpr, int index)
 //  - encA, encB    - encoder A and B pins
-//  - cpr           - counts per rotation  (cpm=ppm*4)
+//  - ppr           - impulses per rotation  (cpr=ppr*4)
 //  - index pin     - (optional input)
-Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 32768, 4);
+Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, 4);
+// interrupt ruotine intialisation
+void doA(){encoder.handleA();}
+void doB(){encoder.handleB();}
 
 void setup() {
   // debugging port
@@ -26,15 +29,10 @@ void setup() {
   // check if you need internal pullups
   // Pullup::EXTERN - external pullup added
   // Pullup::INTERN - needs internal arduino pullup
-  encoder.init(Pullup::EXTERN);
-  // interupt intitialisation
-  // A callback and B callback
-  attachInterrupt(digitalPinToInterrupt(encoder.pinA), []() {
-    encoder.handleA();
-  }, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(encoder.pinB), []() {
-    encoder.handleB();
-  }, CHANGE);
+  encoder.pullup = Pullup::EXTERN;
+  
+  // initialise encoder hardware
+  encoder.init(doA, doB);
 
   // set driver type
   //  DriverType::unipolar
@@ -62,7 +60,6 @@ void setup() {
 
   // intialise motor
   motor.init();
-  motor.enable();
   // align encoder and start FOC
   motor.initFOC();
 

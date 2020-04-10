@@ -28,6 +28,7 @@ shaft_angle	KEYWIORD2
 shaft_velocity	KEYWIORD2
 controller	KEYWIORD2
 driver	KEYWIORD2
+pullup	KEYWIORD2
 
 
 voltage	KEYWIORD2

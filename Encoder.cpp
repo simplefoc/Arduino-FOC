@@ -8,7 +8,7 @@
   - index pin     - (optional input)
 */
 
-Encoder::Encoder(int _encA, int _encB , float _cpr, int _index){
+Encoder::Encoder(int _encA, int _encB , float _ppr, int _index){
   
   // Encoder measurement structure init
   // hardware pins
@@ -17,7 +17,7 @@ Encoder::Encoder(int _encA, int _encB , float _cpr, int _index){
   // counter setup
   pulse_counter = 0;
   pulse_timestamp = 0;
-  cpr = _cpr;
+  cpr = 4.0*_ppr;
   A_active = 0;
   B_active = 0;
   I_active = 0;
@@ -29,6 +29,9 @@ Encoder::Encoder(int _encA, int _encB , float _cpr, int _index){
   pulse_per_second = 0;
   prev_pulse_counter = 0;
   prev_timestamp_us = micros();
+
+  // extern pullup as default
+  pullup = Pullup::EXTERN;
 }
 
 //  Encoder interrupt callback functions
@@ -100,9 +103,10 @@ void Encoder::setCounterZero(){
 }
 
 
-void Encoder::init(Pullup mode){
+void Encoder::init(void (*doA)(), void(*doB)()){
+  
   // Encoder - check if pullup needed for your encoder
-  if(mode == INTERN){
+  if(pullup == INTERN){
     pinMode(pinA, INPUT_PULLUP);
     pinMode(pinB, INPUT_PULLUP);
   }else{
@@ -121,6 +125,11 @@ void Encoder::init(Pullup mode){
   prev_pulse_counter = 0;
   prev_timestamp_us = micros();
 
- 
-}
 
+  // attach interrupt if functions provided
+  if(doA != nullptr){
+    // A callback and B callback
+    attachInterrupt(digitalPinToInterrupt(pinA), doA, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(pinB), doB, CHANGE);
+  }
+}

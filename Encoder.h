@@ -15,13 +15,13 @@ class Encoder{
     /*
     Encoder(int encA, int encB , int cpr, int index)
     - encA, encB    - encoder A and B pins
-    - cpr           - counts per rotation number (cpm=ppm*4)
+    - ppr           - impulses per rotation  (cpr=ppr*4)
     - index pin     - (optional input)
     */
-    Encoder(int encA, int encB , float cpr, int index = 0);
+    Encoder(int encA, int encB , float ppr, int index = 0);
 
-    // encoder intiialise pins
-    void init(Pullup mode);
+    // encoder initialise pins
+    void init(void (*doA)() = nullptr, void(*doB)() = nullptr);
 
     //  Encoder interrupt callback functions
     //  enabling CPR=4xPPR behaviour
@@ -29,7 +29,7 @@ class Encoder{
     void handleA();
     // B channel
     void handleB();
-
+    
     // encoder getters
     // shaft velocity getter
     float getVelocity();
@@ -42,6 +42,9 @@ class Encoder{
     int pinA, pinB;           // encoder hardware pins
     // index pin
     int index;
+    // encoder pullup type
+    Pullup pullup;
+
 
   private:
     long pulse_counter;       // current pulse counter
