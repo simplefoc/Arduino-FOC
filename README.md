@@ -43,7 +43,15 @@ Alternatively the library supports the arduino based gimbal controllers such as:
 - HMBGC V2.2 ([Ebay](https://www.ebay.com/itm/HMBGC-V2-0-3-Axle-Gimbal-Controller-Control-Plate-Board-Module-with-Sensor/351497840990?hash=item51d6e7695e:g:BAsAAOSw0QFXBxrZ:rk:1:pf:1))
  
 
-## Arduino FOC Shield v1.1
+## Arduino FOC Shield V1.2
+
+At this moment we are developing an open source version of Arduin shiled specifically for FOC motor control. 
+We already have prototypes of the board and we are in the testing phase. We will be coming out with the details very soon!
+***Let us know if you are interested!***
+
+You can explore the [3D model of the board](extras/ArduinoFOCShieldV12.pdf)
+
+<img src="extras/Images/AFSV11_side.png" height="300px">  <img src="extras/Images/AFSV11_top.png" height="200px">   <img src="extras/Images/AFSV11_bottom.png" height="200px">
 
 
 ## Arduino UNO + L6234 breakout broad
@@ -322,10 +330,75 @@ Examples folder structure
 
 
 # Debugging
- - TODO
+To debug control loop exection in the examples we added a funciton `motor_monitor()` which log the motor variables to the serial port. The funciton logs different variables based for differenc control loops.
+```cpp
+// utility function intended to be used with serial plotter to monitor motor variables
+// significantly slowing the execution down!!!!
+void motor_monitor() {
+  switch (motor.controller) {
+    case ControlType::velocity_ultra_slow:
+    case ControlType::velocity:
+      Serial.print(motor.voltage_q);
+      Serial.print("\t");
+      Serial.print(motor.shaft_velocity_sp);
+      Serial.print("\t");
+      Serial.println(motor.shaft_velocity);
+      break;
+    case ControlType::angle:
+      Serial.print(motor.voltage_q);
+      Serial.print("\t");
+      Serial.print(motor.shaft_angle_sp);
+      Serial.print("\t");
+      Serial.println(motor.shaft_angle);
+      break;
+    case ControlType::voltage:
+      Serial.print(motor.voltage_q);
+      Serial.print("\t");
+      Serial.println(motor.shaft_velocity);
+      break;
+  }
+}
+```
+This is just a template funciton to help you debug and create your own functions in future.
+The funciton accesses the motor variables:
+```cpp
+
+class BLDCMotor
+{
+  public:
+  ...
+    // current elelctrical angle
+    float elctric_angle;
+    // current motor angle
+    float shaft_angle;
+    // current motor velocity 
+    float shaft_velocity;
+    // current target velocity
+    float shaft_velocity_sp;
+    // current target angle
+    float shaft_angle_sp;
+    // current voltage u_q set
+    float voltage_q;
+...
+}
+```
+Additionally it is possible to use encoder api directly to get the encoder angle and velocity. 
+```cpp
+
+class Encoder{
+ public:
+    // shaft velocity getter
+    float getVelocity();
+	// shaft angle getter
+    float getAngle();
+}
+```
+
+
+
 # Future Work Roadmap
 - [ ] Encoder index proper implementation
 - [ ] Timer interrupt execution rather than in the `loop()`
-- [ ] Proper introduction of the **Arudino FOC Shield V1.1**
+- [ ] Proper introduction of the **Arudino FOC Shield V1.2**
 - [ ] Make the library accesible in the Arduino Library Manager 
 - [ ] Publish a video utilising the library and the samples 
