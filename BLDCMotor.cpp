@@ -42,6 +42,9 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   P_angle.K = DEF_P_ANGLE_K;
   // maximum angular velocity to be used for positioning 
   P_angle.velocity_limit = DEF_P_ANGLE_VEL_LIM;
+  
+  // driver deafault type
+  driver = DriverType::bipolar;
 }
 
 // init hardware pins
@@ -59,9 +62,11 @@ void BLDCMotor::init() {
   setPwmFrequency(pwmB);
   setPwmFrequency(pwmC);
 
-  driver = DriverType::bipolar;
-
   delay(500);
+  // enable motor
+  enable();
+  delay(500);
+  
 }
 
 /*

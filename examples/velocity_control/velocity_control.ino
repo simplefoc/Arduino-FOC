@@ -14,27 +14,21 @@ BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
 //  - cpr           - counts per rotation  (cpm=ppm*4)
 //  - index pin     - (optional input)
 Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 32768, 4);
+// interrupt ruotine intialisation
+void doA(){encoder.handleA();}
+void doB(){encoder.handleB();}
 
 void setup() {
   // debugging port
   Serial.begin(115200);
 
   // check if you need internal pullups
-  // Pullup::EXTERN - external pullup added
+  // Pullup::EXTERN - external pullup added - dafault
   // Pullup::INTERN - needs internal arduino pullup
   encoder.pullup = Pullup::EXTERN;
+  
   // initialise encoder hardware
-  encoder.init();
-
-  // interupt intitialisation
-  // A callback and B callback
-  attachInterrupt(digitalPinToInterrupt(encoder.pinA), []() {
-    encoder.handleA();
-  }, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(encoder.pinB), []() {
-    encoder.handleB();
-  }, CHANGE);
-
+  encoder.init(doA, doB);
 
   // set driver type
   //  DriverType::unipolar
@@ -61,7 +55,6 @@ void setup() {
   motor.linkEncoder(&encoder);
   // intialise motor
   motor.init();
-  motor.enable();
   // align encoder and start FOC
   motor.initFOC();
 

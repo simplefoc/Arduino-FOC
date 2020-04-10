@@ -20,8 +20,8 @@ class Encoder{
     */
     Encoder(int encA, int encB , float cpr, int index = 0);
 
-    // encoder intiialise pins
-    void init();
+    // encoder initialise pins
+    void init(void (*doA)() = nullptr, void(*doB)() = nullptr);
 
     //  Encoder interrupt callback functions
     //  enabling CPR=4xPPR behaviour
@@ -29,8 +29,7 @@ class Encoder{
     void handleA();
     // B channel
     void handleB();
-    void enableInterrupt();
-
+    
     // encoder getters
     // shaft velocity getter
     float getVelocity();
@@ -45,6 +44,7 @@ class Encoder{
     int index;
     // encoder pullup type
     Pullup pullup;
+
 
   private:
     long pulse_counter;       // current pulse counter
