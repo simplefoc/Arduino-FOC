@@ -27,14 +27,7 @@ void setup() {
   // initialise encoder hardware
   encoder.init();
 
-  // interupt intitialisation
-  // A callback and B callback
-  attachInterrupt(digitalPinToInterrupt(encoder.pinA), []() {
-    encoder.handleA();
-  }, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(encoder.pinB), []() {
-    encoder.handleB();
-  }, CHANGE);
+  encoder.enableInterrupt();
 
   // set driver type
   //  DriverType::unipolar

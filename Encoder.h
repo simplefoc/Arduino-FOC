@@ -29,6 +29,7 @@ class Encoder{
     void handleA();
     // B channel
     void handleB();
+    void enableInterrupt();
 
     // encoder getters
     // shaft velocity getter

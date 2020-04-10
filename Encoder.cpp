@@ -128,3 +128,14 @@ void Encoder::init(){
  
 }
 
+
+void Encoder::enableInterrupt(){
+   // interupt intitialisation
+  // A callback and B callback
+  attachInterrupt(digitalPinToInterrupt(pinA), []() {
+    encoder.handleA();
+  }, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(pinB), []() {
+    encoder.handleB();
+  }, CHANGE);
+}
