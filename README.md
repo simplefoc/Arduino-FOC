@@ -88,4 +88,4 @@ motor.setPosition(float pos)
 you can run BLDC motor in closed loop with desired position.
 <img src="extras/Images/position.png">
 
-[image](#Open-loop-voltage-Uq)
+[image](#open-loop-voltage-uq)
