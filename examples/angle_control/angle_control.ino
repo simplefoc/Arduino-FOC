@@ -23,7 +23,7 @@ void setup() {
   Serial.begin(115200);
 
   // check if you need internal pullups
-  // Pullup::EXTERN - external pullup added
+  // Pullup::EXTERN - external pullup added  - dafault
   // Pullup::INTERN - needs internal arduino pullup
   encoder.pullup = Pullup::EXTERN;
   

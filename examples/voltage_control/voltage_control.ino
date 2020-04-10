@@ -4,10 +4,6 @@
 #define arduinoInt1 2             // Arduino UNO interrupt 0
 #define arduinoInt2 3             // Arduino UNO interrupt 1
 
-// velocity set point variable
-float target_velocity = 0;
-
-
 //  BLDCMotor( int phA, int phB, int phC, int pp, int en)
 //  - phA, phB, phC - motor A,B,C phase pwm pins
 //  - pp            - pole pair number
@@ -48,12 +44,7 @@ void setup() {
   // ControlType::velocity
   // ControlType::velocity_ultra_slow
   // ControlType::angle
-  motor.controller = ControlType::velocity_ultra_slow;
-
-  // velocity PI controller parameters
-  // default K=120.0 Ti = 100.0
-  motor.PI_velocity_ultra_slow.K = 120;
-  motor.PI_velocity_ultra_slow.Ti = 100;
+  motor.controller = ControlType::voltage;
 
   // link the motor to the sensor
   motor.linkEncoder(&encoder);
@@ -63,12 +54,16 @@ void setup() {
   // align encoder and start FOC
   motor.initFOC();
 
+
   Serial.println("Motor ready.");
-  Serial.println("Set the target velocity using serial terminal:");
   delay(1000);
 }
 
+// uq voltage
+float voltage_Uq = 5;
+
 void loop() {
+
   // iterative state calculation calculating angle
   // and setting FOC pahse voltage
   // the faster you run this funciton the better
@@ -80,12 +75,12 @@ void loop() {
   // velocity, position or voltage
   // this funciton can be run at much lower frequency than loopFOC funciton
   // it can go as low as ~50Hz
-  motor.move(target_velocity);
+  motor.move(voltage_Uq);
 
 
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
-  // motor_monitor();
+  motor_monitor();
 }
 
 // utility function intended to be used with serial plotter to monitor motor variables
@@ -115,23 +110,3 @@ void motor_monitor() {
   }
 }
 
-// Serial communication callback function
-// gets the target value from the user
-void serialEvent() {
-  // a string to hold incoming data
-  static String inputString; 
-  while (Serial.available()) {
-    // get the new byte:
-    char inChar = (char)Serial.read();
-    // add it to the inputString:
-    inputString += inChar;
-    // if the incoming character is a newline
-    // end of input
-    if (inChar == '\n') {
-      target_velocity = inputString.toFloat();
-      Serial.print("Tagret velocity: ");
-      Serial.println(target_velocity);
-      inputString = "";
-    }
-  }
-}

@@ -28,14 +28,14 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   PI_velocity.K = DEF_PI_VEL_K;
   PI_velocity.Ti = DEF_PI_VEL_TI;
   PI_velocity.timestamp = micros();
-  PI_velocity.u_limit = DEF_POWER_SUPPLY;
+  PI_velocity.u_limit = -1;
 
   // Ultra slow velocity
   // PI contoroller
   PI_velocity_ultra_slow.K = DEF_PI_VEL_US_K;
   PI_velocity_ultra_slow.Ti = DEF_PI_VEL_US_TI;
   PI_velocity_ultra_slow.timestamp = micros();
-  PI_velocity_ultra_slow.u_limit = DEF_POWER_SUPPLY;
+  PI_velocity_ultra_slow.u_limit = -1;
 
   // position loop config
   // P controller constant
@@ -55,12 +55,16 @@ void BLDCMotor::init() {
   pinMode(pwmC, OUTPUT);
   pinMode(enable_pin, OUTPUT);
 
-
   // Increase PWM frequency to 32 kHz
   // make silent
   setPwmFrequency(pwmA);
   setPwmFrequency(pwmB);
   setPwmFrequency(pwmC);
+
+  // check if u_limit configuration has been done. 
+  // if not set it to the power_supply_voltage
+  if(PI_velocity.u_limit == -1) PI_velocity.u_limit = power_supply_voltage;
+  if(PI_velocity_ultra_slow.u_limit == -1) PI_velocity_ultra_slow.u_limit = power_supply_voltage;
 
   delay(500);
   // enable motor

@@ -25,10 +25,11 @@ void setup() {
   encoder.init(doA, doB);
   // link the motor to the sensor
   motor.linkEncoder(&encoder);
-  // intialise motor
-  motor.init();
   // velocity control
   motor.controller = ControlType::velocity;
+
+  // intialise motor
+  motor.init();
   // align encoder and start FOC
   motor.initFOC();
 
@@ -44,5 +45,4 @@ void loop() {
   motor.loopFOC();
   // control loop
   motor.move(target_velocity);
-  motor_monitor();
 }
