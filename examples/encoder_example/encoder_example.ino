@@ -28,6 +28,6 @@ void setup() {
 void loop() {
   // display the angle and the angular velocity to the terminal
   Serial.print(encoder.getAngle());
-  Serial.print("\t")
-  Serial.ptntln(encoder.getVelocity());
+  Serial.print("\t");
+  Serial.println(encoder.getVelocity());
 }

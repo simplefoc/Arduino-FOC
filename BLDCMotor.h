@@ -81,11 +81,17 @@ class BLDCMotor
     int pole_pairs;
 
     // state variables
+    // current elelctrical angle
   	float elctric_angle;
-  	float shaft_velocity;
+    // current motor angle
   	float shaft_angle;
+    // current motor velocity 
+  	float shaft_velocity;
+    // current target velocity
     float shaft_velocity_sp;
+    // current target angle
     float shaft_angle_sp;
+    // current voltage u_q set
     float voltage_q;
 
     // Power supply woltage
