@@ -66,7 +66,7 @@ At the motment the function control loop function has to be iteratively called i
 
 ## Control loops
 There are three cascade control loops implemented in the library:
-### Open loop voltage Uq
+###Open loop voltage Uq
 Using the fucntion 
 ```cpp
 motor.setPhaseVoltage(float Uq)
@@ -87,3 +87,5 @@ motor.setPosition(float pos)
 ```
 you can run BLDC motor in closed loop with desired position.
 <img src="extras/Images/position.png">
+
+[image](#Open-loop-voltage-Uq)
