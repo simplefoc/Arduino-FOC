@@ -29,6 +29,9 @@ Encoder::Encoder(int _encA, int _encB , float _cpr, int _index){
   pulse_per_second = 0;
   prev_pulse_counter = 0;
   prev_timestamp_us = micros();
+
+  // extern pullup as default
+  pullup = Pullup::EXTERN;
 }
 
 //  Encoder interrupt callback functions
@@ -100,9 +103,10 @@ void Encoder::setCounterZero(){
 }
 
 
-void Encoder::init(Pullup mode){
+void Encoder::init(){
+  
   // Encoder - check if pullup needed for your encoder
-  if(mode == INTERN){
+  if(pullup == INTERN){
     pinMode(pinA, INPUT_PULLUP);
     pinMode(pinB, INPUT_PULLUP);
   }else{

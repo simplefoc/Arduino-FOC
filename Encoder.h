@@ -21,7 +21,7 @@ class Encoder{
     Encoder(int encA, int encB , float cpr, int index = 0);
 
     // encoder intiialise pins
-    void init(Pullup mode);
+    void init();
 
     //  Encoder interrupt callback functions
     //  enabling CPR=4xPPR behaviour
@@ -42,6 +42,8 @@ class Encoder{
     int pinA, pinB;           // encoder hardware pins
     // index pin
     int index;
+    // encoder pullup type
+    Pullup pullup;
 
   private:
     long pulse_counter;       // current pulse counter

@@ -22,7 +22,10 @@ void setup() {
   // check if you need internal pullups
   // Pullup::EXTERN - external pullup added
   // Pullup::INTERN - needs internal arduino pullup
-  encoder.init(Pullup::EXTERN);
+  encoder.pullup = Pullup::EXTERN;
+  // initialise encoder hardware
+  encoder.init();
+
   // interupt intitialisation
   // A callback and B callback
   attachInterrupt(digitalPinToInterrupt(encoder.pinA), []() {
@@ -31,6 +34,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(encoder.pinB), []() {
     encoder.handleB();
   }, CHANGE);
+
 
   // set driver type
   //  DriverType::unipolar

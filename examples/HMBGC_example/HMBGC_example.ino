@@ -27,10 +27,14 @@ void setup() {
   // debugging port
   Serial.begin(115200);
 
+
   // check if you need internal pullups
   // Pullup::EXTERN - external pullup added
   // Pullup::INTERN - needs internal arduino pullup
-  encoder.init(Pullup::EXTERN);
+  encoder.pullup = Pullup::EXTERN;
+  // initialise encoder hardware
+  encoder.init();
+
 
   // interupt intitialisation
   PciManager.registerListener(&listenerA);
