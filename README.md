@@ -61,7 +61,7 @@ The code is simple enough to be ran on Arudino Uno board.
 #### Encoder
 - Encoder channels `A` and `B` are connected to the Arduino's external intrrupt pins `2` and `3`. 
 - Optionally if your encoder has `index` signal you can connect it to any available pin, figure shows pin `4`.  
-	- The librtary doesnt support the Index pin for now (version v1.1.0)
+		- The library doesnt support the Index pin for now (version v1.1.0)
 #### L6234 breakout board 
 - Connected to the arduino pins `9`,`10` and `11`. 
 - Additionally you can connect the `enable` pin to the any digital pin of the arduino the picture shows pin `8` but this is optional. You can connect the driver enable directly to 5v. 
@@ -85,8 +85,8 @@ To use HMBGC controller for vector control (FOC) you need to connect motor to on
 Since HMBGC doesn't have acces to the arduinos external interrupt pins `2` and `3` and additionally we only have acces to the analog pins, we need to read the encoder using the software interrupt. To show the functionallity we provide one example of the HMBGC code (`HMBGC_example.ino`) using the [PciManager library](https://github.com/prampec/arduino-pcimanager).
 
 - Encoder channels `A` and `B` are connected to the pins `A0` and `A1`.
-- Optionally if your encoder has `index` signal you can connect it to any available pin, figure shows pin `A3`.  
-		- The librtary doesnt support the Index pin for now (version v1.1.0)
+- Optionally if your encoder has `index` signal you can connect it to any available pin, figure shows pin `A2`.  
+		- The library doesnt support the Index pin for now (version v1.1.0)
 #### Motor
 - Motor phases `a`,`b` and `c` are connected directly to the driver outputs
 
@@ -96,19 +96,47 @@ Motor phases `a`,`b`,`c` and encoder channels `A` and `B` have to be oriented ri
 
 
 ## The code
-The code is organised in two libraries, BLDCmotor.h and endcoder.h. BLDCmotor.h contains all the necessary FOC funciton implemented and encoder.h  deals with the encoder. I will make this better in future. :D
+The code is organised into a librarie. The library contains two classes `BLDCmotor` and `Endcoder`. `BLDCmotor` contains all the necessary FOC algorithm funcitons as well as PI controllers for the velocity and angle control.  `Encoder`  deals with the encoder interupt funcitons, calcualtes motor angle and velocity( using the [Mixed Time Frequency Method](https://github.com/askuric/Arduino-Mixed-Time-Frequency-Method)).
 
 ### Initialization
-The heart of the init is the constructor call:
+#### Motor initialisaiton:
+To intialise the motor you need to input the `pwm` pins, number of `pole pairs` and optionally driver `enable` pin.
 ```cpp
-BLDCMotor motor = BLDCMotor(9,10,11,&counter[ENCODER_1],A0,A1,11,2400);
-//BLDCMotorint(phA, phB, phC, long* counter, int encA, int encB , int pp, int cpr)
+//  BLDCMotor( int phA, int phB, int phC, int pp, int en)
+//  - phA, phB, phC - motor A,B,C phase pwm pins
+//  - pp            - pole pair number
+//  - enable pin    - (optional input)
+BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
 ```
-The first three arguments are pin numbers of them motor phases, either 9,10,11 or 6,5,3
-Fourth argument is a pointer to the encoder counter
-Fith and sixt argument are encoder pins channel A and channel B
-Seventh argument is number of Pole pairs of the motor
-And Eight argument is the cpr of the encoder
+#### Encoder intiialisation
+To initialise the encoder you need to provide the encoder `A` and `B` channel pins, encoder `CPR` and optionally `index` pin.
+
+```cpp
+//  Encoder(int encA, int encB , int cpr, int index)
+//  - encA, encB    - encoder A and B pins
+//  - ppm           - impulses per rotation 
+//  - index pin     - (optional input)
+Encoder encoder = Encoder(2, 3, 32768, 4);
+```
+
+### Parametrisation
+```cpp
+// encoder initialise hardware pins
+// Pullup::EXTERN - external pullup added
+// Pullup::INTERN - needs internal arduino pullup
+encoder.init(Pullup::EXTERN);
+```
+
+```cpp
+// interupt intitialisation
+// A callback and B callback
+attachInterrupt(digitalPinToInterrupt(encoder.pinA), []() {
+encoder.handleA();
+}, CHANGE);
+attachInterrupt(digitalPinToInterrupt(encoder.pinB), []() {
+encoder.handleB();
+}, CHANGE);
+```
 
 ### Usage in loop
 
