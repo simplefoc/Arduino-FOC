@@ -1,4 +1,4 @@
-# ArduinoFOC library 
+# Arduino FOC library 
 ### Arduino Field Oriented Control (FOC) for gimbal BLDC motors
 
 ![Library Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Compile/badge.svg)
@@ -68,7 +68,8 @@ The code is simple enough to be ran on Arudino Uno board.
 - Make sure you connect the common ground of the power supply and your Arduino
 ##### Motor
 - Motor phases `a`, `b` and `c` are connected directly to the driver outputs
-- Motor phases `a`,`b`,`c` and encoder channels `A` and `B` have to be oriented right for the algorightm to work. But don't worry about it too much. Connect it in initialy as you wish and then if it doesnt move reverse pahse `a` and `b` of the motor, that should be enogh.
+
+Motor phases `a`,`b`,`c` and encoder channels `A` and `B` have to be oriented right for the algorightm to work. But don't worry about it too much. Connect it in initialy as you wish and then if it doesnt move reverse pahse `a` and `b` of the motor, that should be enogh.
 
 
 ### HMBGC V2.2
@@ -76,19 +77,20 @@ To use HMBGC controller for vector control (FOC) you need to connect motor to on
 
 <p>
 	<img src="extras/Images/hmbgc_connection.png" height="">
-	<img src="extras/Images/setup1.jpg" height="300px">
+	<img src="extras/Images/setup1.jpg" height="400px">
 </p>
  
  
 #### Encoder
-- Since HMBGC doesn't have acces to the arduinos external interrupt pins `2` and `3` and additionally we only have acces to the analog pins, we need to read the encoder 
-- Optionally if your encoder has `index` signal you can connect it to any available pin, figure shows pin `4`.  
+Since HMBGC doesn't have acces to the arduinos external interrupt pins `2` and `3` and additionally we only have acces to the analog pins, we need to read the encoder using the software interrupt. To show the functionallity we provide one example of the HMBGC code (`HMBGC_example.ino`) using the [PciManager library](https://github.com/prampec/arduino-pcimanager).
+
+- Encoder channels `A` and `B` are connected to the pins `A0` and `A1`.
+- Optionally if your encoder has `index` signal you can connect it to any available pin, figure shows pin `A3`.  
 		- The librtary doesnt support the Index pin for now (version v1.1.0)
-- L6234 breakout board is connected to the arduino pins `9`,`10` and `11`. 
-	- Additionally you can connect the `enable` pin to the any digital pin of the arduino the picture shows pin `8` but this is optional. You can connect the driver enable directly to 5v. 
-- Motor is connected directly to the driver outputs
-- Make sure you connect the common ground of the power supply and your Arduino
- Motor phases `a`,`b`,`c` and encoder channels `A` and `B` have to be oriented right for the algorightm to work. But don't worry about it too much. Connect it in initialy as you wish and then if it doesnt move reverse pahse `a` and `b` of the motor, that should be enogh.
+#### Motor
+- Motor phases `a`,`b` and `c` are connected directly to the driver outputs
+
+Motor phases `a`,`b`,`c` and encoder channels `A` and `B` have to be oriented right for the algorightm to work. But don't worry about it too much. Connect it in initialy as you wish and then if it doesnt move reverse pahse `a` and `b` of the motor, that should be enogh.
 
 
 
