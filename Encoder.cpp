@@ -8,7 +8,7 @@
   - index pin     - (optional input)
 */
 
-Encoder::Encoder(int _encA, int _encB , float _cpr, int _index){
+Encoder::Encoder(int _encA, int _encB , float _ppr, int _index){
   
   // Encoder measurement structure init
   // hardware pins
@@ -17,7 +17,7 @@ Encoder::Encoder(int _encA, int _encB , float _cpr, int _index){
   // counter setup
   pulse_counter = 0;
   pulse_timestamp = 0;
-  cpr = _cpr;
+  cpr = 4.0*_ppr;
   A_active = 0;
   B_active = 0;
   I_active = 0;

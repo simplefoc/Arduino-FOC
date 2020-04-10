@@ -10,8 +10,8 @@
 
 //  BLDCMotor( phA, phB, phC, pole_pairs,  enable)
 BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
-//  Encoder(encA, encB , cpr, index)
-Encoder encoder = Encoder(2, 3, 32768, 4);
+//  Encoder(encA, encB , ppr, index)
+Encoder encoder = Encoder(2, 3, 8192, 4);
 
 // interrupt ruotine intialisation
 void doA(){encoder.handleA();}
