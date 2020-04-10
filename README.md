@@ -29,7 +29,7 @@ Proper low cost FOC supporting boards are very hard to find these days and even 
 
 <a href="https://www.infineon.com/cms/en/product/evaluation-boards/bldc_shield_tle9879/" >Infineon</a> | <a href="https://github.com/gouldpa/FOC-Arduino-Brushless">FOC-Arduino-Brushless</a>
 ------------ | -------------
-<img src="https://www.infineon.com/export/sites/default/_images/product/evaluation-boards/BLDC_Motor_Shild_with_TLE9879QXA40.jpg_1711722916.jpg" width="400px"> | <img src="https://hackster.imgix.net/uploads/attachments/998086/dev_kit_89eygMekks.jpg?auto=compress%2Cformat&w=1280&h=960&fit=max" width="400px">
+<img src="https://www.infineon.com/export/sites/default/_images/product/evaluation-boards/BLDC_Motor_Shild_with_TLE9879QXA40.jpg_1711722916.jpg" height="300px" width="400px">| <img src="https://hackster.imgix.net/uploads/attachments/998086/dev_kit_89eygMekks.jpg?auto=compress%2Cformat&w=1280&h=960&fit=max" width="400px">
 :x: Open Source | :heavy_check_mark: Open Source
 :heavy_check_mark:Simple to use | :x: Simple to use
 :heavy_check_mark:Low cost | :heavy_check_mark: Low cost
@@ -38,22 +38,60 @@ Proper low cost FOC supporting boards are very hard to find these days and even 
 
 
 ## All you need for this project is (an exaple in brackets):
- - Brushless motor - 3 pahse    (IPower GBM4198H-120T [Ebay](https://www.ebay.com/itm/iPower-Gimbal-Brushless-Motor-GBM4108H-120T-for-5N-7N-GH2-ILDC-Aerial-photo-FPV/252025852824?hash=item3aade95398:g:q94AAOSwPcVVo571:rk:2:pf:1&frcectupt=true))
+ - Brushless DC motor - 3 pahse    (IPower GBM4198H-120T [Ebay](https://www.ebay.com/itm/iPower-Gimbal-Brushless-Motor-GBM4108H-120T-for-5N-7N-GH2-ILDC-Aerial-photo-FPV/252025852824?hash=item3aade95398:g:q94AAOSwPcVVo571:rk:2:pf:1&frcectupt=true))
  - Encoder - ( Incremental 2400cpr [Ebay](https://www.ebay.com/itm/600P-R-Photoelectric-Incremental-Rotary-Encoder-5V-24V-AB-2-Phases-Shaft-6mm-New/173145939999?epid=19011022356&hash=item28504d601f:g:PZsAAOSwdx1aKQU-:rk:1:pf:1))
-- Arduino + BLDC motor driver
- 	- L6234 driver [Drotek](https://store-drotek.com/212-brushless-gimbal-controller-l6234.html), [Ebay](https://www.ebay.fr/itm/L6234-Breakout-Board-/153204519965)
+- Arduino + BLDC motor driver ( L6234 driver [Drotek](https://store-drotek.com/212-brushless-gimbal-controller-l6234.html), [Ebay](https://www.ebay.fr/itm/L6234-Breakout-Board-/153204519965))
 
 Alternatively the library supports the arduino based gimbal controllers such as:
-- HMBGC V2.2 [Ebay](https://www.ebay.com/itm/HMBGC-V2-0-3-Axle-Gimbal-Controller-Control-Plate-Board-Module-with-Sensor/351497840990?hash=item51d6e7695e:g:BAsAAOSw0QFXBxrZ:rk:1:pf:1)
+- HMBGC V2.2 ([Ebay](https://www.ebay.com/itm/HMBGC-V2-0-3-Axle-Gimbal-Controller-Control-Plate-Board-Module-with-Sensor/351497840990?hash=item51d6e7695e:g:BAsAAOSw0QFXBxrZ:rk:1:pf:1))
  
 # Using the library
-## Conneciton of encoder and motor
+## Conneciton of encoder and motor 
+
+### Arduino FOC Shield v1.1
+
+
+### Arduino UNO + L6234 breakout broad
+The code is simple enough to be ran on Arudino Uno board. 
 
 <p>
-	<img src="extras/Images/arduino_connection.png" height="400px">
-	<img src="extras/Images/connection.jpg" height="400px">
+ <img src="extras/Images/arduino_connection.png" height="">
+</p>  
+
+#### Encoder
+- Encoder channels `A` and `B` are connected to the Arduino's external intrrupt pins `2` and `3`. 
+- Optionally if your encoder has `index` signal you can connect it to any available pin, figure shows pin `4`.  
+	- The librtary doesnt support the Index pin for now (version v1.1.0)
+#### L6234 breakout board 
+- Connected to the arduino pins `9`,`10` and `11`. 
+- Additionally you can connect the `enable` pin to the any digital pin of the arduino the picture shows pin `8` but this is optional. You can connect the driver enable directly to 5v. 
+- Make sure you connect the common ground of the power supply and your Arduino
+##### Motor
+- Motor phases `a`, `b` and `c` are connected directly to the driver outputs
+- Motor phases `a`,`b`,`c` and encoder channels `A` and `B` have to be oriented right for the algorightm to work. But don't worry about it too much. Connect it in initialy as you wish and then if it doesnt move reverse pahse `a` and `b` of the motor, that should be enogh.
+
+
+### HMBGC V2.2
+To use HMBGC controller for vector control (FOC) you need to connect motor to one of the motor terminals and connect the Encoder. The shema of connection is shown on the figures above, I also took a (very bad) picture of my setup.
+
+<p>
+	<img src="extras/Images/hmbgc_connection.png" height="">
+	<img src="extras/Images/setup1.jpg" height="300px">
 </p>
-To use HMBGC controller for vector control (FOC) you need to connect motor to one of the motor terminals and connect the Encoder. The shema of connection is shown on the figures above, I also took a (very bad) picture of my setup. 
+ 
+ 
+#### Encoder
+- Since HMBGC doesn't have acces to the arduinos external interrupt pins `2` and `3` and additionally we only have acces to the analog pins, we need to read the encoder 
+- Optionally if your encoder has `index` signal you can connect it to any available pin, figure shows pin `4`.  
+		- The librtary doesnt support the Index pin for now (version v1.1.0)
+- L6234 breakout board is connected to the arduino pins `9`,`10` and `11`. 
+	- Additionally you can connect the `enable` pin to the any digital pin of the arduino the picture shows pin `8` but this is optional. You can connect the driver enable directly to 5v. 
+- Motor is connected directly to the driver outputs
+- Make sure you connect the common ground of the power supply and your Arduino
+ Motor phases `a`,`b`,`c` and encoder channels `A` and `B` have to be oriented right for the algorightm to work. But don't worry about it too much. Connect it in initialy as you wish and then if it doesnt move reverse pahse `a` and `b` of the motor, that should be enogh.
+
+
+
 
 ## The code
 The code is organised in two libraries, BLDCmotor.h and endcoder.h. BLDCmotor.h contains all the necessary FOC funciton implemented and encoder.h  deals with the encoder. I will make this better in future. :D
