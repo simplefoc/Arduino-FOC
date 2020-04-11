@@ -79,7 +79,7 @@ void loop() {
   // change direction each 1000 loop passes
   target_velocity *= (t >= 1000) ? -1 : 1; 
   // loop passes counter
-  t = (t > 1000) ? t+1 : 0;
+  t = (t >= 1000) ? 0 : t+1;
 
 
   // iterative function setting the outter loop target
@@ -91,7 +91,7 @@ void loop() {
 
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
-  motor_monitor();
+  //motor_monitor();
 }
 
 // utility function intended to be used with serial plotter to monitor motor variables
