@@ -1,4 +1,4 @@
-# Arduino Field Oriented Control (FOC) library
+# Arduino Simple Field Oriented Control (FOC) library 
 
 
 ![Library Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Compile/badge.svg)
@@ -12,6 +12,8 @@ Proper low cost FOC supporting boards are very hard to find these days and even 
 - Low current operation < 5A
 - Simple usage and scalability (Arduino)
  and demistify FOC control in a simple way. 
+
+For minimal version of the code more suitable for experimenting please visit the [minimal branch](https://github.com/askuric/Arduino-FOC/tree/minimal).
 
 For minimal version of the code more suitable for experimenting please visit the [minimal branch](https://github.com/askuric/Arduino-FOC/tree/minimal).
 
@@ -46,13 +48,13 @@ Alternatively the library supports the arduino based gimbal controllers such as:
 - HMBGC V2.2 ([Ebay](https://www.ebay.com/itm/HMBGC-V2-0-3-Axle-Gimbal-Controller-Control-Plate-Board-Module-with-Sensor/351497840990?hash=item51d6e7695e:g:BAsAAOSw0QFXBxrZ:rk:1:pf:1))
 
 
-## Arduino FOC Shield V1.2
+## Arduino Simple FOC Shield V1.2
 
 At this moment we are developing an open source version of Arduin shiled specifically for FOC motor control. 
 We already have prototypes of the board and we are in the testing phase. We will be coming out with the details very soon!
 
 ### Features
-- Plug and play capability with the Arduino FOC library
+- Plug and play capability with the Arduino Simple FOC library
 - Price in the range of \$20-\$40
 - Gerber files and BOM available Open Source
   
@@ -72,7 +74,7 @@ The code is simple enough to be run on Arudino Uno board.
 ### Encoder
 - Encoder channels `A` and `B` are connected to the Arduino's external intrrupt pins `2` and `3`. 
 - Optionally if your encoder has `index` signal you can connect it to any available pin, figure shows pin `4`.  
-		- The library doesnt support the Index pin for now (version v1.1.0)
+		- The library doesnt support the Index pin for now (version v1.0)
 ### L6234 breakout board 
 - Connected to the arduino pins `9`,`10` and `11`. 
 - Additionally you can connect the `enable` pin to the any digital pin of the arduino the picture shows pin `8` but this is optional. You can connect the driver enable directly to 5v. 
@@ -97,7 +99,7 @@ Since HMBGC doesn't have acces to the arduinos external interrupt pins `2` and `
 
 - Encoder channels `A` and `B` are connected to the pins `A0` and `A1`.
 - Optionally if your encoder has `index` signal you can connect it to any available pin, figure shows pin `A2`.  
-		- The library doesnt support the Index pin for now (version v1.1.0)
+		- The library doesnt support the Index pin for now (version v1.0)
 ### Motor
 - Motor phases `a`,`b` and `c` are connected directly to the driver outputs
 
@@ -106,7 +108,7 @@ Motor phases `a`,`b`,`c` and encoder channels `A` and `B` have to be oriented ri
 
 
 
-# Arduino FOC library code
+# Arduino Simple FOC library code
 The code is organised into a librarie. The library contains two classes `BLDCmotor` and `Endcoder`. `BLDCmotor` contains all the necessary FOC algorithm funcitons as well as PI controllers for the velocity and angle control.  `Encoder`  deals with the encoder interupt funcitons, calcualtes motor angle and velocity( using the [Mixed Time Frequency Method](https://github.com/askuric/Arduino-Mixed-Time-Frequency-Method)).
 
 ## Encoder setup
@@ -317,7 +319,7 @@ This function aligns encoder and motor zero positions and intialises FOC variabl
 
 ### Real-time execution `loop()`
 
-The real time execution of the Arduino FOC library is govenred by two funcitons `motor.loopFOC()` and `motor.move(float target)`.
+The real time execution of the Arduino Simple FOC library is govenred by two funcitons `motor.loopFOC()` and `motor.move(float target)`.
 ```cpp
 // iterative state calculation calculating angle
 // and setting FOC pahse voltage

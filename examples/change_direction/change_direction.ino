@@ -1,45 +1,39 @@
 #include <SimpleFOC.h>
-#include <PciManager.h>
-#include <PciListenerImp.h>
 
+// Only pins 2 and 3 are supported
+#define arduinoInt1 2             // Arduino UNO interrupt 0
+#define arduinoInt2 3             // Arduino UNO interrupt 1
 
 //  BLDCMotor( int phA, int phB, int phC, int pp, int en)
 //  - phA, phB, phC - motor A,B,C phase pwm pins
 //  - pp            - pole pair number
 //  - enable pin    - (optional input)
-BLDCMotor motor = BLDCMotor(9, 10, 11, 11);
+BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
 //  Encoder(int encA, int encB , int cpr, int index)
 //  - encA, encB    - encoder A and B pins
 //  - ppr           - impulses per rotation  (cpr=ppr*4)
 //  - index pin     - (optional input)
-Encoder encoder = Encoder(A1, A0, 600);
+Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, 4);
 // interrupt ruotine intialisation
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
-
-// encoder interrupt init
-PciListenerImp listenerA(encoder.pinA, doA);
-PciListenerImp listenerB(encoder.pinB, doB);
 
 void setup() {
   // debugging port
   Serial.begin(115200);
 
   // check if you need internal pullups
-  // Pullup::EXTERN - external pullup added  - dafault
+  // Pullup::EXTERN - external pullup added - dafault
   // Pullup::INTERN - needs internal arduino pullup
-  encoder.pullup = Pullup::INTERN;
+  encoder.pullup = Pullup::EXTERN;
+  
   // initialise encoder hardware
-  encoder.init();
-
-  // interrupt intitialisation
-  PciManager.registerListener(&listenerA);
-  PciManager.registerListener(&listenerB);
+  encoder.init(doA, doB);
 
   // set driver type
   //  DriverType::unipolar
   //  DriverType::bipolar    - default
-  motor.driver = DriverType::unipolar;
+  motor.driver = DriverType::bipolar;
 
   // power supply voltage
   // default 12V
@@ -59,17 +53,19 @@ void setup() {
 
   // link the motor to the sensor
   motor.linkEncoder(&encoder);
-
   // intialise motor
   motor.init();
   // align encoder and start FOC
   motor.initFOC();
 
+
   Serial.println("Motor ready.");
   delay(1000);
 }
 
-float velocity_sp;
+// target velocity variable
+float target_velocity = 3;
+int t = 0;
 
 void loop() {
   // iterative state calculation calculating angle
@@ -79,19 +75,23 @@ void loop() {
   // the best would be to be in ~10kHz range
   motor.loopFOC();
 
-  // 0.5 hertz sine weve
-  velocity_sp = sin( micros()*1e-6 *2*M_PI * 0.5 );
+  // direction chnaging logic
+  // change direction each 1000 loop passes
+  target_velocity *= (t >= 1000) ? -1 : 1; 
+  // loop passes counter
+  t = (t >= 1000) ? 0 : t+1;
+
 
   // iterative function setting the outter loop target
   // velocity, position or voltage
   // this funciton can be run at much lower frequency than loopFOC funciton
   // it can go as low as ~50Hz
-  motor.move(velocity_sp);
+  motor.move(target_velocity);
 
 
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
-  motor_monitor();
+  //motor_monitor();
 }
 
 // utility function intended to be used with serial plotter to monitor motor variables

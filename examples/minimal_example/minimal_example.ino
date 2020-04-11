@@ -1,4 +1,4 @@
-#include <ArduinoFOC.h>
+#include <SimpleFOC.h>
 
 // This example gives you a minimal code needed to run the FOC algorithm
 // All the configuration is set to defualt values
