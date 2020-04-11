@@ -73,7 +73,7 @@ The code is simple enough to be run on Arudino Uno board.
 ### Encoder
 - Encoder channels `A` and `B` are connected to the Arduino's external intrrupt pins `2` and `3`. 
 - Optionally if your encoder has `index` signal you can connect it to any available pin, figure shows pin `4`.  
-		- The library doesnt support the Index pin for now (version v1.1.0)
+		- The library doesnt support the Index pin for now (version v1.0)
 ### L6234 breakout board 
 - Connected to the arduino pins `9`,`10` and `11`. 
 - Additionally you can connect the `enable` pin to the any digital pin of the arduino the picture shows pin `8` but this is optional. You can connect the driver enable directly to 5v. 
@@ -98,7 +98,7 @@ Since HMBGC doesn't have acces to the arduinos external interrupt pins `2` and `
 
 - Encoder channels `A` and `B` are connected to the pins `A0` and `A1`.
 - Optionally if your encoder has `index` signal you can connect it to any available pin, figure shows pin `A2`.  
-		- The library doesnt support the Index pin for now (version v1.1.0)
+		- The library doesnt support the Index pin for now (version v1.0)
 ### Motor
 - Motor phases `a`,`b` and `c` are connected directly to the driver outputs
 
