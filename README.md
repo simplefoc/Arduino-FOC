@@ -13,6 +13,7 @@ Proper low cost FOC supporting boards are very hard to find these days and even 
 - Simple usage and scalability (Arduino)
  and demistify FOC control in a simple way. 
 
+For minimal version of the code more suitable for experimenting please visit the [minimal branch](https://github.com/askuric/Arduino-FOC/tree/minimal).
 
 #### The closest you can get to FOC support and low cost (I was able to find) is:
 
