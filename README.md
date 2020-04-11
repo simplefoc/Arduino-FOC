@@ -21,16 +21,16 @@ Proper low cost FOC supporting boards are very hard to find these days and even 
 <img src="https://static1.squarespace.com/static/58aff26de4fcb53b5efd2f02/t/5c2c766921c67c143049cbd3/1546417803031/?format=1200w" width="400px"> | <img src="http://i3.ytimg.com/vi/g2BHEdvW9bU/maxresdefault.jpg" width="400px">
 :heavy_check_mark: Open Source | :x: Open Source
 :heavy_check_mark:Simple to use | :heavy_check_mark: Simple to use
-:x: Low cost | :x: Low cost
-:x: Low power | :heavy_check_mark: Low cost
+:x: Low cost ($100) | :x: Low cost ($100)
+:x: Low power (>50A) | :heavy_check_mark: Low power 
 
 <a href="https://www.infineon.com/cms/en/product/evaluation-boards/bldc_shield_tle9879/" >Infineon</a> | <a href="https://github.com/gouldpa/FOC-Arduino-Brushless">FOC-Arduino-Brushless</a>
 ------------ | -------------
 <img src="https://www.infineon.com/export/sites/default/_images/product/evaluation-boards/BLDC_Motor_Shild_with_TLE9879QXA40.jpg_1711722916.jpg" height="300px" width="400px">| <img src="https://hackster.imgix.net/uploads/attachments/998086/dev_kit_89eygMekks.jpg?auto=compress%2Cformat&w=1280&h=960&fit=max" width="400px">
 :x: Open Source | :heavy_check_mark: Open Source
 :heavy_check_mark:Simple to use | :x: Simple to use
-:heavy_check_mark:Low cost | :heavy_check_mark: Low cost
-:heavy_check_mark:  Low power | :heavy_check_mark: Low cost
+:heavy_check_mark:Low cost ($40) | :heavy_check_mark: Low cost
+:heavy_check_mark:  Low power | :heavy_check_mark: Low power
 
 
 
@@ -43,15 +43,20 @@ Proper low cost FOC supporting boards are very hard to find these days and even 
 
 Alternatively the library supports the arduino based gimbal controllers such as:
 - HMBGC V2.2 ([Ebay](https://www.ebay.com/itm/HMBGC-V2-0-3-Axle-Gimbal-Controller-Control-Plate-Board-Module-with-Sensor/351497840990?hash=item51d6e7695e:g:BAsAAOSw0QFXBxrZ:rk:1:pf:1))
- 
+
 
 ## Arduino FOC Shield V1.2
 
 At this moment we are developing an open source version of Arduin shiled specifically for FOC motor control. 
 We already have prototypes of the board and we are in the testing phase. We will be coming out with the details very soon!
-***Let us know if you are interested!***
 
-You can explore the [3D model of the board](extras/ArduinoFOCShieldV12.pdf)
+### Features
+- Plug and play capability with the Arduino FOC library
+- Price in the range of \$20-\$40
+- Gerber files and BOM available Open Source
+  
+***Let me know if you are interested! antun.skuric@outlook.com***
+You can explore the [3D model of the board in the PDF form](extras/ArduinoFOCShieldV12.pdf).
 
 <img src="extras/Images/AFSV11_side.png" height="300px">  <img src="extras/Images/AFSV11_top.png" height="200px">   <img src="extras/Images/AFSV11_bottom.png" height="200px">
 
@@ -149,7 +154,7 @@ void setup(){
 }
 ```
 
-To explore better the encoder algorithm we provide an example `encoder_example.ino`.
+To explore better the encoder algorithm an example is provided `encoder_example.ino`.
 
 ## Motor setup
 To intialise the motor you need to input the `pwm` pins, number of `pole pairs` and optionally driver `enable` pin.
@@ -271,6 +276,35 @@ Additionally you can configure the `velocity_limit` value of the controller. Thi
 
 Finally, each application is a bit different and the chances are you will have to tune the controller values a bit to reach desired behaviour.
 
+
+### Ultra slow velocity control loop
+This control loop allows you to spin your BLDC motor with desired velocity as well as the [velocity loop](#velocity-control-loop) but it is intended for very smooth operation in very low velocityes (< 0.1 rad/s).  This mode is enabled by:
+```cpp
+// velocity ultra slow control loop
+motor.controller = ControlType::velocity_ultra_slow;
+```
+
+<img src="extras/Images/velocity_ultraslow_loop.png" >
+
+You can test this algorithm by running the example `velocity_ultrasloaw_control_serial.ino` .
+This type of the velocity control is nothing more but motor angle control. It works particularly well for the purposes of very slow movements because regular velocity calculation techniques are not vel suited for this application and regular [velocity control loop](#velocity-control-loop) would not work well. 
+The behavior is achieved by integrating the user set target velocity $\textsf{v}_d$ to get the necessary angle $\textsf{a}_d$. And then controlling the motor angle $\textsf{a}$ with high-gain PI controller. This controller reads the motor angle $\textsf{a}$ and sets the $\textsf{u}_q$ voltage to the motor in a such maner that it closely follows the target angle $\textsf{a}_d$, to achieve the velocity profile $\textsf{v}_d$, set by the user. 
+#### PI controller parameters
+To change the parameters of your PI controller to reach desired behaiour you can change `motor.PI_velocity` structure:
+```cpp
+// velocity PI controller parameters
+  // default K=120.0 Ti = 100.0
+motor.PI_velocity_ultra_slow.K = 120;
+motor.PI_velocity_ultra_slow.Ti = 100;
+motor.PI_velocity_ultra_slow.u_limit = 12;
+```
+The parameters of the PI controller are proportional gain `K`, integral time constant `Ti` and voltage limit `u_limit` which is by default set to the `power_supply_voltage`. 
+- The `u_limit` parameter is intended if some reason you wish to limit the voltage that can be sent to your motor.  
+- In general by raising the proportional constant `K`  your motor controller will be more reactive, but too much will make it unstable. 
+- The same goes for integral time constant `Ti` the smaller it is the faster motors reaction to disturbance will be, but too small value will make it unstable. By defaualt the integral time constant `Ti` is set  `100s`. Which means that it is extreamply slow, meaning that it is not effecting the behvior of the controlle, making it basically a P controller.
+
+From the PI controller parameters you can see that the values are much higher than in the [velocity control loop](#velocity-control-loop). The reason is because the angle control loop is not the main loop and we need it to follow the profile as good as possible as fast as possible. Therefore we need much higher gain than before.
+
 ## FOC routine 
 ### Intialisation - `setup()`
 After the motor and encoder are intialised and the driver and control loops are configured you intialise the FOC algorithm. 
@@ -311,7 +345,7 @@ It receives one parameter `BLDCMotor::move(float target)` which is current user 
 - If the user runs the [voltage loop](#voltage-control-loop), `move` funciton will interpret the `target` parameter as voltage $\textbf{u}_q$.
 
 
-> At this point because we are goriented to simplicity we did not implement synchornious version of this code. Uing timer interrupt. The main reason for the moment is that Arduino UNO doesn't have enough timers to run it. 
+> At this point because we are oriented to simplicity we did not implement synchornious version of this code. Uing timer interrupt. The main reason for the moment is that Arduino UNO doesn't have enough timers to run it. 
 > *But in future we are planning to include this functionality.*
 
 ## Examples
@@ -398,9 +432,15 @@ class Encoder{
 
 
 # Future Work Roadmap
-- [ ] Encoder index proper implementation
-- [ ] Timer interrupt execution rather than in the `loop()`
+#### Library maintenance
 - [ ] Proper introduction of the **Arudino FOC Shield V1.2**
 - [ ] Make the library accesible in the Arduino Library Manager 
-- [ ] Publish a video utilising the library and the samples 
+- [ ] Publish a video utilising the library and the samples  
+- [ ] Make minimal version of the arduino code - all in one arduino file
+
+#### Code developement
+- [ ] Encoder index proper implementation
+- [ ] Enable more dirver types 
+- [ ] Timer interrupt execution rather than in the `loop()`
+- [ ] Make support for magnetic encoder AS5048 and similar
 
