@@ -1,12 +1,8 @@
-#include <ArduinoFOC.h>
+#include "ArduinoFOC.h"
 
 // Only pins 2 and 3 are supported
 #define arduinoInt1 2             // Arduino UNO interrupt 0
 #define arduinoInt2 3             // Arduino UNO interrupt 1
-
-// velocity set point variable
-float target_velocity = 0;
-
 
 //  BLDCMotor( int phA, int phB, int phC, int pp, int en)
 //  - phA, phB, phC - motor A,B,C phase pwm pins
@@ -27,7 +23,7 @@ void setup() {
   Serial.begin(115200);
 
   // check if you need internal pullups
-  // Pullup::EXTERN - external pullup added  - dafault
+  // Pullup::EXTERN - external pullup added - dafault
   // Pullup::INTERN - needs internal arduino pullup
   encoder.pullup = Pullup::EXTERN;
   
@@ -48,25 +44,28 @@ void setup() {
   // ControlType::velocity
   // ControlType::velocity_ultra_slow
   // ControlType::angle
-  motor.controller = ControlType::velocity_ultra_slow;
+  motor.controller = ControlType::velocity;
 
   // velocity PI controller parameters
-  // default K=120.0 Ti = 100.0
-  motor.PI_velocity_ultra_slow.K = 120;
-  motor.PI_velocity_ultra_slow.Ti = 100;
+  // default K=1.0 Ti = 0.003
+  motor.PI_velocity.K = 1;
+  motor.PI_velocity.Ti = 0.003;
 
   // link the motor to the sensor
   motor.linkEncoder(&encoder);
-
   // intialise motor
   motor.init();
   // align encoder and start FOC
   motor.initFOC();
 
+
   Serial.println("Motor ready.");
-  Serial.println("Set the target velocity using serial terminal:");
   delay(1000);
 }
+
+// target velocity variable
+float target_velocity = 3;
+int t = 0;
 
 void loop() {
   // iterative state calculation calculating angle
@@ -75,6 +74,13 @@ void loop() {
   // in arduino loop it should have ~1kHz
   // the best would be to be in ~10kHz range
   motor.loopFOC();
+
+  // direction chnaging logic
+  // change direction each 1000 loop passes
+  target_velocity *= (t >= 1000) ? -1 : 1; 
+  // loop passes counter
+  t = (t >= 1000) ? 0 : t+1;
+
 
   // iterative function setting the outter loop target
   // velocity, position or voltage
@@ -85,7 +91,7 @@ void loop() {
 
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
-  // motor_monitor();
+  //motor_monitor();
 }
 
 // utility function intended to be used with serial plotter to monitor motor variables
@@ -115,23 +121,3 @@ void motor_monitor() {
   }
 }
 
-// Serial communication callback function
-// gets the target value from the user
-void serialEvent() {
-  // a string to hold incoming data
-  static String inputString; 
-  while (Serial.available()) {
-    // get the new byte:
-    char inChar = (char)Serial.read();
-    // add it to the inputString:
-    inputString += inChar;
-    // if the incoming character is a newline
-    // end of input
-    if (inChar == '\n') {
-      target_velocity = inputString.toFloat();
-      Serial.print("Tagret velocity: ");
-      Serial.println(target_velocity);
-      inputString = "";
-    }
-  }
-}
