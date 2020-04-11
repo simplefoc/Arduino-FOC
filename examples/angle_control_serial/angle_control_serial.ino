@@ -1,4 +1,4 @@
-#include <ArduinoFOC.h>
+#include <SimpleFOC.h>
 
 // Only pins 2 and 3 are supported
 #define arduinoInt1 2             // Arduino UNO interrupt 0
