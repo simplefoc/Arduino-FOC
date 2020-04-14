@@ -37,8 +37,8 @@ enum ControlType{
 
 // driver type configuration enum
 enum DriverType{
-  bipolar,    // L6234
-  unipolar    // HMBGC
+  full_bridge,    
+  half_bridge    // HMBGC & L6234
 };
 
 // P/PI controller strucutre
@@ -107,6 +107,7 @@ class BLDCMotor
     // encoder link
     Encoder* encoder;
   	
+    float Ua,Ub,Uc;
 
   private:
     //Encoder alignment to electrical 0 angle
@@ -125,8 +126,6 @@ class BLDCMotor
     /** FOC methods */
     //Method using FOC to set Uq to the motor at the optimal angle
     void setPhaseVoltage(double Uq, double angle_el);
-    void setPhaseVoltageUnipolar(double Uq, double angle_el);
-    void setPhaseVoltageBipolar(double Uq, double angle_el);
     
     /** Utility funcitons */
     //normalizing radian angle to [0,2PI]
@@ -139,7 +138,6 @@ class BLDCMotor
     float velocityUltraSlowPI(float ek);
     float positionP(float ek);
     
-    float Ua,Ub,Uc;
     float	Ualpha,Ubeta;
 };
 
