@@ -87,6 +87,7 @@ void setup() {
 
 
   Serial.println("Motor ready.");
+  Serial.println("Input the new target value:");
   delay(1000);
 }
 
