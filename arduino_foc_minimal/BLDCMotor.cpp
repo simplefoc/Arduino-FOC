@@ -49,6 +49,11 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   
   // driver deafault type
   driver = DriverType::half_bridge;
+
+
+  // electric angle og the zero angle
+  // electric angle of the index for encoder
+  zero_electric_angle = 0;
 }
 
 // init hardware pins
@@ -122,14 +127,32 @@ void BLDCMotor::linkEncoder(Encoder* enc) {
 	Encoder alignment to electrical 0 angle
 */
 void BLDCMotor::alignEncoder() {
-  //setPhaseVoltage(12, M_PI/2);
   setPwm(pwmA,12);
   setPwm(pwmB,0);
   setPwm(pwmC,0);
-  delay(1500);
+  delay(1000);
   encoder->setCounterZero();
   delay(500);
-  setPhaseVoltage(0, 0);
+  setPhaseVoltage(0,0);
+  delay(200);
+  indexSearch();
+  delay(500);
+}
+/*
+	Encoder alignment to electrical 0 angle
+*/
+void BLDCMotor::indexSearch() {
+  // if no index return
+  if(!encoder->hasIndex()) return;
+  // search the index with small speed
+  while(!encoder->indexFound() && shaft_angle < 2 * M_PI){
+    voltage_q = 3;
+    loopFOC();    
+  }
+  setPhaseVoltage(0,0);
+
+  encoder->setIndexZero();  
+  zero_electric_angle = electricAngle(encoder->getIndexAngle());
 }
 
 /**
@@ -203,7 +226,7 @@ void BLDCMotor::move(float target) {
 void BLDCMotor::setPhaseVoltage(double Uq, double angle_el) {
   
   // Uq sign compensation
-  float angle = angle_el + M_PI/2.0;
+  float angle = angle_el + M_PI/2.0 + zero_electric_angle;
   // Uq sign compensation
   angle = normalizeAngle(Uq > 0 ? angle :  angle + M_PI );
   // Park transform

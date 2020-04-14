@@ -112,6 +112,7 @@ class BLDCMotor
   private:
     //Encoder alignment to electrical 0 angle
     void alignEncoder();
+    void indexSearch();
     /** State calculation methods */
     //Shaft angle calculation
     float shaftAngle();
@@ -139,6 +140,7 @@ class BLDCMotor
     float positionP(float ek);
     
     float	Ualpha,Ubeta;
+    float zero_electric_angle;
 };
 
 

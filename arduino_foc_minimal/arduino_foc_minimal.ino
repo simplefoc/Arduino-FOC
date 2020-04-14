@@ -19,9 +19,14 @@ Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, 4);
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 
-void setup() {
+void setup() { 
   // debugging port
   Serial.begin(115200);
+
+  // check if you need internal pullups
+  //  Quadrature::ENABLE - CPR = 4xPPR  - default
+  //  Quadrature::DISABLE - CPR = PPR
+  encoder.quadrature = Quadrature::ENABLE;
 
   // check if you need internal pullups
   // Pullup::EXTERN - external pullup added - dafault
@@ -51,7 +56,7 @@ void setup() {
   if(motor.controller == ControlType::velocity){
     // velocity PI controller parameters
     // default K=1.0 Ti = 0.003
-    motor.PI_velocity.K = 0.5;
+    motor.PI_velocity.K = 0.1;
     motor.PI_velocity.Ti = 0.015;
     motor.PI_velocity.u_limit = 12;
   }else if(motor.controller == ControlType::angle){
@@ -67,14 +72,14 @@ void setup() {
     // change the velocity PI controller 
     // parameters as well to get better performance
     // default K=1.0 Ti = 0.003
-    motor.PI_velocity.K = 0.1;
-    motor.PI_velocity.Ti = 0.015;
+    motor.PI_velocity.K = 0.4;
+    motor.PI_velocity.Ti = 0.01;
     motor.PI_velocity.u_limit = 12; 
   }else if(motor.controller == ControlType::velocity_ultra_slow){
     // ultra slow velocity PI controller parameters
     // default K=120.0 Ti = 100
-    motor.PI_velocity_ultra_slow.K = 120;
-    motor.PI_velocity_ultra_slow.Ti = 0.01;
+    motor.PI_velocity_ultra_slow.K = 100;
+    motor.PI_velocity_ultra_slow.Ti = 1;
     motor.PI_velocity_ultra_slow.u_limit = 12;
   }
 
@@ -104,10 +109,10 @@ void loop() {
   motor.loopFOC();
 
   // direction chnaging logic (comment out if you dont need it)
-  // // change direction each 1000 loop passes
-  // target *= (t >= 1000) ? -1 : 1; 
-  // // loop passes counter
-  // t = (t >= 1000) ? 0 : t+1;
+  // change direction each 1000 loop passes
+  target *= (t >= 1000) ? -1 : 1; 
+  // loop passes counter
+  t = (t >= 1000) ? 0 : t+1;
 
 
   // iterative function setting the outter loop target
