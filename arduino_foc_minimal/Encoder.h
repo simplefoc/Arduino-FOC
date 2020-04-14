@@ -72,4 +72,7 @@ class Encoder{
 };
 
 
+long _micros();
+
+
 #endif

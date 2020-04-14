@@ -9,12 +9,12 @@
 //  - phA, phB, phC - motor A,B,C phase pwm pins
 //  - pp            - pole pair number
 //  - enable pin    - (optional input)
-BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
+BLDCMotor motor = BLDCMotor(9, 10, 6, 11, 8);
 //  Encoder(int encA, int encB , int cpr, int index)
 //  - encA, encB    - encoder A and B pins
 //  - ppr           - impulses per rotation  (cpr=ppr*4)
 //  - index pin     - (optional input)
-Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, 4);
+Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192);
 // interrupt ruotine intialisation
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
@@ -56,8 +56,8 @@ void setup() {
   if(motor.controller == ControlType::velocity){
     // velocity PI controller parameters
     // default K=1.0 Ti = 0.003
-    motor.PI_velocity.K = 0.1;
-    motor.PI_velocity.Ti = 0.015;
+    motor.PI_velocity.K = 0.5;
+    motor.PI_velocity.Ti = 0.007;
     motor.PI_velocity.u_limit = 12;
   }else if(motor.controller == ControlType::angle){
     // contooler settings for angle 
@@ -72,7 +72,7 @@ void setup() {
     // change the velocity PI controller 
     // parameters as well to get better performance
     // default K=1.0 Ti = 0.003
-    motor.PI_velocity.K = 0.4;
+    motor.PI_velocity.K = 0.1;
     motor.PI_velocity.Ti = 0.01;
     motor.PI_velocity.u_limit = 12; 
   }else if(motor.controller == ControlType::velocity_ultra_slow){
@@ -108,11 +108,11 @@ void loop() {
   // the best would be to be in ~10kHz range
   motor.loopFOC();
 
-  // direction chnaging logic (comment out if you dont need it)
-  // change direction each 1000 loop passes
-  target *= (t >= 1000) ? -1 : 1; 
-  // loop passes counter
-  t = (t >= 1000) ? 0 : t+1;
+  // // direction chnaging logic (comment out if you dont need it)
+  // // change direction each 1000 loop passes
+  // target *= (t >= 1000) ? -1 : 1; 
+  // // loop passes counter
+  // t = (t >= 1000) ? 0 : t+1;
 
 
   // iterative function setting the outter loop target

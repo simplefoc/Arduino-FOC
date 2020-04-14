@@ -27,7 +27,7 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   // PI contoroller constant
   PI_velocity.K = DEF_PI_VEL_K;
   PI_velocity.Ti = DEF_PI_VEL_TI;
-  PI_velocity.timestamp = micros();
+  PI_velocity.timestamp = _micros();
   PI_velocity.u_limit = -1;
   PI_velocity.uk_1 = 0;
   PI_velocity.ek_1 = 0;
@@ -36,7 +36,7 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   // PI contoroller
   PI_velocity_ultra_slow.K = DEF_PI_VEL_US_K;
   PI_velocity_ultra_slow.Ti = DEF_PI_VEL_US_TI;
-  PI_velocity_ultra_slow.timestamp = micros();
+  PI_velocity_ultra_slow.timestamp = _micros();
   PI_velocity_ultra_slow.u_limit = -1;
   PI_velocity_ultra_slow.uk_1 = 0;
   PI_velocity_ultra_slow.ek_1 = 0;
@@ -317,7 +317,7 @@ double BLDCMotor::normalizeAngle(double angle)
 	Motor control functions
 */
 float BLDCMotor::velocityPI(float ek) {
-  float Ts = (micros() - PI_velocity.timestamp) * 1e-6;
+  float Ts = (_micros() - PI_velocity.timestamp) * 1e-6;
 
   // u(s) = Kr(1 + 1/(Ti.s))
   float uk = PI_velocity.uk_1;
@@ -326,13 +326,13 @@ float BLDCMotor::velocityPI(float ek) {
 
   PI_velocity.uk_1 = uk;
   PI_velocity.ek_1 = ek;
-  PI_velocity.timestamp = micros();
+  PI_velocity.timestamp = _micros();
   return uk;
 }
 
 // PI controller for ultra slow velocity control
 float BLDCMotor::velocityUltraSlowPI(float vel) {
-  float Ts = (micros() - PI_velocity_ultra_slow.timestamp) * 1e-6;
+  float Ts = (_micros() - PI_velocity_ultra_slow.timestamp) * 1e-6;
   static float angle;
 
   angle += vel * Ts;
@@ -345,7 +345,7 @@ float BLDCMotor::velocityUltraSlowPI(float vel) {
 
   PI_velocity_ultra_slow.uk_1 = uk;
   PI_velocity_ultra_slow.ek_1 = ek;
-  PI_velocity_ultra_slow.timestamp = micros();
+  PI_velocity_ultra_slow.timestamp = _micros();
   return uk;
 }
 // P controller for position control loop
@@ -371,8 +371,4 @@ void setPwmFrequency(int pin) {
     TCCR2B = ((TCCR2B & 0b11111000) | 0x01);
   }
 }
-
-
-
-
 
