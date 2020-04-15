@@ -9,7 +9,7 @@
 //  - phA, phB, phC - motor A,B,C phase pwm pins
 //  - pp            - pole pair number
 //  - enable pin    - (optional input)
-BLDCMotor motor = BLDCMotor(9, 10, 6, 11, 8);
+BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
 //  Encoder(int encA, int encB , int cpr, int index)
 //  - encA, encB    - encoder A and B pins
 //  - ppr           - impulses per rotation  (cpr=ppr*4)
@@ -56,9 +56,9 @@ void setup() {
   if(motor.controller == ControlType::velocity){
     // velocity PI controller parameters
     // default K=1.0 Ti = 0.003
-    motor.PI_velocity.K = 0.5;
+    motor.PI_velocity.K = 0.9;
     motor.PI_velocity.Ti = 0.007;
-    motor.PI_velocity.u_limit = 12;
+    motor.PI_velocity.u_limit = 7;
   }else if(motor.controller == ControlType::angle){
     // contooler settings for angle 
     // angle P controller
@@ -124,7 +124,7 @@ void loop() {
 
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
-  // motor_monitor();
+  //motor_monitor();
 }
 
 // utility function intended to be used with serial plotter to monitor motor variables

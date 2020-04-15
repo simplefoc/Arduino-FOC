@@ -215,5 +215,5 @@ void Encoder::init(void (*doA)(), void(*doB)()){
 
 
 long _micros(){
-  return micros()/64.0;
+  return micros();
 }
