@@ -37,9 +37,9 @@ void setup() {
   PciManager.registerListener(&listenerB);
 
   // set driver type
-  //  DriverType::unipolar
-  //  DriverType::bipolar    - default
-  motor.driver = DriverType::unipolar;
+  //  DriverType::full_bridge
+  //  DriverType::half_bridge    - default
+  motor.driver = DriverType::half_bridge
 
   // power supply voltage
   // default 12V

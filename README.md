@@ -3,7 +3,7 @@
 
 ![Library Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Compile/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
+[![arduino-library-badge](https://www.ardu-badge.com/badge/Simple%20FOC.svg?)](https://www.ardu-badge.com/badge/Simple%20FOC.svg)
 
 Proper low cost FOC supporting boards are very hard to find these days and even may not exist. The reason may be that the hobby community has not yet dug into it properly. Therefore this is the attempt to demistify the Field Oriented Control (FOC) algorithm and make a robust but simple implementation for usage with Arduino hadrware.
 
@@ -12,7 +12,6 @@ Proper low cost FOC supporting boards are very hard to find these days and even 
 - Low current operation < 5A
 - Simple usage and scalability (Arduino)
  and demistify FOC control in a simple way. 
-
 
 For minimal version of the code more suitable for experimenting please visit the [minimal branch](https://github.com/askuric/Arduino-FOC/tree/minimal).
 
@@ -28,7 +27,7 @@ For minimal version of the code more suitable for experimenting please visit the
 
 <a href="https://www.infineon.com/cms/en/product/evaluation-boards/bldc_shield_tle9879/" >Infineon</a> | <a href="https://github.com/gouldpa/FOC-Arduino-Brushless">FOC-Arduino-Brushless</a>
 ------------ | -------------
-<img src="https://www.infineon.com/export/sites/default/_images/product/evaluation-boards/BLDC_Motor_Shild_with_TLE9879QXA40.jpg_1711722916.jpg" height="300px" width="400px">| <img src="https://hackster.imgix.net/uploads/attachments/998086/dev_kit_89eygMekks.jpg?auto=compress%2Cformat&w=1280&h=960&fit=max" width="400px">
+<img src="https://www.infineon.com/export/sites/default/_images/product/evaluation-boards/BLDC_Motor_Shild_with_TLE9879QXA40.jpg_1711722916.jpg" width="400px">| <img src="https://hackster.imgix.net/uploads/attachments/998086/dev_kit_89eygMekks.jpg?auto=compress%2Cformat&w=1280&h=960&fit=max" width="400px">
 :x: Open Source | :heavy_check_mark: Open Source
 :heavy_check_mark:Simple to use | :x: Simple to use
 :heavy_check_mark:Low cost ($40) | :heavy_check_mark: Low cost
@@ -182,12 +181,12 @@ First thing you can configure is your `power_supply_voltage` value. The default 
 // power supply voltage
 motor.power_supply_voltage = 12;
 ```
-You can also change driver type by changing the value of the variable `motor.driver`. It tells the algorithm to generate unipolar of bipolar FOC voltages. This basically means if your BLDC driver can only output voltages in range `[0,power_supply_voltage]` your driver is `DriverType::unipolar` and if it can output voltage in range `[-power_supply_voltage, power_supply_voltage]` than you driver is `DriverType::bipolar` what is case in most of the drivers and what is default value as well.
+You can also change driver type by changing the value of the variable `motor.driver`. It tells the algorithm to generate unipolar of bipolar FOC voltages. This basically means if your BLDC driver can only output voltages in range `[0,power_supply_voltage]` your driver is `DriverType::half_bridge` and if it can output voltage in range `[-power_supply_voltage, power_supply_voltage]` than you driver is `DriverType::full_bridge` what is case in most of the drivers and what is default value as well.
 ```cpp
 // set driver type
-//  DriverType::unipolar   // HMBGC
-//  DriverType::bipolar    // L6234 (default)
-motor.driver = DriverType::bipolar;
+//  DriverType::full_bridge   // HMBGC
+//  DriverType::half_bridge    // L6234 (default)
+motor.driver = DriverType::half_bridge;
 ```
 ## Control loop setup
 First parameter you can change is the variable you want to control. You set it by changing the `motor.controller` variable. If you want to control the motor angle you will set the `controller` to `ControlType::angle`, if youy seek the DC motor behavior behaviour by controlling the voltage use `ControlType::voltage`, if you wish to control motor angular velocity `ControlType::velocity`. If you wish to control velocities which are very very slow, typically around ~0.01 rad/s you can use the `ControlType::velocity_ultra_slow` controller.
@@ -327,7 +326,7 @@ The real time execution of the Arduino Simple FOC library is govenred by two fun
 // the best would be to be in ~10kHz range
 motor.loopFOC();
 ```
-The funciton `loopFOC()` gets the current motor angle from the encoder, turns in into the electrical angle and computes Clarke transfrom to set the desired $U_q$ voltage to the motor. Basically it implements the funcitonality of the [velocity control loop](#voltage-control-loop).
+The funciton `loopFOC()` gets the current motor angle from the encoder, turns in into the electrical angle and computes Clarke transfrom to set the desired $U_q$ voltage to the motor. Basically it implements the funcitonality of the [voltage control loop](#voltage-control-loop).
 - The faster you can run this funciton the better 
 - In the empty arduino loop it runs at ~1kHz but idealy it would be around ~10kHz
 

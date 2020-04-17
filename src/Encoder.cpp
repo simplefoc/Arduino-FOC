@@ -100,13 +100,14 @@ float Encoder::getVelocity(){
 // intialise counter to zero
 void Encoder::setCounterZero(){
   pulse_counter = 0;
+  pulse_timestamp = micros();
 }
 
 
 void Encoder::init(void (*doA)(), void(*doB)()){
   
   // Encoder - check if pullup needed for your encoder
-  if(pullup == INTERN){
+  if(pullup == Pullup::INTERN){
     pinMode(pinA, INPUT_PULLUP);
     pinMode(pinB, INPUT_PULLUP);
   }else{

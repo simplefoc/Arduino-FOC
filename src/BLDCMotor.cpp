@@ -29,6 +29,8 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   PI_velocity.Ti = DEF_PI_VEL_TI;
   PI_velocity.timestamp = micros();
   PI_velocity.u_limit = -1;
+  PI_velocity.uk_1 = 0;
+  PI_velocity.ek_1 = 0;
 
   // Ultra slow velocity
   // PI contoroller
@@ -36,6 +38,8 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   PI_velocity_ultra_slow.Ti = DEF_PI_VEL_US_TI;
   PI_velocity_ultra_slow.timestamp = micros();
   PI_velocity_ultra_slow.u_limit = -1;
+  PI_velocity_ultra_slow.uk_1 = 0;
+  PI_velocity_ultra_slow.ek_1 = 0;
 
   // position loop config
   // P controller constant
@@ -44,7 +48,7 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   P_angle.velocity_limit = DEF_P_ANGLE_VEL_LIM;
   
   // driver deafault type
-  driver = DriverType::bipolar;
+  driver = DriverType::half_bridge;
 }
 
 // init hardware pins
@@ -118,11 +122,13 @@ void BLDCMotor::linkEncoder(Encoder* enc) {
 	Encoder alignment to electrical 0 angle
 */
 void BLDCMotor::alignEncoder() {
-  setPhaseVoltage(12, -M_PI/2);
-  delay(1000);
+  //setPhaseVoltage(12, M_PI/2);
+  setPwm(pwmA,12);
+  setPwm(pwmB,0);
+  setPwm(pwmC,0);
+  delay(1500);
   encoder->setCounterZero();
-
-  
+  delay(500);
   setPhaseVoltage(0, 0);
 }
 
@@ -192,83 +198,52 @@ void BLDCMotor::move(float target) {
 	FOC methods
 */
 /*
-	Method using FOC to set Uq to the motor at the optimal angle
-  - for unipolar drivers - only positive values
-*/
-void BLDCMotor::setPhaseVoltageUnipolar(double Uq, double angle_el) {
-
-  // Uq sign compensation
-  float angle = Uq > 0 ? angle_el : normalizeAngle( angle_el + M_PI );
-  // Park transform
-  Ualpha = abs(Uq) * cos(angle);
-  Ubeta = abs(Uq) * sin(angle);
-
-  // determine the segment I, II, III
-  if ((angle >= 0) && (angle <= _120_D2R)) {
-    // section I
-    Ua = Ualpha + _1_SQRT3 * Ubeta;
-    Ub = _2_SQRT3 * Ubeta;
-    Uc = 0;
-
-  } else if ((angle > _120_D2R) && (angle <= (2 * _120_D2R))) {
-    // section III
-    Ua = 0;
-    Ub = _1_SQRT3 * Ubeta - Ualpha;
-    Uc = -_1_SQRT3 * Ubeta - Ualpha;
-
-  } else if ((angle > (2 * _120_D2R)) && (angle <= (3 * _120_D2R))) {
-    // section II
-    Ua = Ualpha - _1_SQRT3 * Ubeta;
-    Ub = 0;
-    Uc = - _2_SQRT3 * Ubeta;
-  }
-
-  // set phase voltages
-  setPwm(pwmA, Ua);
-  setPwm(pwmB, Ub);
-  setPwm(pwmC, Uc);
-}
-/*
-  Method using FOC to set Uq to the motor at the optimal angle
-  - for bipolar drivers - posiitve and negative voltages
-*/
-void BLDCMotor::setPhaseVoltageBipolar(double Uq, double angle_el) {
-
-  // q component angle
-  float angle = angle_el + M_PI/2;
-  // Uq sign compensation
-  angle = Uq > 0 ? angle : normalizeAngle( angle + M_PI );
-
-  // Park transform
-  Ualpha = abs(Uq) * cos(angle);
-  Ubeta = abs(Uq) * sin(angle);
-
-  // determine the segment I, II, III
-  // section I
-  Ua = Ualpha;
-  Ub = -0.5 * Ualpha  + _SQRT3_2 * Ubeta;
-  Uc = -0.5 * Ualpha - _SQRT3_2 * Ubeta;
-
-  // set phase voltages
-  setPwm(pwmA, Ua);
-  setPwm(pwmB, Ub);
-  setPwm(pwmC, Uc);
-}
-
-/*
   Method using FOC to set Uq to the motor at the optimal angle
 */
 void BLDCMotor::setPhaseVoltage(double Uq, double angle_el) {
+  
+  // Uq sign compensation
+  float angle = angle_el + M_PI/2.0;
+  // Uq sign compensation
+  angle = normalizeAngle(Uq > 0 ? angle :  angle + M_PI );
+  // Park transform
+  Ualpha = abs(Uq) * cos(angle);
+  Ubeta = abs(Uq) * sin(angle);
+  
   switch (driver) {
-    case DriverType::bipolar :
-      // L6234
-      setPhaseVoltageBipolar(Uq, angle_el);
+    case DriverType::full_bridge :
+      // full Clarke transform
+      Ua = Ualpha;
+      Ub = -0.5 * Ualpha  + _SQRT3_2 * Ubeta;
+      Uc = -0.5 * Ualpha - _SQRT3_2 * Ubeta;
       break;
-    case DriverType::unipolar :
-      // HMBGC
-      setPhaseVoltageUnipolar(Uq, angle_el);
+    case DriverType::half_bridge :
+      // HMBGC & L6234
+      // Unipolar Clarke transform
+      // determine the segment I, II, III
+      if ((angle >= 0) && (angle <= _120_D2R)) {
+        // section I
+        Ua = Ualpha + _1_SQRT3 * Ubeta;
+        Ub = _2_SQRT3 * Ubeta;
+        Uc = 0;
+      } else if ((angle > _120_D2R) && (angle <= (2 * _120_D2R))) {
+        // section III
+        Ua = 0;
+        Ub = _1_SQRT3 * Ubeta - Ualpha;
+        Uc = -_1_SQRT3 * Ubeta - Ualpha;
+      } else if ((angle > (2 * _120_D2R)) && (angle <= (3 * _120_D2R))) {
+        // section II
+        Ua = Ualpha - _1_SQRT3 * Ubeta;
+        Ub = 0;
+        Uc = - _2_SQRT3 * Ubeta;
+      }
       break;
   }
+  
+  // set phase voltages
+  setPwm(pwmA, Ua);
+  setPwm(pwmB, Ub);
+  setPwm(pwmC, Uc);
 }
 
 
@@ -280,23 +255,21 @@ void BLDCMotor::setPwm(int pinPwm, float U) {
   int U_max = power_supply_voltage;
   // uniploar or bipolar FOC
   switch (driver) {
-    case DriverType::bipolar :
+    case DriverType::full_bridge :
       // sets the voltage [-U_max,U_max] to pwm [0,255]
-      // - U_max you can set in header file - default 12V
-      // - support for L6234 drive
       U_pwm = ((float)U + (float)U_max) / (2.0 * (float)U_max) * 255.0;
       break;
-    case DriverType::unipolar :
+    case DriverType::half_bridge :
       // HMBGC
       // sets the voltage [0,12V(U_max)] to pwm [0,255]
-      // - U_max you can set in header file - default 12V
       // - support for HMBGC controller
-      U_pwm = 255.0 * (float)U / (float)U_max;
+      // - support for L6234 drive
+      U_pwm = (int)(255.0 * (float)U / (float)U_max);
       break;
   }
   // limit the values between 0 and 255;
   U_pwm = U_pwm < 0 ? 0 : U_pwm;
-  U_pwm = U_pwm > 255 ? 255 : U_pwm;
+  U_pwm = U_pwm >= 255 ? 255 : U_pwm;
 
   // write hardware pwm
   analogWrite(pinPwm, U_pwm);
@@ -325,7 +298,7 @@ float BLDCMotor::velocityPI(float ek) {
 
   // u(s) = Kr(1 + 1/(Ti.s))
   float uk = PI_velocity.uk_1;
-  uk += PI_velocity.K * (Ts / (2 * PI_velocity.Ti) + 1) * ek + PI_velocity.K * (Ts / (2 * PI_velocity.Ti) - 1) * PI_velocity.ek_1;
+  uk += PI_velocity.K * (Ts / (2.0 * PI_velocity.Ti) + 1.0) * ek + PI_velocity.K * (Ts / (2.0 * PI_velocity.Ti) - 1.0) * PI_velocity.ek_1;
   if (abs(uk) > PI_velocity.u_limit) uk = uk > 0 ? PI_velocity.u_limit : -PI_velocity.u_limit;
 
   PI_velocity.uk_1 = uk;

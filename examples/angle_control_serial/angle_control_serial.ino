@@ -32,10 +32,11 @@ void setup() {
   
   // initialise encoder hardware
   encoder.init(doA, doB);
+
   // set driver type
-  //  DriverType::unipolar
-  //  DriverType::bipolar    - default
-  motor.driver = DriverType::bipolar;
+  //  DriverType::full_bridge
+  //  DriverType::half_bridge    - default
+  motor.driver = DriverType::half_bridge
 
   // power supply voltage
   // default 12V
