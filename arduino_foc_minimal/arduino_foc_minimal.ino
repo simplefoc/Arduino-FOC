@@ -14,7 +14,7 @@ BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
 //  - encA, encB    - encoder A and B pins
 //  - ppr           - impulses per rotation  (cpr=ppr*4)
 //  - index pin     - (optional input)
-Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192);
+Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, 4);
 // interrupt ruotine intialisation
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
@@ -39,7 +39,7 @@ void setup() {
   // set driver type
   //  DriverType::half_bridge - default
   //  DriverType::full_bridge    
-  motor.driver = DriverType::half_bridge;
+  motor.driver = DriverType::full_bridge;
 
   // power supply voltage
   // default 12V
@@ -50,38 +50,22 @@ void setup() {
   // ControlType::velocity
   // ControlType::velocity_ultra_slow
   // ControlType::angle
-  motor.controller = ControlType::velocity;
+  motor.controller = ControlType::angle;
 
   // contoller configuration based on the controll type 
-  if(motor.controller == ControlType::velocity){
-    // velocity PI controller parameters
-    // default K=1.0 Ti = 0.003
-    motor.PI_velocity.K = 0.9;
-    motor.PI_velocity.Ti = 0.007;
-    motor.PI_velocity.u_limit = 7;
-  }else if(motor.controller == ControlType::angle){
-    // contooler settings for angle 
-    // angle P controller
-    // default 20
-    motor.P_angle.K = 10;
-    // make sure you dont exit the range of the arduino 
-    // it depends of the range or the enocoder
-    // default 20 rad/s
-    motor.P_angle.velocity_limit = 7;
-    
-    // change the velocity PI controller 
-    // parameters as well to get better performance
-    // default K=1.0 Ti = 0.003
-    motor.PI_velocity.K = 0.1;
-    motor.PI_velocity.Ti = 0.01;
-    motor.PI_velocity.u_limit = 12; 
-  }else if(motor.controller == ControlType::velocity_ultra_slow){
-    // ultra slow velocity PI controller parameters
-    // default K=120.0 Ti = 100
-    motor.PI_velocity_ultra_slow.K = 100;
-    motor.PI_velocity_ultra_slow.Ti = 1;
-    motor.PI_velocity_ultra_slow.u_limit = 12;
-  }
+  // velocity PI controller parameters
+  // default K=1.0 Ti = 0.003
+  motor.PI_velocity.K = 0.9;
+  motor.PI_velocity.Ti = 0.007;
+  motor.PI_velocity.u_limit = 4;
+
+  // angle loop setting
+  motor.P_angle.K = 20;
+  motor.P_angle.velocity_limit = 5;
+
+
+  // index search - default 3V
+  motor.index_search_voltage = 4;
 
   // link the motor to the sensor
   motor.linkEncoder(&encoder);
@@ -137,7 +121,9 @@ void motor_monitor() {
       Serial.print("\t");
       Serial.print(motor.shaft_velocity_sp);
       Serial.print("\t");
-      Serial.println(motor.shaft_velocity);
+      Serial.print(motor.shaft_velocity);
+      Serial.print("\t");
+      Serial.println(motor.shaft_angle);
 //      Serial.print("\t");
 //      Serial.print(motor.Ua);
 //      Serial.print("\t");

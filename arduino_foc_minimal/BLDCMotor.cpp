@@ -53,7 +53,9 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
 
   // electric angle og the zero angle
   // electric angle of the index for encoder
-  zero_electric_angle = 0;
+  index_electric_angle = 0;
+  // index search voltage
+  index_search_voltage = DEF_INDEX_SEARCH_VOLTAGE;
 }
 
 // init hardware pins
@@ -127,17 +129,23 @@ void BLDCMotor::linkEncoder(Encoder* enc) {
 	Encoder alignment to electrical 0 angle
 */
 void BLDCMotor::alignEncoder() {
+  // align the electircal phases of the motor and encoder
   setPwm(pwmA,12);
   setPwm(pwmB,0);
   setPwm(pwmC,0);
   delay(1000);
+  // set encoder to zero
   encoder->setCounterZero();
   delay(500);
   setPhaseVoltage(0,0);
   delay(200);
+
+  // find the index if available
   indexSearch();
   delay(500);
 }
+
+
 /*
 	Encoder alignment to electrical 0 angle
 */
@@ -146,13 +154,19 @@ void BLDCMotor::indexSearch() {
   if(!encoder->hasIndex()) return;
   // search the index with small speed
   while(!encoder->indexFound() && shaft_angle < 2 * M_PI){
-    voltage_q = 3;
+    voltage_q = index_search_voltage;
     loopFOC();    
   }
-  setPhaseVoltage(0,0);
 
-  encoder->setIndexZero();  
-  zero_electric_angle = electricAngle(encoder->getIndexAngle());
+  // set index to zero if it has been found
+  if(encoder->indexFound()){
+    encoder->setIndexZero();  
+    // remember index electric angle
+    index_electric_angle = electricAngle(encoder->getIndexAngle());
+  }
+
+  // disable motor
+  setPhaseVoltage(0,0);
 }
 
 /**
@@ -226,7 +240,7 @@ void BLDCMotor::move(float target) {
 void BLDCMotor::setPhaseVoltage(double Uq, double angle_el) {
   
   // Uq sign compensation
-  float angle = angle_el + M_PI/2.0 + zero_electric_angle;
+  float angle = angle_el + M_PI/2.0 + index_electric_angle;
   // Uq sign compensation
   angle = normalizeAngle(Uq > 0 ? angle :  angle + M_PI );
   // Park transform

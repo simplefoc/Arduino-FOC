@@ -24,6 +24,7 @@ Encoder::Encoder(int _encA, int _encB , float _ppr, int _index){
   I_active = 0;
   // index pin
   index_pin = _index; // its 0 if not used
+  index_pulse_counter = 0;
 
   // velocity calculation varibles
   prev_Th = 0;
@@ -62,9 +63,14 @@ void Encoder::handleA() {
  if(hasIndex()){
     int I = digitalRead(index_pin);
     if(I && !I_active){
-      index_pulse_counter = pulse_counter;
       // aling encoder on each index 
-      pulse_counter = round((float)pulse_counter/(float)cpr)*cpr;
+      if(index_pulse_counter){
+        long tmp = pulse_counter;
+        pulse_counter = round((float)pulse_counter/(float)cpr)*cpr;
+        prev_pulse_counter = pulse_counter + (tmp-prev_pulse_counter);
+      } 
+      // initial offset 
+      if(!index_pulse_counter) index_pulse_counter = pulse_counter;
     }
     I_active = I;
   }
@@ -92,10 +98,14 @@ void Encoder::handleB() {
  if(hasIndex()){
     int I = digitalRead(index_pin);
     if(I && !I_active){
-      index_pulse_counter = pulse_counter;
       // aling encoder on each index 
-      pulse_counter = round((float)pulse_counter/(float)cpr)*cpr;
-      prev_pulse_counter = pulse_counter;
+      if(index_pulse_counter){
+        long tmp = pulse_counter;
+        pulse_counter = round((float)pulse_counter/(float)cpr)*cpr;
+        prev_pulse_counter = pulse_counter + (tmp-prev_pulse_counter);
+      } 
+      // initial offset 
+      if(!index_pulse_counter) index_pulse_counter = pulse_counter;
     }
     I_active = I;
   }

@@ -58,16 +58,16 @@ class Encoder{
     Quadrature quadrature;
 
   private:
-    long pulse_counter;        // current pulse counter
-    long pulse_timestamp;      // last impulse timestamp in us
+    volatile long pulse_counter;        // current pulse counter
+    volatile long pulse_timestamp;      // last impulse timestamp in us
     float cpr;                 // impulse cpr
-    int A_active, B_active;    // current active states of A and B line
-    int I_active;              // index active
-    long index_pulse_counter;  // pulse counter of the index
+    volatile int A_active, B_active;    // current active states of A and B line
+    volatile int I_active;              // index active
+    volatile long index_pulse_counter;  // pulse counter of the index
 
     // velocity calculation varibles
     float prev_Th, pulse_per_second;
-    long prev_pulse_counter, prev_timestamp_us;
+    volatile long prev_pulse_counter, prev_timestamp_us;
 
 };
 

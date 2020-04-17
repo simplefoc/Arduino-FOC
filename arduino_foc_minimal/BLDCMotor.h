@@ -17,6 +17,9 @@
 #define DEF_P_ANGLE_K 20
 // angle velocity limit default
 #define DEF_P_ANGLE_VEL_LIM 20
+// index search voltage
+#define DEF_INDEX_SEARCH_VOLTAGE 3
+
 
 // sign funciton
 #define sign(a) ( ( (a) < 0 )  ?  -1   : ( (a) > 0 ) )
@@ -106,8 +109,11 @@ class BLDCMotor
   	
     // encoder link
     Encoder* encoder;
-  	
-    float Ua,Ub,Uc;
+
+    // index electric angle - if available
+    float index_electric_angle;
+    // index search voltage
+    float index_search_voltage;
 
   private:
     //Encoder alignment to electrical 0 angle
@@ -140,7 +146,7 @@ class BLDCMotor
     float positionP(float ek);
     
     float	Ualpha,Ubeta;
-    float zero_electric_angle;
+    float Ua,Ub,Uc;
 };
 
 
