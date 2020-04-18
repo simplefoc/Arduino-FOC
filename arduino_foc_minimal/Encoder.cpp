@@ -67,7 +67,7 @@ void Encoder::handleA() {
       if(index_pulse_counter){
         long tmp = pulse_counter;
         pulse_counter = round((float)pulse_counter/(float)cpr)*cpr;
-        prev_pulse_counter = pulse_counter + (tmp-prev_pulse_counter);
+        prev_pulse_counter = pulse_counter - (tmp-prev_pulse_counter);
       } 
       // initial offset 
       if(!index_pulse_counter) index_pulse_counter = pulse_counter;
@@ -102,7 +102,7 @@ void Encoder::handleB() {
       if(index_pulse_counter){
         long tmp = pulse_counter;
         pulse_counter = round((float)pulse_counter/(float)cpr)*cpr;
-        prev_pulse_counter = pulse_counter + (tmp-prev_pulse_counter);
+        prev_pulse_counter = pulse_counter - (tmp-prev_pulse_counter);
       } 
       // initial offset 
       if(!index_pulse_counter) index_pulse_counter = pulse_counter;

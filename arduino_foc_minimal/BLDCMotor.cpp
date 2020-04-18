@@ -46,26 +46,27 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   P_angle.K = DEF_P_ANGLE_K;
   // maximum angular velocity to be used for positioning 
   P_angle.velocity_limit = DEF_P_ANGLE_VEL_LIM;
-  
-  // driver deafault type
-  driver = DriverType::half_bridge;
-
 
   // electric angle og the zero angle
   // electric angle of the index for encoder
   index_electric_angle = 0;
-  // index search voltage
-  index_search_voltage = DEF_INDEX_SEARCH_VOLTAGE;
+  // index search velocity
+  index_search_velocity = DEF_INDEX_SEARCH_VELOCITY;
+
+  //debugger 
+  debugger = nullptr;
 }
 
-// init hardware pins
+// init hardware pins   
 void BLDCMotor::init() {
+  if(debugger) debugger->println("DEBUG: Initilaise the motor pins.");
   // PWM pins
   pinMode(pwmA, OUTPUT);
   pinMode(pwmB, OUTPUT);
   pinMode(pwmC, OUTPUT);
   pinMode(enable_pin, OUTPUT);
 
+  if(debugger) debugger->println("DEBUG: Set high frequency PWM.");
   // Increase PWM frequency to 32 kHz
   // make silent
   setPwmFrequency(pwmA);
@@ -74,8 +75,9 @@ void BLDCMotor::init() {
 
   // check if u_limit configuration has been done. 
   // if not set it to the power_supply_voltage
-  if(PI_velocity.u_limit == -1) PI_velocity.u_limit = power_supply_voltage;
-  if(PI_velocity_ultra_slow.u_limit == -1) PI_velocity_ultra_slow.u_limit = power_supply_voltage;
+  // or if set too high
+  if(PI_velocity.u_limit == -1 || PI_velocity.u_limit > power_supply_voltage/2) PI_velocity.u_limit = power_supply_voltage;
+  if(PI_velocity_ultra_slow.u_limit == -1 || PI_velocity.u_limit > power_supply_voltage/2) PI_velocity_ultra_slow.u_limit = power_supply_voltage;
 
   delay(500);
   // enable motor
@@ -87,11 +89,12 @@ void BLDCMotor::init() {
 /*
 	initialization function
 */
-void BLDCMotor::initFOC() {
+int  BLDCMotor::initFOC() {
   // encoder alignment
   delay(500);
-  alignEncoder();
+  int exit_flag = alignEncoder();
   delay(500);
+  return exit_flag;
 }
 
 /*
@@ -128,7 +131,8 @@ void BLDCMotor::linkEncoder(Encoder* enc) {
 /*
 	Encoder alignment to electrical 0 angle
 */
-void BLDCMotor::alignEncoder() {
+int BLDCMotor::alignEncoder() {
+  if(debugger) debugger->println("DEBUG: Align the encoder and motor electrical 0 angle.");
   // align the electircal phases of the motor and encoder
   setPwm(pwmA,12);
   setPwm(pwmB,0);
@@ -140,21 +144,27 @@ void BLDCMotor::alignEncoder() {
   setPhaseVoltage(0,0);
   delay(200);
 
+  if(debugger) debugger->println("DEBUG: Search for the encoder index - if available.");
   // find the index if available
-  indexSearch();
+  int exit_flag = indexSearch();
   delay(500);
+  if(debugger){
+    if(exit_flag< 0 ) debugger->println("DEBUG: Error: Index not found!");
+    if(exit_flag> 0 ) debugger->println("DEBUG: Success: Index found!");
+  }
+  return exit_flag;
 }
 
 
 /*
 	Encoder alignment to electrical 0 angle
 */
-void BLDCMotor::indexSearch() {
+int BLDCMotor::indexSearch() {
   // if no index return
-  if(!encoder->hasIndex()) return;
+  if(!encoder->hasIndex()) return 0;
   // search the index with small speed
   while(!encoder->indexFound() && shaft_angle < 2 * M_PI){
-    voltage_q = index_search_voltage;
+    voltage_q = velocityPI(index_search_velocity - shaftVelocity());
     loopFOC();    
   }
 
@@ -167,6 +177,8 @@ void BLDCMotor::indexSearch() {
 
   // disable motor
   setPhaseVoltage(0,0);
+
+  return encoder->indexFound() ? 1 : -1;
 }
 
 /**
@@ -240,42 +252,17 @@ void BLDCMotor::move(float target) {
 void BLDCMotor::setPhaseVoltage(double Uq, double angle_el) {
   
   // Uq sign compensation
-  float angle = angle_el + M_PI/2.0 + index_electric_angle;
+  float angle = angle_el + index_electric_angle;
   // Uq sign compensation
   angle = normalizeAngle(Uq > 0 ? angle :  angle + M_PI );
-  // Park transform
-  Ualpha = abs(Uq) * cos(angle);
-  Ubeta = abs(Uq) * sin(angle);
+  // Inverse park transform
+  Ualpha = -sin(angle) * abs(Uq);
+  Ubeta =  cos(angle) * abs(Uq);
   
-  switch (driver) {
-    case DriverType::full_bridge :
-      // full Clarke transform
-      Ua = Ualpha;
-      Ub = -0.5 * Ualpha  + _SQRT3_2 * Ubeta;
-      Uc = -0.5 * Ualpha - _SQRT3_2 * Ubeta;
-      break;
-    case DriverType::half_bridge :
-      // HMBGC & L6234
-      // Unipolar Clarke transform
-      // determine the segment I, II, III
-      if ((angle >= 0) && (angle <= _120_D2R)) {
-        // section I
-        Ua = Ualpha + _1_SQRT3 * Ubeta;
-        Ub = _2_SQRT3 * Ubeta;
-        Uc = 0;
-      } else if ((angle > _120_D2R) && (angle <= (2 * _120_D2R))) {
-        // section III
-        Ua = 0;
-        Ub = _1_SQRT3 * Ubeta - Ualpha;
-        Uc = -_1_SQRT3 * Ubeta - Ualpha;
-      } else if ((angle > (2 * _120_D2R)) && (angle <= (3 * _120_D2R))) {
-        // section II
-        Ua = Ualpha - _1_SQRT3 * Ubeta;
-        Ub = 0;
-        Uc = - _2_SQRT3 * Ubeta;
-      }
-      break;
-  }
+  // Clarke transform
+  Ua = Ualpha;
+  Ub = -0.5 * Ualpha  + _SQRT3_2 * Ubeta;
+  Uc = -0.5 * Ualpha - _SQRT3_2 * Ubeta;
   
   // set phase voltages
   setPwm(pwmA, Ua);
@@ -289,21 +276,11 @@ void BLDCMotor::setPhaseVoltage(double Uq, double angle_el) {
 */
 void BLDCMotor::setPwm(int pinPwm, float U) {
   int U_pwm = 0;
-  int U_max = power_supply_voltage;
-  // uniploar or bipolar FOC
-  switch (driver) {
-    case DriverType::full_bridge :
-      // sets the voltage [-U_max,U_max] to pwm [0,255]
-      U_pwm = ((float)U + (float)U_max) / (2.0 * (float)U_max) * 255.0;
-      break;
-    case DriverType::half_bridge :
-      // HMBGC
-      // sets the voltage [0,12V(U_max)] to pwm [0,255]
-      // - support for HMBGC controller
-      // - support for L6234 drive
-      U_pwm = (int)(255.0 * (float)U / (float)U_max);
-      break;
-  }
+  float U_max = power_supply_voltage/2.0;
+
+  // sets the voltage [-U_max,U_max] to pwm [0,255]
+  U_pwm = ((float)U + (float)U_max) / (2.0 * (float)U_max) * 255.0;
+     
   // limit the values between 0 and 255;
   U_pwm = U_pwm < 0 ? 0 : U_pwm;
   U_pwm = U_pwm >= 255 ? 255 : U_pwm;
@@ -367,6 +344,10 @@ float BLDCMotor::positionP(float ek) {
   float velk = P_angle.K * ek;
   if (abs(velk) > P_angle.velocity_limit) velk = velk > 0 ? P_angle.velocity_limit : -P_angle.velocity_limit;
   return velk;
+}
+
+void BLDCMotor::useDebugging(Print &print){
+  debugger = &print; //operate on the adress of print
 }
 
 

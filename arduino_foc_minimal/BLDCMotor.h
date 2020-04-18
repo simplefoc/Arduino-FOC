@@ -17,8 +17,8 @@
 #define DEF_P_ANGLE_K 20
 // angle velocity limit default
 #define DEF_P_ANGLE_VEL_LIM 20
-// index search voltage
-#define DEF_INDEX_SEARCH_VOLTAGE 3
+// index search velocity
+#define DEF_INDEX_SEARCH_VELOCITY 1
 
 
 // sign funciton
@@ -36,12 +36,6 @@ enum ControlType{
   velocity,
   velocity_ultra_slow,
   angle
-};
-
-// driver type configuration enum
-enum DriverType{
-  full_bridge,    
-  half_bridge    // HMBGC & L6234
 };
 
 // P/PI controller strucutre
@@ -69,7 +63,7 @@ class BLDCMotor
     void linkEncoder(Encoder* enc);
 
     //  initilise FOC  
-    void initFOC();
+    int initFOC();
     // iterative method updating motor angles and velocity measurement
     void loopFOC();
     // iterative control loop defined by controller 
@@ -101,7 +95,6 @@ class BLDCMotor
     float power_supply_voltage;
 
     // configuraion structures
-    DriverType driver;
     ControlType controller;
     PI_s PI_velocity;
     PI_s PI_velocity_ultra_slow;
@@ -109,16 +102,21 @@ class BLDCMotor
   	
     // encoder link
     Encoder* encoder;
-
     // index electric angle - if available
     float index_electric_angle;
-    // index search voltage
-    float index_search_voltage;
+    // index search velocity
+    float index_search_velocity;
+
+
+
+    // debugging 
+    void useDebugging(Print &print);
+    Print* debugger;
 
   private:
     //Encoder alignment to electrical 0 angle
-    void alignEncoder();
-    void indexSearch();
+    int alignEncoder();
+    int indexSearch();
     /** State calculation methods */
     //Shaft angle calculation
     float shaftAngle();

@@ -36,11 +36,6 @@ void setup() {
   // initialise encoder hardware
   encoder.init(doA, doB);
 
-  // set driver type
-  //  DriverType::half_bridge - default
-  //  DriverType::full_bridge    
-  motor.driver = DriverType::full_bridge;
-
   // power supply voltage
   // default 12V
   motor.power_supply_voltage = 12;
@@ -50,30 +45,30 @@ void setup() {
   // ControlType::velocity
   // ControlType::velocity_ultra_slow
   // ControlType::angle
-  motor.controller = ControlType::angle;
+  motor.controller = ControlType::velocity;
 
   // contoller configuration based on the controll type 
   // velocity PI controller parameters
   // default K=1.0 Ti = 0.003
-  motor.PI_velocity.K = 0.9;
-  motor.PI_velocity.Ti = 0.007;
+  motor.PI_velocity.K = 0.3;
+  motor.PI_velocity.Ti = 0.003;
+  //defualt power_supply_voltage/2
   motor.PI_velocity.u_limit = 4;
 
-  // angle loop setting
-  motor.P_angle.K = 20;
-  motor.P_angle.velocity_limit = 5;
-
-
-  // index search - default 3V
-  motor.index_search_voltage = 4;
+  // index search velocity - default 1 rad/s
+  motor.index_search_velocity = 2;
 
   // link the motor to the sensor
   motor.linkEncoder(&encoder);
+
+  // use debugging with serial for motor init
+  // comment out if not needed
+  motor.useDebugging(Serial);
+
   // intialise motor
   motor.init();
   // align encoder and start FOC
   motor.initFOC();
-
 
   Serial.println("Motor ready.");
   Serial.println("Input the new target value:");
@@ -82,7 +77,6 @@ void setup() {
 
 // target velocity variable
 float target = 0;
-int t = 0;
 
 void loop() {
   // iterative state calculation calculating angle
@@ -91,13 +85,6 @@ void loop() {
   // in arduino loop it should have ~1kHz
   // the best would be to be in ~10kHz range
   motor.loopFOC();
-
-  // // direction chnaging logic (comment out if you dont need it)
-  // // change direction each 1000 loop passes
-  // target *= (t >= 1000) ? -1 : 1; 
-  // // loop passes counter
-  // t = (t >= 1000) ? 0 : t+1;
-
 
   // iterative function setting the outter loop target
   // velocity, position or voltage
@@ -108,7 +95,7 @@ void loop() {
 
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
-  //motor_monitor();
+  // motor_monitor();
 }
 
 // utility function intended to be used with serial plotter to monitor motor variables
@@ -124,12 +111,6 @@ void motor_monitor() {
       Serial.print(motor.shaft_velocity);
       Serial.print("\t");
       Serial.println(motor.shaft_angle);
-//      Serial.print("\t");
-//      Serial.print(motor.Ua);
-//      Serial.print("\t");
-//      Serial.print(motor.Ub);
-//      Serial.print("\t");
-//      Serial.println(motor.Uc);
       break;
     case ControlType::angle:
       Serial.print(motor.voltage_q);
@@ -144,12 +125,6 @@ void motor_monitor() {
       Serial.print(motor.shaft_angle);
       Serial.print("\t");
       Serial.println(motor.shaft_velocity);
-//      Serial.print("\t");
-//      Serial.print(motor.Ua);
-//      Serial.print("\t");
-//      Serial.print(motor.Ub);
-//      Serial.print("\t");
-//      Serial.println(motor.Uc);
       break;
   }
 }
