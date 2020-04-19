@@ -3,7 +3,7 @@
 // This example gives you a minimal code needed to run the FOC algorithm
 // All the configuration is set to defualt values
 // motor.power_supply_voltage= 12V
-// motor.driver = DriverType::bipolar
+// encoder.quadrature = Quadrature::ENABLE
 // encoder.pullup = Pullup::EXTERN
 // motor.PI_velocity.K = 1
 // motor.PI_velocity.Ti = 0.003
@@ -23,18 +23,19 @@ void setup() {
 
   // initialise encoder hardware
   encoder.init(doA, doB);
-  // link the motor to the sensor
-  motor.linkEncoder(&encoder);
+
   // velocity control
   motor.controller = ControlType::velocity;
 
+  // link the motor to the sensor
+  motor.linkEncoder(&encoder);
   // intialise motor
   motor.init();
   // align encoder and start FOC
   motor.initFOC();
 
   Serial.println("Motor ready.");
-  delay(1000);
+  _delay(1000);
 }
 
 // target velocity variable

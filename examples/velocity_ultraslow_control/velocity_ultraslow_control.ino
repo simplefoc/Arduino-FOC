@@ -27,21 +27,29 @@ void setup() {
   Serial.begin(115200);
 
   // check if you need internal pullups
-  // Pullup::EXTERN - external pullup added  - dafault
+  //  Quadrature::ENABLE - CPR = 4xPPR  - default
+  //  Quadrature::DISABLE - CPR = PPR
+  encoder.quadrature = Quadrature::ENABLE;
+
+  // check if you need internal pullups
+  // Pullup::EXTERN - external pullup added - dafault
   // Pullup::INTERN - needs internal arduino pullup
   encoder.pullup = Pullup::EXTERN;
   
   // initialise encoder hardware
   encoder.init(doA, doB);
-
-  // set driver type
-  //  DriverType::unipolar
-  //  DriverType::bipolar    - default
-  motor.driver = DriverType::bipolar;
-
+  
   // power supply voltage
   // default 12V
   motor.power_supply_voltage = 12;
+
+  // index search velocity - default 1rad/s
+  motor.index_search_velocity = 1;
+  // index search PI contoller parameters
+  // default K=0.5 Ti = 0.01
+  motor.PI_velocity_index_search.K = 0.1;
+  motor.PI_velocity_index_search.Ti = 0.01;
+  motor.PI_velocity_index_search.u_limit = 3;
 
   // set FOC loop to be used
   // ControlType::voltage
@@ -51,9 +59,13 @@ void setup() {
   motor.controller = ControlType::velocity_ultra_slow;
 
   // velocity PI controller parameters
-  // default K=120.0 Ti = 100.0
-  motor.PI_velocity_ultra_slow.K = 120;
+  // default K=60.0 Ti = 100.0
+  motor.PI_velocity_ultra_slow.K = 50;
   motor.PI_velocity_ultra_slow.Ti = 100;
+
+  // use debugging with serial for motor init
+  // comment out if not needed
+  motor.useDebugging(Serial);
 
   // link the motor to the sensor
   motor.linkEncoder(&encoder);
@@ -65,7 +77,7 @@ void setup() {
 
   Serial.println("Motor ready.");
   Serial.println("Set the target velocity using serial terminal:");
-  delay(1000);
+  _delay(1000);
 }
 
 void loop() {
