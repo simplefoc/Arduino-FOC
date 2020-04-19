@@ -40,6 +40,14 @@ void setup() {
   // default 12V
   motor.power_supply_voltage = 12;
 
+  // index search velocity - default 1rad/s
+  motor.index_search_velocity = 1;
+  // index search PI contoller parameters
+  // default K=0.5 Ti = 0.01
+  motor.PI_velocity_index_search.K = 0.1;
+  motor.PI_velocity_index_search.Ti = 0.01;
+  motor.PI_velocity_index_search.u_limit = 3;
+  
   // set FOC loop to be used
   // ControlType::voltage
   // ControlType::velocity
@@ -54,9 +62,6 @@ void setup() {
   motor.PI_velocity.Ti = 0.003;
   //defualt power_supply_voltage/2
   motor.PI_velocity.u_limit = 4;
-
-  // index search velocity - default 1 rad/s
-  motor.index_search_velocity = 2;
 
   // link the motor to the sensor
   motor.linkEncoder(&encoder);

@@ -66,8 +66,10 @@ void Encoder::handleA() {
       // aling encoder on each index 
       if(index_pulse_counter){
         long tmp = pulse_counter;
+        // corrent the counter value
         pulse_counter = round((float)pulse_counter/(float)cpr)*cpr;
-        prev_pulse_counter = pulse_counter - (tmp-prev_pulse_counter);
+        // preserve relative speed
+        prev_pulse_counter += pulse_counter - tmp;
       } 
       // initial offset 
       if(!index_pulse_counter) index_pulse_counter = pulse_counter;
@@ -101,8 +103,10 @@ void Encoder::handleB() {
       // aling encoder on each index 
       if(index_pulse_counter){
         long tmp = pulse_counter;
+        // corrent the counter value
         pulse_counter = round((float)pulse_counter/(float)cpr)*cpr;
-        prev_pulse_counter = pulse_counter - (tmp-prev_pulse_counter);
+        // preserve relative speed
+        prev_pulse_counter += pulse_counter - tmp;
       } 
       // initial offset 
       if(!index_pulse_counter) index_pulse_counter = pulse_counter;
@@ -205,20 +209,23 @@ void Encoder::init(void (*doA)(), void(*doB)()){
 
 
   // attach interrupt if functions provided
-  if(doA != nullptr){
   switch(quadrature){
     case Quadrature::ENABLE:
       cpr = 4*cpr;
-      // CPR = 4xPPR
-      attachInterrupt(digitalPinToInterrupt(pinA), doA, CHANGE);
-      attachInterrupt(digitalPinToInterrupt(pinB), doB, CHANGE);
+      // A callback and B callback
+      if(doA != nullptr){
+        // CPR = 4xPPR
+        attachInterrupt(digitalPinToInterrupt(pinA), doA, CHANGE);
+        attachInterrupt(digitalPinToInterrupt(pinB), doB, CHANGE);
+      }
       break;
     case Quadrature::DISABLE:
-      // CPR = PPR
-      attachInterrupt(digitalPinToInterrupt(pinA), doA, RISING);
-      attachInterrupt(digitalPinToInterrupt(pinB), doB, RISING);
+      // A callback and B callback
+      if(doA != nullptr){
+        // CPR = PPR
+        attachInterrupt(digitalPinToInterrupt(pinA), doA, RISING);
+        attachInterrupt(digitalPinToInterrupt(pinB), doB, RISING);
+      }
       break;
-  }
-    // // A callback and B callback
-  }
+    }
 }

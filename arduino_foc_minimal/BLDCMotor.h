@@ -8,17 +8,20 @@
 // power supply voltage
 #define DEF_POWER_SUPPLY 12.0
 // velocity PI controller params
-#define DEF_PI_VEL_K 1.0
-#define DEF_PI_VEL_TI 0.003
+#define DEF_PI_VEL_K 0.5
+#define DEF_PI_VEL_TI 0.01
 // ultra slow velocity PI params
-#define DEF_PI_VEL_US_K 120.0
+#define DEF_PI_VEL_US_K 60.0
 #define DEF_PI_VEL_US_TI 100.0
 // angle P params
 #define DEF_P_ANGLE_K 20
 // angle velocity limit default
 #define DEF_P_ANGLE_VEL_LIM 20
 // index search velocity
-#define DEF_INDEX_SEARCH_VELOCITY 1
+#define DEF_INDEX_SEARCH_TARGET_VELOCITY 1
+// velocity PI controller params for index search
+#define DEF_PI_VEL_INDEX_K 0.5
+#define DEF_PI_VEL_INDEX_TI 0.01
 
 
 // sign funciton
@@ -38,13 +41,20 @@ enum ControlType{
   angle
 };
 
-// P/PI controller strucutre
+// PI controller strucutre
 struct PI_s{
   float K;
   float Ti;
   long timestamp;
   float uk_1, ek_1;
   float u_limit;
+};
+
+// P controller structure
+struct P_s{
+  float K;
+  long timestamp;
+  float uk_1, ek_1;
   float velocity_limit;
 };
 
@@ -98,7 +108,8 @@ class BLDCMotor
     ControlType controller;
     PI_s PI_velocity;
     PI_s PI_velocity_ultra_slow;
-    PI_s P_angle;
+    P_s P_angle;
+    PI_s PI_velocity_index_search;
   	
     // encoder link
     Encoder* encoder;
@@ -107,6 +118,9 @@ class BLDCMotor
     // index search velocity
     float index_search_velocity;
 
+    /** FOC methods */
+    //Method using FOC to set Uq to the motor at the optimal angle
+    void setPhaseVoltage(double Uq, double angle_el);
 
 
     // debugging 
@@ -127,11 +141,7 @@ class BLDCMotor
     float electricAngle(float shaftAngle);
     //Set phase voltaget to pwm output
     void setPwm(int pinPwm, float U);
-    
-    /** FOC methods */
-    //Method using FOC to set Uq to the motor at the optimal angle
-    void setPhaseVoltage(double Uq, double angle_el);
-    
+        
     /** Utility funcitons */
     //normalizing radian angle to [0,2PI]
     double normalizeAngle(double angle);
@@ -139,12 +149,19 @@ class BLDCMotor
     float filterLP(float u);
     
     /** Motor control functions */
+    float controllerPI(float ek, PI_s &controller);
     float velocityPI(float ek);
-    float velocityUltraSlowPI(float ek);
+    float velocityUltraSlowPI(float vel);
+    float velocityIndexSearchPI(float ek);
     float positionP(float ek);
     
+    // phase voltages 
     float	Ualpha,Ubeta;
     float Ua,Ub,Uc;
+
+    // velocity ultra slow angle 
+    float ultraslow_estimated_angle;
+
 };
 
 
@@ -152,5 +169,8 @@ class BLDCMotor
   High PWM frequency
 */
 void setPwmFrequency(int pin);
+// funciton implementing arduino blocking delay funciton
+// regular delay funciton doesn't work with interrupts
+void _delay(uint64_t ms);
 
 #endif
