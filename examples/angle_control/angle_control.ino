@@ -4,6 +4,9 @@
 #define arduinoInt1 2             // Arduino UNO interrupt 0
 #define arduinoInt2 3             // Arduino UNO interrupt 1
 
+// angle set point variable
+float target_angle = 0;
+
 //  BLDCMotor( int phA, int phB, int phC, int pp, int en)
 //  - phA, phB, phC - motor A,B,C phase pwm pins
 //  - pp            - pole pair number
@@ -23,21 +26,30 @@ void setup() {
   Serial.begin(115200);
 
   // check if you need internal pullups
-  // Pullup::EXTERN - external pullup added  - dafault
+  //  Quadrature::ENABLE - CPR = 4xPPR  - default
+  //  Quadrature::DISABLE - CPR = PPR
+  encoder.quadrature = Quadrature::ENABLE;
+
+  // check if you need internal pullups
+  // Pullup::EXTERN - external pullup added - dafault
   // Pullup::INTERN - needs internal arduino pullup
   encoder.pullup = Pullup::EXTERN;
-  
+
   // initialise encoder hardware
   encoder.init(doA, doB);
-
-  // set driver type
-  //  DriverType::full_bridge
-  //  DriverType::half_bridge    - default
-  motor.driver = DriverType::half_bridge
 
   // power supply voltage
   // default 12V
   motor.power_supply_voltage = 12;
+
+  // index search velocity - default 1rad/s
+  motor.index_search_velocity = 1;
+  // index search PI contoller parameters
+  // default K=0.5 Ti = 0.01
+  motor.PI_velocity_index_search.K = 0.3;
+  motor.PI_velocity_index_search.Ti = 0.01;
+  motor.PI_velocity_index_search.u_limit = 3;
+
 
   // set FOC loop to be used
   // ControlType::voltage
@@ -47,19 +59,25 @@ void setup() {
   motor.controller = ControlType::angle;
 
   // velocity PI controller parameters
-  // default K=1.0 Ti = 0.003
-  motor.PI_velocity.K = 0.5;
-  motor.PI_velocity.Ti = 0.01;
+  // default K=0.5 Ti = 0.01
+  motor.PI_velocity.K = 0.3;
+  motor.PI_velocity.Ti = 0.007;
+  motor.PI_velocity.u_limit = 5;
+
   // angle P controller 
   // default K=70
   motor.P_angle.K = 20;
   //  maximal velocity of the poisiiton control
   // default 20
-  motor.P_angle.velocity_limit = 10;
+  motor.P_angle.velocity_limit = 4;
+
+  // use debugging with serial for motor init
+  // comment out if not needed
+  motor.useDebugging(Serial);
 
   // link the motor to the sensor
   motor.linkEncoder(&encoder);
-
+  
   // intialise motor
   motor.init();
   // align encoder and start FOC
@@ -67,24 +85,17 @@ void setup() {
 
 
   Serial.println("Motor ready.");
-  delay(1000);
+  Serial.println("Set the target angle using serial terminal:");
+  _delay(1000);
 }
 
-// angle target variable
-float target_angle;
-
 void loop() {
-
   // iterative state calculation calculating angle
   // and setting FOC pahse voltage
   // the faster you run this funciton the better
   // in arduino loop it should have ~1kHz
   // the best would be to be in ~10kHz range
   motor.loopFOC();
-
-  
-  // 0.5 hertz sine wave
-  target_angle = sin( micros()*1e-6 *2*M_PI * 0.5 );
 
   // iterative function setting the outter loop target
   // velocity, position or voltage
@@ -95,7 +106,7 @@ void loop() {
 
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
-  motor_monitor();
+  // motor_monitor();
 }
 
 // utility function intended to be used with serial plotter to monitor motor variables
@@ -122,6 +133,27 @@ void motor_monitor() {
       Serial.print("\t");
       Serial.println(motor.shaft_velocity);
       break;
+  }
+}
+
+// Serial communication callback function
+// gets the target value from the user
+void serialEvent() {
+  // a string to hold incoming data
+  static String inputString; 
+  while (Serial.available()) {
+    // get the new byte:
+    char inChar = (char)Serial.read();
+    // add it to the inputString:
+    inputString += inChar;
+    // if the incoming character is a newline
+    // end of input
+    if (inChar == '\n') {
+      target_angle = inputString.toFloat();
+      Serial.print("Tagret angle: ");
+      Serial.println(target_angle);
+      inputString = "";
+    }
   }
 }
 

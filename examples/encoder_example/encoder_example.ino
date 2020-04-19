@@ -14,6 +14,11 @@ void setup() {
   Serial.begin(115200);
 
   // check if you need internal pullups
+  //  Quadrature::ENABLE - CPR = 4xPPR  - default
+  //  Quadrature::DISABLE - CPR = PPR
+  encoder.quadrature = Quadrature::ENABLE;
+
+  // check if you need internal pullups
   // Pullup::EXTERN - external pullup added  - dafault
   // Pullup::INTERN - needs internal arduino pullup
   encoder.pullup = Pullup::EXTERN;
@@ -22,7 +27,7 @@ void setup() {
   encoder.init(doA, doB);
 
   Serial.println("Encoder ready");
-  delay(1000);
+  _delay(1000);
 }
 
 void loop() {

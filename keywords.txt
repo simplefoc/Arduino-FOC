@@ -7,13 +7,17 @@ initFOC	KEYWORD2
 loopFOC	KEYWORD2
 disable	KEYWORD2
 
+_delay	KEYWORD3
+setPwmFrequency	KEYWORD3
+motor_monitor	KEYWORD3
+
 PI_velocity	KEYWIORD2
 PI_velocity_ultra_slow	KEYWIORD2
 P_angle	KEYWIORD2
 
-ControlType	LITERAL1
-DriverType	LITERAL1
-Pullup	LITERAL1
+ControlType	KEYWORD1
+Quadrature	KEYWORD1
+Pullup	KEYWORD1
 
 linkEncoder	KEYWIORD2
 handleA	KEYWIORD2
@@ -21,6 +25,7 @@ handleB	KEYWIORD2
 getVelocity	KEYWIORD2
 getAngle	KEYWIORD2
 setCounterZero	KEYWIORD2
+useDebugging	KEYWIORD2
 
 voltage_q	KEYWIORD2
 shaft_angle_sp	KEYWIORD2
@@ -30,6 +35,10 @@ shaft_velocity	KEYWIORD2
 controller	KEYWIORD2
 driver	KEYWIORD2
 pullup	KEYWIORD2
+quadrature	KEYWIORD2
+
+index_search_u_limit	KEYWIORD2
+index_search_velocity	KEYWIORD2
 
 
 voltage	KEYWIORD2
@@ -42,20 +51,22 @@ Ti	KEYWIORD2
 u_limit	KEYWIORD2
 velocity_limit	KEYWIORD2
 
-pinA	LITERAL1
-pinB	LITERAL1
-index	LITERAL1
+pinA	KEYWORD2
+pinB	KEYWORD2
+index_pin	KEYWORD2
 
 INTERN	KEYWORD2
 EXTERN	KEYWORD2
+DISABLE	KEYWORD2
+ENABLE	KEYWORD2
 
-unipolar	KEYWIORD2
-bipolar	KEYWIORD2
+pwmA	KEYWORD2
+pwmB	KEYWORD2
+pwmC	KEYWORD2
+Ua	KEYWORD2
+Ub	KEYWORD2
+Uc	KEYWORD2
+enable_pin	KEYWORD2
+pole_pairs	KEYWORD2
 
-pwmA	LITERAL1
-pwmB	LITERAL1
-pwmC	LITERAL1
-enable_pin	LITERAL1
-pole_pairs	LITERAL1
-
-power_supply_voltage	LITERAL1
+power_supply_voltage	LIKEYWORD2TERAL1

@@ -10,6 +10,11 @@ enum Pullup{
     EXTERN
 };
 
+enum Quadrature{
+  ENABLE, // CPR = 4xPPR
+  DISABLE // CPR = PPR
+};
+
 class Encoder{
  public:
     /*
@@ -34,30 +39,36 @@ class Encoder{
     // shaft velocity getter
     float getVelocity();
     float getAngle();
+    // getter for index pin
+    int indexFound();
+    int hasIndex();
+    float getIndexAngle();
 
     // setter for counter to zero
     void setCounterZero();
+    void setIndexZero();
     
     // pins A and B
     int pinA, pinB;           // encoder hardware pins
     // index pin
-    int index;
+    int index_pin;
     // encoder pullup type
     Pullup pullup;
-
+    // use 4xppr or not
+    Quadrature quadrature;
 
   private:
-    long pulse_counter;       // current pulse counter
-    long pulse_timestamp;     // last impulse timestamp in us
-    float cpr;                  // impulse cpr
-    int A_active, B_active;   // current active states of A and B line
-    int I_active;  // index active
+    volatile long pulse_counter;        // current pulse counter
+    volatile long pulse_timestamp;      // last impulse timestamp in us
+    float cpr;                 // impulse cpr
+    volatile int A_active, B_active;    // current active states of A and B line
+    volatile int I_active;              // index active
+    volatile long index_pulse_counter;  // pulse counter of the index
 
     // velocity calculation varibles
     float prev_Th, pulse_per_second;
-    long prev_pulse_counter, prev_timestamp_us;
+    volatile long prev_pulse_counter, prev_timestamp_us;
 
 };
-
 
 #endif

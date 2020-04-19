@@ -40,25 +40,43 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   PI_velocity_ultra_slow.u_limit = -1;
   PI_velocity_ultra_slow.uk_1 = 0;
   PI_velocity_ultra_slow.ek_1 = 0;
+  // current estimated angle
+  ultraslow_estimated_angle = 0;
 
   // position loop config
   // P controller constant
   P_angle.K = DEF_P_ANGLE_K;
   // maximum angular velocity to be used for positioning 
   P_angle.velocity_limit = DEF_P_ANGLE_VEL_LIM;
-  
-  // driver deafault type
-  driver = DriverType::half_bridge;
+
+  // index search PI controller
+  PI_velocity_index_search.K = DEF_PI_VEL_INDEX_K;
+  PI_velocity_index_search.Ti = DEF_PI_VEL_INDEX_TI;
+  PI_velocity_index_search.u_limit = -1;
+  PI_velocity_index_search.timestamp = micros();
+  PI_velocity_index_search.uk_1 = 0;
+  PI_velocity_index_search.ek_1 = 0;
+  // index search velocity
+  index_search_velocity = DEF_INDEX_SEARCH_TARGET_VELOCITY;
+
+  // electric angle og the zero angle
+  // electric angle of the index for encoder
+  index_electric_angle = 0;
+
+  //debugger 
+  debugger = nullptr;
 }
 
-// init hardware pins
+// init hardware pins   
 void BLDCMotor::init() {
+  if(debugger) debugger->println("DEBUG: Initilaise the motor pins.");
   // PWM pins
   pinMode(pwmA, OUTPUT);
   pinMode(pwmB, OUTPUT);
   pinMode(pwmC, OUTPUT);
   pinMode(enable_pin, OUTPUT);
 
+  if(debugger) debugger->println("DEBUG: Set high frequency PWM.");
   // Increase PWM frequency to 32 kHz
   // make silent
   setPwmFrequency(pwmA);
@@ -67,24 +85,28 @@ void BLDCMotor::init() {
 
   // check if u_limit configuration has been done. 
   // if not set it to the power_supply_voltage
-  if(PI_velocity.u_limit == -1) PI_velocity.u_limit = power_supply_voltage;
-  if(PI_velocity_ultra_slow.u_limit == -1) PI_velocity_ultra_slow.u_limit = power_supply_voltage;
+  // or if set too high
+  if(PI_velocity.u_limit == -1 || PI_velocity.u_limit > power_supply_voltage/2) PI_velocity.u_limit = power_supply_voltage/2;
+  if(PI_velocity_ultra_slow.u_limit == -1 || PI_velocity.u_limit > power_supply_voltage/2) PI_velocity_ultra_slow.u_limit = power_supply_voltage/2;
+  if(PI_velocity_index_search.u_limit == -1 || PI_velocity_index_search.u_limit > power_supply_voltage/2) PI_velocity_index_search.u_limit = power_supply_voltage/2;
 
-  delay(500);
+  _delay(500);
   // enable motor
+  if(debugger) debugger->println("DEBUG: Enabling motor.");
   enable();
-  delay(500);
+  _delay(500);
   
 }
 
 /*
 	initialization function
 */
-void BLDCMotor::initFOC() {
+int  BLDCMotor::initFOC() {
   // encoder alignment
-  delay(500);
-  alignEncoder();
-  delay(500);
+  _delay(500);
+  int exit_flag = alignEncoder();
+  _delay(500);
+  return exit_flag;
 }
 
 /*
@@ -121,15 +143,57 @@ void BLDCMotor::linkEncoder(Encoder* enc) {
 /*
 	Encoder alignment to electrical 0 angle
 */
-void BLDCMotor::alignEncoder() {
-  //setPhaseVoltage(12, M_PI/2);
-  setPwm(pwmA,12);
+int BLDCMotor::alignEncoder() {
+  if(debugger) debugger->println("DEBUG: Align the encoder and motor electrical 0 angle.");
+  // align the electircal phases of the motor and encoder
+  setPwm(pwmA, power_supply_voltage/2.0);
   setPwm(pwmB,0);
   setPwm(pwmC,0);
-  delay(1500);
+  _delay(1000);
+  // set encoder to zero
   encoder->setCounterZero();
-  delay(500);
-  setPhaseVoltage(0, 0);
+  _delay(500);
+  setPhaseVoltage(0,0);
+  _delay(200);
+
+  // find the index if available
+  int exit_flag = indexSearch();
+  _delay(500);
+  if(debugger){
+    if(exit_flag< 0 ) debugger->println("DEBUG: Error: Index not found!");
+    if(exit_flag> 0 ) debugger->println("DEBUG: Success: Index found!");
+  }
+  return exit_flag;
+}
+
+
+/*
+	Encoder alignment to electrical 0 angle
+*/
+int BLDCMotor::indexSearch() {
+  // if no index return
+  if(!encoder->hasIndex()) return 0;
+  
+  if(debugger) debugger->println("DEBUG: Search for the encoder index.");
+
+  // search the index with small speed
+  while(!encoder->indexFound() && shaft_angle < 2 * M_PI){
+    voltage_q = velocityIndexSearchPI(index_search_velocity - shaftVelocity());
+    loopFOC();   
+  }
+  voltage_q = 0;
+  // disable motor
+  setPhaseVoltage(0,0);
+
+  // set index to zero if it has been found
+  if(encoder->indexFound()){
+    encoder->setIndexZero();  
+    // remember index electric angle
+    index_electric_angle = electricAngle(encoder->getIndexAngle());
+  }
+
+
+  return encoder->indexFound() ? 1 : -1;
 }
 
 /**
@@ -203,42 +267,17 @@ void BLDCMotor::move(float target) {
 void BLDCMotor::setPhaseVoltage(double Uq, double angle_el) {
   
   // Uq sign compensation
-  float angle = angle_el + M_PI/2.0;
+  float angle = angle_el + index_electric_angle;
   // Uq sign compensation
   angle = normalizeAngle(Uq > 0 ? angle :  angle + M_PI );
-  // Park transform
-  Ualpha = abs(Uq) * cos(angle);
-  Ubeta = abs(Uq) * sin(angle);
+  // Inverse park transform
+  Ualpha = -sin(angle) * abs(Uq);
+  Ubeta =  cos(angle) * abs(Uq);
   
-  switch (driver) {
-    case DriverType::full_bridge :
-      // full Clarke transform
-      Ua = Ualpha;
-      Ub = -0.5 * Ualpha  + _SQRT3_2 * Ubeta;
-      Uc = -0.5 * Ualpha - _SQRT3_2 * Ubeta;
-      break;
-    case DriverType::half_bridge :
-      // HMBGC & L6234
-      // Unipolar Clarke transform
-      // determine the segment I, II, III
-      if ((angle >= 0) && (angle <= _120_D2R)) {
-        // section I
-        Ua = Ualpha + _1_SQRT3 * Ubeta;
-        Ub = _2_SQRT3 * Ubeta;
-        Uc = 0;
-      } else if ((angle > _120_D2R) && (angle <= (2 * _120_D2R))) {
-        // section III
-        Ua = 0;
-        Ub = _1_SQRT3 * Ubeta - Ualpha;
-        Uc = -_1_SQRT3 * Ubeta - Ualpha;
-      } else if ((angle > (2 * _120_D2R)) && (angle <= (3 * _120_D2R))) {
-        // section II
-        Ua = Ualpha - _1_SQRT3 * Ubeta;
-        Ub = 0;
-        Uc = - _2_SQRT3 * Ubeta;
-      }
-      break;
-  }
+  // Clarke transform
+  Ua = Ualpha;
+  Ub = -0.5 * Ualpha  + _SQRT3_2 * Ubeta;
+  Uc = -0.5 * Ualpha - _SQRT3_2 * Ubeta;
   
   // set phase voltages
   setPwm(pwmA, Ua);
@@ -252,22 +291,15 @@ void BLDCMotor::setPhaseVoltage(double Uq, double angle_el) {
 */
 void BLDCMotor::setPwm(int pinPwm, float U) {
   int U_pwm = 0;
-  int U_max = power_supply_voltage;
-  // uniploar or bipolar FOC
-  switch (driver) {
-    case DriverType::full_bridge :
-      // sets the voltage [-U_max,U_max] to pwm [0,255]
-      U_pwm = ((float)U + (float)U_max) / (2.0 * (float)U_max) * 255.0;
-      break;
-    case DriverType::half_bridge :
-      // HMBGC
-      // sets the voltage [0,12V(U_max)] to pwm [0,255]
-      // - support for HMBGC controller
-      // - support for L6234 drive
-      U_pwm = (int)(255.0 * (float)U / (float)U_max);
-      break;
-  }
-  // limit the values between 0 and 255;
+  float U_max = power_supply_voltage/2.0;
+  
+  // limit the voltage
+  if(abs(U) > U_max) U = U > 0 ? U_max : -U_max;
+
+  // sets the voltage [-U_max,U_max] to pwm [0,255]
+  U_pwm = ((float)U + (float)U_max) / (2.0 * (float)U_max) * 255.0;
+     
+  // limit the values between 0 and 255 (just in case)
   U_pwm = U_pwm < 0 ? 0 : U_pwm;
   U_pwm = U_pwm >= 255 ? 255 : U_pwm;
 
@@ -293,43 +325,54 @@ double BLDCMotor::normalizeAngle(double angle)
 /**
 	Motor control functions
 */
-float BLDCMotor::velocityPI(float ek) {
-  float Ts = (micros() - PI_velocity.timestamp) * 1e-6;
+// PI controller function
+float BLDCMotor::controllerPI(float ek, PI_s& cont){
 
+  float Ts = (micros() - cont.timestamp) * 1e-6;
+  
   // u(s) = Kr(1 + 1/(Ti.s))
-  float uk = PI_velocity.uk_1;
-  uk += PI_velocity.K * (Ts / (2.0 * PI_velocity.Ti) + 1.0) * ek + PI_velocity.K * (Ts / (2.0 * PI_velocity.Ti) - 1.0) * PI_velocity.ek_1;
-  if (abs(uk) > PI_velocity.u_limit) uk = uk > 0 ? PI_velocity.u_limit : -PI_velocity.u_limit;
+  float uk = cont.uk_1;
+  uk += cont.K * (Ts / (2.0 * cont.Ti) + 1.0) * ek + cont.K * (Ts / (2.0 * cont.Ti) - 1.0) * cont.ek_1;
+  // antiwindup - limit the output voltage
+  if (abs(uk) > cont.u_limit) uk = uk > 0 ? cont.u_limit : -cont.u_limit;
 
-  PI_velocity.uk_1 = uk;
-  PI_velocity.ek_1 = ek;
-  PI_velocity.timestamp = micros();
+  cont.uk_1 = uk;
+  cont.ek_1 = ek;
+  cont.timestamp = micros();
   return uk;
 }
-
+// velocity control loop PI controller
+float BLDCMotor::velocityPI(float ek) {
+  return controllerPI(ek, PI_velocity);
+}
+// index search PI contoller
+float BLDCMotor::velocityIndexSearchPI(float ek) {
+  return controllerPI(ek, PI_velocity_index_search);
+}
 // PI controller for ultra slow velocity control
 float BLDCMotor::velocityUltraSlowPI(float vel) {
   float Ts = (micros() - PI_velocity_ultra_slow.timestamp) * 1e-6;
-  static float angle;
 
-  angle += vel * Ts;
-  float ek = angle - shaft_angle;
+  // integrate the velocity to get the necessary angle
+  ultraslow_estimated_angle += vel * Ts;
+  // error of positioning
+  float ek = ultraslow_estimated_angle - shaft_angle;
 
-  // u(s) = Kr(1 + 1/(Ti.s))
-  float uk = PI_velocity_ultra_slow.uk_1;
-  uk += PI_velocity_ultra_slow.K * (Ts / (2 * PI_velocity_ultra_slow.Ti) + 1) * ek + PI_velocity_ultra_slow.K * (Ts / (2 * PI_velocity_ultra_slow.Ti) - 1) * PI_velocity_ultra_slow.ek_1;
-  if (abs(uk) > PI_velocity_ultra_slow.u_limit) uk = uk > 0 ? PI_velocity_ultra_slow.u_limit : -PI_velocity_ultra_slow.u_limit;
-
-  PI_velocity_ultra_slow.uk_1 = uk;
-  PI_velocity_ultra_slow.ek_1 = ek;
-  PI_velocity_ultra_slow.timestamp = micros();
-  return uk;
+  return controllerPI(ek, PI_velocity_ultra_slow);
 }
+
 // P controller for position control loop
 float BLDCMotor::positionP(float ek) {
   float velk = P_angle.K * ek;
   if (abs(velk) > P_angle.velocity_limit) velk = velk > 0 ? P_angle.velocity_limit : -P_angle.velocity_limit;
   return velk;
+}
+
+
+
+void BLDCMotor::useDebugging(Print &print){
+  debugger = &print; //operate on the adress of print
+  if(debugger )debugger->println("DEBUG: Serial debugger enabled!");
 }
 
 
@@ -349,7 +392,9 @@ void setPwmFrequency(int pin) {
   }
 }
 
-
-
-
-
+// funciton buffering _delays 
+// arduino funciton doesn't work well with interrupts
+void _delay(uint64_t ms){
+  long t = micros();
+  while((micros() - t)/1000 < ms){};
+}
