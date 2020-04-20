@@ -9,12 +9,12 @@
 //  - phA, phB, phC - motor A,B,C phase pwm pins
 //  - pp            - pole pair number
 //  - enable pin    - (optional input)
-BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
+BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
 //  Encoder(int encA, int encB , int cpr, int index)
 //  - encA, encB    - encoder A and B pins
 //  - ppr           - impulses per rotation  (cpr=ppr*4)
 //  - index pin     - (optional input)
-Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, 4);
+Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192,4);
 // interrupt ruotine intialisation
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
@@ -61,7 +61,7 @@ void setup() {
   motor.PI_velocity.K = 0.3;
   motor.PI_velocity.Ti = 0.003;
   //defualt power_supply_voltage/2
-  motor.PI_velocity.u_limit = 4;
+  motor.PI_velocity.u_limit = 3;
 
   // link the motor to the sensor
   motor.linkEncoder(&encoder);
@@ -77,11 +77,12 @@ void setup() {
 
   Serial.println("Motor ready.");
   Serial.println("Input the new target value:");
-  delay(1000);
+  _delay(1000);
 }
 
 // target velocity variable
 float target = 0;
+int t =0;
 
 void loop() {
   // iterative state calculation calculating angle
@@ -97,7 +98,8 @@ void loop() {
   // it can go as low as ~50Hz
   motor.move(target);
 
-
+  t = t> 1000 ? 0 : t + 1;
+  if(!t) Serial.print(_micros());
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
   // motor_monitor();

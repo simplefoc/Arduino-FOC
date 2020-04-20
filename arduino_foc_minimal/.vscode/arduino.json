@@ -1,5 +1,0 @@
-{
-    "board": "arduino:avr:uno",
-    "port": "COM57",
-    "sketch": "arduino_foc_minimal.ino"
-}

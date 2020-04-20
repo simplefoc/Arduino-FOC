@@ -3,6 +3,7 @@
 
 #include "Arduino.h"
 #include "Encoder.h"
+#include "FOCutils.h"
 
 // default configuration values
 // power supply voltage
@@ -22,16 +23,6 @@
 // velocity PI controller params for index search
 #define DEF_PI_VEL_INDEX_K 0.5
 #define DEF_PI_VEL_INDEX_TI 0.01
-
-
-// sign funciton
-#define sign(a) ( ( (a) < 0 )  ?  -1   : ( (a) > 0 ) )
-// utility defines
-#define _2_SQRT3 1.15470053838
-#define _1_SQRT3 0.57735026919
-#define _SQRT3_2 0.86602540378
-#define _SQRT2 1.41421356237
-#define _120_D2R 2.09439510239
 
 // controller type configuration enum
 enum ControlType{
@@ -87,6 +78,14 @@ class BLDCMotor
     int enable_pin;
     int pole_pairs;
 
+
+
+    /** State calculation methods */
+    //Shaft angle calculation
+    float shaftAngle();
+    //Shaft velocity calculation
+    float shaftVelocity();
+
     // state variables
     // current elelctrical angle
   	float elctric_angle;
@@ -131,11 +130,6 @@ class BLDCMotor
     //Encoder alignment to electrical 0 angle
     int alignEncoder();
     int indexSearch();
-    /** State calculation methods */
-    //Shaft angle calculation
-    float shaftAngle();
-    //Shaft velocity calculation
-    float shaftVelocity();
     
     //Electrical angle calculation
     float electricAngle(float shaftAngle);
@@ -164,13 +158,5 @@ class BLDCMotor
 
 };
 
-
-/*
-  High PWM frequency
-*/
-void setPwmFrequency(int pin);
-// funciton implementing arduino blocking delay funciton
-// regular delay funciton doesn't work with interrupts
-void _delay(uint64_t ms);
 
 #endif

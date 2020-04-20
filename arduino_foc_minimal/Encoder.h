@@ -2,6 +2,7 @@
 #define ENCODER_LIB_H
 
 #include "Arduino.h"
+#include "FOCutils.h"
 
 
 // Pullup configuation structure
