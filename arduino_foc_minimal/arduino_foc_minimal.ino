@@ -98,8 +98,6 @@ void loop() {
   // it can go as low as ~50Hz
   motor.move(target);
 
-  t = t> 1000 ? 0 : t + 1;
-  if(!t) Serial.print(_micros());
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
   // motor_monitor();
