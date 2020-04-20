@@ -61,13 +61,13 @@ void setup() {
   // contoller configuration based on the controll type 
   // velocity PI controller parameters
   // default K=1.0 Ti = 0.003
-  motor.PI_velocity.K = 0.1;
+  motor.PI_velocity.K = 0.3;
   motor.PI_velocity.Ti = 0.003;
   //defualt power_supply_voltage/2
   motor.PI_velocity.voltage_limit = 6;
   // jerk control using voltage voltage ramp
   // default value is 1000 volts per sec  ~ 1V per millisecond
-  motor.PI_velocity.voltage_ramp = 500;
+  motor.PI_velocity.voltage_ramp = 300;
 
   // link the motor to the sensor
   motor.linkEncoder(&encoder);

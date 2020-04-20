@@ -206,7 +206,7 @@ float BLDCMotor::shaftAngle() {
 }
 // shaft velocity calculation
 float BLDCMotor::shaftVelocity() {
-  return vk1;
+  return encoder->getVelocity();
 }
 /*
 	Electrical angle calculation

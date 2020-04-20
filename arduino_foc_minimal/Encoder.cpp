@@ -42,23 +42,23 @@ Encoder::Encoder(int _encA, int _encB , float _ppr, int _index){
 // A channel
 void Encoder::handleA() {
   int A = digitalRead(pinA);
-  switch (quadrature){
-    case Quadrature::ENABLE:
+  // switch (quadrature){
+  //   case Quadrature::ENABLE:
       // CPR = 4xPPR
       if ( A != A_active ) {
         pulse_counter += (A_active == B_active) ? 1 : -1;
         pulse_timestamp = _micros();
         A_active = A;
       }
-      break;
-    case Quadrature::DISABLE:
-      // CPR = PPR
-      if(A && !digitalRead(pinB)){
-        pulse_counter++;
-        pulse_timestamp = _micros();
-      }
-      break;
-  }
+  //     break;
+  //   case Quadrature::DISABLE:
+  //     // CPR = PPR
+  //     if(A && !digitalRead(pinB)){
+  //       pulse_counter++;
+  //       pulse_timestamp = _micros();
+  //     }
+  //     break;
+  // }
   if(hasIndex()){
     int I = digitalRead(index_pin);
     if(I && !I_active){
@@ -79,23 +79,23 @@ void Encoder::handleA() {
 // B channel
 void Encoder::handleB() {
   int B = digitalRead(pinB);
-  switch (quadrature){
-    case Quadrature::ENABLE:
+  // switch (quadrature){
+  //   case Quadrature::ENABLE:
       // CPR = 4xPPR
       if ( B != B_active ) {
         pulse_counter += (A_active != B_active) ? 1 : -1;
         pulse_timestamp = _micros();
         B_active = B;
       }
-      break;
-    case Quadrature::DISABLE:
-      // CPR = PPR
-      if(B && !digitalRead(pinA)){
-        pulse_counter--;
-        pulse_timestamp = _micros();
-      }
-      break;
-  }
+  //     break;
+  //   case Quadrature::DISABLE:
+  //     // CPR = PPR
+  //     if(B && !digitalRead(pinA)){
+  //       pulse_counter--;
+  //       pulse_timestamp = _micros();
+  //     }
+  //     break;
+  // }
   if(hasIndex()){
     int I = digitalRead(index_pin);
     if(I && !I_active){
