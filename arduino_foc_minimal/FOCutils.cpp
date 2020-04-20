@@ -32,7 +32,7 @@ void _delay(unsigned long ms){
 // funciton buffering _micros() 
 // arduino funciton doesn't work well with interrupts
 unsigned long _micros(){
-    // return teh value based on the prescaler
+    // return the value based on the prescaler
     if((TCCR0B & 0b00000111) == 0x01) return (micros()/32);
     else return (micros());
 }
