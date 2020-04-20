@@ -66,7 +66,7 @@ void setup() {
   //defualt power_supply_voltage/2
   motor.PI_velocity.voltage_limit = 6;
   // jerk control using voltage voltage ramp
-  // default value is 1000 volts per sec  ~ 1V per millisecond
+  // default value is 100 volts per sec  ~ 0.1V per millisecond
   motor.PI_velocity.voltage_ramp = 300;
 
   // link the motor to the sensor

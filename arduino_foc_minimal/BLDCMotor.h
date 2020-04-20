@@ -11,11 +11,11 @@
 // velocity PI controller params
 #define DEF_PI_VEL_K 0.5
 #define DEF_PI_VEL_TI 0.01
-#define DEF_PI_VEL_U_RAMP 1000
+#define DEF_PI_VEL_U_RAMP 300
 // ultra slow velocity PI params
 #define DEF_PI_VEL_US_K 60.0
 #define DEF_PI_VEL_US_TI 100.0
-#define DEF_PI_VEL_US_U_RAMP 1000
+#define DEF_PI_VEL_US_U_RAMP 100
 // angle P params
 #define DEF_P_ANGLE_K 20
 // angle velocity limit default
@@ -25,7 +25,7 @@
 // velocity PI controller params for index search
 #define DEF_PI_VEL_INDEX_K 0.5
 #define DEF_PI_VEL_INDEX_TI 0.01
-#define DEF_PI_VEL_INDEX_U_RAMP 500
+#define DEF_PI_VEL_INDEX_U_RAMP 100
 
 // controller type configuration enum
 enum ControlType{
