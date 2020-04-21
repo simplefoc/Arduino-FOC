@@ -14,7 +14,7 @@ BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
 //  - encA, encB    - encoder A and B pins
 //  - ppr           - impulses per rotation  (cpr=ppr*4)
 //  - index pin     - (optional input)
-Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192,4);
+Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, 4);
 // interrupt ruotine intialisation
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
@@ -46,7 +46,10 @@ void setup() {
   // default K=0.5 Ti = 0.01
   motor.PI_velocity_index_search.K = 0.1;
   motor.PI_velocity_index_search.Ti = 0.01;
-  motor.PI_velocity_index_search.u_limit = 3;
+  //motor.PI_velocity_index_search.voltage_limit = 3;
+  // jerk control using voltage voltage ramp
+  // default value is 100
+  motor.PI_velocity_index_search.voltage_ramp = 100;
   
   // set FOC loop to be used
   // ControlType::voltage
@@ -61,7 +64,10 @@ void setup() {
   motor.PI_velocity.K = 0.3;
   motor.PI_velocity.Ti = 0.003;
   //defualt power_supply_voltage/2
-  motor.PI_velocity.u_limit = 3;
+  motor.PI_velocity.voltage_limit = 6;
+  // jerk control using voltage voltage ramp
+  // default value is 100 volts per sec  ~ 0.1V per millisecond
+  motor.PI_velocity.voltage_ramp = 300;
 
   // link the motor to the sensor
   motor.linkEncoder(&encoder);
@@ -82,7 +88,7 @@ void setup() {
 
 // target velocity variable
 float target = 0;
-int t =0;
+int t = 0;
 
 void loop() {
   // iterative state calculation calculating angle

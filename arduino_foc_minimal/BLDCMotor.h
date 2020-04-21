@@ -11,9 +11,11 @@
 // velocity PI controller params
 #define DEF_PI_VEL_K 0.5
 #define DEF_PI_VEL_TI 0.01
+#define DEF_PI_VEL_U_RAMP 300
 // ultra slow velocity PI params
 #define DEF_PI_VEL_US_K 60.0
 #define DEF_PI_VEL_US_TI 100.0
+#define DEF_PI_VEL_US_U_RAMP 100
 // angle P params
 #define DEF_P_ANGLE_K 20
 // angle velocity limit default
@@ -23,6 +25,7 @@
 // velocity PI controller params for index search
 #define DEF_PI_VEL_INDEX_K 0.5
 #define DEF_PI_VEL_INDEX_TI 0.01
+#define DEF_PI_VEL_INDEX_U_RAMP 100
 
 // controller type configuration enum
 enum ControlType{
@@ -37,15 +40,16 @@ struct PI_s{
   float K;
   float Ti;
   long timestamp;
-  float uk_1, ek_1;
-  float u_limit;
+  float voltage_prev, tracking_error_prev;
+  float voltage_limit;
+  float voltage_ramp;
 };
 
 // P controller structure
 struct P_s{
   float K;
   long timestamp;
-  float uk_1, ek_1;
+  float voltage_prev, tracking_error_prev;
   float velocity_limit;
 };
 
@@ -143,10 +147,10 @@ class BLDCMotor
     float filterLP(float u);
     
     /** Motor control functions */
-    float controllerPI(float ek, PI_s &controller);
-    float velocityPI(float ek);
+    float controllerPI(float tracking_error, PI_s &controller);
+    float velocityPI(float tracking_error);
     float velocityUltraSlowPI(float vel);
-    float velocityIndexSearchPI(float ek);
+    float velocityIndexSearchPI(float tracking_error);
     float positionP(float ek);
     
     // phase voltages 
