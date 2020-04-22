@@ -13,11 +13,20 @@ BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
 //  Encoder(int encA, int encB , int cpr, int index)
 //  - encA, encB    - encoder A and B pins
 //  - ppr           - impulses per rotation  (cpr=ppr*4)
-//  - index pin     - (optional input)
-Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, 4);
-// interrupt ruotine intialisation
+//  - index pin     - (optional input) 
+Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, A0);
+
+// Interrupt rutine intialisation
+// channel A and B callbacks
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
+// index calback interrupt code 
+// please set the right PCINT(0,1,2)_vect parameter
+//  PCINT0_vect - index pin in between D8 and D13
+//  PCINT1_vect - index pin in between A0 and A5 (recommended)
+//  PCINT2_vect - index pin in between D0 and D7
+ISR (PCINT1_vect) { encoder.handleIndex(); }
+
 
 void setup() { 
   // debugging port
@@ -38,7 +47,7 @@ void setup() {
 
   // power supply voltage
   // default 12V
-  motor.power_supply_voltage = 12;
+  motor.voltage_power_supply = 12;
 
   // index search velocity - default 1rad/s
   motor.index_search_velocity = 1;
@@ -51,7 +60,7 @@ void setup() {
   // default value is 100
   motor.PI_velocity_index_search.voltage_ramp = 100;
   
-  // set FOC loop to be used
+  // set control loop type to be used
   // ControlType::voltage
   // ControlType::velocity
   // ControlType::velocity_ultra_slow
@@ -63,11 +72,12 @@ void setup() {
   // default K=1.0 Ti = 0.003
   motor.PI_velocity.K = 0.3;
   motor.PI_velocity.Ti = 0.003;
-  //defualt power_supply_voltage/2
+  //defualt voltage_power_supply/2
   motor.PI_velocity.voltage_limit = 6;
   // jerk control using voltage voltage ramp
-  // default value is 100 volts per sec  ~ 0.1V per millisecond
+  // default value is 300 volts per sec  ~ 0.3V per millisecond
   motor.PI_velocity.voltage_ramp = 300;
+
 
   // link the motor to the sensor
   motor.linkEncoder(&encoder);
@@ -82,13 +92,13 @@ void setup() {
   motor.initFOC();
 
   Serial.println("Motor ready.");
-  Serial.println("Input the new target value:");
+  Serial.println("Input the new target velocity:");
   _delay(1000);
+
 }
 
 // target velocity variable
-float target = 0;
-int t = 0;
+float target_velocity = 0;
 
 void loop() {
   // iterative state calculation calculating angle
@@ -102,7 +112,7 @@ void loop() {
   // velocity, position or voltage
   // this funciton can be run at much lower frequency than loopFOC funciton
   // it can go as low as ~50Hz
-  motor.move(target);
+  motor.move(target_velocity);
 
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
@@ -152,9 +162,9 @@ void serialEvent() {
     // if the incoming character is a newline
     // end of input
     if (inChar == '\n') {
-      target = inputString.toFloat();
-      Serial.print("Tagret: ");
-      Serial.println(target);
+      target_velocity = inputString.toFloat();
+      Serial.print("Tagret Velocity: ");
+      Serial.println(target_velocity);
       inputString = "";
     }
   }

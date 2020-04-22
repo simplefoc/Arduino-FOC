@@ -35,6 +35,8 @@ class Encoder{
     void handleA();
     // B channel
     void handleB();
+    // index handle
+    void handleIndex();
     
     // encoder getters
     // shaft velocity getter
@@ -57,6 +59,7 @@ class Encoder{
     Pullup pullup;
     // use 4xppr or not
     Quadrature quadrature;
+
 
   private:
     volatile long pulse_counter;        // current pulse counter

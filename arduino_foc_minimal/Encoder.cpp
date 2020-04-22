@@ -59,29 +59,13 @@ void Encoder::handleA() {
       }
       break;
   }
-  if(hasIndex()){
-    int I = digitalRead(index_pin);
-    if(I && !I_active){
-      // aling encoder on each index 
-      if(index_pulse_counter){
-        long tmp = pulse_counter;
-        // corrent the counter value
-        pulse_counter = round((float)pulse_counter/(float)cpr)*cpr;
-        // preserve relative speed
-        prev_pulse_counter += pulse_counter - tmp;
-      } 
-      // initial offset 
-      if(!index_pulse_counter) index_pulse_counter = pulse_counter;
-    }
-    I_active = I;
-  }
 }
 // B channel
 void Encoder::handleB() {
   int B = digitalRead(pinB);
   switch (quadrature){
     case Quadrature::ENABLE:
-      // CPR = 4xPPR
+  //     // CPR = 4xPPR
       if ( B != B_active ) {
         pulse_counter += (A_active != B_active) ? 1 : -1;
         pulse_timestamp = _micros();
@@ -96,6 +80,10 @@ void Encoder::handleB() {
       }
       break;
   }
+}
+
+// Index channel
+void Encoder::handleIndex() {
   if(hasIndex()){
     int I = digitalRead(index_pin);
     if(I && !I_active){
@@ -191,14 +179,13 @@ void Encoder::init(void (*doA)(), void(*doB)()){
   if(pullup == Pullup::INTERN){
     pinMode(pinA, INPUT_PULLUP);
     pinMode(pinB, INPUT_PULLUP);
+    if(hasIndex()) pinMode(index_pin,INPUT_PULLUP);
   }else{
     pinMode(pinA, INPUT);
     pinMode(pinB, INPUT);
+    if(hasIndex()) pinMode(index_pin,INPUT);
   }
-  // if index used intialise it
-  if(hasIndex()) pinMode(index_pin,INPUT);
-
-  // counter setup
+    // counter setup
   pulse_counter = 0;
   pulse_timestamp = _micros();
   // velocity calculation varibles
@@ -211,6 +198,8 @@ void Encoder::init(void (*doA)(), void(*doB)()){
   // attach interrupt if functions provided
   switch(quadrature){
     case Quadrature::ENABLE:
+      // initial cpr = PPR
+      // change it if the mode is quadrature
       cpr = 4*cpr;
       // A callback and B callback
       if(doA != nullptr){
@@ -227,5 +216,12 @@ void Encoder::init(void (*doA)(), void(*doB)()){
         attachInterrupt(digitalPinToInterrupt(pinB), doB, RISING);
       }
       break;
-    }
+  }
+    
+  // if index used intialise the index interrupt
+  if(hasIndex()) {
+    *digitalPinToPCMSK(index_pin) |= bit (digitalPinToPCMSKbit(index_pin));  // enable pin
+    PCIFR  |= bit (digitalPinToPCICRbit(index_pin)); // clear any outstanding interrupt
+    PCICR  |= bit (digitalPinToPCICRbit(index_pin)); // enable interrupt for the group
+  }
 }

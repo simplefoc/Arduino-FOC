@@ -13,6 +13,7 @@
 #define _120_D2R 2.09439510239
 #define _PI_2 1.57079632679
 #define _2PI 6.28318530718
+#define _3PI_2 4.71238898038
 
 // High PWM frequency
 void setPwmFrequency(int pin);
@@ -24,5 +25,14 @@ void _delay(unsigned long ms);
 // funciton buffering _micros() 
 // arduino funciton doesn't work well with interrupts
 unsigned long _micros();
+
+// function approximating the sine calculation by using fixed size array
+// ~40us
+// it has to receive an angle in between 0 and 2PI
+float _sin(float a);
+// function approfimating cosine calculaiton by using fixed size array
+// ~50us
+// it has to receive an angle in between 0 and 2PI
+float _cos(float a);
 
 #endif
