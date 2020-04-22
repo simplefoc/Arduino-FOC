@@ -21,14 +21,14 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   enable_pin = en;
 
   // Power supply woltage
-  power_supply_voltage = DEF_POWER_SUPPLY;
+  voltage_power_supply = DEF_POWER_SUPPLY;
 
   // Velocity loop config
   // PI contoroller constant
   PI_velocity.K = DEF_PI_VEL_K;
   PI_velocity.Ti = DEF_PI_VEL_TI;
   PI_velocity.timestamp = _micros();
-  PI_velocity.voltage_limit = power_supply_voltage/2;
+  PI_velocity.voltage_limit = voltage_power_supply/2;
   PI_velocity.voltage_ramp = DEF_PI_VEL_U_RAMP;
   PI_velocity.voltage_prev = 0;
   PI_velocity.tracking_error_prev = 0;
@@ -38,7 +38,7 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   PI_velocity_ultra_slow.K = DEF_PI_VEL_US_K;
   PI_velocity_ultra_slow.Ti = DEF_PI_VEL_US_TI;
   PI_velocity_ultra_slow.timestamp = _micros();
-  PI_velocity_ultra_slow.voltage_limit = power_supply_voltage/2;
+  PI_velocity_ultra_slow.voltage_limit = voltage_power_supply/2;
   PI_velocity_ultra_slow.voltage_ramp = DEF_PI_VEL_US_U_RAMP;
   PI_velocity_ultra_slow.voltage_prev = 0;
   PI_velocity_ultra_slow.tracking_error_prev = 0;
@@ -54,7 +54,7 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   // index search PI controller
   PI_velocity_index_search.K = DEF_PI_VEL_INDEX_K;
   PI_velocity_index_search.Ti = DEF_PI_VEL_INDEX_TI;
-  PI_velocity_index_search.voltage_limit = power_supply_voltage/2;
+  PI_velocity_index_search.voltage_limit = voltage_power_supply/2;
   PI_velocity_index_search.voltage_ramp = DEF_PI_VEL_INDEX_U_RAMP;
   PI_velocity_index_search.timestamp = _micros();
   PI_velocity_index_search.voltage_prev = 0;
@@ -88,9 +88,9 @@ void BLDCMotor::init() {
   setPwmFrequency(pwmC);
 
   // sanity check for the voltage limit configuration
-  if(PI_velocity.voltage_limit > power_supply_voltage/2) PI_velocity.voltage_limit = PI_velocity.voltage_limit > power_supply_voltage/2;
-  if(PI_velocity.voltage_limit > power_supply_voltage/2) PI_velocity_ultra_slow.voltage_limit = power_supply_voltage/2;
-  if(PI_velocity_index_search.voltage_limit > power_supply_voltage/2) PI_velocity_index_search.voltage_limit = power_supply_voltage/2;
+  if(PI_velocity.voltage_limit > voltage_power_supply/2) PI_velocity.voltage_limit = PI_velocity.voltage_limit > voltage_power_supply/2;
+  if(PI_velocity.voltage_limit > voltage_power_supply/2) PI_velocity_ultra_slow.voltage_limit = voltage_power_supply/2;
+  if(PI_velocity_index_search.voltage_limit > voltage_power_supply/2) PI_velocity_index_search.voltage_limit = voltage_power_supply/2;
 
   _delay(500);
   // enable motor
@@ -148,7 +148,7 @@ void BLDCMotor::linkEncoder(Encoder* enc) {
 int BLDCMotor::alignEncoder() {
   if(debugger) debugger->println("DEBUG: Align the encoder and motor electrical 0 angle.");
   // align the electircal phases of the motor and encoder
-  setPwm(pwmA, power_supply_voltage/2.0);
+  setPwm(pwmA, voltage_power_supply/2.0);
   setPwm(pwmB,0);
   setPwm(pwmC,0);
   _delay(1000);
@@ -267,10 +267,15 @@ void BLDCMotor::move(float target) {
   Method using FOC to set Uq to the motor at the optimal angle
 */
 void BLDCMotor::setPhaseVoltage(double Uq, double angle_el) {
-  
+
+  // angle normalisation in between 0 and 2pi
+  // only necessary if using _sin and _cos - approximation funcitons
+  float angle = normalizeAngle(angle_el + index_electric_angle);
   // Inverse park transform
-  Ualpha =  -sin(angle_el + index_electric_angle) * Uq;
-  Ubeta =  cos(angle_el + index_electric_angle) * Uq;
+  // regular sin + cos ~300us
+  // approx  _sin + _cos ~90us 
+  Ualpha =  -_sin(angle) * Uq;
+  Ubeta =  _cos(angle) * Uq;
   
   // Clarke transform
   Ua = Ualpha;
@@ -290,10 +295,12 @@ void BLDCMotor::setPhaseVoltage(double Uq, double angle_el) {
 */
 void BLDCMotor::setPwm(int pinPwm, float U) {
   // max value
-  float U_max = power_supply_voltage/2.0;
+  float U_max = voltage_power_supply/2.0;
   
   // sets the voltage [-U_max,U_max] to pwm [0,255]
   // u_pwm = 255 * (U + U_max)/(2*U_max)
+  // it can be further optimised 
+  // (example U_max = 6 > U_pwm = 127.5 + 21.25*U)
   int U_pwm = 127.5 * (U/U_max + 1);
      
   // limit the values between 0 and 255

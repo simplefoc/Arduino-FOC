@@ -15,7 +15,7 @@
 // ultra slow velocity PI params
 #define DEF_PI_VEL_US_K 60.0
 #define DEF_PI_VEL_US_TI 100.0
-#define DEF_PI_VEL_US_U_RAMP 100
+#define DEF_PI_VEL_US_U_RAMP 300
 // angle P params
 #define DEF_P_ANGLE_K 20
 // angle velocity limit default
@@ -105,7 +105,7 @@ class BLDCMotor
     float voltage_q;
 
     // Power supply woltage
-    float power_supply_voltage;
+    float voltage_power_supply;
 
     // configuraion structures
     ControlType controller;
