@@ -32,7 +32,7 @@ void setup() {
 
   // power supply voltage
   // default 12V
-  motor.power_supply_voltage = 12;
+  motor.voltage_power_supply = 12;
 
   // set FOC loop to be used
   motor.controller = ControlType::voltage;

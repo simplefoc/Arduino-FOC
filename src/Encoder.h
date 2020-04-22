@@ -2,6 +2,7 @@
 #define ENCODER_LIB_H
 
 #include "Arduino.h"
+#include "FOCutils.h"
 
 
 // Pullup configuation structure
@@ -34,6 +35,8 @@ class Encoder{
     void handleA();
     // B channel
     void handleB();
+    // index handle
+    void handleIndex();
     
     // encoder getters
     // shaft velocity getter
@@ -57,6 +60,7 @@ class Encoder{
     // use 4xppr or not
     Quadrature quadrature;
 
+
   private:
     volatile long pulse_counter;        // current pulse counter
     volatile long pulse_timestamp;      // last impulse timestamp in us
@@ -70,5 +74,6 @@ class Encoder{
     volatile long prev_pulse_counter, prev_timestamp_us;
 
 };
+
 
 #endif

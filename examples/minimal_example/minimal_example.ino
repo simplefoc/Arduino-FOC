@@ -16,6 +16,8 @@ Encoder encoder = Encoder(2, 3, 8192, 4);
 // interrupt ruotine intialisation
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
+// please set the right PCINT(0,1,2)_vect parameter
+ISR (PCINT2_vect) { encoder.handleIndex(); }
 
 void setup() {
   // debugging port
@@ -26,6 +28,14 @@ void setup() {
 
   // velocity control
   motor.controller = ControlType::velocity;
+
+  // contoller configuration based on the controll type 
+  motor.PI_velocity.K = 0.3;
+  motor.PI_velocity.Ti = 0.003;
+  motor.PI_velocity.voltage_limit = 6;
+  // jerk control using voltage voltage ramp
+  motor.PI_velocity.voltage_ramp = 300;
+
 
   // link the motor to the sensor
   motor.linkEncoder(&encoder);
