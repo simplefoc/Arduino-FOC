@@ -219,7 +219,7 @@ void Encoder::init(void (*doA)(), void(*doB)()){
   }
     
   // if index used intialise the index interrupt
-  if(hasIndex() || doA != nullptr) {
+  if(hasIndex() && doA != nullptr) {
     *digitalPinToPCMSK(index_pin) |= bit (digitalPinToPCMSKbit(index_pin));  // enable pin
     PCIFR  |= bit (digitalPinToPCICRbit(index_pin)); // clear any outstanding interrupt
     PCICR  |= bit (digitalPinToPCICRbit(index_pin)); // enable interrupt for the group
