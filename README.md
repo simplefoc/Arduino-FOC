@@ -1,13 +1,20 @@
 # Arduino Simple FOC library minimal example 
 
-![Library Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Compile/badge.svg)
+![MinimalBuild](https://github.com/askuric/Arduino-FOC/workflows/MinimalBuild/badge.svg?branch=minimal)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![arduino-library-badge](https://www.ardu-badge.com/badge/Simple%20FOC.svg?)](https://www.ardu-badge.com/badge/Simple%20FOC.svg)
 
 This is the minimal Arduino example of the [Simple FOC](https://github.com/askuric/Arduino-FOC) arduino library intended for mostly for easier experiemtation and modification!
 
+## Arduino FOC repo structure
+Branch  | Description | Status
+------------ | ------------- | ------------ 
+[master](https://github.com/askuric/Arduino-FOC) | Stable and tested library version | ![Library Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Compile/badge.svg)
+[dev](https://github.com/askuric/Arduino-FOC/tree/dev) | Developement library version | ![Library Dev Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Dev%20Compile/badge.svg?branch=dev)
+[minimal](https://github.com/askuric/Arduino-FOC/tree/minimal) | Minimal Arduino example with integrated library | ![MinimalBuild](https://github.com/askuric/Arduino-FOC/workflows/MinimalBuild/badge.svg?branch=minimal)
+
  # Contents
- - [Installation](#arduino-simple-foc-instalation)
+- [Installation](#arduino-simple-foc-instalation)
   - [Installing the full library](#installing-simple-foc-full-library)
   - [Installing the minimal Arduino example](#download-minimal-simple-foc-arduino-example)
 - [Electrical connecitons and schematic](#electrical-connections)
@@ -38,13 +45,13 @@ The simplest way to get hold of the library is direclty by using Arduino IDE and
 ### Download library directly
 If you don't want to use the Arduino IDE and Library manager you can direclty download the library from this website. 
 - Simplest way to do it is to download the `zip` aerchieve directly on the top of this webiste. Click first on `Clone or Download` and then on `Download ZIP`. Once you have the zip ardhieve downloaded, unzip it and place it in your Arduino Libraries forlder. On Windows it is usually in `Documents > Arduino > libraries`.  
-  - Now reopen your Arduino IDE and you should have the library examples in `File > Examples > Simple FOC`.
+  Now reopen your Arduino IDE and you should have the library examples in `File > Examples > Simple FOC`.
 
 - If you are more experienced with the terminal you can open your terminal in the Arduino libraries folder direclty and clone the Arduino FOC git repsitory:
-```bash
-git clone https://github.com/askuric/Arduino-FOC.git
-```
-  - Now reopen your Arduino IDE and you should have the library examples in `File > Examples > Simple FOC`.
+  ```bash
+  git clone https://github.com/askuric/Arduino-FOC.git
+  ```
+  Now reopen your Arduino IDE and you should have the library examples in `File > Examples > Simple FOC`.
 
 ## Download minimal Simple FOC Arduino example
 To download the minmial verison of Simple FOC intended for those willing to experiment and extend the code I suggest using this version over the full library. 
@@ -52,13 +59,13 @@ This code is completely indepenedet and you can run it as any other Arduino Sche
 The code is place in the [minimal branch](https://github.com/askuric/Arduino-FOC/tree/minimal). 
 
 - You can download it directly form the [minimal branch](https://github.com/askuric/Arduino-FOC/tree/minimal) by clicking on the `Clone or Download > Download ZIP`.
-  - Then you just unzip it and open the schetch in Arduino IDE. 
+  Then you just unzip it and open the schetch in Arduino IDE. 
 
 - You can also clone it using the terminal:
   ```bash
   git clone -b minimal https://github.com/askuric/Arduino-FOC.git
   ```
-  - Then you just open it with the Arduino IDE and run it.
+  Then you just open it with the Arduino IDE and run it.
 
 
 
