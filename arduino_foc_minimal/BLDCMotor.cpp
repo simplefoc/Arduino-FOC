@@ -266,16 +266,16 @@ void BLDCMotor::move(float target) {
 /*
   Method using FOC to set Uq to the motor at the optimal angle
 */
-void BLDCMotor::setPhaseVoltage(double Uq, double angle_el) {
+void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
 
   // angle normalisation in between 0 and 2pi
   // only necessary if using _sin and _cos - approximation funcitons
   float angle = normalizeAngle(angle_el + index_electric_angle);
   // Inverse park transform
-  // regular sin + cos ~300us
-  // approx  _sin + _cos ~90us 
-  Ualpha =  -_sin(angle) * Uq;
-  Ubeta =  _cos(angle) * Uq;
+  // regular sin + cos ~300us    (no memeory usaage)
+  // approx  _sin + _cos ~110us  (400Byte ~ 20% of memory)
+  Ualpha =  -_sin(angle) * Uq;  // -sin(angle) * Uq;
+  Ubeta =  _cos(angle) * Uq;    //  cos(angle) * Uq;
   
   // Clarke transform
   Ua = Ualpha;
@@ -315,8 +315,8 @@ void BLDCMotor::setPwm(int pinPwm, float U) {
 /*
 	normalizing radian angle to [0,2PI]
 */
-double BLDCMotor::normalizeAngle(double angle){
-  double a = fmod(angle, _2PI);
+float BLDCMotor::normalizeAngle(float angle){
+  float a = fmod(angle, _2PI);
   return a >= 0 ? a : (a + _2PI);
 }
 
