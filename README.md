@@ -6,7 +6,7 @@
 
 This is the minimal Arduino example of the [Simple FOC](https://github.com/askuric/Arduino-FOC) arduino library intended for mostly for easier experiemtation and modification!
 
-# Repositoty structure
+## Arduino FOC repo structure
 Branch  | Description | Status
 ------------ | ------------- | ------------ 
 [master](https://github.com/askuric/Arduino-FOC) | Stable and tested library version | ![Library Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Compile/badge.svg)
