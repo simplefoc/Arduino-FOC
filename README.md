@@ -25,7 +25,15 @@ For minimal version of the code more suitable for experimenting please visit the
 :x: Low cost ($100) | :x: Low cost ($100) | :heavy_check_mark:Low cost ($40) | :heavy_check_mark: Low cost
 :x: Low power (>50A) | :heavy_check_mark: Low power  | :heavy_check_mark:  Low power | :heavy_check_mark: Low power
 
- # Structure
+# Repositoty structure
+Branch  | Description | Status
+------------ | ------------- | ------------ 
+[master](https://github.com/askuric/Arduino-FOC) | Stable and tested library version | ![Library Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Compile/badge.svg)
+[dev](https://github.com/askuric/Arduino-FOC/tree/dev) | Developement library version | ![Library Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Compile/badge.svg)
+[minimal](https://github.com/askuric/Arduino-FOC/tree/dev) | Minimal Arduino example with integrated library | ![Library Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Compile/badge.svg)
+
+
+# Contents
 - [Installation](#arduino-simple-foc-instalation)
   - [Installing the full Arduino Simple FOC library](#installing-simple-foc-full-library)
   - [Installing the minimal Arduino example](#download-simple-foc-arduino-minimal-example)
