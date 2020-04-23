@@ -13,27 +13,78 @@ Proper low cost FOC supporting boards are very hard to find these days and even 
 - Simple usage and scalability (Arduino)
  and demistify FOC control in a simple way. 
 
-For minimal version of the code more suitable for experimenting please visit the [minimal branch](https://github.com/askuric/Arduino-FOC/tree/minimal).
 
 #### The closest you can get to FOC support and low cost (I was able to find) is:
 
-<a href="https://odriverobotics.com/" >Odroid</a> | <a href="https://www.youtube.com/watch?v=g2BHEdvW9bU">Trinamic</a>
------------- | -------------
-<img src="https://static1.squarespace.com/static/58aff26de4fcb53b5efd2f02/t/5c2c766921c67c143049cbd3/1546417803031/?format=1200w" width="400px"> | <img src="http://i3.ytimg.com/vi/g2BHEdvW9bU/maxresdefault.jpg" width="400px">
-:heavy_check_mark: Open Source | :x: Open Source
-:heavy_check_mark:Simple to use | :heavy_check_mark: Simple to use
-:x: Low cost ($100) | :x: Low cost ($100)
-:x: Low power (>50A) | :heavy_check_mark: Low power 
+<a href="https://odriverobotics.com/" >Odroid</a> | <a href="https://www.youtube.com/watch?v=g2BHEdvW9bU">Trinamic</a> | <a href="https://www.infineon.com/cms/en/product/evaluation-boards/bldc_shield_tle9879/" >Infineon</a> | <a href="https://github.com/gouldpa/FOC-Arduino-Brushless">FOC-Arduino-Brushless</a>
+------------ | ------------- | ------------ | -------------
+<img src="https://static1.squarespace.com/static/58aff26de4fcb53b5efd2f02/t/5c2c766921c67c143049cbd3/1546417803031/?format=1200w" width="400px"> | <img src="http://i3.ytimg.com/vi/g2BHEdvW9bU/maxresdefault.jpg" width="400px"> | <img src="https://www.infineon.com/export/sites/default/_images/product/evaluation-boards/BLDC_Motor_Shild_with_TLE9879QXA40.jpg_1711722916.jpg" width="400px">| <img src="https://hackster.imgix.net/uploads/attachments/998086/dev_kit_89eygMekks.jpg?auto=compress%2Cformat&w=1280&h=960&fit=max" width="400px">
+:heavy_check_mark: Open Source | :x: Open Source | :x: Open Source | :heavy_check_mark: Open Source
+:heavy_check_mark:Simple to use | :heavy_check_mark: Simple to use | :heavy_check_mark:Simple to use | :x: Simple to use
+:x: Low cost ($100) | :x: Low cost ($100) | :heavy_check_mark:Low cost ($40) | :heavy_check_mark: Low cost
+:x: Low power (>50A) | :heavy_check_mark: Low power  | :heavy_check_mark:  Low power | :heavy_check_mark: Low power
 
-<a href="https://www.infineon.com/cms/en/product/evaluation-boards/bldc_shield_tle9879/" >Infineon</a> | <a href="https://github.com/gouldpa/FOC-Arduino-Brushless">FOC-Arduino-Brushless</a>
------------- | -------------
-<img src="https://www.infineon.com/export/sites/default/_images/product/evaluation-boards/BLDC_Motor_Shild_with_TLE9879QXA40.jpg_1711722916.jpg" width="400px">| <img src="https://hackster.imgix.net/uploads/attachments/998086/dev_kit_89eygMekks.jpg?auto=compress%2Cformat&w=1280&h=960&fit=max" width="400px">
-:x: Open Source | :heavy_check_mark: Open Source
-:heavy_check_mark:Simple to use | :x: Simple to use
-:heavy_check_mark:Low cost ($40) | :heavy_check_mark: Low cost
-:heavy_check_mark:  Low power | :heavy_check_mark: Low power
+## Arduino FOC repo structure
+Branch  | Description | Status
+------------ | ------------- | ------------ 
+[master](https://github.com/askuric/Arduino-FOC) | Stable and tested library version | ![Library Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Compile/badge.svg)
+[dev](https://github.com/askuric/Arduino-FOC/tree/dev) | Developement library version | ![Library Dev Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Dev%20Compile/badge.svg?branch=dev)
+[minimal](https://github.com/askuric/Arduino-FOC/tree/minimal) | Minimal Arduino example with integrated library | ![MinimalBuild](https://github.com/askuric/Arduino-FOC/workflows/MinimalBuild/badge.svg?branch=minimal)
 
 
+# Contents
+- [Installation](#arduino-simple-foc-instalation)
+  - [Installing the full Arduino Simple FOC library](#installing-simple-foc-full-library)
+  - [Installing the minimal Arduino example](#download-simple-foc-arduino-minimal-example)
+- [Electrical connecitons and schematic](#electrical-connections)
+  - [Minimal setup](#all-you-need-for-this-project-is-an-exaple-in-brackets)
+  - [Arduino Simple FOC Shield V1.2](#arduino-simple-foc-shield-v12)
+  - [Arduino UNO + L6234 driver](#arduino-uno--l6234-breakout-broad)
+  - [HMBGC gimbal contorller example](#hmbgc-v22)
+- [Code explanation and examples](#arduino-simple-foc-library-code)
+  - [Encoder setup](#encoder-setup)
+  - [BLDC motor setup](#motor-setup)
+  - [Control loop setup](#control-loop-setup)
+    - [Voltage control loop](#voltage-control-loop)
+    - [Velcoity control loop](#velocity-control-loop)
+    - [Angle control loop](#angle-control-loop)
+    - [Utra Slow Velocity control loop](#ultra-slow-velocity-control-loop)
+  - [Debugging practice](#debugging)
+  - [Future work and work in progress](#work-roadmap)
+- [Contact](#contact)
+
+
+# Arduino Simple FOC instalation
+Depending on if you want to use this library as the plug and play Arduino library or you want to get insight in the algorithm and make changes simply there are two ways to install this code.
+
+## Installing Simple FOC full library
+### Arduino IDE - Library manager
+The simplest way to get hold of the library is direclty by using Arduino IDE and its integrated Library Manager. Just serarch for `Simple FOC` library and install the lates version.
+
+### Download library directly
+If you don't want to use the Arduino IDE and Library manager you can direclty download the library from this website. 
+- Simplest way to do it is to download the `zip` aerchieve directly on the top of this webiste. Click first on `Clone or Download` and then on `Download ZIP`. Once you have the zip ardhieve downloaded, unzip it and place it in your Arduino Libraries forlder. On Windows it is usually in `Documents > Arduino > libraries`.  
+  Now reopen your Arduino IDE and you should have the library examples in `File > Examples > Simple FOC`.
+
+- If you are more experienced with the terminal you can open your terminal in the Arduino libraries folder direclty and clone the Arduino FOC git repsitory:
+  ```bash
+  git clone https://github.com/askuric/Arduino-FOC.git
+  ```
+  Now reopen your Arduino IDE and you should have the library examples in `File > Examples > Simple FOC`.
+
+## Download Simple FOC Arduino minimal example
+To download the minmial verison of Simple FOC intended for those willing to experiment and extend the code I suggest using this version over the full library. 
+This code is completely indepenedet and you can run it as any other Arduino Schetch without the need for any libraries. 
+The code is place in the [minimal branch](https://github.com/askuric/Arduino-FOC/tree/minimal). 
+
+- You can download it directly form the [minimal branch](https://github.com/askuric/Arduino-FOC/tree/minimal) by clicking on the `Clone or Download > Download ZIP`.
+  Then you just unzip it and open the schetch in Arduino IDE. 
+
+- You can also clone it using the terminal:
+  ```bash
+  git clone -b minimal https://github.com/askuric/Arduino-FOC.git
+  ```
+  Then you just open it with the Arduino IDE and run it.
 
 # Electrical connections
 
@@ -72,9 +123,10 @@ The code is simple enough to be run on Arudino Uno board.
 
 ### Encoder
 - Encoder channels `A` and `B` are connected to the Arduino's external intrrupt pins `2` and `3`. 
-- Optionally if your encoder has `index` signal you can connect it to any available pin, figure shows pin `4`.  
+- Optionally if your encoder has `index` signal you can connect it to any available pin, figure shows pin `4`.
+  - If you can choose preferably connect it to an `A0-A5` due to the interrupt rutine, it will have better performance (but any other pin will work as well).  
 ### L6234 breakout board 
-- Connected to the arduino pins `9`,`10` and `11`. 
+- Connected to the arduino pins `9`,`10` and `11` (you can use also pins `5` and `6`).  
 - Additionally you can connect the `enable` pin to the any digital pin of the arduino the picture shows pin `8` but this is optional. You can connect the driver enable directly to 5v. 
 - Make sure you connect the common ground of the power supply and your Arduino
 ### Motor
@@ -104,38 +156,6 @@ Motor phases `a`,`b`,`c` and encoder channels `A` and `B` have to be oriented ri
 
 
 
-# Arduino Simple FOC instalation
-
-Depending on if you want to use this library as the plug and play Arduino library or you want to get insight in the algorithm and make changes simply there are two ways to install this code.
-
-## Installing Simple FOC full library
-### Arduino IDE - Library manager
-The simplest way to get hold of the library is direclty by using Arduino IDE and its integrated Library Manager. Just serarch for `Simple FOC` library and install the lates version.
-
-### Download library directly
-If you don't want to use the Arduino IDE and Library manager you can direclty download the library from this website. 
-- Simplest way to do it is to download the `zip` aerchieve directly on the top of this webiste. Click first on `Clone or Download` and then on `Download ZIP`. Once you have the zip ardhieve downloaded, unzip it and place it in your Arduino Libraries forlder. On Windows it is usually in `Documents > Arduino > libraries`.  
-  - Now reopen your Arduino IDE and you should have the library examples in `File > Examples > Simple FOC`.
-
-- If you are more experienced with the terminal you can open your terminal in the Arduino libraries folder direclty and clone the Arduino FOC git repsitory:
-```bash
-git clone https://github.com/askuric/Arduino-FOC.git
-```
-  - Now reopen your Arduino IDE and you should have the library examples in `File > Examples > Simple FOC`.
-
-## Download minimal Simple FOC Arduino example
-To download the minmial verison of Simple FOC intended for those willing to experiment and extend the code I suggest using this version over the full library. 
-This code is completely indepenedet and you can run it as any other Arduino Schetch without the need for any libraries. 
-The code is place in the [minimal branch](https://github.com/askuric/Arduino-FOC/tree/minimal). 
-
-- You can download it directly form the [minimal branch](https://github.com/askuric/Arduino-FOC/tree/minimal) by clicking on the `Clone or Download > Download ZIP`.
-  - Then you just unzip it and open the schetch in Arduino IDE. 
-
-- You can also clone it using the terminal:
-  ```bash
-  git clone -b minimal https://github.com/askuric/Arduino-FOC.git
-  ```
-  - Then you just open it with the Arduino IDE and run it.
 
 # Arduino Simple FOC library code
 The code is organised into a library. The library contains two classes `BLDCmotor` and `Endcoder`. `BLDCmotor` contains all the necessary FOC algorithm funcitons as well as PI controllers for the velocity and angle control.  `Encoder`  deals with the encoder interupt funcitons, calcualtes motor angle and velocity ( using the [Mixed Time Frequency Method](https://github.com/askuric/Arduino-Mixed-Time-Frequency-Method)). The `Encoder` class will support any type of otpical and magnetic encoder.
@@ -147,7 +167,7 @@ To initialise the encoder you need to provide the encoder `A` and `B` channel pi
 //  - encA, encB    - encoder A and B pins
 //  - ppr           - impulses per rotation  (cpr=ppr*4)
 //  - index pin     - (optional input)
-Encoder encoder = Encoder(2, 3, 8192, 4);
+Encoder encoder = Encoder(2, 3, 8192, A0);
 ```
 Next important feature of the encoder is enabling or disabling the `Quadrature` more. If the Encoder is run in the quadratue more its number of impulses per rotation(`PPR`) is quadrupled by detecting each `CHANGE` of the signals `A` and `B` - `CPR = 4xPPR`. In some applicaitons, when the encoder `PPR` is high it can be too much for the Arudino to handle so it is preferable not to use `Quadrature` mode. By default all the encoders use `Quadrature` mode. If you would like to enable or disable this paramter do it in the Arduino setup funciton by running:
 ```cpp
@@ -163,38 +183,190 @@ Additionally the encoder has one more important parameters which is whether you 
 // Pullup::INTERN - needs internal arduino pullup
 encoder.pullup = Pullup::EXTERN;
 ```
+### Encoder interrupt configuration
+There are two ways you can run encoders with Simple FOC libtrary.
+- Using Arduino hardware external interrupt - for Arduino UNO pins  `2` and `3` 
+- Using software pin chnage interrupt by using a library such as [PciManager library](https://github.com/prampec/arduino-pcimanager)
 
-Finally to start the encoder counter and intialise all the periphery pins you need the call of `encoder.init()` is made.
-```cpp
-// initialise encoder hardware
-encoder.init(doA, doB);
-```
-Where the functions `doA()` and `doB()` are buffering functions of encoder callback funcitons `encoder.handleA()` and `encoder.handleB()`. 
+> Using the hardware external interrupts usualy results in a bit better and more realible performance but software interrupts will work very good as well. 
+
+#### Arduino Hardware external interrupt
+Arduino hadrware external interrupt pins are pin `2` and `3`. And in order to use its functionallities the encoder channels `A` and `B` will have to be connected exacly on these pins.
+
+Simple FOC `Encoder` class already has implemented initialisation and encoder `A` and `B` channel callbacks. 
+All you need to do is define two funcitons `doA()` and `doB()`, the buffering functions of encoder callback funcitons `encoder.handleA()` and `encoder.handleB()`. 
 ```cpp
 // interrupt ruotine intialisation
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 ```
-You can name the funcitons as you wish. It is just important to supply them to the `encoder.init()` funciton. This procedure is a tradeoff in between scalability and simplicity. This allows you to have more than one encoder connected to the same arduino. All you need to do is to instantiate new `Encoder` class and create new buffer functions. For example:
+And supply those functions to the encoder initialiasation fucntion `encoder.init()`
+```cpp
+// initialise encoder hardware
+encoder.init(doA, doB);
+```
+You can name the buffering funcitons as you wish. It is just important to supply them to the `encoder.init()` funciton. This procedure is a tradeoff in between scalability and simplicity. This allows you to have more than one encoder connected to the same arduino. All you need to do is to instantiate new `Encoder` class and create new buffer functions. For example:
 ```cpp
 // encoder 1
-Encoder enc1 =  Encoder(2, 3, 8192, 4);
+Encoder enc1 =  Encoder(...);
 void doA1(){enc1.handleA();}
 void doB1(){enc1.handleB();}
 // encoder 2
-Encoder enc2 =  Encoder(5, 6, 8192, 7);
+Encoder enc2 =  Encoder(...);
 void doA2(){enc2.handleA();}
 void doB2(){enc2.handleB();}
 
 void setup(){
 ...
-	enc1.init(doA1,doB1);
-	enc2.init(doA2,doB2);
+  enc1.init(doA1,doB1);
+  enc2.init(doA2,doB2);
 ...
 }
 ```
 
+##### Index pin configuration
+In order to read index pin efficienlty Simple FOC algorithm uses Arduino interrupt routine as well. 
+Simple FOC has implemented the index pin callback  `encoder.handleIndex()`. In order to enable the index pin utilisation just add the index pin in the encoder constructor:
+```cpp
+Encoder encoder = Encoder(pinA, pinB, cpr, index_pin);
+```
+The library make sure to enable the propper interrupts and initialise the `pinMode` based on your [pullup configuration](#encoder-setup).
+
+The last peace of the index pin enabling puzzle is the Arduino's `ISR` funciton call:
+```cpp
+// index calback interrupt code 
+// please set the right PCINT(0,1,2)_vect parameter
+//  PCINT0_vect - index pin in between D8 and D13
+//  PCINT1_vect - index pin in between A0 and A5 (recommended)
+//  PCINT2_vect - index pin in between D0 and D7
+ISR (PCINT1_vect) { encoder.handleIndex(); }
+```
+Make sure you use the right `PCINT(1,2,3)_vect` paramereter of the `ISR` function. 
+`ISR` Parameter | Arduino pin 
+-----| -----
+PCINT0_vect | D8 - D13
+PCINT1_vect | A0 - A5
+PCINT2_vect | D0 - D7
+
+The `ISR` with the vector `PCINT0_vect` will be called each time one of the pins `D8-D13` changes. Each time one of the pins `A0-A5` chenges the Arduino interrupt `ISR` function with the `PCINT1_vect` will be called and finally if any one of the `D0-D7` pins changes the `ISR` function with the parameter `PCINT2_vect` will be called. So therefore it is important to use the index callback `encoder.handleIndex()` funciton in the rigth `ISR` function. 
+Here is an eaxmple of the setup od two encoders with different `index` locations:
+```cpp
+Encoder encoder =  Encoder(2,3,600,A0);
+// A and B interrupt rutine 
+void doA1(){encoder.handleA();}
+void doB1(){encoder.handleB();}
+// index  interrupt rutine 
+ISR (PCINT1_vect) { encoder.handleIndex(); }
+
+void setup(){...}
+void loop(){...}
+```
+Or for example:
+```cpp
+Encoder encoder =  Encoder(2,3,600,13);
+// A and B interrupt rutine 
+void doA1(){encoder.handleA();}
+void doB1(){encoder.handleB();}
+// index  interrupt rutine 
+ISR (PCINT0_vect) { encoder.handleIndex(); }
+
+void setup(){...}
+void loop(){...}
+```
 To explore better the encoder algorithm an example is provided `encoder_example.ino`.
+
+#### Arduino software pin change interrupt
+If you are not able to access your pins `2` and `3` of your Arduino or if you want to use more than none encoder you will have to use the software interrupt approach. 
+I suggest using the [PciManager library](https://github.com/prampec/arduino-pcimanager).
+
+The stps of using this library in code are very similar to [harware interrupt](#arduino-hardware-external-interrupt).
+The SimpleFOC `Encoder` class still provides you with all the callbacks `A`, `B` and `Index` channels but the Simple FOC library will not initialise the interrupts for you. 
+
+In order to use the `PCIManager` library you will need to include it in your code:
+```cpp
+#include <PciManager.h>
+#include <PciListenerImp.h>
+```
+Next step is the same as before, you will just intialise the new `Encoder` instance.
+```cpp
+Encoder encoder = Encoder(10, 11, 8192);
+// A and B interrupt callback buffers
+void doA(){encoder.handleA();}
+void doB(){encoder.handleB();}
+```
+Then you declare listeners `PciListenerImp `:
+```cpp
+// encoder interrupt init
+PciListenerImp listenerA(encoder.pinA, doA);
+PciListenerImp listenerB(encoder.pinB, doB);
+```
+And finally instead of supplying the functions `doA` and `doB` to the `encoder.init()` you call the init without parameters and  use `PCIManager` library to register the interrupts
+```cpp
+// initialise encoder hardware
+encoder.init();
+// interrupt intitialisation
+PciManager.registerListener(&listenerA);
+PciManager.registerListener(&listenerB);
+```
+And that is it, it is very simple. It if you wnat more than one encoder, you just initialise the new class instance, create the new `A` and `B` callbacks, intialise the new listeners. Here is a quick example:
+```cpp
+// encoder 1
+Encoder enc1 =  Encoder(9, 10, 8192);
+void doA1(){enc1.handleA();}
+void doB1(){enc1.handleB();}
+PciListenerImp listA1(enc1.pinA, doA1);
+PciListenerImp listB1(enc1.pinB, doB1);
+
+// encoder 2
+Encoder enc2 =  Encoder(13, 12, 8192);
+void doA2(){enc2.handleA();}
+void doB2(){enc2.handleB();}
+PciListenerImp listA2(enc2.pinA, doA2);
+PciListenerImp listB2(enc2.pinB, doB2);
+
+void setup(){
+...
+  // encoder 1
+  enc1.init();
+  PciManager.registerListener(&listA1);
+  PciManager.registerListener(&listB1);
+  // encoder 2
+  enc2.init();
+  PciManager.registerListener(&listA2);
+  PciManager.registerListener(&listB2);
+...
+}
+```
+You can look into the `HMBGC_example.ino` ecxample to see this code in action. 
+##### Index pin configuration
+Enabling index pin in the case of the software interrupt is very simple. You just need to provide it to the `Encoder` class intialisation as additional parameter. 
+```cpp
+Encoder encoder = Encoder(pinA, pinB, cpr, index_pin);
+```
+Afterward you create the same type of callback buffering function as for `A` and `B` channels and using the `PCIManager` tools initialise and register the listener for the `index` channel as for the `A` and `B`. Here is a quick example:
+xample:
+```cpp
+// class init
+Encoder encoder =  Encoder(9, 10, 8192,11);
+void doA(){encoder.handleA();}
+void doB(){encoder.handleB();}
+void doIndex(){encoder.handleIndex();}
+// listeners init
+PciListenerImp listenerA(encoder.pinA, doA);
+PciListenerImp listenerB(encoder.pinB, doB);
+PciListenerImp listenerIndex(encoder.index_pin, doIndex);
+
+void setup(){
+...
+  // enable the hardware
+  enc1.init();
+  // enable interrupt
+  PciManager.registerListener(&listenerA);
+  PciManager.registerListener(&listenerB);
+  PciManager.registerListener(&listenerIndex);
+...
+}
+```
 
 ## Motor setup
 To intialise the motor you need to input the `pwm` pins, number of `pole pairs` and optionally driver `enable` pin.
@@ -227,7 +399,13 @@ The `power_supply_voltage` value tells the FOC algorithm what is the maximum vol
 <img src="extras/Images/sine_foc.png" >
 
 ## Control loop setup
-First parameter you can change is the variable you want to control. You set it by changing the `motor.controller` variable. If you want to control the motor angle you will set the `controller` to `ControlType::angle`, if youy seek the DC motor behavior behaviour by controlling the voltage use `ControlType::voltage`, if you wish to control motor angular velocity `ControlType::velocity`. If you wish to control velocities which are very very slow, typically around ~0.01 rad/s you can use the `ControlType::velocity_ultra_slow` controller.
+The SimpleFOC library gives you the choice of using 4 different plug and play control loops: 
+- voltage control loop
+- velocity control loop
+- angle control loop
+- ultra slow velocity control loop
+
+You set it by changing the `motor.controller` variable. If you want to control the motor angle you will set the `controller` to `ControlType::angle`, if you seek the DC motor behavior behaviour by controlling the voltage use `ControlType::voltage`, if you wish to control motor angular velocity `ControlType::velocity`. If you wish to control velocities which are very very slow, typically around ~0.01 rad/s you can use the `ControlType::velocity_ultra_slow` controller.
 ```cpp
 // set FOC loop to be used
 // ControlType::voltage
@@ -242,7 +420,7 @@ This control loop allows you to run the BLDC motor as it is simple DC motor usin
 // voltage control loop
 motor.controller = ControlType::voltage;
 ```
- <a name="foc_image"></a><img src="extras/Images/voltage.png">
+ <a name="foc_image"></a><img src="extras/Images/voltage_loop.png">
 
 You rcan test this algoithm by running the example `voltage_control.ino`.
 The FOC algorithm reads the angle <i>a</i> from the motor and sets appropriate <i>u<sub>a</sub></i>, <i>u<sub>b</sub></i> and <i>u<sub>c</sub></i> voltages such to always have <i>90 degree</i> angle in between the magnetic fields of the permanent magents in rotor and the stator. What is exaclty the principle of the DC motor.
@@ -256,7 +434,7 @@ This control loop allows you to spin your BLDC motor with desired velocity.  Thi
 motor.controller = ControlType::velocity;
 ```
 
-<img src="extras/Images/velocity.png" >
+<img src="extras/Images/velocity_loop.png" >
 
 You can test this algorithm by running the example `velocity_control.ino`.
 The velocity control is created by adding a PI velocity controller. This controller reads the motor velocity <i>v</i> and sets the <i>u<sub>q</sub></i> voltage to the motor in a such maner that it reaches and maintains the target velocity <i>v<sub>d</sub></i>, set by the user. 
@@ -267,12 +445,17 @@ To change the parameters of your PI controller to reach desired behaiour you can
 // default K=0.5 Ti = 0.01
 motor.PI_velocity.K = 0.2;
 motor.PI_velocity.Ti = 0.01;
-motor.PI_velocity.u_limit = 6;
+motor.PI_velocity.voltage_limit = 6; 
+// jerk control using voltage voltage ramp
+// default value is 300 volts per sec  ~ 0.3V per millisecond
+motor.PI_velocity.voltage_ramp = 6;
 ```
-The parameters of the PI controller are proportional gain `K`, integral time constant `Ti` and voltage limit `u_limit` which is by default set to the `power_supply_voltage/2`. 
-- The `u_limit` parameter is intended if some reason you wish to limit the voltage that can be sent to your motor.  
+The parameters of the PI controller are proportional gain `K`, integral time constant `Ti`, voltage limit `voltage_limit`  and `voltage_ramp`. 
+- The `voltage_limit` parameter is intended if, for some reason, you wish to limit the voltage that can be sent to your motor.  
 - In general by raising the proportional constant `K`  your motor controller will be more reactive, but too much will make it unstable. 
 - The same goes for integral time constant `Ti` the smaller it is the faster motors reaction to disturbance will be, but too small value will make it unstable. 
+- The `voltage_ramp` value it intended to reduce the maximal change of the voltage value which is sent to the motor. The higher the value the PI controller will be able to change faster the <i>U<sib>q</sub></i> value. The lower the value the smaller the possible change and the less responsive your controller becomes. The value of this parameter is set to be `Volts per second[V/s` or in other words how many volts can your controller raise the voltage in one time unit. If you set your `voltage_ramp` value to `10 V/s`, and on average your contol loop will run each `1ms`. Your controller will be able to chnage the <i>U<sib>q</sub></i> value each time `10[V/s]*0.001[s] = 0.01V` waht is not a lot.
+
 
 So in order to get optimal performance you will have to fiddle a bit with with the parameters. :)
 
@@ -283,7 +466,7 @@ This control loop allows you to move your BLDC motor to the desired angle in rea
 motor.controller = ControlType::angle;
 ```
 
-<img src="extras/Images/position.png">
+<img src="extras/Images/angle_loop.png">
 
 You can test this algorithm by running the example `angle_control.ino`.
 The angle control loop is done by adding one more control loop in cascade on the velocity control loop like showed on the figure above. The loop is closed by using simple P controller. The controller reads the angle <i>a</i> from the motor and determins which velocity <i>v<sub>d</sub></i> the motor should move to reach desire angle <i>a<sub>d</sub></i> set by the user. And then the velocity controller reads the current velocity from the motor <i>v</i> and sets the voltage <i>u<sub>q</sub></i> that is neaded to reach the velocity <i>v<sub>d</sub></i>, set by the angle loop. 
@@ -295,7 +478,10 @@ To tune this control loop you can set the parameters to both angle P controller 
 // default K=1.0 Ti = 0.003
 motor.PI_velocity.K = 0.5;
 motor.PI_velocity.Ti = 0.01;
-motor.PI_velocity.u_limit = 6;
+motor.PI_velocity.voltage_limit = 6;
+// jerk control using voltage voltage ramp
+// default value is 300 volts per sec  ~ 0.3V per millisecond
+motor.PI_velocity.voltage_ramp = 6;
 // angle P controller 
 // default K=70
 motor.P_angle.K = 20;
@@ -335,12 +521,16 @@ To change the parameters of your PI controller to reach desired behaiour you can
   // default K=120.0 Ti = 100.0
 motor.PI_velocity_ultra_slow.K = 120;
 motor.PI_velocity_ultra_slow.Ti = 100;
-motor.PI_velocity_ultra_slow.u_limit = 12;
+motor.PI_velocity_ultra_slow.voltage_limit = 12;
+// jerk control using voltage voltage ramp
+// default value is 300 volts per sec  ~ 0.3V per millisecond
+motor.PI_velocity_ultra_slow.voltage_ramp = 6;
 ```
-The parameters of the PI controller are proportional gain `K`, integral time constant `Ti` and voltage limit `u_limit` which is by default set to the `power_supply_voltage`. 
-- The `u_limit` parameter is intended if some reason you wish to limit the voltage that can be sent to your motor.  
+The parameters of the PI controller are proportional gain `K`, integral time constant `Ti` and voltage limit `voltage_limit` which is by default set to the `voltage_power_supply/2` and `voltage_ramp`. 
+- The `voltage_limit` parameter is intended if some reason you wish to limit the voltage that can be sent to your motor.  
 - In general by raising the proportional constant `K`  your motor controller will be more reactive, but too much will make it unstable. 
 - The same goes for integral time constant `Ti` the smaller it is the faster motors reaction to disturbance will be, but too small value will make it unstable. By defaualt the integral time constant `Ti` is set  `100s`. Which means that it is extreamply slow, meaning that it is not effecting the behvior of the controlle, making it basically a P controller.
+- The `voltage_ramp` value it intended to reduce the maximal change of the voltage value which is sent to the motor. The higher the value the PI controller will be able to change faster the <i>U<sib>q</sub></i> value. The lower the value the smaller the possible change and the less responsive your controller becomes. The value of this parameter is set to be `Volts per second[V/s` or in other words how many volts can your controller raise the voltage in one time unit. If you set your `voltage_ramp` value to `10 V/s`, and on average your contol loop will run each `1ms`. Your controller will be able to chnage the <i>U<sib>q</sub></i> value each time `10[V/s]*0.001[s] = 0.01V` waht is not a lot.
 
 From the PI controller parameters you can see that the values are much higher than in the [velocity control loop](#velocity-control-loop). The reason is because the angle control loop is not the main loop and we need it to follow the profile as good as possible as fast as possible. Therefore we need much higher gain than before.
 
@@ -357,7 +547,10 @@ This velocity control loop is implemented exaclty the same as [velocity control 
 // default K=0.5 Ti = 0.01
 motor.PI_velocity_index_search.K = 0.1;
 motor.PI_velocity_index_search.Ti = 0.01;
-motor.PI_velocity_index_search.u_limit = 3;
+motor.PI_velocity_index_search.voltage_limit = 3;
+// jerk control using voltage voltage ramp
+// default value is 100 volts per sec  ~ 0.1V per millisecond
+motor.PI_velocity_index_search.voltage_ramp = 300;
 ```
 If you are having problems during the finding procedure, try tuning the PI controller constants. The same parameters as the `PI_velocity` should work well, but you can put it a bit more conservative to avoid high jumps.
 
@@ -375,14 +568,13 @@ This function aligns encoder and motor zero positions and intialises FOC variabl
 
 The real time execution of the Arduino Simple FOC library is govenred by two funcitons `motor.loopFOC()` and `motor.move(float target)`.
 ```cpp
-// iterative state calculation calculating angle
-// and setting FOC pahse voltage
+// iterative setting FOC pahse voltage
 // the faster you run this funciton the better
 // in arduino loop it should have ~1kHz
 // the best would be to be in ~10kHz range
 motor.loopFOC();
 ```
-The funciton `loopFOC()` gets the current motor angle from the encoder, turns in into the electrical angle and computes Clarke transfrom to set the desired $U_q$ voltage to the motor. Basically it implements the funcitonality of the [voltage control loop](#voltage-control-loop).
+The funciton `loopFOC()` gets the current motor angle from the encoder, turns in into the electrical angle and computes Clarke transfrom to set the desired <i>U<sub>q</sub></i> voltage to the motor. Basically it implements the funcitonality of the [voltage control loop](#voltage-control-loop).
 - The faster you can run this funciton the better 
 - In the empty arduino loop it runs at ~1kHz but idealy it would be around ~10kHz
 
@@ -492,17 +684,23 @@ motor.useDebugging(Serial);
 before running `motor.init()`.
 
 
-# Future Work Roadmap
-#### Library maintenance
+# Work Roadmap
+## Future work
+- [ ] Proper introduction of the **Arudino FOC Shield V1.2**
+- [ ] Publish a video tutorial fir using the library and the samples  
+
+## Work in progress
 - [x] Make the library accesible in the Arduino Library Manager 
 - [x] Make minimal version of the arduino code - all in one arduino file
-- [ ] Proper introduction of the **Arudino FOC Shield V1.2**
-- [ ] Publish a video utilising the library and the samples  
-
-#### Code developement
 - [x] Encoder index proper implementation
 - [x] Enable more dirver types 
 - [x] Make support for magnetic encoder AS5048 and similar
-- [ ] Timer interrupt execution rather than in the `loop()`
-- [ ] Add support for acceleration ramping
+- [x] Add support for acceleration ramping
+- [x] Timer interrupt execution rather than in the `loop()`
+  - FAIL: Perfromance not improved
+- [x] Sine wave lookup table implementation
 
+# Contact
+Please do not hesitate to leave an issue or contact me direclty by email.
+I will be very happy to hear your experiences.
+antun.skuric@outlook.com

@@ -4,10 +4,6 @@
 #define arduinoInt1 2             // Arduino UNO interrupt 0
 #define arduinoInt2 3             // Arduino UNO interrupt 1
 
-// velocity set point variable
-float target_velocity = 0;
-
-
 //  BLDCMotor( int phA, int phB, int phC, int pp, int en)
 //  - phA, phB, phC - motor A,B,C phase pwm pins
 //  - pp            - pole pair number
@@ -17,10 +13,17 @@ BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
 //  - encA, encB    - encoder A and B pins
 //  - ppr           - impulses per rotation  (cpr=ppr*4)
 //  - index pin     - (optional input)
-Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, 4);
-// interrupt ruotine intialisation
+Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, A0);
+// Interrupt rutine intialisation
+// channel A and B callbacks
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
+// index calback interrupt code 
+// please set the right PCINT(0,1,2)_vect parameter
+//  PCINT0_vect - index pin in between D8 and D13
+//  PCINT1_vect - index pin in between A0 and A5 (recommended)
+//  PCINT2_vect - index pin in between D0 and D7
+ISR (PCINT1_vect) { encoder.handleIndex(); }
 
 void setup() {
   // debugging port
@@ -41,7 +44,7 @@ void setup() {
   
   // power supply voltage
   // default 12V
-  motor.power_supply_voltage = 12;
+  motor.voltage_power_supply = 12;
 
   // index search velocity - default 1rad/s
   motor.index_search_velocity = 1;
@@ -49,7 +52,10 @@ void setup() {
   // default K=0.5 Ti = 0.01
   motor.PI_velocity_index_search.K = 0.1;
   motor.PI_velocity_index_search.Ti = 0.01;
-  motor.PI_velocity_index_search.u_limit = 3;
+  //motor.PI_velocity_index_search.voltage_limit = 3;
+  // jerk control using voltage voltage ramp
+  // default value is 100
+  motor.PI_velocity_index_search.voltage_ramp = 100;
 
   // set FOC loop to be used
   // ControlType::voltage
@@ -62,6 +68,8 @@ void setup() {
   // default K=60.0 Ti = 100.0
   motor.PI_velocity_ultra_slow.K = 50;
   motor.PI_velocity_ultra_slow.Ti = 100;
+  motor.PI_velocity_ultra_slow.voltage_limit = 100;
+  motor.PI_velocity_ultra_slow.voltage_ramp = 300;
 
   // use debugging with serial for motor init
   // comment out if not needed
@@ -79,6 +87,9 @@ void setup() {
   Serial.println("Set the target velocity using serial terminal:");
   _delay(1000);
 }
+
+// velocity set point variable
+float target_velocity = 0;
 
 void loop() {
   // iterative state calculation calculating angle
@@ -121,6 +132,8 @@ void motor_monitor() {
       break;
     case ControlType::voltage:
       Serial.print(motor.voltage_q);
+      Serial.print("\t");
+      Serial.print(motor.shaft_angle);
       Serial.print("\t");
       Serial.println(motor.shaft_velocity);
       break;

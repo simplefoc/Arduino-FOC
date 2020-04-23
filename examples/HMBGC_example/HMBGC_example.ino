@@ -42,7 +42,7 @@ void setup() {
 
   // power supply voltage
   // default 12V
-  motor.power_supply_voltage = 12;
+  motor.voltage_power_supply = 12;
 
   // set FOC loop to be used
   // ControlType::voltage
@@ -51,10 +51,16 @@ void setup() {
   // ControlType::angle
   motor.controller = ControlType::velocity;
 
+  // contoller configuration based on the controll type 
   // velocity PI controller parameters
   // default K=1.0 Ti = 0.003
   motor.PI_velocity.K = 0.3;
-  motor.PI_velocity.Ti = 0.01;
+  motor.PI_velocity.Ti = 0.003;
+  //defualt voltage_power_supply/2
+  motor.PI_velocity.voltage_limit = 6;
+  // jerk control using voltage voltage ramp
+  // default value is 300 volts per sec  ~ 0.3V per millisecond
+  motor.PI_velocity.voltage_ramp = 300;
 
   // use debugging with serial for motor init
   // comment out if not needed

@@ -8,15 +8,23 @@
 //  - phA, phB, phC - motor A,B,C phase pwm pins
 //  - pp            - pole pair number
 //  - enable pin    - (optional input)
-BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
+BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
 //  Encoder(int encA, int encB , int cpr, int index)
 //  - encA, encB    - encoder A and B pins
 //  - ppr           - impulses per rotation  (cpr=ppr*4)
-//  - index pin     - (optional input)
-Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, 4);
-// interrupt ruotine intialisation
+//  - index pin     - (optional input) 
+Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, A0);
+
+// Interrupt rutine intialisation
+// channel A and B callbacks
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
+// index calback interrupt code 
+// please set the right PCINT(0,1,2)_vect parameter
+//  PCINT0_vect - index pin in between D8 and D13
+//  PCINT1_vect - index pin in between A0 and A5 (recommended)
+//  PCINT2_vect - index pin in between D0 and D7
+ISR (PCINT1_vect) { encoder.handleIndex(); }
 
 void setup() {
   // debugging port
@@ -37,16 +45,19 @@ void setup() {
 
   // power supply voltage
   // default 12V
-  motor.power_supply_voltage = 12;
+  motor.voltage_power_supply = 12;
 
   // index search velocity - default 1rad/s
   motor.index_search_velocity = 1;
   // index search PI contoller parameters
   // default K=0.5 Ti = 0.01
-  motor.PI_velocity_index_search.K = 0.3;
+  motor.PI_velocity_index_search.K = 0.1;
   motor.PI_velocity_index_search.Ti = 0.01;
-  motor.PI_velocity_index_search.u_limit = 3;
-
+  //motor.PI_velocity_index_search.voltage_limit = 3;
+  // jerk control using voltage voltage ramp
+  // default value is 100
+  motor.PI_velocity_index_search.voltage_ramp = 100;
+  
   // set FOC loop to be used
   // ControlType::voltage
   // ControlType::velocity
@@ -54,11 +65,17 @@ void setup() {
   // ControlType::angle
   motor.controller = ControlType::velocity;
 
+  // contoller configuration based on the controll type 
   // velocity PI controller parameters
   // default K=1.0 Ti = 0.003
   motor.PI_velocity.K = 0.3;
-  motor.PI_velocity.Ti = 0.007;
-  motor.PI_velocity.u_limit = 4;
+  motor.PI_velocity.Ti = 0.003;
+  //defualt voltage_power_supply/2
+  motor.PI_velocity.voltage_limit = 6;
+  // jerk control using voltage voltage ramp
+  // default value is 300 volts per sec  ~ 0.3V per millisecond
+  motor.PI_velocity.voltage_ramp = 300;
+
 
   // use debugging with serial for motor init
   // comment out if not needed
@@ -128,6 +145,8 @@ void motor_monitor() {
       break;
     case ControlType::voltage:
       Serial.print(motor.voltage_q);
+      Serial.print("\t");
+      Serial.print(motor.shaft_angle);
       Serial.print("\t");
       Serial.println(motor.shaft_velocity);
       break;

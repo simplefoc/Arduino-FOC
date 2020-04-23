@@ -1,4 +1,4 @@
-name: Library Compile
+name: Library Dev Compile
 on: push
 jobs:
   build:
