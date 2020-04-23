@@ -30,7 +30,7 @@ Branch  | Description | Status
 ------------ | ------------- | ------------ 
 [master](https://github.com/askuric/Arduino-FOC) | Stable and tested library version | ![Library Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Compile/badge.svg)
 [dev](https://github.com/askuric/Arduino-FOC/tree/dev) | Developement library version | ![Library Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Compile/badge.svg)
-[minimal](https://github.com/askuric/Arduino-FOC/tree/dev) | Minimal Arduino example with integrated library | ![Library Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Compile/badge.svg)
+[minimal](https://github.com/askuric/Arduino-FOC/tree/minimal) | Minimal Arduino example with integrated library | ![Library Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Compile/badge.svg)
 
 
 # Contents
