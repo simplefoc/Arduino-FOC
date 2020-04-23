@@ -13,7 +13,6 @@ Proper low cost FOC supporting boards are very hard to find these days and even 
 - Simple usage and scalability (Arduino)
  and demistify FOC control in a simple way. 
 
-For minimal version of the code more suitable for experimenting please visit the [minimal branch](https://github.com/askuric/Arduino-FOC/tree/minimal).
 
 #### The closest you can get to FOC support and low cost (I was able to find) is:
 
@@ -25,7 +24,7 @@ For minimal version of the code more suitable for experimenting please visit the
 :x: Low cost ($100) | :x: Low cost ($100) | :heavy_check_mark:Low cost ($40) | :heavy_check_mark: Low cost
 :x: Low power (>50A) | :heavy_check_mark: Low power  | :heavy_check_mark:  Low power | :heavy_check_mark: Low power
 
-# Repositoty structure
+## Arduino FOC repo structure
 Branch  | Description | Status
 ------------ | ------------- | ------------ 
 [master](https://github.com/askuric/Arduino-FOC) | Stable and tested library version | ![Library Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Compile/badge.svg)
