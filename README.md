@@ -28,7 +28,7 @@ For minimal version of the code more suitable for experimenting please visit the
  # Structure
 - [Installation](#arduino-simple-foc-instalation)
   - [Installing the full Arduino Simple FOC library](#installing-simple-foc-full-library)
-  - [Installing the minimal Arduino example](#download-minimal-simple-foc-arduino-example)
+  - [Installing the minimal Arduino example](#download-simple-foc-arduino-minimal-example)
 - [Electrical connecitons and schematic](#electrical-connections)
   - [Minimal setup](#all-you-need-for-this-project-is-an-exaple-in-brackets)
   - [Arduino Simple FOC Shield V1.2](#arduino-simple-foc-shield-v12)
@@ -57,15 +57,15 @@ The simplest way to get hold of the library is direclty by using Arduino IDE and
 ### Download library directly
 If you don't want to use the Arduino IDE and Library manager you can direclty download the library from this website. 
 - Simplest way to do it is to download the `zip` aerchieve directly on the top of this webiste. Click first on `Clone or Download` and then on `Download ZIP`. Once you have the zip ardhieve downloaded, unzip it and place it in your Arduino Libraries forlder. On Windows it is usually in `Documents > Arduino > libraries`.  
-  - Now reopen your Arduino IDE and you should have the library examples in `File > Examples > Simple FOC`.
+  Now reopen your Arduino IDE and you should have the library examples in `File > Examples > Simple FOC`.
 
 - If you are more experienced with the terminal you can open your terminal in the Arduino libraries folder direclty and clone the Arduino FOC git repsitory:
-```bash
-git clone https://github.com/askuric/Arduino-FOC.git
-```
-  - Now reopen your Arduino IDE and you should have the library examples in `File > Examples > Simple FOC`.
+  ```bash
+  git clone https://github.com/askuric/Arduino-FOC.git
+  ```
+  Now reopen your Arduino IDE and you should have the library examples in `File > Examples > Simple FOC`.
 
-## Download minimal Simple FOC Arduino example
+## Download Simple FOC Arduino minimal example
 To download the minmial verison of Simple FOC intended for those willing to experiment and extend the code I suggest using this version over the full library. 
 This code is completely indepenedet and you can run it as any other Arduino Schetch without the need for any libraries. 
 The code is place in the [minimal branch](https://github.com/askuric/Arduino-FOC/tree/minimal). 
@@ -691,6 +691,7 @@ before running `motor.init()`.
 - [x] Add support for acceleration ramping
 - [x] Timer interrupt execution rather than in the `loop()`
   - FAIL: Perfromance not improved
+- [x] Sine wave lookup table implementation
 
 # Contact
 Please do not hesitate to leave an issue or contact me direclty by email.

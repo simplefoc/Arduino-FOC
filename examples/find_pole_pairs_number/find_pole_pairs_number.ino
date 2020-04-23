@@ -43,37 +43,48 @@ void setup() {
   motor.init();
 
 
+
   // pole pairs calculation routine
   Serial.println("Motor pole pair number estimation example");
   Serial.println("---------------------------------------------\n");
 
-  float pp_search_voltage = 3; // maximum power_supply_voltage/2
-
+  float pp_search_voltage = 4; // maximum power_supply_voltage/2
+  float pp_search_angle = 6*M_PI; // search electrical angle to turn
+  
   // move motor to the electrical angle 0
   motor.setPhaseVoltage(pp_search_voltage,0);
   _delay(1000);
   // read the encoder angle 
-  float angle0 = encoder.getAngle();
+  float angle_begin = encoder.getAngle();
   _delay(50);
- 
-  // move the motor slowly to the electrical angle 360 -> 2*pi radians
-  for(int i =0; i<2000; i++){
-    motor.setPhaseVoltage(pp_search_voltage, 2*M_PI/2000 * i);
+  
+  // move the motor slowly to the electrical angle pp_search_angle
+  float motor_angle = 0;
+  while(motor_angle <= pp_search_angle){
+    motor_angle += 0.01;
+    motor.setPhaseVoltage(pp_search_voltage, motor_angle);
   }
   _delay(1000);
   // read the encoder value for 180
-  float angle360 = encoder.getAngle();
+  float angle_end = encoder.getAngle();
   _delay(50);
   // turn off the motor
   motor.setPhaseVoltage(0,0);
   _delay(1000);
 
   // caluclate the pole pair number
-  int pp = round((2*M_PI)/(angle360-angle0));
+  int pp = round((pp_search_angle)/(angle_end-angle_begin));
 
   Serial.print("Estimated pole pairs number is: ");
   Serial.println(pp);
-  Serial.println("");
+  Serial.println("Electrical angle / Encoder angle = Pole pairs ");
+  Serial.print(pp_search_angle*180/M_PI);
+  Serial.print("/");
+  Serial.print((angle_end-angle_begin)*180/M_PI);
+  Serial.print(" = ");
+  Serial.println((pp_search_angle)/(angle_end-angle_begin));
+  Serial.println();
+   
 
   // a bit of debugging the result
   if(pp <= 0 ){

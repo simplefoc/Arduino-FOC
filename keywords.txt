@@ -29,6 +29,7 @@ handleB	KEYWIORD2
 handleIndex	KEYWIORD2
 ISR	KEYWIORD2
 getVelocity	KEYWIORD2
+setPhaseVoltage	KEYWIORD2
 getAngle	KEYWIORD2
 setCounterZero	KEYWIORD2
 useDebugging	KEYWIORD2
@@ -43,7 +44,6 @@ driver	KEYWIORD2
 pullup	KEYWIORD2
 quadrature	KEYWIORD2
 
-index_search_u_limit	KEYWIORD2
 index_search_velocity	KEYWIORD2
 
 

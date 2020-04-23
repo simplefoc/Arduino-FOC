@@ -123,7 +123,7 @@ class BLDCMotor
 
     /** FOC methods */
     //Method using FOC to set Uq to the motor at the optimal angle
-    void setPhaseVoltage(double Uq, double angle_el);
+    void setPhaseVoltage(float Uq, float angle_el);
 
 
     // debugging 
@@ -142,7 +142,7 @@ class BLDCMotor
         
     /** Utility funcitons */
     //normalizing radian angle to [0,2PI]
-    double normalizeAngle(double angle);
+    float normalizeAngle(float angle);
     //Reference low pass filter 
     float filterLP(float u);
     
