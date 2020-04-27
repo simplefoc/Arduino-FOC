@@ -1,49 +1,24 @@
-#include "BLDCMotor.h"
-#include "Encoder.h"
-
-// Only pins 2 and 3 are supported
-#define arduinoInt1 2             // Arduino UNO interrupt 0
-#define arduinoInt2 3             // Arduino UNO interrupt 1
+#include "SimpleFOC.h"
 
 //  BLDCMotor( int phA, int phB, int phC, int pp, int en)
 //  - phA, phB, phC - motor A,B,C phase pwm pins
 //  - pp            - pole pair number
 //  - enable pin    - (optional input)
 BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
-//  Encoder(int encA, int encB , int cpr, int index)
-//  - encA, encB    - encoder A and B pins
-//  - ppr           - impulses per rotation  (cpr=ppr*4)
-//  - index pin     - (optional input) 
-Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, A0);
 
-// Interrupt rutine intialisation
-// channel A and B callbacks
-void doA(){encoder.handleA();}
-void doB(){encoder.handleB();}
-// index calback interrupt code 
-// please set the right PCINT(0,1,2)_vect parameter
-//  PCINT0_vect - index pin in between D8 and D13
-//  PCINT1_vect - index pin in between A0 and A5 (recommended)
-//  PCINT2_vect - index pin in between D0 and D7
-ISR (PCINT1_vect) { encoder.handleIndex(); }
+// MagneticSensor(int cs, float _cpr, int _angle_register)
+//  cs              - SPI chip select pin 
+//  _cpr            - counts per revolution 
+// _angle_register  - (optional) angle read register - default 0x3FFF
+MagneticSensor AS5x4x = MagneticSensor(10, 16384, 0x3FFF);
 
 
 void setup() { 
   // debugging port
   Serial.begin(115200);
 
-  // check if you need internal pullups
-  //  Quadrature::ENABLE - CPR = 4xPPR  - default
-  //  Quadrature::DISABLE - CPR = PPR
-  encoder.quadrature = Quadrature::ENABLE;
-
-  // check if you need internal pullups
-  // Pullup::EXTERN - external pullup added - dafault
-  // Pullup::INTERN - needs internal arduino pullup
-  encoder.pullup = Pullup::EXTERN;
-  
   // initialise encoder hardware
-  encoder.init(doA, doB);
+  AS5x4x.init();
 
   // power supply voltage
   // default 12V
@@ -80,7 +55,7 @@ void setup() {
 
 
   // link the motor to the sensor
-  motor.linkEncoder(&encoder);
+  motor.linkSensor(&AS5x4x);
 
   // use debugging with serial for motor init
   // comment out if not needed

@@ -2,8 +2,10 @@
 #define BLDCMotor_h
 
 #include "Arduino.h"
+#include "MagneticSensor.h"
 #include "Encoder.h"
 #include "FOCutils.h"
+#include "Sensor.h"
 
 // default configuration values
 // power supply voltage
@@ -59,13 +61,20 @@ struct P_s{
 class BLDCMotor
 {
   public:
+    /*
+      BLDCMotor( int phA, int phB, int phC, int pp , int cpr, int en)
+      - phA, phB, phC - motor A,B,C phase pwm pins
+      - pp            - pole pair number
+      - cpr           - counts per rotation number (cpm=ppm*4)
+      - enable pin    - (optionl input)
+    */
     BLDCMotor(int phA,int phB,int phC,int pp, int en = 0);
     // change driver state
   	void init();
   	void disable();
     void enable();
     // connect encoder
-    void linkEncoder(Encoder* enc);
+    void linkSensor(Sensor* _sensor);
 
     //  initilise FOC  
     int initFOC();
@@ -114,10 +123,12 @@ class BLDCMotor
     P_s P_angle;
     PI_s PI_velocity_index_search;
   	
-    // encoder link
-    Encoder* encoder;
-    // index electric angle - if available
-    float index_electric_angle;
+    // sensor link:
+    // - Encoder 
+    // - MagneticSensor
+    Sensor* sensor;
+    // absolute zero electric angle - if available
+    float zero_electric_angle;
     // index search velocity
     float index_search_velocity;
 
@@ -131,9 +142,10 @@ class BLDCMotor
     Print* debugger;
 
   private:
-    //Encoder alignment to electrical 0 angle
-    int alignEncoder();
-    int indexSearch();
+    //Sensor alignment to electrical 0 angle
+    int alignSensor();
+    //Motor and sensor alignement to the sensors absolute 0 angle
+    int absoluteZeroAlign();
     
     //Electrical angle calculation
     float electricAngle(float shaftAngle);
@@ -143,8 +155,6 @@ class BLDCMotor
     /** Utility funcitons */
     //normalizing radian angle to [0,2PI]
     float normalizeAngle(float angle);
-    //Reference low pass filter 
-    float filterLP(float u);
     
     /** Motor control functions */
     float controllerPI(float tracking_error, PI_s &controller);

@@ -1,13 +1,11 @@
 #include "BLDCMotor.h"
 
-
 /*
-  BLDCMotor( int phA, int phB, int phC, int pp, int encA, int encB , int cpr, int en)
+  BLDCMotor( int phA, int phB, int phC, int pp , int cpr, int en)
   - phA, phB, phC - motor A,B,C phase pwm pins
   - pp            - pole pair number
-  - encA, encB    - encoder A and B pins
   - cpr           - counts per rotation number (cpm=ppm*4)
-  - enable pin    - (optional input)
+  - enable pin    - (optionl input)
 */
 BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
 {
@@ -65,7 +63,7 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
 
   // electric angle og the zero angle
   // electric angle of the index for encoder
-  index_electric_angle = 0;
+  zero_electric_angle = 0;
 
   //debugger 
   debugger = nullptr;
@@ -104,9 +102,9 @@ void BLDCMotor::init() {
 	initialization function
 */
 int  BLDCMotor::initFOC() {
-  // encoder alignment
+  // sensor and motor alignment
   _delay(500);
-  int exit_flag = alignEncoder();
+  int exit_flag = alignSensor();
   _delay(500);
   return exit_flag;
 }
@@ -137,33 +135,34 @@ void BLDCMotor::enable()
 
 }
 
-void BLDCMotor::linkEncoder(Encoder* enc) {
-  encoder = enc;
+void BLDCMotor::linkSensor(Sensor* _sensor) {
+  sensor = _sensor;
 }
 
 
 /*
 	Encoder alignment to electrical 0 angle
 */
-int BLDCMotor::alignEncoder() {
-  if(debugger) debugger->println("DEBUG: Align the encoder and motor electrical 0 angle.");
-  // align the electircal phases of the motor and encoder
+int BLDCMotor::alignSensor() {
+  if(debugger) debugger->println("DEBUG: Align the sensor's and motor electrical 0 angle.");
+  // align the electircal phases of the motor and sensor
   setPwm(pwmA, voltage_power_supply/2.0);
   setPwm(pwmB,0);
   setPwm(pwmC,0);
   _delay(1000);
-  // set encoder to zero
-  encoder->setCounterZero();
+  // set sensor to zero
+  sensor->initRelativeZero();
   _delay(500);
   setPhaseVoltage(0,0);
   _delay(200);
 
   // find the index if available
-  int exit_flag = indexSearch();
+  int exit_flag = absoluteZeroAlign();
   _delay(500);
   if(debugger){
-    if(exit_flag< 0 ) debugger->println("DEBUG: Error: Index not found!");
-    if(exit_flag> 0 ) debugger->println("DEBUG: Success: Index found!");
+    if(exit_flag< 0 ) debugger->println("DEBUG: Error: Absolute zero not found!");
+    if(exit_flag> 0 ) debugger->println("DEBUG: Success: Absolute zero found!");
+    else  debugger->println("DEBUG: Success: Absolute zero not availabe!");
   }
   return exit_flag;
 }
@@ -172,14 +171,15 @@ int BLDCMotor::alignEncoder() {
 /*
 	Encoder alignment to electrical 0 angle
 */
-int BLDCMotor::indexSearch() {
-  // if no index return
-  if(!encoder->hasIndex()) return 0;
+int BLDCMotor::absoluteZeroAlign() {
+  // if no absolute zero return
+  if(!sensor->hasAbsoluteZero()) return 0;
   
-  if(debugger) debugger->println("DEBUG: Search for the encoder index.");
+  if(debugger) debugger->println("DEBUG: Aligning the absolute zero.");
 
-  // search the index with small speed
-  while(!encoder->indexFound() && shaft_angle < _2PI){
+  if(debugger && sensor->needsAbsoluteZeroSearch()) debugger->println("DEBUG: Searching for absolute zero.");
+  // search the absolute zero with small velocity
+  while(sensor->needsAbsoluteZeroSearch() && shaft_angle < _2PI){
     loopFOC();   
     voltage_q = velocityIndexSearchPI(index_search_velocity - shaftVelocity());
   }
@@ -187,14 +187,15 @@ int BLDCMotor::indexSearch() {
   // disable motor
   setPhaseVoltage(0,0);
 
-  // set index to zero if it has been found
-  if(encoder->indexFound()){
-    encoder->setIndexZero();  
-    // remember index electric angle
-    index_electric_angle = electricAngle(encoder->getIndexAngle());
+  // align absoulute zero if it has been found
+  if(!sensor->needsAbsoluteZeroSearch()){
+    // align the sensor with the absolute zero
+    float zero_offset = sensor->initAbsoluteZero();
+    // remember zero electric angle
+    zero_electric_angle = electricAngle(zero_offset);
   }
-  // return bool is index found
-  return encoder->indexFound() ? 1 : -1;
+  // return bool is zero found
+  return !sensor->needsAbsoluteZeroSearch() ? 1 : -1;
 }
 
 /**
@@ -202,11 +203,11 @@ int BLDCMotor::indexSearch() {
 */
 // shaft angle calculation
 float BLDCMotor::shaftAngle() {
-  return encoder->getAngle();
+  return sensor->getAngle();
 }
 // shaft velocity calculation
 float BLDCMotor::shaftVelocity() {
-  return encoder->getVelocity();
+  return sensor->getVelocity();
 }
 /*
 	Electrical angle calculation
@@ -270,7 +271,7 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
 
   // angle normalisation in between 0 and 2pi
   // only necessary if using _sin and _cos - approximation funcitons
-  float angle = normalizeAngle(angle_el + index_electric_angle);
+  float angle = normalizeAngle(angle_el + zero_electric_angle);
   // Inverse park transform
   // regular sin + cos ~300us    (no memeory usaage)
   // approx  _sin + _cos ~110us  (400Byte ~ 20% of memory)

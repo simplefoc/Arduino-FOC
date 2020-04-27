@@ -147,28 +147,31 @@ float Encoder::getVelocity(){
 
 // getter for index pin
 // return -1 if no index
-int Encoder::indexFound(){
-  return index_pulse_counter != 0;
+int Encoder::needsAbsoluteZeroSearch(){
+  return index_pulse_counter == 0;
 }
 // getter for index pin
+int Encoder::hasAbsoluteZero(){
+  return hasIndex();
+}
+
+
 int Encoder::hasIndex(){
   return index_pin != 0;
 }
-// getter for Index angle
-float Encoder::getIndexAngle(){
-  return  (index_pulse_counter) / ((float)cpr) * (_2PI);
-}
-
 
 // intialise counter to zero
-void Encoder::setCounterZero(){
+float Encoder::initRelativeZero(){
+  long angle_offset = -pulse_counter;
   pulse_counter = 0;
   pulse_timestamp = _micros();
+  return _2PI * (angle_offset) / ((float)cpr);
 }
 // intialise index to zero
-void Encoder::setIndexZero(){
+float Encoder::initAbsoluteZero(){
   pulse_counter -= index_pulse_counter;
   prev_pulse_counter = pulse_counter;
+  return (index_pulse_counter) / ((float)cpr) * (_2PI);
 }
 
 
