@@ -8,40 +8,20 @@
 //  - phA, phB, phC - motor A,B,C phase pwm pins
 //  - pp            - pole pair number
 //  - enable pin    - (optional input)
-BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
-//  Encoder(int encA, int encB , int cpr, int index)
-//  - encA, encB    - encoder A and B pins
-//  - ppr           - impulses per rotation  (cpr=ppr*4)
-//  - index pin     - (optional input)
-Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, A0);
+BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
 
-// Interrupt rutine intialisation
-// channel A and B callbacks
-void doA(){encoder.handleA();}
-void doB(){encoder.handleB();}
-// index calback interrupt code 
-// please set the right PCINT(0,1,2)_vect parameter
-//  PCINT0_vect - index pin in between D8 and D13
-//  PCINT1_vect - index pin in between A0 and A5 (recommended)
-//  PCINT2_vect - index pin in between D0 and D7
-ISR (PCINT1_vect) { encoder.handleIndex(); }
+// MagneticSensor(int cs, float _cpr, int _angle_register)
+//  cs              - SPI chip select pin 
+//  _cpr            - counts per revolution 
+// _angle_register  - (optional) angle read register - default 0x3FFF
+MagneticSensor AS5x4x = MagneticSensor(10, 16384, 0x3FFF);
 
 void setup() {
   // debugging port
   Serial.begin(115200);
 
-  // check if you need internal pullups
-  //  Quadrature::ENABLE - CPR = 4xPPR  - default
-  //  Quadrature::DISABLE - CPR = PPR
-  encoder.quadrature = Quadrature::ENABLE;
-
-  // check if you need internal pullups
-  // Pullup::EXTERN - external pullup added - dafault
-  // Pullup::INTERN - needs internal arduino pullup
-  encoder.pullup = Pullup::EXTERN;
-  
-  // initialise encoder hardware
-  encoder.init(doA, doB);
+  // initialise magnetic sensor hardware
+  AS5x4x.init();
   
   // power supply voltage
   // default 12V
@@ -57,35 +37,31 @@ void setup() {
   // jerk control using voltage voltage ramp
   // default value is 100
   motor.PI_velocity_index_search.voltage_ramp = 100;
-  
-  // set control loop type to be used
+
+  // set FOC loop to be used
   // ControlType::voltage
   // ControlType::velocity
   // ControlType::velocity_ultra_slow
   // ControlType::angle
-  motor.controller = ControlType::velocity;
+  motor.controller = ControlType::velocity_ultra_slow;
 
-  // contoller configuration based on the controll type 
   // velocity PI controller parameters
-  // default K=1.0 Ti = 0.003
-  motor.PI_velocity.K = 0.3;
-  motor.PI_velocity.Ti = 0.003;
-  //defualt voltage_power_supply/2
-  motor.PI_velocity.voltage_limit = 6;
-  // jerk control using voltage voltage ramp
-  // default value is 300 volts per sec  ~ 0.3V per millisecond
-  motor.PI_velocity.voltage_ramp = 300;
+  // default K=60.0 Ti = 100.0
+  motor.PI_velocity_ultra_slow.K = 50;
+  motor.PI_velocity_ultra_slow.Ti = 100;
+  motor.PI_velocity_ultra_slow.voltage_limit = 100;
+  motor.PI_velocity_ultra_slow.voltage_ramp = 300;
 
   // use debugging with serial for motor init
   // comment out if not needed
   motor.useDebugging(Serial);
 
   // link the motor to the sensor
-  motor.linkEncoder(&encoder);
+  motor.linkSensor(&AS5x4x);
 
   // intialise motor
   motor.init();
-  // align encoder and start FOC
+  // align sensor and start FOC
   motor.initFOC();
 
   Serial.println("Motor ready.");
@@ -137,6 +113,8 @@ void motor_monitor() {
       break;
     case ControlType::voltage:
       Serial.print(motor.voltage_q);
+      Serial.print("\t");
+      Serial.print(motor.shaft_angle);
       Serial.print("\t");
       Serial.println(motor.shaft_velocity);
       break;

@@ -1,4 +1,5 @@
 #include <SimpleFOC.h>
+// software interrupt library
 #include <PciManager.h>
 #include <PciListenerImp.h>
 
@@ -67,7 +68,7 @@ void setup() {
   motor.useDebugging(Serial);
 
   // link the motor to the sensor
-  motor.linkEncoder(&encoder);
+  motor.linkSensor(&encoder);
 
   // intialise motor
   motor.init();

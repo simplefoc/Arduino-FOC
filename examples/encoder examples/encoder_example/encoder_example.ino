@@ -24,7 +24,9 @@ void setup() {
   encoder.pullup = Pullup::EXTERN;
   
   // initialise encoder hardware
-  encoder.init(doA, doB);
+  encoder.init();
+  // hardware interrupt enable
+  encoder.enableInterrupts(doA, doB);
 
   Serial.println("Encoder ready");
   _delay(1000);

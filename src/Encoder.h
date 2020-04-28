@@ -3,6 +3,7 @@
 
 #include "Arduino.h"
 #include "FOCutils.h"
+#include "Sensor.h"
 
 
 // Pullup configuation structure
@@ -16,7 +17,7 @@ enum Quadrature{
   DISABLE // CPR = PPR
 };
 
-class Encoder{
+class Encoder: public Sensor{
  public:
     /*
     Encoder(int encA, int encB , int cpr, int index)
@@ -27,8 +28,11 @@ class Encoder{
     Encoder(int encA, int encB , float ppr, int index = 0);
 
     // encoder initialise pins
-    void init(void (*doA)() = nullptr, void(*doB)() = nullptr);
-
+    void init();
+    // funciton enabling hardware interrupts of the for the callback provided
+    // if callback is not provided then the interrupt is not enabled
+    void enableInterrupts(void (*doA)() = nullptr, void(*doB)() = nullptr, void(*doIndex)() = nullptr);
+    
     //  Encoder interrupt callback functions
     //  enabling CPR=4xPPR behaviour
     // A channel
@@ -38,18 +42,6 @@ class Encoder{
     // index handle
     void handleIndex();
     
-    // encoder getters
-    // shaft velocity getter
-    float getVelocity();
-    float getAngle();
-    // getter for index pin
-    int indexFound();
-    int hasIndex();
-    float getIndexAngle();
-
-    // setter for counter to zero
-    void setCounterZero();
-    void setIndexZero();
     
     // pins A and B
     int pinA, pinB;           // encoder hardware pins
@@ -57,11 +49,32 @@ class Encoder{
     int index_pin;
     // encoder pullup type
     Pullup pullup;
-    // use 4xppr or not
+    // use 4xPPR or not
     Quadrature quadrature;
 
+    // implementation of abstract functions of the Sensor class
+    // get current angle (rad)
+    float getAngle();
+    // get current angular velocity (rad/s)
+    float getVelocity();
+    // set current agle as zero angle 
+    // return the angle [rad] difference
+    float initRelativeZero();
+    // set index angle as zero angle
+    // return the angle [rad] difference
+    float initAbsoluteZero();
+    // returns 0 if it has no index 
+    // 0 - encoder without index
+    // 1 - encoder with index 
+    int hasAbsoluteZero();
+    // returns 0 if it does need search for absolute zero
+    // 0 - encoder without index 
+    // 1 - ecoder with index
+    int needsAbsoluteZeroSearch();
 
   private:
+    int hasIndex();
+
     volatile long pulse_counter;        // current pulse counter
     volatile long pulse_timestamp;      // last impulse timestamp in us
     float cpr;                 // impulse cpr

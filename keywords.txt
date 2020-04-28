@@ -2,6 +2,7 @@ ArduinoFOC	KEYWORD1
 SimpleFOC	KEYWORD1
 BLDCMotor	KEYWORD1
 Encoder	KEYWORD1
+MagneticSensor	KEYWORD1
 
 initFOC	KEYWORD2
 loopFOC	KEYWORD2
@@ -23,15 +24,17 @@ ControlType	KEYWORD1
 Quadrature	KEYWORD1
 Pullup	KEYWORD1
 
-linkEncoder	KEYWIORD2
+linkSensor	KEYWIORD2
 handleA	KEYWIORD2
 handleB	KEYWIORD2
 handleIndex	KEYWIORD2
+enableInterrupts	KEYWIORD2
 ISR	KEYWIORD2
 getVelocity	KEYWIORD2
 setPhaseVoltage	KEYWIORD2
 getAngle	KEYWIORD2
-setCounterZero	KEYWIORD2
+initRelativeZero	KEYWIORD2
+initAbsoluteZero	KEYWIORD2
 useDebugging	KEYWIORD2
 
 voltage_q	KEYWIORD2

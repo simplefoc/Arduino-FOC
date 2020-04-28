@@ -147,33 +147,35 @@ float Encoder::getVelocity(){
 
 // getter for index pin
 // return -1 if no index
-int Encoder::indexFound(){
-  return index_pulse_counter != 0;
+int Encoder::needsAbsoluteZeroSearch(){
+  return index_pulse_counter == 0;
 }
 // getter for index pin
+int Encoder::hasAbsoluteZero(){
+  return hasIndex();
+}
+// intialise counter to zero
+float Encoder::initRelativeZero(){
+  long angle_offset = -pulse_counter;
+  pulse_counter = 0;
+  pulse_timestamp = _micros();
+  return _2PI * (angle_offset) / ((float)cpr);
+}
+// intialise index to zero
+float Encoder::initAbsoluteZero(){
+  pulse_counter -= index_pulse_counter;
+  prev_pulse_counter = pulse_counter;
+  return (index_pulse_counter) / ((float)cpr) * (_2PI);
+}
+// private funciton used to determine if encoder has index
 int Encoder::hasIndex(){
   return index_pin != 0;
 }
-// getter for Index angle
-float Encoder::getIndexAngle(){
-  return  (index_pulse_counter) / ((float)cpr) * (_2PI);
-}
 
 
-// intialise counter to zero
-void Encoder::setCounterZero(){
-  pulse_counter = 0;
-  pulse_timestamp = _micros();
-}
-// intialise index to zero
-void Encoder::setIndexZero(){
-  pulse_counter -= index_pulse_counter;
-  prev_pulse_counter = pulse_counter;
-}
-
-
-
-void Encoder::init(void (*doA)(), void(*doB)()){
+// encoder initialisation of the hardware pins 
+// and calculation variables
+void Encoder::init(){
   
   // Encoder - check if pullup needed for your encoder
   if(pullup == Pullup::INTERN){
@@ -185,7 +187,8 @@ void Encoder::init(void (*doA)(), void(*doB)()){
     pinMode(pinB, INPUT);
     if(hasIndex()) pinMode(index_pin,INPUT);
   }
-    // counter setup
+  
+  // counter setup
   pulse_counter = 0;
   pulse_timestamp = _micros();
   // velocity calculation varibles
@@ -194,34 +197,30 @@ void Encoder::init(void (*doA)(), void(*doB)()){
   prev_pulse_counter = 0;
   prev_timestamp_us = _micros();
 
+  // initial cpr = PPR
+  // change it if the mode is quadrature
+  if(quadrature == Quadrature::ENABLE) cpr = 4*cpr;
 
+}
+
+// funciton enabling hardware interrupts of the for the callback provided
+// if callback is not provided then the interrupt is not enabled
+void Encoder::enableInterrupts(void (*doA)(), void(*doB)(), void(*doIndex)()){
   // attach interrupt if functions provided
   switch(quadrature){
     case Quadrature::ENABLE:
-      // initial cpr = PPR
-      // change it if the mode is quadrature
-      cpr = 4*cpr;
       // A callback and B callback
-      if(doA != nullptr){
-        // CPR = 4xPPR
-        attachInterrupt(digitalPinToInterrupt(pinA), doA, CHANGE);
-        attachInterrupt(digitalPinToInterrupt(pinB), doB, CHANGE);
-      }
+      if(doA != nullptr) attachInterrupt(digitalPinToInterrupt(pinA), doA, CHANGE);
+      if(doB != nullptr) attachInterrupt(digitalPinToInterrupt(pinB), doB, CHANGE);
       break;
     case Quadrature::DISABLE:
       // A callback and B callback
-      if(doA != nullptr){
-        // CPR = PPR
-        attachInterrupt(digitalPinToInterrupt(pinA), doA, RISING);
-        attachInterrupt(digitalPinToInterrupt(pinB), doB, RISING);
-      }
+      if(doA != nullptr) attachInterrupt(digitalPinToInterrupt(pinA), doA, RISING);
+      if(doB != nullptr) attachInterrupt(digitalPinToInterrupt(pinB), doB, RISING);
       break;
   }
-    
+        
   // if index used intialise the index interrupt
-  if(hasIndex() && doA != nullptr) {
-    *digitalPinToPCMSK(index_pin) |= bit (digitalPinToPCMSKbit(index_pin));  // enable pin
-    PCIFR  |= bit (digitalPinToPCICRbit(index_pin)); // clear any outstanding interrupt
-    PCICR  |= bit (digitalPinToPCICRbit(index_pin)); // enable interrupt for the group
-  }
+  if(hasIndex() && doIndex != nullptr) attachInterrupt(digitalPinToInterrupt(index_pin), doIndex, CHANGE);
 }
+

@@ -1,4 +1,7 @@
 #include <SimpleFOC.h>
+// software interrupt library
+#include <PciManager.h>
+#include <PciListenerImp.h>
 
 // Only pins 2 and 3 are supported
 #define arduinoInt1 2             // Arduino UNO interrupt 0
@@ -14,16 +17,13 @@ BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
 //  - ppr           - impulses per rotation  (cpr=ppr*4)
 //  - index pin     - (optional input)
 Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, A0);
+
 // Interrupt rutine intialisation
 // channel A and B callbacks
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
-// index calback interrupt code 
-// please set the right PCINT(0,1,2)_vect parameter
-//  PCINT0_vect - index pin in between D8 and D13
-//  PCINT1_vect - index pin in between A0 and A5 (recommended)
-//  PCINT2_vect - index pin in between D0 and D7
-ISR (PCINT1_vect) { encoder.handleIndex(); }
+// If no available hadware interrupt pins use the software interrupt
+PciListenerImp listenerIndex(encoder.index_pin, doIndex);
 
 void setup() {
   // debugging port
@@ -40,8 +40,12 @@ void setup() {
   encoder.pullup = Pullup::EXTERN;
   
   // initialise encoder hardware
-  encoder.init(doA, doB);
-
+  encoder.init();
+  // hardware interrupt enable
+  encoder.enableInterrupts(doA, doB);
+  // software interrupts
+  PciManager.registerListener(&listenerIndex);
+  
   // power supply voltage
   // default 12V
   motor.voltage_power_supply = 12;
@@ -62,30 +66,36 @@ void setup() {
   // ControlType::velocity
   // ControlType::velocity_ultra_slow
   // ControlType::angle
-  motor.controller = ControlType::voltage;
+  motor.controller = ControlType::velocity_ultra_slow;
+
+  // velocity PI controller parameters
+  // default K=60.0 Ti = 100.0
+  motor.PI_velocity_ultra_slow.K = 50;
+  motor.PI_velocity_ultra_slow.Ti = 100;
+  motor.PI_velocity_ultra_slow.voltage_limit = 100;
+  motor.PI_velocity_ultra_slow.voltage_ramp = 300;
 
   // use debugging with serial for motor init
   // comment out if not needed
   motor.useDebugging(Serial);
 
   // link the motor to the sensor
-  motor.linkEncoder(&encoder);
+  motor.linkSensor(&encoder);
+
   // intialise motor
   motor.init();
   // align encoder and start FOC
   motor.initFOC();
 
-
   Serial.println("Motor ready.");
-  Serial.println("Set the target voltage using serial terminal:");
+  Serial.println("Set the target velocity using serial terminal:");
   _delay(1000);
 }
 
-// uq voltage
-float target_voltage = 2;
+// velocity set point variable
+float target_velocity = 0;
 
 void loop() {
-
   // iterative state calculation calculating angle
   // and setting FOC pahse voltage
   // the faster you run this funciton the better
@@ -97,12 +107,12 @@ void loop() {
   // velocity, position or voltage
   // this funciton can be run at much lower frequency than loopFOC funciton
   // it can go as low as ~50Hz
-  motor.move(target_voltage);
+  motor.move(target_velocity);
 
 
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
-  motor_monitor();
+  // motor_monitor();
 }
 
 // utility function intended to be used with serial plotter to monitor motor variables
@@ -134,7 +144,6 @@ void motor_monitor() {
   }
 }
 
-
 // Serial communication callback function
 // gets the target value from the user
 void serialEvent() {
@@ -148,9 +157,9 @@ void serialEvent() {
     // if the incoming character is a newline
     // end of input
     if (inChar == '\n') {
-      target_voltage = inputString.toFloat();
-      Serial.print("Tagret voltage: ");
-      Serial.println(target_voltage);
+      target_velocity = inputString.toFloat();
+      Serial.print("Tagret velocity: ");
+      Serial.println(target_velocity);
       inputString = "";
     }
   }

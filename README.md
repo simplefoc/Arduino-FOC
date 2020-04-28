@@ -37,12 +37,13 @@ Branch  | Description | Status
   - [Installing the full Arduino Simple FOC library](#installing-simple-foc-full-library)
   - [Installing the minimal Arduino example](#download-simple-foc-arduino-minimal-example)
 - [Electrical connecitons and schematic](#electrical-connections)
-  - [Minimal setup](#all-you-need-for-this-project-is-an-exaple-in-brackets)
+  - [Minimal setup](#all-you-need-for-this-project)
   - [Arduino Simple FOC Shield V1.2](#arduino-simple-foc-shield-v12)
-  - [Arduino UNO + L6234 driver](#arduino-uno--l6234-breakout-broad)
+  - [Arduino UNO + L6234 driver](#arduino-uno-l6234-driver)
   - [HMBGC gimbal contorller example](#hmbgc-v22)
 - [Code explanation and examples](#arduino-simple-foc-library-code)
   - [Encoder setup](#encoder-setup)
+  - [Magentic sensor setup](#magnetic-sensor-setup)
   - [BLDC motor setup](#motor-setup)
   - [Control loop setup](#control-loop-setup)
     - [Voltage control loop](#voltage-control-loop)
@@ -50,7 +51,7 @@ Branch  | Description | Status
     - [Angle control loop](#angle-control-loop)
     - [Utra Slow Velocity control loop](#ultra-slow-velocity-control-loop)
   - [Debugging practice](#debugging)
-  - [Future work and work in progress](#work-roadmap)
+- [Future work and work in progress](#work-roadmap)
 - [Contact](#contact)
 
 
@@ -88,14 +89,48 @@ The code is place in the [minimal branch](https://github.com/askuric/Arduino-FOC
 
 # Electrical connections
 
-### All you need for this project is (an exaple in brackets):
- - Brushless DC motor - 3 pahse    (IPower GBM4198H-120T [Ebay](https://www.ebay.com/itm/iPower-Gimbal-Brushless-Motor-GBM4108H-120T-for-5N-7N-GH2-ILDC-Aerial-photo-FPV/252025852824?hash=item3aade95398:g:q94AAOSwPcVVo571:rk:2:pf:1&frcectupt=true))
- - Encoder  
-   - Incremental 2400cpr [Ebay](https://www.ebay.com/itm/600P-R-Photoelectric-Incremental-Rotary-Encoder-5V-24V-AB-2-Phases-Shaft-6mm-New/173145939999?epid=19011022356&hash=item28504d601f:g:PZsAAOSwdx1aKQU-:rk:1:pf:1)
-   - Magnetic 14bit [Aliexpress](https://fr.aliexpress.com/item/4000034013999.html?spm=a2g0o.productlist.0.0.4a7f5c25mYwpN3&algo_pvid=8f452506-7081-4d0a-8f66-d0b725d6de66&algo_expid=8f452506-7081-4d0a-8f66-d0b725d6de66-0&btsid=0b0a0ad815873142372227604ed134&ws_ab_test=searchweb0_0,searchweb201602_,searchweb201603_)
-- BLDC motor driver 
-  -  L6234 driver [Drotek](https://store-drotek.com/212-brushless-gimbal-controller-l6234.html), [Ebay](https://www.ebay.fr/itm/L6234-Breakout-Board-/153204519965)
-  -  Alternatively the library supports the arduino based gimbal controllers such as: HMBGC V2.2 ([Ebay](https://www.ebay.com/itm/HMBGC-V2-0-3-Axle-Gimbal-Controller-Control-Plate-Board-Module-with-Sensor/351497840990?hash=item51d6e7695e:g:BAsAAOSw0QFXBxrZ:rk:1:pf:1))
+## All you need for this project 
+All you need for this project is:
+- Brushless DC (BLDC) motor 
+- BLDC driver
+- Position sensor
+- Arduino 
+### BLDC motor 
+This library is compatible with any 3 phase BLDC motor out there. Feel free to choose anything that suites your applications. The most tests have been done using gimbal morots (up to 2A).
+Examples:  
+- IPower GBM4198H-120T [Ebay](https://www.ebay.com/itm/iPower-Gimbal-Brushless-Motor-GBM4108H-120T-for-5N-7N-GH2-ILDC-Aerial-photo-FPV/252025852824?hash=item3aade95398:g:q94AAOSwPcVVo571:rk:2:pf:1&frcectupt=true)
+- GARTT ML5010 300KV [Ebay](https://www.ebay.com/itm/GARTT-ML5010-300KV-Brushless-Motor-For-T960-T810-RC-Multirotor-Quadcopter-MT-092/302082779179?hash=item465589682b:g:h00AAOSwmfhX44X2)
+### BLDC motor driver 
+This library will be compatible with the most of the 3 phase bldc motor dirvers. Such as L6234, DRV8305 or L293. 
+Examples:
+-  L6234 driver [Drotek](https://store-drotek.com/212-brushless-gimbal-controller-l6234.html), [Ebay](https://www.ebay.fr/itm/L6234-Breakout-Board-/153204519965)
+-  Alternatively the library supports the arduino based gimbal controllers such as: HMBGC V2.2 ([Ebay](https://www.ebay.com/itm/HMBGC-V2-0-3-Axle-Gimbal-Controller-Control-Plate-Board-Module-with-Sensor/351497840990?hash=item51d6e7695e:g:BAsAAOSw0QFXBxrZ:rk:1:pf:1))
+- [Arduino Simple FOC shield](#arduino-simple-foc-shield-v12)
+
+### Position sensor
+This library supports two types of position sensors: Encoder and Magnetic sensor.
+#### Encoders
+Encoders are by far most popular position sensors, both in industry and in hobby community. The main benefits are the precision, standardisation and very low noise level. The main problem with encoders is the efficiency.
+
+Examples:  
+- Optical Encoder 
+  - 2400cpr | ~10$ [Ebay](https://www.ebay.com/itm/600P-R-Photoelectric-Incremental-Rotary-Encoder-5V-24V-AB-2-Phases-Shaft-6mm-New/173145939999?epid=19011022356&hash=item28504d601f:g:PZsAAOSwdx1aKQU-:rk:1:pf:1)
+  - 490-AMT103-V | 8192cpr | ~30$ [Mouser](https://www.mouser.fr/ProductDetail/CUI-Devices/AMT103-V?qs=%2Fha2pyFaduiAsBlScvLoAWHUnKz39jAIpNPVt58AQ0PVb84dpbt53g%3D%3D)
+- Magnetic Encoders
+  - AS5047 | 16384cpr | ~15$ [Mouser](https://www.mouser.fr/ProductDetail/ams/AS5X47U-TS_EK_AB?qs=sGAEpiMZZMve4%2FbfQkoj%252BBDLPCj82ZLyYIPEtADg0FE%3D) [Youtube](https://www.youtube.com/watch?v=Gl-DiOqXXJ8)  
+      
+#### Magnetic sensors | SPI  interface
+Magentic position sensor has many benefits over the encoders:
+- Very efficient position calculation ( no counting ) 
+- Time of execution doesn't depend on velocity or number of sensors
+- No need for interrupt hardware
+- Absolute position value
+- Very low price
+- Very simple to mount
+
+Examples:
+  - AS5048 |  16384cpr | ~15$ [Aliexpress](https://fr.aliexpress.com/item/4000034013999.html?spm=a2g0o.productlist.0.0.4a7f5c25mYwpN3&algo_pvid=8f452506-7081-4d0a-8f66-d0b725d6de66&algo_expid=8f452506-7081-4d0a-8f66-d0b725d6de66-0&btsid=0b0a0ad815873142372227604ed134&ws_ab_test=searchweb0_0,searchweb201602_,searchweb201603_)
+  - AS5047 | 16384cpr | ~15$ [Mouser](https://www.mouser.fr/ProductDetail/ams/AS5X47U-TS_EK_AB?qs=sGAEpiMZZMve4%2FbfQkoj%252BBDLPCj82ZLyYIPEtADg0FE%3D) [Youtube](https://www.youtube.com/watch?v=Gl-DiOqXXJ8) 
 
 
 ## Arduino Simple FOC Shield V1.2
@@ -114,25 +149,41 @@ You can explore the [3D model of the board in the PDF form](extras/ArduinoFOCShi
 <img src="extras/Images/AFSV11_side.png" height="300px">  <img src="extras/Images/AFSV11_top.png" height="200px">   <img src="extras/Images/AFSV11_bottom.png" height="200px">
 
 
-## Arduino UNO + L6234 breakout broad
+## Arduino UNO + L6234 driver
 The code is simple enough to be run on Arudino Uno board. 
-
+### Encoder as position sensor 
 <p>
  <img src="extras/Images/arduino_connection.png" height="">
 </p>  
 
-### Encoder
+#### Encoder
 - Encoder channels `A` and `B` are connected to the Arduino's external intrrupt pins `2` and `3`. 
 - Optionally if your encoder has `index` signal you can connect it to any available pin, figure shows pin `4`.
-  - If you can choose preferably connect it to an `A0-A5` due to the interrupt rutine, it will have better performance (but any other pin will work as well).  
-### L6234 breakout board 
+  - For Arudino UNO and similar broads which dont have 3 hardware interrupts, if you can choose, preferably connect index pin to pins `A0-A5` due to the interrupt rutine, it will have better performance (but any other pin will work as well).  
+  - Othervise if you are using different board and have 3 hardware interrupt pins connect the index pin to one of them.
+#### L6234 breakout board 
 - Connected to the arduino pins `9`,`10` and `11` (you can use also pins `5` and `6`).  
 - Additionally you can connect the `enable` pin to the any digital pin of the arduino the picture shows pin `8` but this is optional. You can connect the driver enable directly to 5v. 
 - Make sure you connect the common ground of the power supply and your Arduino
-### Motor
+#### Motor
 - Motor phases `a`, `b` and `c` are connected directly to the driver outputs
+- Motor phases `a`,`b`,`c` and encoder channels `A` and `B` have to be oriented right for the algorightm to work. But don't worry about it too much. Connect it in initialy as you wish and then if it doesnt move reverse pahse `a` and `b` of the motor, that should be enogh.
+### Magentic sensor as position sensor 
+<p>
+ <img src="extras/Images/arduino_connection_magnetic.png" height="">
+</p>  
 
-Motor phases `a`,`b`,`c` and encoder channels `A` and `B` have to be oriented right for the algorightm to work. But don't worry about it too much. Connect it in initialy as you wish and then if it doesnt move reverse pahse `a` and `b` of the motor, that should be enogh.
+#### Magnetic sensor
+- Magnetic sensors SPI interface singals `SCK`, `MISO` and `MOSI` are connected to the Arduino's `SPI` pins (Arduino UNO `13`,`12` and `11`). 
+  - If the application requires more than one sensor all of them are connected to the same pins of theArudino.
+- The `chip select` pin is connected to the desired pin. Each sensor connected to the same Arduino has to have unique chip select pin.
+#### L6234 breakout board 
+- Connected to the arduino pins `3`,`5` and `6` (you can use also pin `9` and `10`, pin `11` is taken by the SPI interface).  
+- Additionally you can connect the `enable` pin to the any digital pin of the arduino the picture shows pin `2` but this is optional. You can connect the driver enable directly to 5v. 
+- Make sure you connect the common ground of the power supply and your Arduino
+#### Motor
+- Motor phases `a`, `b` and `c` are connected directly to the driver outputs
+- Motor phases `a`,`b`,`c` and the magnetic sensor counting direciton have to be oriented right for the algorightm to work. But don't worry about it too much. Connect it initialy as you wish and then if the motor locks in place inverse `a` and `b` line of the motor.
 
 
 ## HMBGC V2.2
@@ -151,14 +202,12 @@ Since HMBGC doesn't have acces to the arduinos external interrupt pins `2` and `
 - Optionally if your encoder has `index` signal you can connect it to any available pin, figure shows pin `A2`.  
 ### Motor
 - Motor phases `a`,`b` and `c` are connected directly to the driver outputs
+- Motor phases `a`,`b`,`c` and encoder channels `A` and `B` have to be oriented right for the algorightm to work. But don't worry about it too much. Connect it in initialy as you wish and then if it doesnt move reverse pahse `a` and `b` of the motor, that should be enogh.
 
-Motor phases `a`,`b`,`c` and encoder channels `A` and `B` have to be oriented right for the algorightm to work. But don't worry about it too much. Connect it in initialy as you wish and then if it doesnt move reverse pahse `a` and `b` of the motor, that should be enogh.
-
-
-
+> HMBGC board doesn't support magnetic sensors because it doesn't have necessary SPI infrastructure.
 
 # Arduino Simple FOC library code
-The code is organised into a library. The library contains two classes `BLDCmotor` and `Endcoder`. `BLDCmotor` contains all the necessary FOC algorithm funcitons as well as PI controllers for the velocity and angle control.  `Encoder`  deals with the encoder interupt funcitons, calcualtes motor angle and velocity ( using the [Mixed Time Frequency Method](https://github.com/askuric/Arduino-Mixed-Time-Frequency-Method)). The `Encoder` class will support any type of otpical and magnetic encoder.
+The code is organised into a library. The library contains main BLDC motor class `BLDCmotor` and  two sensor classes `Endcoder` and `MagneticSensor`. `BLDCmotor` contains all the necessary FOC algorithm funcitons as well as PI controllers for the velocity and angle control.  `Encoder`  deals with the encoder interupt funcitons, calcualtes motor angle and velocity ( using the [Mixed Time Frequency Method](https://github.com/askuric/Arduino-Mixed-Time-Frequency-Method)). The `Encoder` class will support any type of otpical and magnetic encoder. `MagneticEncoder` class deals with all the necessary communication and calculation infrastructure to handle the magnetic position sensors such as AS5048 and similar. 
 
 ## Encoder setup
 To initialise the encoder you need to provide the encoder `A` and `B` channel pins, encoder `PPR` and optionally `index` pin.
@@ -191,7 +240,7 @@ There are two ways you can run encoders with Simple FOC libtrary.
 > Using the hardware external interrupts usualy results in a bit better and more realible performance but software interrupts will work very good as well. 
 
 #### Arduino Hardware external interrupt
-Arduino hadrware external interrupt pins are pin `2` and `3`. And in order to use its functionallities the encoder channels `A` and `B` will have to be connected exacly on these pins.
+Arduino UNO has two hadrware external interrupt pins, pin `2` and `3`. And in order to use its functionallities the encoder channels `A` and `B` will have to be connected exacly on these pins.
 
 Simple FOC `Encoder` class already has implemented initialisation and encoder `A` and `B` channel callbacks. 
 All you need to do is define two funcitons `doA()` and `doB()`, the buffering functions of encoder callback funcitons `encoder.handleA()` and `encoder.handleB()`. 
@@ -200,10 +249,10 @@ All you need to do is define two funcitons `doA()` and `doB()`, the buffering fu
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 ```
-And supply those functions to the encoder initialiasation fucntion `encoder.init()`
+And supply those functions to the encoder interrupt init fucntion `encoder.enableInterrupts()`
 ```cpp
-// initialise encoder hardware
-encoder.init(doA, doB);
+// enable encoder hardware interrupts
+encoder.enableInterrupts(doA, doB)
 ```
 You can name the buffering funcitons as you wish. It is just important to supply them to the `encoder.init()` funciton. This procedure is a tradeoff in between scalability and simplicity. This allows you to have more than one encoder connected to the same arduino. All you need to do is to instantiate new `Encoder` class and create new buffer functions. For example:
 ```cpp
@@ -218,65 +267,60 @@ void doB2(){enc2.handleB();}
 
 void setup(){
 ...
-  enc1.init(doA1,doB1);
-  enc2.init(doA2,doB2);
+  enc1.init();
+  enc1.enableInterrupts(doA1,doB1);
+  enc2.init();
+  enc2.enableInterrupts(doA2,doB2);
 ...
 }
 ```
 
 ##### Index pin configuration
-In order to read index pin efficienlty Simple FOC algorithm uses Arduino interrupt routine as well. 
-Simple FOC has implemented the index pin callback  `encoder.handleIndex()`. In order to enable the index pin utilisation just add the index pin in the encoder constructor:
+In order to read index pin efficienlty Simple FOC algorithm enables you to use the same approach as for the channels `A` and `B`. First you need to provide the `Encoder` class the index pin number:
 ```cpp
 Encoder encoder = Encoder(pinA, pinB, cpr, index_pin);
 ```
-The library make sure to enable the propper interrupts and initialise the `pinMode` based on your [pullup configuration](#encoder-setup).
-
-The last peace of the index pin enabling puzzle is the Arduino's `ISR` funciton call:
-```cpp
-// index calback interrupt code 
-// please set the right PCINT(0,1,2)_vect parameter
-//  PCINT0_vect - index pin in between D8 and D13
-//  PCINT1_vect - index pin in between A0 and A5 (recommended)
-//  PCINT2_vect - index pin in between D0 and D7
-ISR (PCINT1_vect) { encoder.handleIndex(); }
-```
-Make sure you use the right `PCINT(1,2,3)_vect` paramereter of the `ISR` function. 
-`ISR` Parameter | Arduino pin 
------| -----
-PCINT0_vect | D8 - D13
-PCINT1_vect | A0 - A5
-PCINT2_vect | D0 - D7
-
-The `ISR` with the vector `PCINT0_vect` will be called each time one of the pins `D8-D13` changes. Each time one of the pins `A0-A5` chenges the Arduino interrupt `ISR` function with the `PCINT1_vect` will be called and finally if any one of the `D0-D7` pins changes the `ISR` function with the parameter `PCINT2_vect` will be called. So therefore it is important to use the index callback `encoder.handleIndex()` funciton in the rigth `ISR` function. 
-Here is an eaxmple of the setup od two encoders with different `index` locations:
+If you are using Arduino board such as Arduino Mega and simialar and if you have more tha 2 hadrware interrupts you can connect your index pin to the hadrware interrupt pin (example Arduino Mega pin `21`). Your code will look like:
 ```cpp
 Encoder encoder =  Encoder(2,3,600,A0);
 // A and B interrupt rutine 
-void doA1(){encoder.handleA();}
-void doB1(){encoder.handleB();}
-// index  interrupt rutine 
-ISR (PCINT1_vect) { encoder.handleIndex(); }
+void doA(){encoder.handleA();}
+void doB(){encoder.handleB();}
+void doIndex(){encoder.handleIndex();}
 
-void setup(){...}
-void loop(){...}
+void setup(){
+  ...
+  encoder.enableInterrupts(doA,doB,doIndex);
+  ...
+  }
 ```
-Or for example:
+The function `enableInterrupts` will handle all the intialisation for you. 
+If yo are using Arduino UNO to run this algorithm and you do not have enough hardware interrupt pins you will need to use software interrupt library such as  [PciManager library](https://github.com/prampec/arduino-pcimanager). Arduino UNO code for using an encoder with index can be:
 ```cpp
-Encoder encoder =  Encoder(2,3,600,13);
+Encoder encoder =  Encoder(2,3,600,A0);
 // A and B interrupt rutine 
-void doA1(){encoder.handleA();}
-void doB1(){encoder.handleB();}
-// index  interrupt rutine 
-ISR (PCINT0_vect) { encoder.handleIndex(); }
+void doA(){encoder.handleA();}
+void doB(){encoder.handleB();}
+void doIndex(){encoder.handleIndex();}
 
-void setup(){...}
-void loop(){...}
+// softaware interrupt listener for index pin
+PciListenerImp listenerIndex(encoder.index_pin, doIndex);
+
+void setup(){
+  ...
+  // hardware interrupts for A and B
+  encoder.enableInterrupts(doA,doB);
+  // software interrupt for index
+  PciManager.registerListener(&listenerIndex);
+  ...
+  }
 ```
+The same procedure can be done for pins `A` and `B` if your application makes you run out of the hardware interrupt pins. Software interrupts are very powerfull and produce very comparable results to the hardware interupts, but in general they tend to have a bit worse performance. `index` pin produces an interrupt once per rotation, therefore it is not critical, so software or hardware interrupt doesn't change too much in terms of performance. 
+
 To explore better the encoder algorithm an example is provided `encoder_example.ino`.
 
 #### Arduino software pin change interrupt
-If you are not able to access your pins `2` and `3` of your Arduino or if you want to use more than none encoder you will have to use the software interrupt approach. 
+If you are not able to access your pins `2` and `3` of your Arduino UNO or if you want to use more than none encoder you will have to use the software interrupt approach. 
 I suggest using the [PciManager library](https://github.com/prampec/arduino-pcimanager).
 
 The stps of using this library in code are very similar to [harware interrupt](#arduino-hardware-external-interrupt).
@@ -300,7 +344,7 @@ Then you declare listeners `PciListenerImp `:
 PciListenerImp listenerA(encoder.pinA, doA);
 PciListenerImp listenerB(encoder.pinB, doB);
 ```
-And finally instead of supplying the functions `doA` and `doB` to the `encoder.init()` you call the init without parameters and  use `PCIManager` library to register the interrupts
+Finally, after running `encoder.init()` you skip the call of the `encoder.enableInterrupts()` and call the `PCIManager` library to register the interrupts for all the encoder channels.
 ```cpp
 // initialise encoder hardware
 encoder.init();
@@ -367,7 +411,42 @@ void setup(){
 ...
 }
 ```
+## Magnetic sensor setup
+In order to use your magnetic position sensor with Simple FOC library first create an instance of the `MagneticSensor` class:
+```cpp
+// MagneticSensor(int cs, float _cpr, int _angle_register)
+//  cs              - SPI chip select pin 
+//  _cpr            - counts per revolution 
+// _angle_register  - (optional) angle read register - default 0x3FFF
+MagneticSensor sensor = MagneticSensor(10, 16384, 0x3FFF);
+```
+The parameters of the class is the `chip select` pin number you connected your sensor to, the range of your sensor (counter value for full rotation) and your `angle register` number telling the library which register value should it ask the sensor for in order to retrieve the angle value. The default `angle_register` number is set to `0x3FFF` as it is the angle register for most of the low cost AS5x4x sensors. 
 
+Finally after the inialisalisation the only thing you need to do afterwards is to call the `init()` function. This function prepares the SPI interface and initialises the sensor hardware. So your magnetic sensor intialisation code will look like:
+```cpp
+MagneticSensor sensor = MagneticSensor(10, 16384, 0x3FFF);
+
+void loop(){
+  ...
+  sensor.init();
+  ...
+}
+```
+
+If you wish to use more than one magnetic sensor, make sure you connect their `chip select` pins to different arduino pins and follow the same idea as above, here is a simple example:
+```cpp
+MagneticSensor sensor1 = MagneticSensor(10, 16384, 0x3FFF);
+MagneticSensor sensor1 = MagneticSensor(9, 16384, 0x3FFF);
+
+void loop(){
+  ...
+  sensor1.init();
+  sensor2.init();
+  ...
+}
+```
+
+Please check the `magnetic_sensor_only_example.ino` example to see more about it.
 ## Motor setup
 To intialise the motor you need to input the `pwm` pins, number of `pole pairs` and optionally driver `enable` pin.
 ```cpp
@@ -379,10 +458,11 @@ BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
 ```
 If you are not sure what your `pole_paris` number is I included an example code to estimate your `pole_paris` number in the examples `find_pole_pairs_number.ino`. I hope it helps. 
 
-To finalise the motor setup the encoder is added to the motor and the `init` function is called.
+To finalise the motor setup the sensor is added to the motor and the `init` function is called.
 ```cpp
 // link the motor to the sensor
-motor.linkEncoder(&encoder);
+// either Encoder class or MagenticSensor class
+motor.linkSensor(&sensor);
 // intialise motor
 motor.init();
 ```
@@ -397,6 +477,7 @@ motor.power_supply_voltage = 12;
 The `power_supply_voltage` value tells the FOC algorithm what is the maximum voltage it can output. Additioanlly since the FOC algotihm implemented in the Simple FOC library uses sinusoidal voltages the magnitudes of the sine waves exiting the Drvier circuit is going to be  `[-power_supply_voltage/2, power_supply_voltage/2]`.
 
 <img src="extras/Images/sine_foc.png" >
+
 
 ## Control loop setup
 The SimpleFOC library gives you the choice of using 4 different plug and play control loops: 
@@ -600,15 +681,24 @@ It receives one parameter `BLDCMotor::move(float target)` which is current user 
 ## Examples
 Examples folder structure
 ```
-├───examples
-│   ├───voltage_control                       # example of the voltage control loop with configuraiton
-│   ├───angle_control                         # example of angle control loop with configuraiton
-│   ├───velocity_control                      # example of velocity control loop with configuraiton
-│   ├───velocity_ultraslow_control            # example of ultra slow velocity control using  with configuraiton
-│   ├───encoder_example                       # simple example of encoder usage 
-│   ├───minimal_example                       # example of code without using configuration
-│   ├───HMBGC_example                         # example of code to be used with HMBGC controller with
-│   └───find_pole_pairs_number                # simple code example estimating pole pair number of the motor
+│   ├─── encoder examples             # EXMAPLES OF ENCODER APPLICATIONS
+│   │   ├───angle_control                   # example of angle control loop with configuraiton
+│   │   ├───change_direction                # simple motor changing velocity direction in real time
+│   │   ├───encoder_example                 # simple example of encoder usage
+│   │   ├───find_pole_pairs_number          # simple code example estimating pole pair number of the motor
+│   │   ├───HMBGC_example                   # example of code to be used with HMBGC controller with
+│   │   ├───velocity_control                # example of velocity control loop with configuraiton
+│   │   ├───velocity_ultraslow_control      # example of ultra slow velocity control using  with configuraiton
+│   │   └───voltage_control                 # example of the voltage control loop with configuraiton
+│   │
+│   └─── magnetic sensor examples      # EXMAPLES OF MAGENETIC SENSOR APPLICATIONS
+│       ├───angle_control                   # example of angle control loop with configuraiton
+│       ├───change_direction                # simple motor changing velocity direction in real time
+│       ├───find_pole_pairs_number          # simple code example estimating pole pair number of the motor
+│       ├───magnetic_sensor_only_example    # simple example of magnetic sensor usage
+│       ├───velocity_control                # example of velocity control loop with configuraiton
+│       ├───velocity_ultraslow_control      # example of ultra slow velocity control using  with configuraiton
+│       └───voltage_control                 # example of the voltage control loop with configuraiton
 ```
 
 
@@ -650,8 +740,6 @@ class BLDCMotor
 {
   public:
   ...
-    // current elelctrical angle
-    float elctric_angle;
     // current motor angle
     float shaft_angle;
     // current motor velocity 
@@ -669,6 +757,17 @@ Additionally it is possible to use encoder api directly to get the encoder angle
 ```cpp
 
 class Encoder{
+ public:
+    // shaft velocity getter
+    float getVelocity();
+	// shaft angle getter
+    float getAngle();
+}
+```
+As well as magnetic sensor's api, to get the sensor's angle and velocity. 
+```cpp
+
+class MagneticSensor{
  public:
     // shaft velocity getter
     float getVelocity();
@@ -694,7 +793,8 @@ before running `motor.init()`.
 - [x] Make minimal version of the arduino code - all in one arduino file
 - [x] Encoder index proper implementation
 - [x] Enable more dirver types 
-- [x] Make support for magnetic encoder AS5048 and similar
+- [x] Make support for magnetic encoder AS5048 ABI
+- [ ] Make support for magnetic encoder AS5048 SPI
 - [x] Add support for acceleration ramping
 - [x] Timer interrupt execution rather than in the `loop()`
   - FAIL: Perfromance not improved

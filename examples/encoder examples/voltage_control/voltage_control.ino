@@ -8,23 +8,19 @@
 //  - phA, phB, phC - motor A,B,C phase pwm pins
 //  - pp            - pole pair number
 //  - enable pin    - (optional input)
-BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
+BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
 //  Encoder(int encA, int encB , int cpr, int index)
 //  - encA, encB    - encoder A and B pins
 //  - ppr           - impulses per rotation  (cpr=ppr*4)
-//  - index pin     - (optional input) 
+//  - index pin     - (optional input)
 Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, A0);
 
 // Interrupt rutine intialisation
 // channel A and B callbacks
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
-// index calback interrupt code 
-// please set the right PCINT(0,1,2)_vect parameter
-//  PCINT0_vect - index pin in between D8 and D13
-//  PCINT1_vect - index pin in between A0 and A5 (recommended)
-//  PCINT2_vect - index pin in between D0 and D7
-ISR (PCINT1_vect) { encoder.handleIndex(); }
+// If no available hadware interrupt pins use the software interrupt
+PciListenerImp listenerIndex(encoder.index_pin, doIndex);
 
 void setup() {
   // debugging port
@@ -39,9 +35,13 @@ void setup() {
   // Pullup::EXTERN - external pullup added - dafault
   // Pullup::INTERN - needs internal arduino pullup
   encoder.pullup = Pullup::EXTERN;
-
+  
   // initialise encoder hardware
-  encoder.init(doA, doB);
+  encoder.init();
+  // hardware interrupt enable
+  encoder.enableInterrupts(doA, doB);
+  // software interrupts
+  PciManager.registerListener(&listenerIndex);
 
   // power supply voltage
   // default 12V
@@ -58,40 +58,19 @@ void setup() {
   // default value is 100
   motor.PI_velocity_index_search.voltage_ramp = 100;
 
-
   // set FOC loop to be used
   // ControlType::voltage
   // ControlType::velocity
   // ControlType::velocity_ultra_slow
   // ControlType::angle
-  motor.controller = ControlType::angle;
-
-  
-  // contoller configuration based on the controll type 
-  // velocity PI controller parameters
-  // default K=1.0 Ti = 0.003
-  motor.PI_velocity.K = 0.3;
-  motor.PI_velocity.Ti = 0.003;
-  //defualt voltage_power_supply/2
-  motor.PI_velocity.voltage_limit = 6;
-  // jerk control using voltage voltage ramp
-  // default value is 300 volts per sec  ~ 0.3V per millisecond
-  motor.PI_velocity.voltage_ramp = 300;
-  
-  // angle P controller 
-  // default K=70
-  motor.P_angle.K = 20;
-  //  maximal velocity of the poisiiton control
-  // default 20
-  motor.P_angle.velocity_limit = 4;
+  motor.controller = ControlType::voltage;
 
   // use debugging with serial for motor init
   // comment out if not needed
   motor.useDebugging(Serial);
 
   // link the motor to the sensor
-  motor.linkEncoder(&encoder);
-  
+  motor.linkSensor(&encoder);
   // intialise motor
   motor.init();
   // align encoder and start FOC
@@ -99,14 +78,15 @@ void setup() {
 
 
   Serial.println("Motor ready.");
-  Serial.println("Set the target angle using serial terminal:");
+  Serial.println("Set the target voltage using serial terminal:");
   _delay(1000);
 }
 
-// angle set point variable
-float target_angle = 0;
+// uq voltage
+float target_voltage = 2;
 
 void loop() {
+
   // iterative state calculation calculating angle
   // and setting FOC pahse voltage
   // the faster you run this funciton the better
@@ -118,12 +98,12 @@ void loop() {
   // velocity, position or voltage
   // this funciton can be run at much lower frequency than loopFOC funciton
   // it can go as low as ~50Hz
-  motor.move(target_angle);
+  motor.move(target_voltage);
 
 
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
-  // motor_monitor();
+  motor_monitor();
 }
 
 // utility function intended to be used with serial plotter to monitor motor variables
@@ -155,6 +135,7 @@ void motor_monitor() {
   }
 }
 
+
 // Serial communication callback function
 // gets the target value from the user
 void serialEvent() {
@@ -168,11 +149,10 @@ void serialEvent() {
     // if the incoming character is a newline
     // end of input
     if (inChar == '\n') {
-      target_angle = inputString.toFloat();
-      Serial.print("Tagret angle: ");
-      Serial.println(target_angle);
+      target_voltage = inputString.toFloat();
+      Serial.print("Tagret voltage: ");
+      Serial.println(target_voltage);
       inputString = "";
     }
   }
 }
-

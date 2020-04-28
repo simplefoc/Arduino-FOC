@@ -6,29 +6,20 @@
 
 //  BLDCMotor( int phA, int phB, int phC, int pp, int en)
 // its not important how many pole pairs do you set, the progam will find it alone
-BLDCMotor motor = BLDCMotor(9, 10, 11, 0, 8);
-//  Encoder(int encA, int encB , int cpr, int index)
-Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192);
-// interrupt ruotine intialisation
-void doA(){encoder.handleA();}
-void doB(){encoder.handleB();}
+BLDCMotor motor = BLDCMotor(9, 5, 6, 0, 8);
+
+// MagneticSensor(int cs, float _cpr, int _angle_register)
+//  cs              - SPI chip select pin 
+//  _cpr            - counts per revolution 
+// _angle_register  - (optional) angle read register - default 0x3FFF
+MagneticSensor AS5x4x = MagneticSensor(10, 16384, 0x3FFF);
 
 void setup() {
   // debugging port
   Serial.begin(115200);
 
-  // check if you need internal pullups
-  //  Quadrature::ENABLE - CPR = 4xPPR  - default
-  //  Quadrature::DISABLE - CPR = PPR
-  encoder.quadrature = Quadrature::ENABLE;
-
-  // check if you need internal pullups
-  // Pullup::EXTERN - external pullup added - dafault
-  // Pullup::INTERN - needs internal arduino pullup
-  encoder.pullup = Pullup::EXTERN;
-  
-  // initialise encoder hardware
-  encoder.init(doA, doB);
+  // initialise magnetic sensor hardware
+  AS5x4x.init();
 
   // power supply voltage
   // default 12V
@@ -38,7 +29,7 @@ void setup() {
   motor.controller = ControlType::voltage;
 
   // link the motor to the sensor
-  motor.linkEncoder(&encoder);
+  motor.linkSensor(&AS5x4x);
   // intialise motor
   motor.init();
 
@@ -54,8 +45,8 @@ void setup() {
   // move motor to the electrical angle 0
   motor.setPhaseVoltage(pp_search_voltage,0);
   _delay(1000);
-  // read the encoder angle 
-  float angle_begin = encoder.getAngle();
+  // read the sensor angle 
+  float angle_begin = AS5x4x.getAngle();
   _delay(50);
   
   // move the motor slowly to the electrical angle pp_search_angle
@@ -65,8 +56,8 @@ void setup() {
     motor.setPhaseVoltage(pp_search_voltage, motor_angle);
   }
   _delay(1000);
-  // read the encoder value for 180
-  float angle_end = encoder.getAngle();
+  // read the sensor value for 180
+  float angle_end = AS5x4x.getAngle();
   _delay(50);
   // turn off the motor
   motor.setPhaseVoltage(0,0);
@@ -89,7 +80,7 @@ void setup() {
   // a bit of debugging the result
   if(pp <= 0 ){
     Serial.println("Pole pair number cannot be negative");
-    Serial.println(" - Try changing the search_voltage vlaue or motor/encoder configuration.");
+    Serial.println(" - Try changing the search_voltage vlaue or motor/sensor configuration.");
     return;
   }else if(pp > 30){
     Serial.println("Pole pair number very high, possible error.");
@@ -102,7 +93,7 @@ void setup() {
   
   // set the pole pair number to the motor
   motor.pole_pairs = pp;
-  //align encoder and start FOC
+  //align sensor and start FOC
   motor.initFOC();
   _delay(1000);
 
