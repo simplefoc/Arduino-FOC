@@ -71,9 +71,7 @@ float MagneticSensor::initRelativeZero(){
 // set absoule zero angle as zero angle
 // return the angle [rad] difference
 float MagneticSensor::initAbsoluteZero(){
-  float rotation;
-  rotation = -(int)zero_offset;
-	if(rotation > 8191) rotation = -((0x3FFF)-rotation); // more than -180
+  float rotation = -(int)zero_offset;
   // init absolute zero
   zero_offset = 0;
   // return offset in radians
