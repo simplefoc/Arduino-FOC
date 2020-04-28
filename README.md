@@ -794,7 +794,7 @@ before running `motor.init()`.
 - [x] Encoder index proper implementation
 - [x] Enable more dirver types 
 - [x] Make support for magnetic encoder AS5048 ABI
-- [ ] Make support for magnetic encoder AS5048 SPI
+- [x] Make support for magnetic encoder AS5048 SPI
 - [x] Add support for acceleration ramping
 - [x] Timer interrupt execution rather than in the `loop()`
   - FAIL: Perfromance not improved
