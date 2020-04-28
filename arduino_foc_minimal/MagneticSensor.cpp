@@ -16,18 +16,18 @@ MagneticSensor::MagneticSensor(int cs, float _cpr, int _angle_register){
 
 
 void MagneticSensor::init(){
-  // 1MHz clock (AMS should be able to accept up to 10MHz)
+	// 1MHz clock (AMS should be able to accept up to 10MHz)
 	settings = SPISettings(1000000, MSBFIRST, SPI_MODE1);
-	
+
 	//setup pins
 	pinMode(chip_select_pin, OUTPUT);
 
 	//SPI has an internal SPI-device counter, it is possible to call "begin()" from different devices
 	SPI.begin();
 
-  // velocity calculation init
-  angle_prev = 0;
-  velocity_calc_timestamp = _micros();    
+	// velocity calculation init
+	angle_prev = 0;
+	velocity_calc_timestamp = _micros();    
 }
 
 //	Shaft angle calculation
@@ -96,7 +96,7 @@ int MagneticSensor::getRawCount(){
 	return (int)MagneticSensor::read(angle_register);
 }
 
-// SPI finctions 
+// SPI functions 
 /**
  * Utility function used to calculate even parity of word
  */
@@ -106,10 +106,7 @@ byte MagneticSensor::spiCalcEvenParity(word value){
 
 	for (i = 0; i < 16; i++)
 	{
-		if (value & 0x1)
-		{
-			cnt++;
-		}
+		if (value & 0x1) cnt++;
 		value >>= 1;
 	}
 	return cnt & 0x1;

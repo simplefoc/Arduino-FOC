@@ -154,12 +154,6 @@ int Encoder::needsAbsoluteZeroSearch(){
 int Encoder::hasAbsoluteZero(){
   return hasIndex();
 }
-
-
-int Encoder::hasIndex(){
-  return index_pin != 0;
-}
-
 // intialise counter to zero
 float Encoder::initRelativeZero(){
   long angle_offset = -pulse_counter;
@@ -173,10 +167,15 @@ float Encoder::initAbsoluteZero(){
   prev_pulse_counter = pulse_counter;
   return (index_pulse_counter) / ((float)cpr) * (_2PI);
 }
+// private funciton used to determine if encoder has index
+int Encoder::hasIndex(){
+  return index_pin != 0;
+}
 
 
-
-void Encoder::init(void (*doA)(), void(*doB)()){
+// encoder initialisation of the hardware pins 
+// and calculation variables
+void Encoder::init(){
   
   // Encoder - check if pullup needed for your encoder
   if(pullup == Pullup::INTERN){
@@ -188,7 +187,8 @@ void Encoder::init(void (*doA)(), void(*doB)()){
     pinMode(pinB, INPUT);
     if(hasIndex()) pinMode(index_pin,INPUT);
   }
-    // counter setup
+  
+  // counter setup
   pulse_counter = 0;
   pulse_timestamp = _micros();
   // velocity calculation varibles
@@ -197,35 +197,30 @@ void Encoder::init(void (*doA)(), void(*doB)()){
   prev_pulse_counter = 0;
   prev_timestamp_us = _micros();
 
+  // initial cpr = PPR
+  // change it if the mode is quadrature
+  if(quadrature == Quadrature::ENABLE) cpr = 4*cpr;
 
+}
+
+// funciton enabling hardware interrupts of the for the callback provided
+// if callback is not provided then the interrupt is not enabled
+void Encoder::enableInterrupts(void (*doA)(), void(*doB)(), void(*doIndex)()){
   // attach interrupt if functions provided
   switch(quadrature){
     case Quadrature::ENABLE:
-      // initial cpr = PPR
-      // change it if the mode is quadrature
-      cpr = 4*cpr;
       // A callback and B callback
-      if(doA != nullptr){
-        // CPR = 4xPPR
-        attachInterrupt(digitalPinToInterrupt(pinA), doA, CHANGE);
-        attachInterrupt(digitalPinToInterrupt(pinB), doB, CHANGE);
-      }
+      if(doA != nullptr) attachInterrupt(digitalPinToInterrupt(pinA), doA, CHANGE);
+      if(doB != nullptr) attachInterrupt(digitalPinToInterrupt(pinB), doB, CHANGE);
       break;
     case Quadrature::DISABLE:
       // A callback and B callback
-      if(doA != nullptr){
-        // CPR = PPR
-        attachInterrupt(digitalPinToInterrupt(pinA), doA, RISING);
-        attachInterrupt(digitalPinToInterrupt(pinB), doB, RISING);
-      }
+      if(doA != nullptr) attachInterrupt(digitalPinToInterrupt(pinA), doA, RISING);
+      if(doB != nullptr) attachInterrupt(digitalPinToInterrupt(pinB), doB, RISING);
       break;
   }
         
   // if index used intialise the index interrupt
-  if(hasIndex() && doA != nullptr) {
-    *digitalPinToPCMSK(index_pin) |= bit (digitalPinToPCMSKbit(index_pin));  // enable pin
-    PCIFR  |= bit (digitalPinToPCICRbit(index_pin)); // clear any outstanding interrupt
-    PCICR  |= bit (digitalPinToPCICRbit(index_pin)); // enable interrupt for the group
-  }
+  if(hasIndex() && doIndex != nullptr) attachInterrupt(digitalPinToInterrupt(index_pin), doIndex, CHANGE);
 }
 

@@ -1,24 +1,45 @@
 #include "SimpleFOC.h"
 
+#include <PciManager.h>
+#include <PciListenerImp.h>
+
 //  BLDCMotor( int phA, int phB, int phC, int pp, int en)
 //  - phA, phB, phC - motor A,B,C phase pwm pins
 //  - pp            - pole pair number
 //  - enable pin    - (optional input)
-BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
+BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
 
-// MagneticSensor(int cs, float _cpr, int _angle_register)
-//  cs              - SPI chip select pin 
-//  _cpr            - counts per revolution 
-// _angle_register  - (optional) angle read register - default 0x3FFF
-MagneticSensor AS5x4x = MagneticSensor(10, 16384, 0x3FFF);
+// // MagneticSensor(int cs, float _cpr, int _angle_register)
+// //  cs              - SPI chip select pin 
+// //  _cpr            - counts per revolution 
+// // _angle_register  - (optional) angle read register - default 0x3FFF
+// MagneticSensor AS5x4x = MagneticSensor(10, 16384, 0x3FFF);
 
+
+Encoder encoder = Encoder(2, 3, 8192, 4);
+void doA(){encoder.handleA();}
+void doB(){encoder.handleB();}
+void doIndex(){encoder.handleIndex();}
+
+// software interrupt init
+PciListenerImp listenerIndex(encoder.index_pin, doIndex);
 
 void setup() { 
   // debugging port
   Serial.begin(115200);
 
-  // initialise magnetic sensor hardware
-  AS5x4x.init();
+  // // initialise magnetic sensor hardware
+  // AS5x4x.init();
+
+  encoder.quadrature = Quadrature::ENABLE;
+  encoder.pullup = Pullup::EXTERN;
+
+  // init encoder
+  encoder.init();
+  // enable hardware interrupts
+  encoder.enableInterrupts(doA, doB);
+  // enable software interrupts
+  PciManager.registerListener(&listenerIndex);
 
   // power supply voltage
   // default 12V
@@ -44,7 +65,7 @@ void setup() {
 
 
   // link the motor to the sensor
-  motor.linkSensor(&AS5x4x);
+  motor.linkSensor(&encoder);
 
   // use debugging with serial for motor init
   // comment out if not needed
@@ -80,7 +101,7 @@ void loop() {
 
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
-  motor_monitor();
+  //motor_monitor();
 }
 
 // utility function intended to be used with serial plotter to monitor motor variables

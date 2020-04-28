@@ -21,8 +21,8 @@ class Sensor{
         // 1 - encoder with index & magnetic sensors
         virtual int hasAbsoluteZero();
         // returns 0 if it does need search for absolute zero
-        // 0 - magnetic sensor 
-        // 1 - ecoder with index
+        // 0 - magnetic sensor (& encoder with index which is found)
+        // 1 - ecoder with index (with index not found yet)
         virtual int needsAbsoluteZeroSearch();
 };
 

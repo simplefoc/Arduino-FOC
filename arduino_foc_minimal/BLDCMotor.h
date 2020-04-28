@@ -92,7 +92,6 @@ class BLDCMotor
     int pole_pairs;
 
 
-
     /** State calculation methods */
     //Shaft angle calculation
     float shaftAngle();
@@ -100,8 +99,6 @@ class BLDCMotor
     float shaftVelocity();
 
     // state variables
-    // current elelctrical angle
-  	float elctric_angle;
     // current motor angle
   	float shaft_angle;
     // current motor velocity 
@@ -136,7 +133,6 @@ class BLDCMotor
     //Method using FOC to set Uq to the motor at the optimal angle
     void setPhaseVoltage(float Uq, float angle_el);
 
-
     // debugging 
     void useDebugging(Print &print);
     Print* debugger;
@@ -155,6 +151,8 @@ class BLDCMotor
     /** Utility funcitons */
     //normalizing radian angle to [0,2PI]
     float normalizeAngle(float angle);
+    // determining if the enable pin has been provided
+    int hasEnable();
     
     /** Motor control functions */
     float controllerPI(float tracking_error, PI_s &controller);

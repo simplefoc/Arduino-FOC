@@ -28,8 +28,11 @@ class Encoder: public Sensor{
     Encoder(int encA, int encB , float ppr, int index = 0);
 
     // encoder initialise pins
-    void init(void (*doA)() = nullptr, void(*doB)() = nullptr);
-
+    void init();
+    // funciton enabling hardware interrupts of the for the callback provided
+    // if callback is not provided then the interrupt is not enabled
+    void enableInterrupts(void (*doA)() = nullptr, void(*doB)() = nullptr, void(*doIndex)() = nullptr);
+    
     //  Encoder interrupt callback functions
     //  enabling CPR=4xPPR behaviour
     // A channel

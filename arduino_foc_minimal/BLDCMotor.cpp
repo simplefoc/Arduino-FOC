@@ -1,12 +1,10 @@
 #include "BLDCMotor.h"
 
-/*
-  BLDCMotor( int phA, int phB, int phC, int pp , int cpr, int en)
-  - phA, phB, phC - motor A,B,C phase pwm pins
-  - pp            - pole pair number
-  - cpr           - counts per rotation number (cpm=ppm*4)
-  - enable pin    - (optionl input)
-*/
+// BLDCMotor( int phA, int phB, int phC, int pp, int cpr, int en)
+// - phA, phB, phC - motor A,B,C phase pwm pins
+// - pp            - pole pair number
+// - cpr           - counts per rotation number (cpm=ppm*4)
+// - enable pin    - (optionl input)
 BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
 {
   // Pin intialization
@@ -75,7 +73,7 @@ void BLDCMotor::init() {
   pinMode(pwmA, OUTPUT);
   pinMode(pwmB, OUTPUT);
   pinMode(pwmC, OUTPUT);
-  pinMode(enable_pin, OUTPUT);
+  if(hasEnable()) pinMode(enable_pin, OUTPUT);
 
   if(debugger) debugger->println("DEBUG: Set high frequency PWM.");
   // Increase PWM frequency to 32 kHz
@@ -97,32 +95,18 @@ void BLDCMotor::init() {
   
 }
 
-/*
-	initialization function
-*/
-int  BLDCMotor::initFOC() {
-  // sensor and motor alignment
-  _delay(500);
-  int exit_flag = alignSensor();
-  _delay(500);
-  return exit_flag;
-}
 
-/*
-	disable motor
-*/
+// disable motor driver
 void BLDCMotor::disable()
 {
   // disable the driver - if enable_pin pin available
-  if (enable_pin) digitalWrite(enable_pin, LOW);
+  if (hasEnable()) digitalWrite(enable_pin, LOW);
   // set zero to PWM
   setPwm(pwmA, 0);
   setPwm(pwmB, 0);
   setPwm(pwmC, 0);
 }
-/*
-  disable motor
-*/
+// enable motor driver
 void BLDCMotor::enable()
 {
   // set zero to PWM
@@ -130,7 +114,7 @@ void BLDCMotor::enable()
   setPwm(pwmB, 0);
   setPwm(pwmC, 0);
   // enable_pin the driver - if enable_pin pin available
-  if (enable_pin) digitalWrite(enable_pin, HIGH);
+  if (hasEnable()) digitalWrite(enable_pin, HIGH);
 
 }
 
@@ -139,9 +123,7 @@ void BLDCMotor::linkSensor(Sensor* _sensor) {
 }
 
 
-/*
-	Encoder alignment to electrical 0 angle
-*/
+// Encoder alignment to electrical 0 angle
 int BLDCMotor::alignSensor() {
   if(debugger) debugger->println("DEBUG: Align the sensor's and motor electrical 0 angle.");
   // align the electircal phases of the motor and sensor
@@ -161,15 +143,14 @@ int BLDCMotor::alignSensor() {
   if(debugger){
     if(exit_flag< 0 ) debugger->println("DEBUG: Error: Absolute zero not found!");
     if(exit_flag> 0 ) debugger->println("DEBUG: Success: Absolute zero found!");
-    else  debugger->println("DEBUG: Success: Absolute zero not availabe!");
+    else  debugger->println("DEBUG: Absolute zero not availabe!");
   }
   return exit_flag;
 }
 
 
-/*
-	Encoder alignment to electrical 0 angle
-*/
+// Encoder alignment the absolute zero angle 
+// - to the index
 int BLDCMotor::absoluteZeroAlign() {
   // if no absolute zero return
   if(!sensor->hasAbsoluteZero()) return 0;
@@ -208,29 +189,38 @@ float BLDCMotor::shaftAngle() {
 float BLDCMotor::shaftVelocity() {
   return sensor->getVelocity();
 }
-/*
-	Electrical angle calculation
-*/
+// Electrical angle calculation
 float BLDCMotor::electricAngle(float shaftAngle) {
   //return normalizeAngle(shaftAngle * pole_pairs);
   return (shaftAngle * pole_pairs);
 }
-/*
-	Iterative function looping FOC algorithm, setting Uq on the Motor
-  The faster it can be run the better
+
+/**
+  FOC funcitons
 */
+
+// FOC initialization function
+int  BLDCMotor::initFOC() {
+  // sensor and motor alignment
+  _delay(500);
+  int exit_flag = alignSensor();
+  _delay(500);
+  return exit_flag;
+}
+
+// Iterative function looping FOC algorithm, setting Uq on the Motor
+// The faster it can be run the better
 void BLDCMotor::loopFOC() {
-  // voltage open loop loop
+  // shaft angle 
   shaft_angle = shaftAngle();
+  // set the phase voltage - FOC heart funciton :) 
   setPhaseVoltage(voltage_q, electricAngle(shaft_angle));
 }
 
-/*
-  Iterative funciton running outer loop of the FOC algorithm
-  Bahvior of this funciton is determined by the motor.controller variable
-  It runs either angle, veloctiy, velocity ultra slow or voltage loop
-  - needs to be called iteratively it is asynchronious function
-*/
+// Iterative funciton running outer loop of the FOC algorithm
+// Bahvior of this funciton is determined by the motor.controller variable
+// It runs either angle, veloctiy, velocity ultra slow or voltage loop
+// - needs to be called iteratively it is asynchronious function
 void BLDCMotor::move(float target) {
   // get angular velocity
   shaft_velocity = shaftVelocity();
@@ -260,12 +250,7 @@ void BLDCMotor::move(float target) {
 }
 
 
-/**
-	FOC methods
-*/
-/*
-  Method using FOC to set Uq to the motor at the optimal angle
-*/
+// Method using FOC to set Uq to the motor at the optimal angle
 void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
 
   // angle normalisation in between 0 and 2pi
@@ -289,10 +274,8 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
 }
 
 
-/*
-	Set voltage to the pwm pin
-  - function a bit optimised to get better performance
-*/
+// Set voltage to the pwm pin
+// - function a bit optimised to get better performance
 void BLDCMotor::setPwm(int pinPwm, float U) {
   // max value
   float U_max = voltage_power_supply/2.0;
@@ -312,12 +295,14 @@ void BLDCMotor::setPwm(int pinPwm, float U) {
 /**
 	Utility funcitons
 */
-/*
-	normalizing radian angle to [0,2PI]
-*/
+// normalizing radian angle to [0,2PI]
 float BLDCMotor::normalizeAngle(float angle){
   float a = fmod(angle, _2PI);
   return a >= 0 ? a : (a + _2PI);
+}
+// determining if the enable pin has been provided
+int BLDCMotor::hasEnable(){
+  return enable_pin != 0;
 }
 
 
