@@ -19,6 +19,7 @@ Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, A0);
 // channel A and B callbacks
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
+void doIndex(){encoder.handleIndex();}
 // If no available hadware interrupt pins use the software interrupt
 PciListenerImp listenerIndex(encoder.index_pin, doIndex);
 
