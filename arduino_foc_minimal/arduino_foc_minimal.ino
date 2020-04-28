@@ -17,23 +17,12 @@ void setup() {
   // debugging port
   Serial.begin(115200);
 
-  // initialise encoder hardware
+  // initialise magnetic sensor hardware
   AS5x4x.init();
 
   // power supply voltage
   // default 12V
   motor.voltage_power_supply = 12;
-
-  // index search velocity - default 1rad/s
-  motor.index_search_velocity = 1;
-  // index search PI contoller parameters
-  // default K=0.5 Ti = 0.01
-  motor.PI_velocity_index_search.K = 0.1;
-  motor.PI_velocity_index_search.Ti = 0.01;
-  //motor.PI_velocity_index_search.voltage_limit = 3;
-  // jerk control using voltage voltage ramp
-  // default value is 100
-  motor.PI_velocity_index_search.voltage_ramp = 100;
   
   // set control loop type to be used
   // ControlType::voltage
@@ -91,7 +80,7 @@ void loop() {
 
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
-  // motor_monitor();
+  motor_monitor();
 }
 
 // utility function intended to be used with serial plotter to monitor motor variables

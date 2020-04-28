@@ -30,12 +30,11 @@ void MagneticSensor::init(){
   velocity_calc_timestamp = _micros();    
 }
 
-
 //	Shaft angle calculation
+// angle is in range [0,2*PI]
 float MagneticSensor::getAngle(){
 	float rotation;
-  rotation = getRawCount() - (int)zero_offset;
-	if(rotation > 8191) rotation = -((0x3FFF)-rotation); //more than -180
+  	rotation = getRawCount() - (int)zero_offset;
 	return rotation / (float)cpr * _2PI;
 }
 
@@ -45,9 +44,17 @@ float MagneticSensor::getVelocity(){
   float Ts = (_micros() - velocity_calc_timestamp)*1e-6;
   if(Ts > 0.5) Ts = 0.01; // debounce
   // current angle
-  float angle_c =  getAngle();
+  float angle_c = getAngle();
+
+  // overflow compensation
+  float d_angle = angle_c - angle_prev;
+  // if angle changed more than 3PI/2 = 270 degrees
+  // consider it as overflow
+  if( abs(d_angle) > _3PI_2 ) d_angle += d_angle < 0 ? _2PI :  -_2PI;
+
   // velocity calculation
-  float vel = (angle_c - angle_prev)/Ts;
+  float vel = d_angle/Ts;
+  
   // save variables for future pass
   angle_prev = angle_c;
   velocity_calc_timestamp = _micros();

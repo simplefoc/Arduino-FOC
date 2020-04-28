@@ -61,8 +61,7 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   // index search velocity
   index_search_velocity = DEF_INDEX_SEARCH_TARGET_VELOCITY;
 
-  // electric angle og the zero angle
-  // electric angle of the index for encoder
+  // electric angle of the zero angle
   zero_electric_angle = 0;
 
   //debugger 
