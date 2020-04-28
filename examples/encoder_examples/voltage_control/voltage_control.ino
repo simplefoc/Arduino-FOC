@@ -1,4 +1,7 @@
 #include <SimpleFOC.h>
+// software interrupt library
+#include <PciManager.h>
+#include <PciListenerImp.h>
 
 // Only pins 2 and 3 are supported
 #define arduinoInt1 2             // Arduino UNO interrupt 0
@@ -20,6 +23,7 @@ Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, A0);
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 void doIndex(){encoder.handleIndex();}
+
 // If no available hadware interrupt pins use the software interrupt
 PciListenerImp listenerIndex(encoder.index_pin, doIndex);
 
