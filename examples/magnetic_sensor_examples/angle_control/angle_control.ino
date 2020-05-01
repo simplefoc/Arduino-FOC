@@ -30,7 +30,6 @@ void setup() {
   // set FOC loop to be used
   // ControlType::voltage
   // ControlType::velocity
-  // ControlType::velocity_ultra_slow
   // ControlType::angle
   motor.controller = ControlType::angle;
 
@@ -102,7 +101,6 @@ void loop() {
 // significantly slowing the execution down!!!!
 void motor_monitor() {
   switch (motor.controller) {
-    case ControlType::velocity_ultra_slow:
     case ControlType::velocity:
       Serial.print(motor.voltage_q);
       Serial.print("\t");

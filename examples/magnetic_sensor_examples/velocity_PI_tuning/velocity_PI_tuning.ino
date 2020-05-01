@@ -19,15 +19,15 @@ MagneticSensor AS5x4x = MagneticSensor(10, 16384, 0x3FFF);
 void setup() {
   // debugging port
   Serial.begin(115200);
-
+  
   // initialise magnetic sensor hardware
   AS5x4x.init();
 
   // power supply voltage
   // default 12V
   motor.voltage_power_supply = 12;
-  
-  // set FOC loop to be used
+
+  // set control loop type to be used
   // ControlType::voltage
   // ControlType::velocity
   // ControlType::angle
@@ -55,19 +55,38 @@ void setup() {
 
   // link the motor to the sensor
   motor.linkSensor(&AS5x4x);
+
   // intialise motor
   motor.init();
   // align sensor and start FOC
   motor.initFOC();
 
+  Serial.println("FOC ready.\n");
+  Serial.println("Update all the PI contorller paramters from the serial temrinal:");
+  Serial.println("- Type P100.2 to you the PI_velocity.P in 100.2");
+  Serial.println("- Type I72.32 to you the PI_velocity.I in 72.32\n");
+  Serial.println("Update the time constant of the velocity filter:");
+  Serial.println("- Type F0.03 to you the LPF_velocity.Tf in 0.03\n");
+  Serial.println("Check the loop executoion time (average):");
+  Serial.println("- Type T\n");
+  Serial.println("To change the target valeocity just enter the value without any prefix.\n");
+  
+  Serial.println("Initial control parameters:");
+  Serial.print("PI velocity P: ");
+  Serial.print(motor.PI_velocity.P);
+  Serial.print(",\t I: ");
+  Serial.print(motor.PI_velocity.I);
+  Serial.print(",\t Low passs filter Tf: ");
+  Serial.println(motor.LPF_velocity.Tf,4);
 
-  Serial.println("Motor ready.");
   _delay(1000);
 }
 
-// target velocity variable
-float target_velocity = 3;
-int t = 0;
+// velocity set point variable
+float target_velocity = 0;
+// loop stats variables
+unsigned long  t = 0;
+long timestamp = _micros();
 
 void loop() {
   // iterative state calculation calculating angle
@@ -77,23 +96,18 @@ void loop() {
   // the best would be to be in ~10kHz range
   motor.loopFOC();
 
-  // direction chnaging logic
-  // change direction each 1000 loop passes
-  target_velocity *= (t >= 1000) ? -1 : 1; 
-  // loop passes counter
-  t = (t >= 1000) ? 0 : t+1;
-
-
   // iterative function setting the outter loop target
   // velocity, position or voltage
   // this funciton can be run at much lower frequency than loopFOC funciton
   // it can go as low as ~50Hz
   motor.move(target_velocity);
 
-
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
-  //motor_monitor();
+  // motor_monitor();
+  
+  // keep track of loop number
+  t++;
 }
 
 // utility function intended to be used with serial plotter to monitor motor variables
@@ -117,10 +131,60 @@ void motor_monitor() {
     case ControlType::voltage:
       Serial.print(motor.voltage_q);
       Serial.print("\t");
-      Serial.print(motor.shaft_angle);
-      Serial.print("\t");
       Serial.println(motor.shaft_velocity);
       break;
   }
 }
 
+// Serial communication callback function
+// gets the target value from the user
+void serialEvent() {
+  // a string to hold incoming data
+  static String inputString; 
+  while (Serial.available()) {
+    // get the new byte:
+    char inChar = (char)Serial.read();
+    // add it to the inputString:
+    inputString += inChar;
+    // if the incoming character is a newline
+    // end of input
+    if (inChar == '\n') {
+      if(inputString.charAt(0) == 'P'){
+        motor.PI_velocity.P = inputString.substring(1).toFloat();
+        Serial.print("PI velocity P: ");
+        Serial.print(motor.PI_velocity.P);
+        Serial.print(",\t I: ");
+        Serial.print(motor.PI_velocity.I);
+        Serial.print(",\t Low passs filter Tf: ");
+        Serial.println(motor.LPF_velocity.Tf,4);
+      }else if(inputString.charAt(0) == 'I'){
+        motor.PI_velocity.I = inputString.substring(1).toFloat();
+        Serial.print("PI velocity P: ");
+        Serial.print(motor.PI_velocity.P);
+        Serial.print(",\t I: ");
+        Serial.print(motor.PI_velocity.I);
+        Serial.print(",\t Low passs filter Tf: ");
+        Serial.println(motor.LPF_velocity.Tf,4);
+      }else if(inputString.charAt(0) == 'F'){
+        motor.LPF_velocity.Tf = inputString.substring(1).toFloat();
+        Serial.print("PI velocity P: ");
+        Serial.print(motor.PI_velocity.P);
+        Serial.print(",\t I: ");
+        Serial.print(motor.PI_velocity.I);
+        Serial.print(",\t Low passs filter Tf: ");
+        Serial.println(motor.LPF_velocity.Tf,4);
+      }else if(inputString.charAt(0) == 'T'){
+        Serial.print("Average loop time is (microseconds): ");
+        Serial.println((_micros() - timestamp)/t);
+        t = 0;
+        timestamp = _micros();
+      }else{
+        target_velocity = inputString.toFloat();
+        Serial.print("Tagret Velocity: ");
+        Serial.println(target_velocity);
+        inputString = "";
+      }
+      inputString = "";
+    }
+  }
+}
