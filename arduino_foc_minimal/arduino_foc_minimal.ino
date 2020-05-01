@@ -7,7 +7,7 @@
 //  - phA, phB, phC - motor A,B,C phase pwm pins
 //  - pp            - pole pair number
 //  - enable pin    - (optional input)
-BLDCMotor motor = BLDCMotor(9, 10, 11, 14);
+BLDCMotor motor = BLDCMotor(9, 10, 11, 11);
 
 // // MagneticSensor(int cs, float _cpr, int _angle_register)
 // //  cs              - SPI chip select pin 
@@ -16,14 +16,14 @@ BLDCMotor motor = BLDCMotor(9, 10, 11, 14);
 // MagneticSensor AS5x4x = MagneticSensor(10, 16384, 0x3FFF);
 
 
-Encoder encoder = Encoder(A0, A1, 2048);
+Encoder encoder = Encoder(2, 3, 8192);
 // interrupt ruotine intialisation
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 
-// encoder interrupt init
-PciListenerImp listenerA(encoder.pinA, doA);
-PciListenerImp listenerB(encoder.pinB, doB);
+// // encoder interrupt init
+// PciListenerImp listenerA(encoder.pinA, doA);
+// PciListenerImp listenerB(encoder.pinB, doB);
 
 void setup() { 
   // debugging port
@@ -32,11 +32,11 @@ void setup() {
   // initialise magnetic sensor hardware
   // AS5x4x.init();
   encoder.init();
-  // encoder.enableInterrupts(doA,doB);
+  encoder.enableInterrupts(doA,doB);
 
-  // interrupt intitialisation
-  PciManager.registerListener(&listenerA);
-  PciManager.registerListener(&listenerB);
+  // // interrupt intitialisation
+  // PciManager.registerListener(&listenerA);
+  // PciManager.registerListener(&listenerB);
 
   // power supply voltage
   // default 12V
@@ -89,6 +89,18 @@ void setup() {
   Serial.println("- Type F0.03 to you the LPF_velocity.Tf in 0.03\n");
   Serial.println("Check the loop executoion time (average):");
   Serial.println("- Type T\n");
+  Serial.println("Change control loop type by typing:");
+  Serial.println("- C0 - angle contro");
+  Serial.println("- C1 - velocity control");
+  Serial.println("- C2 - voltage control\n");
+  Serial.println("Initial parameters:");
+  Serial.print("PI velocity P: ");
+  Serial.print(motor.PI_velocity.P);
+  Serial.print(",\t I: ");
+  Serial.print(motor.PI_velocity.I);
+  Serial.print(",\t Low passs filter Tf: ");
+  Serial.println(motor.LPF_velocity.Tf,4);
+  
   _delay(1000);
 
 }
@@ -158,7 +170,7 @@ void serialEvent() {
         Serial.print(",\t I: ");
         Serial.print(motor.PI_velocity.I);
         Serial.print(",\t Low passs filter Tf: ");
-        Serial.println(motor.LPF_velocity.Tf);
+        Serial.println(motor.LPF_velocity.Tf,4);
       }else if(inputString.charAt(0) == 'I'){
         motor.PI_velocity.I = inputString.substring(1).toFloat();
         Serial.print("PI velocity P: ");
@@ -166,7 +178,7 @@ void serialEvent() {
         Serial.print(",\t I: ");
         Serial.print(motor.PI_velocity.I);
         Serial.print(",\t Low passs filter Tf: ");
-        Serial.println(motor.LPF_velocity.Tf);
+        Serial.println(motor.LPF_velocity.Tf,4);
       }else if(inputString.charAt(0) == 'F'){
         motor.LPF_velocity.Tf = inputString.substring(1).toFloat();
         Serial.print("PI velocity P: ");
@@ -174,7 +186,7 @@ void serialEvent() {
         Serial.print(",\t I: ");
         Serial.print(motor.PI_velocity.I);
         Serial.print(",\t Low passs filter Tf: ");
-        Serial.println(motor.LPF_velocity.Tf);
+        Serial.println(motor.LPF_velocity.Tf,4);
       }else if(inputString.charAt(0) == 'T'){
         Serial.print("Average loop time is (microseconds): ");
         Serial.println((_micros() - timestamp)/t);
