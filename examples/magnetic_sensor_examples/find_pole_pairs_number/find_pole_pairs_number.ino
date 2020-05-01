@@ -34,7 +34,6 @@ void setup() {
   motor.init();
 
 
-
   // pole pairs calculation routine
   Serial.println("Motor pole pair number estimation example");
   Serial.println("---------------------------------------------\n");

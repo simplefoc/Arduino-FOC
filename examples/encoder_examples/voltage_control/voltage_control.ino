@@ -1,7 +1,4 @@
 #include <SimpleFOC.h>
-// software interrupt library
-#include <PciManager.h>
-#include <PciListenerImp.h>
 
 // Only pins 2 and 3 are supported
 #define arduinoInt1 2             // Arduino UNO interrupt 0
@@ -16,16 +13,12 @@ BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
 //  - encA, encB    - encoder A and B pins
 //  - ppr           - impulses per rotation  (cpr=ppr*4)
 //  - index pin     - (optional input)
-Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192, A0);
+Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192);
 
 // Interrupt rutine intialisation
 // channel A and B callbacks
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
-void doIndex(){encoder.handleIndex();}
-
-// If no available hadware interrupt pins use the software interrupt
-PciListenerImp listenerIndex(encoder.index_pin, doIndex);
 
 void setup() {
   // debugging port
@@ -45,23 +38,10 @@ void setup() {
   encoder.init();
   // hardware interrupt enable
   encoder.enableInterrupts(doA, doB);
-  // software interrupts
-  PciManager.registerListener(&listenerIndex);
 
   // power supply voltage
   // default 12V
   motor.voltage_power_supply = 12;
-
-  // index search velocity - default 1rad/s
-  motor.index_search_velocity = 1;
-  // index search PI contoller parameters
-  // default K=0.5 Ti = 0.01
-  motor.PI_velocity_index_search.K = 0.1;
-  motor.PI_velocity_index_search.Ti = 0.01;
-  //motor.PI_velocity_index_search.voltage_limit = 3;
-  // jerk control using voltage voltage ramp
-  // default value is 100
-  motor.PI_velocity_index_search.voltage_ramp = 100;
 
   // set FOC loop to be used
   // ControlType::voltage

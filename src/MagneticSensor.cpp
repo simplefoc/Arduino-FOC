@@ -3,7 +3,7 @@
 
 // MagneticSensor(int cs, float _cpr, int _angle_register)
 //  cs              - SPI chip select pin 
-//  _cpr            - counts per revolution 
+//  _cpr            - counF per revolution 
 // _angle_register  - (optional) angle read register - default 0x3FFF
 MagneticSensor::MagneticSensor(int cs, float _cpr, int _angle_register){
   // chip select pin
@@ -12,6 +12,7 @@ MagneticSensor::MagneticSensor(int cs, float _cpr, int _angle_register){
   angle_register = _angle_register ? _angle_register : DEF_ANGLE_REGISTAR;
   // register maximum value (counts per revolution)
   cpr = _cpr;
+
 }
 
 
@@ -27,33 +28,48 @@ void MagneticSensor::init(){
 
 	// velocity calculation init
 	angle_prev = 0;
-	velocity_calc_timestamp = _micros();    
+	velocity_calc_timestamp = _micros(); 
+
+	// full rotations tracking number
+	full_rotation_offset = 0;
+	angle_data_prev = getRawCount();  
+	zero_offset = 0;
 }
 
 //	Shaft angle calculation
-// angle is in range [0,2*PI]
+//  angle is in radians [rad]
 float MagneticSensor::getAngle(){
-	float rotation;
-  	rotation = getRawCount() - (int)zero_offset;
-	return rotation / (float)cpr * _2PI;
+	// raw data from the sensor
+	float angle_data = getRawCount(); 
+
+	// tracking the number of rotations 
+	// in order to expand angle range form [0,2PI] 
+	// to basically infinity
+	float d_angle = angle_data - angle_data_prev;
+	// if overflow happened track it as full rotation
+	if(abs(d_angle) > (0.8*cpr) ) full_rotation_offset += d_angle > 0 ? -_2PI : _2PI; 
+	// save the current angle value for the next steps
+	// in order to know if overflow happened
+	angle_data_prev = angle_data;
+
+	// zero offset adding
+	angle_data -= (int)zero_offset;
+	// return the full angle 
+	// (number of full rotations)*2PI + current sensor angle
+ 	return full_rotation_offset + ( angle_data / (float)cpr) * _2PI;
 }
 
 // Shaft velocity calculation
 float MagneticSensor::getVelocity(){
   // calculate sample time
   float Ts = (_micros() - velocity_calc_timestamp)*1e-6;
-  if(Ts > 0.5) Ts = 0.01; // debounce
+  // quick fix for strange cases (micros overflow)
+  if(Ts <= 0 || Ts > 0.5) Ts = 1e-3; 
+
   // current angle
   float angle_c = getAngle();
-
-  // overflow compensation
-  float d_angle = angle_c - angle_prev;
-  // if angle changed more than 3PI/2 = 270 degrees
-  // consider it as overflow
-  if( abs(d_angle) > _3PI_2 ) d_angle += d_angle < 0 ? _2PI :  -_2PI;
-
   // velocity calculation
-  float vel = d_angle/Ts;
+  float vel = (angle_c - angle_prev)/Ts;
   
   // save variables for future pass
   angle_prev = angle_c;
@@ -66,6 +82,9 @@ float MagneticSensor::getVelocity(){
 float MagneticSensor::initRelativeZero(){
   float angle_offset = -getAngle();
   zero_offset = getRawCount();
+
+  // angle tracking variables
+  full_rotation_offset = 0;
   return angle_offset;
 }
 // set absoule zero angle as zero angle
@@ -74,6 +93,9 @@ float MagneticSensor::initAbsoluteZero(){
   float rotation = -(int)zero_offset;
   // init absolute zero
   zero_offset = 0;
+
+  // angle tracking variables
+  full_rotation_offset = 0;
   // return offset in radians
   return rotation / (float)cpr * _2PI;
 }

@@ -11,36 +11,33 @@
 // power supply voltage
 #define DEF_POWER_SUPPLY 12.0
 // velocity PI controller params
-#define DEF_PI_VEL_K 0.5
-#define DEF_PI_VEL_TI 0.01
+#define DEF_PI_VEL_P 0.5
+#define DEF_PI_VEL_I 10
 #define DEF_PI_VEL_U_RAMP 300
-// ultra slow velocity PI params
-#define DEF_PI_VEL_US_K 60.0
-#define DEF_PI_VEL_US_TI 100.0
-#define DEF_PI_VEL_US_U_RAMP 300
 // angle P params
-#define DEF_P_ANGLE_K 20
+#define DEF_P_ANGLE_P 20
 // angle velocity limit default
 #define DEF_P_ANGLE_VEL_LIM 20
 // index search velocity
 #define DEF_INDEX_SEARCH_TARGET_VELOCITY 1
 // velocity PI controller params for index search
-#define DEF_PI_VEL_INDEX_K 0.5
-#define DEF_PI_VEL_INDEX_TI 0.01
+#define DEF_PI_VEL_INDEX_P 1
+#define DEF_PI_VEL_INDEX_I 10
 #define DEF_PI_VEL_INDEX_U_RAMP 100
+// velocity filter time constant
+#define DEF_VEL_FILTER_Tf 0.005
 
 // controller type configuration enum
 enum ControlType{
   voltage,
   velocity,
-  velocity_ultra_slow,
   angle
 };
 
 // PI controller strucutre
 struct PI_s{
-  float K;
-  float Ti;
+  float P;
+  float I;
   long timestamp;
   float voltage_prev, tracking_error_prev;
   float voltage_limit;
@@ -49,10 +46,17 @@ struct PI_s{
 
 // P controller structure
 struct P_s{
-  float K;
+  float P;
   long timestamp;
   float voltage_prev, tracking_error_prev;
   float velocity_limit;
+};
+
+// flow pass filter structure
+struct LPF_s{
+  float Tf;
+  long timestamp;
+  float prev;
 };
 
 /**
@@ -116,10 +120,10 @@ class BLDCMotor
     // configuraion structures
     ControlType controller;
     PI_s PI_velocity;
-    PI_s PI_velocity_ultra_slow;
-    P_s P_angle;
-    PI_s PI_velocity_index_search;
-  	
+    PI_s PI_velocity_index_search;  	
+    P_s P_angle;	
+    LPF_s LPF_velocity;
+
     // sensor link:
     // - Encoder 
     // - MagneticSensor
@@ -136,6 +140,8 @@ class BLDCMotor
     // debugging 
     void useDebugging(Print &print);
     Print* debugger;
+    
+    float Ua,Ub,Uc;
 
   private:
     //Sensor alignment to electrical 0 angle
@@ -157,16 +163,11 @@ class BLDCMotor
     /** Motor control functions */
     float controllerPI(float tracking_error, PI_s &controller);
     float velocityPI(float tracking_error);
-    float velocityUltraSlowPI(float vel);
     float velocityIndexSearchPI(float tracking_error);
     float positionP(float ek);
     
     // phase voltages 
     float	Ualpha,Ubeta;
-    float Ua,Ub,Uc;
-
-    // velocity ultra slow angle 
-    float ultraslow_estimated_angle;
 
 };
 

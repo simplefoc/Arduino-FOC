@@ -49,7 +49,7 @@ class Encoder: public Sensor{
     int index_pin;
     // encoder pullup type
     Pullup pullup;
-    // use 4xPPR or not
+    // use 4xppr or not
     Quadrature quadrature;
 
     // implementation of abstract functions of the Sensor class

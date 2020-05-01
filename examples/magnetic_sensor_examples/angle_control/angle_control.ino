@@ -27,17 +27,6 @@ void setup() {
   // default 12V
   motor.voltage_power_supply = 12;
 
-  // index search velocity - default 1rad/s
-  motor.index_search_velocity = 1;
-  // index search PI contoller parameters
-  // default K=0.5 Ti = 0.01
-  motor.PI_velocity_index_search.K = 0.1;
-  motor.PI_velocity_index_search.Ti = 0.01;
-  //motor.PI_velocity_index_search.voltage_limit = 3;
-  // jerk control using voltage voltage ramp
-  // default value is 100
-  motor.PI_velocity_index_search.voltage_ramp = 100;
-
   // set FOC loop to be used
   // ControlType::voltage
   // ControlType::velocity
@@ -47,18 +36,23 @@ void setup() {
 
   // contoller configuration based on the controll type 
   // velocity PI controller parameters
-  // default K=1.0 Ti = 0.003
-  motor.PI_velocity.K = 0.3;
-  motor.PI_velocity.Ti = 0.003;
+  // default P=0.5 I = 10
+  motor.PI_velocity.P = 0.2;
+  motor.PI_velocity.I = 20;
   //defualt voltage_power_supply/2
   motor.PI_velocity.voltage_limit = 6;
   // jerk control using voltage voltage ramp
   // default value is 300 volts per sec  ~ 0.3V per millisecond
-  motor.PI_velocity.voltage_ramp = 300;
+  motor.PI_velocity.voltage_ramp = 1000;
   
+  // velocity low pass filtering
+  // default 5ms - try different values to see what is the best. 
+  // the lower the less filtered
+  motor.LPF_velocity.Tf = 0.01;
+
   // angle P controller 
-  // default K=70
-  motor.P_angle.K = 20;
+  // default K=20
+  motor.P_angle.P = 20;
   //  maximal velocity of the poisiiton control
   // default 20
   motor.P_angle.velocity_limit = 4;

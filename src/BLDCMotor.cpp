@@ -21,35 +21,28 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
 
   // Velocity loop config
   // PI contoroller constant
-  PI_velocity.K = DEF_PI_VEL_K;
-  PI_velocity.Ti = DEF_PI_VEL_TI;
+  PI_velocity.P = DEF_PI_VEL_P;
+  PI_velocity.I = DEF_PI_VEL_I;
   PI_velocity.timestamp = _micros();
   PI_velocity.voltage_limit = voltage_power_supply/2;
   PI_velocity.voltage_ramp = DEF_PI_VEL_U_RAMP;
   PI_velocity.voltage_prev = 0;
   PI_velocity.tracking_error_prev = 0;
 
-  // Ultra slow velocity
-  // PI contoroller
-  PI_velocity_ultra_slow.K = DEF_PI_VEL_US_K;
-  PI_velocity_ultra_slow.Ti = DEF_PI_VEL_US_TI;
-  PI_velocity_ultra_slow.timestamp = _micros();
-  PI_velocity_ultra_slow.voltage_limit = voltage_power_supply/2;
-  PI_velocity_ultra_slow.voltage_ramp = DEF_PI_VEL_US_U_RAMP;
-  PI_velocity_ultra_slow.voltage_prev = 0;
-  PI_velocity_ultra_slow.tracking_error_prev = 0;
-  // current estimated angle
-  ultraslow_estimated_angle = 0;
+  // velocity low pass filter 
+  LPF_velocity.Tf = DEF_VEL_FILTER_Tf;
+  LPF_velocity.timestamp = _micros();
+  LPF_velocity.prev = 0;  
 
   // position loop config
   // P controller constant
-  P_angle.K = DEF_P_ANGLE_K;
+  P_angle.P = DEF_P_ANGLE_P;
   // maximum angular velocity to be used for positioning 
   P_angle.velocity_limit = DEF_P_ANGLE_VEL_LIM;
 
   // index search PI controller
-  PI_velocity_index_search.K = DEF_PI_VEL_INDEX_K;
-  PI_velocity_index_search.Ti = DEF_PI_VEL_INDEX_TI;
+  PI_velocity_index_search.P = DEF_PI_VEL_INDEX_P;
+  PI_velocity_index_search.I = DEF_PI_VEL_INDEX_I;
   PI_velocity_index_search.voltage_limit = voltage_power_supply/2;
   PI_velocity_index_search.voltage_ramp = DEF_PI_VEL_INDEX_U_RAMP;
   PI_velocity_index_search.timestamp = _micros();
@@ -83,8 +76,7 @@ void BLDCMotor::init() {
   setPwmFrequency(pwmC);
 
   // sanity check for the voltage limit configuration
-  if(PI_velocity.voltage_limit > voltage_power_supply/2) PI_velocity.voltage_limit = PI_velocity.voltage_limit > voltage_power_supply/2;
-  if(PI_velocity.voltage_limit > voltage_power_supply/2) PI_velocity_ultra_slow.voltage_limit = voltage_power_supply/2;
+  if(PI_velocity.voltage_limit > voltage_power_supply/2) PI_velocity.voltage_limit =  voltage_power_supply/2;
   if(PI_velocity_index_search.voltage_limit > voltage_power_supply/2) PI_velocity_index_search.voltage_limit = voltage_power_supply/2;
 
   _delay(500);
@@ -130,7 +122,7 @@ int BLDCMotor::alignSensor() {
   setPwm(pwmA, voltage_power_supply/2.0);
   setPwm(pwmB,0);
   setPwm(pwmC,0);
-  _delay(1000);
+  _delay(3000);
   // set sensor to zero
   sensor->initRelativeZero();
   _delay(500);
@@ -187,7 +179,16 @@ float BLDCMotor::shaftAngle() {
 }
 // shaft velocity calculation
 float BLDCMotor::shaftVelocity() {
-  return sensor->getVelocity();
+  float Ts = (_micros() - LPF_velocity.timestamp) * 1e-6;
+  // quick fix for strange cases (micros overflow)
+  if(Ts <= 0 || Ts > 0.5) Ts = 1e-3; 
+  // calculate the fitering 
+  float alpha = LPF_velocity.Tf/(LPF_velocity.Tf + Ts);
+  float vel = alpha*LPF_velocity.prev + (1-alpha)*sensor->getVelocity();
+  // save the variables
+  LPF_velocity.prev = vel;
+  LPF_velocity.timestamp = _micros();
+  return vel;
 }
 // Electrical angle calculation
 float BLDCMotor::electricAngle(float shaftAngle) {
@@ -219,7 +220,7 @@ void BLDCMotor::loopFOC() {
 
 // Iterative funciton running outer loop of the FOC algorithm
 // Bahvior of this funciton is determined by the motor.controller variable
-// It runs either angle, veloctiy, velocity ultra slow or voltage loop
+// It runs either angle, veloctiy or voltage loop
 // - needs to be called iteratively it is asynchronious function
 void BLDCMotor::move(float target) {
   // get angular velocity
@@ -241,11 +242,6 @@ void BLDCMotor::move(float target) {
       shaft_velocity_sp = target;
       voltage_q = velocityPI(shaft_velocity_sp - shaft_velocity);
       break;
-    case ControlType::velocity_ultra_slow:
-      // velocity set point
-      shaft_velocity_sp = target;
-      voltage_q = velocityUltraSlowPI(shaft_velocity_sp);
-      break;
   }
 }
 
@@ -259,6 +255,8 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
   // Inverse park transform
   // regular sin + cos ~300us    (no memeory usaage)
   // approx  _sin + _cos ~110us  (400Byte ~ 20% of memory)
+  // Ualpha =  -_sin(angle) * Uq;  // -sin(angle) * Uq;
+  // Ubeta =  _cos(angle) * Uq;    //  cos(angle) * Uq;
   Ualpha =  -_sin(angle) * Uq;  // -sin(angle) * Uq;
   Ubeta =  _cos(angle) * Uq;    //  cos(angle) * Uq;
   
@@ -306,21 +304,20 @@ int BLDCMotor::hasEnable(){
 }
 
 
-
-
 /**
 	Motor control functions
 */
 // PI controller function
 float BLDCMotor::controllerPI(float tracking_error, PI_s& cont){
   float Ts = (_micros() - cont.timestamp) * 1e-6;
-  if(Ts > 0.5) Ts = 1e-3;
+  // quick fix for strange cases (micros overflow)
+  if(Ts <= 0 || Ts > 0.5) Ts = 1e-3; 
 
-  // u(s) = Kr(1 + 1/(Ti.s))
+  // u(s) = (P + I/s)e(s)
   // tustin discretisation of the PI controller ( a bit optimised )
-  // uk = uk_1  +  K*(Ts/(2*Ti) + 1)*ek + K*(Ts/(2*Ti)-1)*ek_1
-  float tmp = 0.5 * Ts / cont.Ti;
-  float voltage = cont.voltage_prev + cont.K * ((tmp + 1.0) * tracking_error + (tmp - 1.0) * cont.tracking_error_prev);
+  // uk = uk_1  + (I*Ts/2 + P)*ek + (I*Ts/2 - P)*ek_1
+  float tmp = cont.I*Ts*0.5;
+  float voltage = cont.voltage_prev + (tmp + cont.P) * tracking_error + (tmp - cont.P) * cont.tracking_error_prev;
 
   // antiwindup - limit the output voltage_q
   if (abs(voltage) > cont.voltage_limit) voltage = voltage > 0 ? cont.voltage_limit : -cont.voltage_limit;
@@ -341,21 +338,9 @@ float BLDCMotor::velocityPI(float tracking_error) {
 float BLDCMotor::velocityIndexSearchPI(float tracking_error) {
   return controllerPI(tracking_error, PI_velocity_index_search);
 }
-// PI controller for ultra slow velocity control
-float BLDCMotor::velocityUltraSlowPI(float vel) {
-  float Ts = (_micros() - PI_velocity_ultra_slow.timestamp) * 1e-6;
-
-  // integrate the velocity to get the necessary angle
-  ultraslow_estimated_angle += vel * Ts;
-  // error of positioning
-  float tracking_error = ultraslow_estimated_angle - shaft_angle;
-
-  return controllerPI(tracking_error, PI_velocity_ultra_slow);
-}
-
 // P controller for position control loop
 float BLDCMotor::positionP(float ek) {
-  float velk = P_angle.K * ek;
+  float velk = P_angle.P * ek;
   if (abs(velk) > P_angle.velocity_limit) velk = velk > 0 ? P_angle.velocity_limit : -P_angle.velocity_limit;
   return velk;
 }

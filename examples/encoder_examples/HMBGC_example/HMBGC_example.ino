@@ -54,14 +54,19 @@ void setup() {
 
   // contoller configuration based on the controll type 
   // velocity PI controller parameters
-  // default K=1.0 Ti = 0.003
-  motor.PI_velocity.K = 0.3;
-  motor.PI_velocity.Ti = 0.003;
+  // default P=0.5 I = 10
+  motor.PI_velocity.P = 0.2;
+  motor.PI_velocity.I = 20;
   //defualt voltage_power_supply/2
   motor.PI_velocity.voltage_limit = 6;
   // jerk control using voltage voltage ramp
   // default value is 300 volts per sec  ~ 0.3V per millisecond
-  motor.PI_velocity.voltage_ramp = 300;
+  motor.PI_velocity.voltage_ramp = 1000;
+
+  // velocity low pass filtering
+  // default 5ms - try different values to see what is the best. 
+  // the lower the less filtered
+  motor.LPF_velocity.Tf = 0.01;
 
   // use debugging with serial for motor init
   // comment out if not needed
