@@ -89,7 +89,7 @@ void serialEvent() {
     // end of input
     if (inChar == '\n') {
       target_voltage = inputString.toFloat();
-      Serial.print("Tagret voltage: ");
+      Serial.print("Target voltage: ");
       Serial.println(target_voltage);
       inputString = "";
     }
