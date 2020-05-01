@@ -148,7 +148,7 @@ void serialEvent() {
     // end of input
     if (inChar == '\n') {
       target_angle = inputString.toFloat();
-      Serial.print("Tagret angle: ");
+      Serial.print("Target angle: ");
       Serial.println(target_angle);
       inputString = "";
     }

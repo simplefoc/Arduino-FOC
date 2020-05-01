@@ -79,12 +79,12 @@ void setup() {
   motor.initFOC();
 
   Serial.println("FOC ready.\n");
-  Serial.println("Update all the PI contorller paramters from the serial temrinal:");
+  Serial.println("Update all the PI controller parameters from the serial temrinal:");
   Serial.println("- Type P100.2 to you the PI_velocity.P in 100.2");
   Serial.println("- Type I72.32 to you the PI_velocity.I in 72.32\n");
   Serial.println("Update the time constant of the velocity filter:");
   Serial.println("- Type F0.03 to you the LPF_velocity.Tf in 0.03\n");
-  Serial.println("Check the loop executoion time (average):");
+  Serial.println("Check the loop execution time (average):");
   Serial.println("- Type T\n");
   Serial.println("To change the target valeocity just enter the value without any prefix.\n");
   
@@ -171,7 +171,7 @@ void serialEvent() {
         timestamp = _micros();
       }else{
         target_velocity = inputString.toFloat();
-        Serial.print("Tagret Velocity: ");
+        Serial.print("Target velocity: ");
         Serial.println(target_velocity);
         inputString = "";
       }

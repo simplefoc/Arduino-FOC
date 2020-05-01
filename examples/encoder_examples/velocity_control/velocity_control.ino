@@ -139,7 +139,7 @@ void serialEvent() {
     // end of input
     if (inChar == '\n') {
       target_velocity = inputString.toFloat();
-      Serial.print("Tagret velocity: ");
+      Serial.print("Target velocity: ");
       Serial.println(target_velocity);
       inputString = "";
     }
