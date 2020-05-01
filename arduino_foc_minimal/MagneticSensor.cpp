@@ -17,8 +17,8 @@ MagneticSensor::MagneticSensor(int cs, float _cpr, int _angle_register){
 
 
 void MagneticSensor::init(){
-	// 1MHz clock (AMS should be able to accept up to 10MHz)
-	settings = SPISettings(1000000, MSBFIRST, SPI_MODE1);
+	// 10MHz clock (AMS should be able to accept up to 10MHz)
+	settings = SPISettings(10000000, MSBFIRST, SPI_MODE1);
 
 	//setup pins
 	pinMode(chip_select_pin, OUTPUT);
