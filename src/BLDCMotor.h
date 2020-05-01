@@ -139,6 +139,7 @@ class BLDCMotor
 
     // debugging 
     void useDebugging(Print &print);
+    void monitor();
     Print* debugger;
     
     float Ua,Ub,Uc;

@@ -353,3 +353,31 @@ void BLDCMotor::useDebugging(Print &print){
   debugger = &print; //operate on the adress of print
   if(debugger )debugger->println("DEBUG: Serial debugger enabled!");
 }
+// utility function intended to be used with serial plotter to monitor motor variables
+// significantly slowing the execution down!!!!
+void BLDCMotor::monitor() {
+  if(!debugger) return;
+  switch (controller) {
+    case ControlType::velocity:
+      debugger->print(voltage_q);
+      debugger->print("\t");
+      debugger->print(shaft_velocity_sp);
+      debugger->print("\t");
+      debugger->println(shaft_velocity);
+      break;
+    case ControlType::angle:
+      debugger->print(voltage_q);
+      debugger->print("\t");
+      debugger->print(shaft_angle_sp);
+      debugger->print("\t");
+      debugger->println(shaft_angle);
+      break;
+    case ControlType::voltage:
+      debugger->print(voltage_q);
+      debugger->print("\t");
+      debugger->print(shaft_angle);
+      debugger->print("\t");
+      debugger->println(shaft_velocity);
+      break;
+  }
+}

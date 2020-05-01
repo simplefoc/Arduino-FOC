@@ -131,35 +131,7 @@ void loop() {
 
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
-  // motor_monitor();
-}
-
-// utility function intended to be used with serial plotter to monitor motor variables
-// significantly slowing the execution down!!!!
-void motor_monitor() {
-  switch (motor.controller) {
-    case ControlType::velocity:
-      Serial.print(motor.voltage_q);
-      Serial.print("\t");
-      Serial.print(motor.shaft_velocity_sp);
-      Serial.print("\t");
-      Serial.println(motor.shaft_velocity);
-      break;
-    case ControlType::angle:
-      Serial.print(motor.voltage_q);
-      Serial.print("\t");
-      Serial.print(motor.shaft_angle_sp);
-      Serial.print("\t");
-      Serial.println(motor.shaft_angle);
-      break;
-    case ControlType::voltage:
-      Serial.print(motor.voltage_q);
-      Serial.print("\t");
-      Serial.print(motor.shaft_angle);
-      Serial.print("\t");
-      Serial.println(motor.shaft_velocity);
-      break;
-  }
+  // motor.monitor();
 }
 
 // Serial communication callback function
