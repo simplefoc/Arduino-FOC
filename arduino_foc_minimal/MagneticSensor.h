@@ -56,6 +56,9 @@ class MagneticSensor: public Sensor{
     // funciton getting current register value
     int getRawCount();
 
+    // total angle tracking variables
+    float full_rotation_offset;
+    float angle_data_prev;
     // impulse cpr
     float cpr;                 
     // velocity calculation variables

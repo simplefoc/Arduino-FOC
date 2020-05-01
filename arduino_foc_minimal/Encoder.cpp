@@ -118,6 +118,9 @@ float Encoder::getVelocity(){
   long timestamp_us = _micros();
   // sampling time calculation
   float Ts = (timestamp_us - prev_timestamp_us) * 1e-6;
+  // quick fix for strange cases (micros overflow)
+  if(Ts <= 0 || Ts > 0.5) Ts = 1e-3; 
+  
   // time from last impulse
   float Th = (timestamp_us - pulse_timestamp) * 1e-6;
   long dN = pulse_counter - prev_pulse_counter;
