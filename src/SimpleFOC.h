@@ -1,7 +1,10 @@
-#ifndef SimpleFOC_h
-#define SimpleFOC_h
+#ifndef SIMPLEFOC_H
+#define SIMPLEFOC_H
 
-#include "BLDCMotor.h"
+#include "FOCutils.h"
+#include "Sensor.h"
 #include "Encoder.h"
+#include "MagneticSensor.h"
+#include "BLDCMotor.h"
 
 #endif

@@ -56,19 +56,19 @@ float _sin(float a){
   if(a < _PI_2){
     //return sine_array[(int)(199.0*( a / (M_PI/2.0)))];
     //return sine_array[(int)(126.6873* a)];           // float array optimised
-    return 0.0001*sine_array[(int)(126.6873* a)];      // int array optimised
+    return 0.0001*sine_array[round(126.6873* a)];      // int array optimised
   }else if(a < M_PI){
     // return sine_array[(int)(199.0*(1.0 - (a-M_PI/2.0) / (M_PI/2.0)))];
     //return sine_array[398 - (int)(126.6873*a)];          // float array optimised
-    return 0.0001*sine_array[398 - (int)(126.6873*a)];     // int array optimised
+    return 0.0001*sine_array[398 - round(126.6873*a)];     // int array optimised
   }else if(a < _3PI_2){
     // return -sine_array[(int)(199.0*((a - M_PI) / (M_PI/2.0)))];
     //return -sine_array[-398 + (int)(126.6873*a)];           // float array optimised
-    return -0.0001*sine_array[-398 + (int)(126.6873*a)];      // int array optimised
+    return -0.0001*sine_array[-398 + round(126.6873*a)];      // int array optimised
   } else {
     // return -sine_array[(int)(199.0*(1.0 - (a - 3*M_PI/2) / (M_PI/2.0)))];
     //return -sine_array[796 - (int)(126.6873*a)];           // float array optimised
-    return -0.0001*sine_array[796 - (int)(126.6873*a)];      // int array optimised
+    return -0.0001*sine_array[796 - round(126.6873*a)];      // int array optimised
   }
 }
 
