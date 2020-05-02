@@ -6,6 +6,34 @@
 
 This is the minimal Arduino example of the [Simple FOC](https://github.com/askuric/Arduino-FOC) arduino library intended for mostly for easier experiemtation and modification!
 
+### Minimal repository structure
+```shell
+├───arduino_foc_minimal_encoder    # Arduino minimal code for running a motor with Encoder
+│
+└───arduino_foc_minimal_magnetic   # Arduino minimal code for running a motor with magentic sensor 
+                                   # AS5048/47   
+```
+
+Each of the examples will give you the opportunity to change the PI celocity parameters `P` and `I`, Low pass filter time constant `Tf`, change the control loop in real time and check the average loop execution time, all from the serial terminal.
+```
+PI controller parameters change:
+- P value : Prefix P (ex. P0.1)
+- I value : Prefix I (ex. I0.1)
+
+Velocity filter:
+- Tf value : Prefix F (ex. F0.001)
+
+Average loop execution time:
+- Type T
+
+Control loop type:
+- C0 - angle control
+- C1 - velocity control
+- C2 - voltage control
+
+Initial parameters:
+PI velocity P: 0.20,	 I: 20.00,	 Low passs filter Tf: 0.0000
+```
 ## Arduino FOC repo structure
 Branch  | Description | Status
 ------------ | ------------- | ------------ 
