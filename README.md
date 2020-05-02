@@ -14,7 +14,7 @@ This is the minimal Arduino example of the [Simple FOC](https://github.com/askur
                                    # AS5048/47   
 ```
 
-Each of the examples will give you the opportunity to change the PI celocity parameters `P` and `I`, Low pass filter time constant `Tf`, change the control loop in real time and check the average loop execution time, all from the serial terminal.
+Each of the examples will give you the opportunity to change the PI velocity parameters `P` and `I`, Low pass filter time constant `Tf`, change the control loop in real time and check the average loop execution time, all from the serial terminal.
 ```
 PI controller parameters change:
 - P value : Prefix P (ex. P0.1)
