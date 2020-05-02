@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![arduino-library-badge](https://www.ardu-badge.com/badge/Simple%20FOC.svg?)](https://www.ardu-badge.com/badge/Simple%20FOC.svg)
 
-Proper low cost FOC supporting boards are very hard to find these days and even may not exist. The reason may be that the hobby community has not yet dug into it properly. But even if you would find a hardware which is capable of runing BLDC motors, a good FOC code capable of running on Arduino devices is even harder to find. Therefore this is the attempt to demistify the Field Oriented Control (FOC) algorithm and make a robust but simple implementation for usage with Arduino hadrware, as well as to offer you a simple [Arduino FOC shield board](#arduino-simple-foc-shield). :D
+Proper low cost FOC supporting boards are very hard to find these days and even may not exist. The reason may be that the hobby community has not yet dug into it properly. But even if you would find a hardware which is capable of runing BLDC motors, a good FOC code capable of running on Arduino devices is even harder to find. Therefore this is the attempt to ***demistify the Field Oriented Control (FOC) algorithm*** and make a ***robust but simple implementation*** for ***Arduino hadrware***, as well as to introduce the new [Arduino FOC shield board](#arduino-simple-foc-shield).
 
 
 ## A short YouTube demonstration video
@@ -16,9 +16,10 @@ This video explains the Simple FOC library basic usage, electronic connections a
 ### This project aims to close the gap in the areas:
 - Low cost applications <50$
 - Low current operation < 5A
-- Simple usage and scalability (Arduino)
- and demistify FOC control in a simple way. 
-
+- Simple usage and scalability (Arduino) 
+  - Plug and play arduino library for beginers
+  - Arudino minimal code for easy integration and customisation for different advanced projects
+- Introducing [Arduino FOC shield board](#arduino-simple-foc-shield)  
 
 #### The closest you can get to FOC support and low cost (I was able to find) is:
 
