@@ -13,10 +13,10 @@ _micros	KEYWORD3
 _sin	KEYWORD3
 _cos	KEYWORD3
 setPwmFrequency	KEYWO
-motor_monitor	KEYWORD3
+monitor	KEYWORD3
 
 PI_velocity	KEYWIORD2
-PI_velocity_ultra_slow	KEYWIORD2
+LPF_velocity	KEYWIORD2
 PI_velocity_index_search	KEYWIORD2
 P_angle	KEYWIORD2
 
@@ -55,8 +55,9 @@ velocity	KEYWIORD2
 velocity_ultra_slow	KEYWIORD2
 angle	KEYWIORD2
 
-K	KEYWIORD2
-Ti	KEYWIORD2
+P	KEYWIORD2
+I	KEYWIORD2
+Tf	KEYWIORD2
 voltage_limit	KEYWIORD2
 voltage_ramp	KEYWIORD2
 velocity_limit	KEYWIORD2

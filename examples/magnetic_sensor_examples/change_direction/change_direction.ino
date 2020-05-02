@@ -93,7 +93,7 @@ void loop() {
 
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
-  //motormonitor();
+  //motor.monitor();
 }
 
 
