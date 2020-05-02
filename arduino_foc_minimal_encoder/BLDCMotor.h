@@ -2,8 +2,6 @@
 #define BLDCMotor_h
 
 #include "Arduino.h"
-#include "MagneticSensor.h"
-#include "Encoder.h"
 #include "FOCutils.h"
 #include "Sensor.h"
 

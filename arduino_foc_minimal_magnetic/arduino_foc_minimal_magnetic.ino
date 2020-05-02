@@ -7,33 +7,21 @@
 //  - phA, phB, phC - motor A,B,C phase pwm pins
 //  - pp            - pole pair number
 //  - enable pin    - (optional input)
-BLDCMotor motor = BLDCMotor(9, 10, 11, 11);
-
-//Encoder sensor = Encoder(2, 3, 2048);
-// interrupt ruotine intialisation
-// void doA(){encoder.handleA();}
-// void doB(){encoder.handleB();}
-
-// encoder interrupt init
-// PciListenerImp listenerA(encoder.pinA, doA);
-// PciListenerImp listenerB(encoder.pinB, doB);
+BLDCMotor motor = BLDCMotor(9, 5, 6, 11);
 
 
-MagneticSensor sensor = MagneticSensor(10,16384);
+// MagneticSensor(int cs, float _cpr, int _angle_register)
+//  cs              - SPI chip select pin 
+//  _cpr            - counF per revolution 
+// _angle_register  - (optional) angle read register - default 0x3FFF
+MagneticSensor as504x = MagneticSensor(10, 16384);
 
 void setup() { 
   // debugging port
   Serial.begin(115200);
 
-  //as5047.init();
-
   // initialise magnetic sensor hardware
-  sensor.init();
-  //encoder.enableInterrupts(doA,doB);
-
-  // // interrupt intitialisation
-  // PciManager.registerListener(&listenerA);
-  // PciManager.registerListener(&listenerB);
+  as504x.init();
 
   // power supply voltage
   // default 12V
@@ -64,10 +52,8 @@ void setup() {
   motor.P_angle.P = 3;
   motor.P_angle.velocity_limit = 10;
 
-
   // link the motor to the sensor
-  motor.linkSensor(&sensor);
-  // motor.linkSensor(&as5047);
+  motor.linkSensor(&as504x);
 
 
   // use debugging with serial for motor init
@@ -79,6 +65,7 @@ void setup() {
   // align encoder and start FOC
   motor.initFOC();
 
+  // this serial print takes about 20% of arduino memory!!
   Serial.println("\n\n");
   Serial.println("PI controller parameters change:");
   Serial.println("- P value : Prefix P (ex. P0.1)");
