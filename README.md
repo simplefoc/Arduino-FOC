@@ -152,7 +152,7 @@ We already have prototypes of the board and we are in the testing phase. We will
 ***Let me know if you are interested! antun.skuric@outlook.com***
 You can explore the [3D model of the board in the PDF form](extras/ArduinoFOCShieldV12.pdf).
 
-<p> <img src="extras/Images/AFSV11_top.png" height="200px">   <img src="extras/Images/AFSV11_bottom.png" height="200px">
+<p> <img src="extras/Images/shield_top_v13.png" height="200px">   <img src="extras/Images/shield_v13.png" height="200px">
 </p>
 
 #### Connection example
