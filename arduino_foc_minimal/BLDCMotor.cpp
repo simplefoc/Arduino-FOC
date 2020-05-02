@@ -259,7 +259,27 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
   // Ubeta =  _cos(angle) * Uq;    //  cos(angle) * Uq;
   Ualpha =  -_sin(angle) * Uq;  // -sin(angle) * Uq;
   Ubeta =  _cos(angle) * Uq;    //  cos(angle) * Uq;
-  
+    
+	// // determine the segment I, II, III
+  // if ((angle >= 0) && (angle <= _120_D2R)) {
+  //   // section I
+  //   Ua = Ualpha + _1_SQRT3 * Ubeta;
+  //   Ub = _2_SQRT3 * Ubeta;
+  //   Uc = 0;
+
+  // } else if ((angle > _120_D2R) && (angle <= (2 * _120_D2R))) {
+  //   // section III
+  //   Ua = 0;
+  //   Ub = _1_SQRT3 * Ubeta - Ualpha;
+  //   Uc = -_1_SQRT3 * Ubeta - Ualpha;
+
+  // } else if ((angle > (2 * _120_D2R)) && (angle <= (3 * _120_D2R))) {
+  //   // section II
+  //   Ua = Ualpha - _1_SQRT3 * Ubeta;
+  //   Ub = 0;
+  //   Uc = - _2_SQRT3 * Ubeta;
+  // }
+
   // Clarke transform
   Ua = Ualpha;
   Ub = -0.5 * Ualpha  + _SQRT3_2 * Ubeta;
@@ -283,7 +303,14 @@ void BLDCMotor::setPwm(int pinPwm, float U) {
   // it can be further optimised 
   // (example U_max = 6 > U_pwm = 127.5 + 21.25*U)
   int U_pwm = 127.5 * (U/U_max + 1);
-     
+
+    
+  // float U_max = voltage_power_supply;
+  // // sets the voltage [0,12V(U_max)] to pwm [0,255]
+  // // - U_max you can set in header file - default 12V
+  // // - support for HMBGC controller
+  // int U_pwm = 255.0 * (float)U / (float)U_max;
+
   // limit the values between 0 and 255
   U_pwm = (U_pwm < 0) ? 0 : (U_pwm >= 255) ? 255 : U_pwm;
 

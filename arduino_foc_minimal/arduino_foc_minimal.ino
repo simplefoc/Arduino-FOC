@@ -1,7 +1,7 @@
 #include "SimpleFOC.h"
-// software interrupt library
-#include <PciManager.h>
-#include <PciListenerImp.h>
+// // software interrupt library
+// #include <PciManager.h>
+// #include <PciListenerImp.h>
 
 //  BLDCMotor( int phA, int phB, int phC, int pp, int en)
 //  - phA, phB, phC - motor A,B,C phase pwm pins
@@ -9,30 +9,27 @@
 //  - enable pin    - (optional input)
 BLDCMotor motor = BLDCMotor(9, 10, 11, 11);
 
-// MagneticSensor(int cs, float _cpr, int _angle_register)
-//  cs              - SPI chip select pin 
-//  _cpr            - counts per revolution 
-// _angle_register  - (optional) angle read register - default 0x3FFF
-MagneticSensor AS5x4x = MagneticSensor(10, 16384, 0x3FFF);
-
-
-// Encoder encoder = Encoder(2, 3, 8192);
-// // interrupt ruotine intialisation
+//Encoder sensor = Encoder(2, 3, 2048);
+// interrupt ruotine intialisation
 // void doA(){encoder.handleA();}
 // void doB(){encoder.handleB();}
 
-// // encoder interrupt init
+// encoder interrupt init
 // PciListenerImp listenerA(encoder.pinA, doA);
 // PciListenerImp listenerB(encoder.pinB, doB);
+
+
+MagneticSensor sensor = MagneticSensor(10,16384);
 
 void setup() { 
   // debugging port
   Serial.begin(115200);
 
+  //as5047.init();
+
   // initialise magnetic sensor hardware
-  AS5x4x.init();
-  // encoder.init();
-  // encoder.enableInterrupts(doA,doB);
+  sensor.init();
+  //encoder.enableInterrupts(doA,doB);
 
   // // interrupt intitialisation
   // PciManager.registerListener(&listenerA);
@@ -69,8 +66,9 @@ void setup() {
 
 
   // link the motor to the sensor
-  motor.linkSensor(&AS5x4x);
-  // motor.linkSensor(&encoder);
+  motor.linkSensor(&sensor);
+  // motor.linkSensor(&as5047);
+
 
   // use debugging with serial for motor init
   // comment out if not needed
@@ -81,15 +79,15 @@ void setup() {
   // align encoder and start FOC
   motor.initFOC();
 
-  Serial.println("Motor ready.\n");
-  Serial.println("Update all the PI controller parameters from the serial terminal:");
-  Serial.println("- Type P100.2 to you the PI_velocity.P in 100.2");
-  Serial.println("- Type I72.32 to you the PI_velocity.I in 72.32\n");
-  Serial.println("Update the time constant of the velocity filter:");
-  Serial.println("- Type F0.03 to you the LPF_velocity.Tf in 0.03\n");
-  Serial.println("Check the loop execution time (average):");
+  Serial.println("\n\n");
+  Serial.println("PI controller parameters change:");
+  Serial.println("- P value : Prefix P (ex. P0.1)");
+  Serial.println("- I value : Prefix I (ex. I0.1)\n");
+  Serial.println("Velocity filter:");
+  Serial.println("- Tf value : Prefix F (ex. F0.001)\n");
+  Serial.println("Average loop execution time:");
   Serial.println("- Type T\n");
-  Serial.println("Change control loop type by typing:");
+  Serial.println("Control loop type:");
   Serial.println("- C0 - angle control");
   Serial.println("- C1 - velocity control");
   Serial.println("- C2 - voltage control\n");
@@ -102,7 +100,6 @@ void setup() {
   Serial.println(motor.LPF_velocity.Tf,4);
   
   _delay(1000);
-
 }
 
 // target velocity variable
@@ -121,34 +118,6 @@ void loop() {
 
   // keep track of loop number
   t++;
-}
-
-// utility function intended to be used with serial plotter to monitor motor variables
-// significantly slowing the execution down!!!!
-void motor_monitor() {
-  switch (motor.controller) {
-    case ControlType::velocity:
-      Serial.print(motor.voltage_q);
-      Serial.print("\t");
-      Serial.print(motor.shaft_velocity_sp);
-      Serial.print("\t");
-      Serial.println(motor.shaft_velocity);
-      break;
-    case ControlType::angle:
-      Serial.print(motor.voltage_q);
-      Serial.print("\t");
-      Serial.print(motor.shaft_angle_sp);
-      Serial.print("\t");
-      Serial.println(motor.shaft_angle);
-      break;
-    case ControlType::voltage:
-      Serial.print(motor.voltage_q);
-      Serial.print("\t");
-      Serial.print(motor.shaft_angle);
-      Serial.print("\t");
-      Serial.println(motor.shaft_velocity);
-      break;
-  }
 }
 
 // Serial communication callback
