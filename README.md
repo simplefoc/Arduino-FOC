@@ -5,7 +5,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![arduino-library-badge](https://www.ardu-badge.com/badge/Simple%20FOC.svg?)](https://www.ardu-badge.com/badge/Simple%20FOC.svg)
 
-Proper low cost FOC supporting boards are very hard to find these days and even may not exist. The reason may be that the hobby community has not yet dug into it properly. Therefore this is the attempt to demistify the Field Oriented Control (FOC) algorithm and make a robust but simple implementation for usage with Arduino hadrware.
+Proper low cost FOC supporting boards are very hard to find these days and even may not exist. The reason may be that the hobby community has not yet dug into it properly. But even if you would find a hardware which is capable of runing BLDC motors, a good FOC code capable of running on Arduino devices is even harder to find. Therefore this is the attempt to demistify the Field Oriented Control (FOC) algorithm and make a robust but simple implementation for usage with Arduino hadrware, as well as to offer you a simple [Arduino FOC shield board](#arduino-simple-foc-shield). :D
+
+
+## A short YouTube demonstration video
+[![](https://img.youtube.com/vi/N_fRYf7Z80k/0.jpg)](https://youtu.be/N_fRYf7Z80k)
+
+This video explains the Simple FOC library basic usage, electronic connections and demonstrates its capabilities.
 
 ### This project aims to close the gap in the areas:
 - Low cost applications <50$
@@ -38,7 +44,7 @@ Branch  | Description | Status
   - [Installing the minimal Arduino example](#download-simple-foc-arduino-minimal-example)
 - [Electrical connecitons and schematic](#electrical-connections)
   - [Minimal setup](#all-you-need-for-this-project)
-  - [Arduino Simple FOC Shield V1.2](#arduino-simple-foc-shield-v12)
+  - [Arduino Simple FOC Shield](#arduino-simple-foc-shield)
   - [Arduino UNO + L6234 driver](#arduino-uno-l6234-driver)
   - [HMBGC gimbal contorller example](#hmbgc-v22)
 - [Code explanation and examples](#arduino-simple-foc-library-code)
@@ -49,7 +55,6 @@ Branch  | Description | Status
     - [Voltage control loop](#voltage-control-loop)
     - [Velcoity control loop](#velocity-control-loop)
     - [Angle control loop](#angle-control-loop)
-    - [Utra Slow Velocity control loop](#ultra-slow-velocity-control-loop)
   - [Debugging practice](#debugging)
 - [Future work and work in progress](#work-roadmap)
 - [Contact](#contact)
@@ -133,7 +138,7 @@ Examples:
   - AS5047 | 16384cpr | ~15$ [Mouser](https://www.mouser.fr/ProductDetail/ams/AS5X47U-TS_EK_AB?qs=sGAEpiMZZMve4%2FbfQkoj%252BBDLPCj82ZLyYIPEtADg0FE%3D) [Youtube](https://www.youtube.com/watch?v=Gl-DiOqXXJ8) 
 
 
-## Arduino Simple FOC Shield V1.2
+## Arduino Simple FOC Shield
 
 At this moment we are developing an open source version of Arduin shiled specifically for FOC motor control. 
 We already have prototypes of the board and we are in the testing phase. We will be coming out with the details very soon!
@@ -142,18 +147,26 @@ We already have prototypes of the board and we are in the testing phase. We will
 - Plug and play capability with the Arduino Simple FOC library
 - Price in the range of \$20-\$40
 - Gerber files and BOM available Open Source
+- Stackable: running at least 2 motors in the same time
   
 ***Let me know if you are interested! antun.skuric@outlook.com***
 You can explore the [3D model of the board in the PDF form](extras/ArduinoFOCShieldV12.pdf).
 
-<img src="extras/Images/AFSV11_side.png" height="300px">  <img src="extras/Images/AFSV11_top.png" height="200px">   <img src="extras/Images/AFSV11_bottom.png" height="200px">
+<p> <img src="extras/Images/AFSV11_top.png" height="200px">   <img src="extras/Images/AFSV11_bottom.png" height="200px">
+</p>
 
+#### Connection example
+<p>
+ <img src="extras/Images/foc_shield_v13.png" >
+ <img src="extras/Images/foc_shield_v12.jpg" height="500px">
+</p>
 
 ## Arduino UNO + L6234 driver
 The code is simple enough to be run on Arudino Uno board. 
 ### Encoder as position sensor 
 <p>
  <img src="extras/Images/arduino_connection.png" height="">
+ <img src="extras/Images/uno_l6234.jpg" height="500px">
 </p>  
 
 #### Encoder
@@ -191,7 +204,7 @@ To use HMBGC controller for vector control (FOC) you need to connect motor to on
 
 <p>
 	<img src="extras/Images/hmbgc_connection.png" height="">
-	<img src="extras/Images/setup1.jpg" height="400px">
+	<img src="extras/Images/hmbgc_v22.jpg" height="500px">
 </p>
  
  
@@ -484,14 +497,12 @@ The SimpleFOC library gives you the choice of using 4 different plug and play co
 - voltage control loop
 - velocity control loop
 - angle control loop
-- ultra slow velocity control loop
 
-You set it by changing the `motor.controller` variable. If you want to control the motor angle you will set the `controller` to `ControlType::angle`, if you seek the DC motor behavior behaviour by controlling the voltage use `ControlType::voltage`, if you wish to control motor angular velocity `ControlType::velocity`. If you wish to control velocities which are very very slow, typically around ~0.01 rad/s you can use the `ControlType::velocity_ultra_slow` controller.
+You set it by changing the `motor.controller` variable. If you want to control the motor angle you will set the `controller` to `ControlType::angle`, if you seek the DC motor behavior behaviour by controlling the voltage use `ControlType::voltage`, if you wish to control motor angular velocity `ControlType::velocity`. 
 ```cpp
 // set FOC loop to be used
 // ControlType::voltage
 // ControlType::velocity
-// ControlType::velocity_ultra_slow
 // ControlType::angle
 motor.controller = ControlType::angle;
 ```
@@ -518,27 +529,62 @@ motor.controller = ControlType::velocity;
 <img src="extras/Images/velocity_loop.png" >
 
 You can test this algorithm by running the example `velocity_control.ino`.
-The velocity control is created by adding a PI velocity controller. This controller reads the motor velocity <i>v</i> and sets the <i>u<sub>q</sub></i> voltage to the motor in a such maner that it reaches and maintains the target velocity <i>v<sub>d</sub></i>, set by the user. 
+The velocity control is created by adding a PI velocity controller. This controller reads the motor velocity <i>v</i>, filteres it to <i>v<sub>f</sub></i> and sets the <i>u<sub>q</sub></i> voltage to the motor in a such maner that it reaches and maintains the target velocity <i>v<sub>d</sub></i>, set by the user. 
 #### PI controller parameters
 To change the parameters of your PI controller to reach desired behaiour you can change `motor.PI_velocity` structure:
 ```cpp
+// contoller configuration based on the controll type 
 // velocity PI controller parameters
-// default K=0.5 Ti = 0.01
-motor.PI_velocity.K = 0.2;
-motor.PI_velocity.Ti = 0.01;
-motor.PI_velocity.voltage_limit = 6; 
+// default P=0.5 I = 10
+motor.PI_velocity.P = 0.2;
+motor.PI_velocity.I = 20;
+//defualt voltage_power_supply/2
+motor.PI_velocity.voltage_limit = 6;
 // jerk control using voltage voltage ramp
 // default value is 300 volts per sec  ~ 0.3V per millisecond
-motor.PI_velocity.voltage_ramp = 6;
+motor.PI_velocity.voltage_ramp = 1000;
+
+// velocity low pass filtering
+// default 5ms - try different values to see what is the best. 
+// the lower the less filtered
+motor.LPF_velocity.Tf = 0.01;
 ```
-The parameters of the PI controller are proportional gain `K`, integral time constant `Ti`, voltage limit `voltage_limit`  and `voltage_ramp`. 
+The parameters of the PI controller are proportional gain `P`, integral gain `I`, voltage limit `voltage_limit`  and `voltage_ramp`. 
 - The `voltage_limit` parameter is intended if, for some reason, you wish to limit the voltage that can be sent to your motor.  
-- In general by raising the proportional constant `K`  your motor controller will be more reactive, but too much will make it unstable. 
-- The same goes for integral time constant `Ti` the smaller it is the faster motors reaction to disturbance will be, but too small value will make it unstable. 
+- In general by raising the proportional gain `P`  your motor controller will be more reactive, but too much will make it unstable. Setting it to `0` will disable the proportional part of the controller.
+- The same goes for integral gain `I` the higher it is the faster motors reaction to disturbance will be, but too large value will make it unstable. Setting it to `0` will disable the integral part of the controller.
 - The `voltage_ramp` value it intended to reduce the maximal change of the voltage value which is sent to the motor. The higher the value the PI controller will be able to change faster the <i>U<sib>q</sub></i> value. The lower the value the smaller the possible change and the less responsive your controller becomes. The value of this parameter is set to be `Volts per second[V/s` or in other words how many volts can your controller raise the voltage in one time unit. If you set your `voltage_ramp` value to `10 V/s`, and on average your contol loop will run each `1ms`. Your controller will be able to chnage the <i>U<sib>q</sub></i> value each time `10[V/s]*0.001[s] = 0.01V` waht is not a lot.
 
+Additionally, in order to smooth out the velocity measuement Simple FOC library has implemented the velocity low pass filter. [Low pass filters](https://en.wikipedia.org/wiki/Low-pass_filter) are standard form of signal smoothing, and it only has one parameter - filtering time constant `Tf`.
+- The lower the value the less influence the filter has. If you put `Tf` to `0` you basically remove the filter completely. The exact `Tf` value for specific implementation is hard guess in advance, but in general the range of values of `Tf` will be somewhere form `0` to `0.5` seconds.
 
-So in order to get optimal performance you will have to fiddle a bit with with the parameters. :)
+In order to get optimal performance you will have to fiddle a bit with with the parameters. :)
+
+#### Control theory lovers corner :D
+Transfer funciton of the PI contorller this library implements is:
+<img src="./extras/Images/cont_PI.png" />
+Continiuos PI is discretized using Tustin transform. The final discrete equation becomes:
+<img src="./extras/Images/dis_PI.png" />
+Where the <i>u(k)</i> is the control signal (voltage <i>U<sub>q</sub></i> in our case) in moment <i>k</i>, <i>e(k),e(k-1)</i> is the tracking error in current moment <i>k</i> and previous step <i>k-1</i>. Tracking error presents the difference in between the target velocity value <i>v<sub>d</sub></i> and measured velocity <i>v</i>. 
+<img src="./extras/Images/track.png" />
+
+Transfer funciton of the Low pass filter is contorller is:
+<img src="./extras/Images/cont_LPF.png" />
+In it discrete form it becomes:
+<img src="./extras/Images/dis_LPF.png" />
+where <i>v<sub>f</sub>(k)</i> is filtered velocity value in moment <i>k</i>, <i>v(k)</i> is the measured velocity in the moment <i>k</i>, <i>T<sub>f</sub></i> is the filter time constant and <i>T<sub>s</sub></i> is the sampling time (or time in between executions of the equation).
+This low pass filter can be also written in the form:
+<img src="./extras/Images/LPF_alpha.png" />
+where:
+<img src="./extras/Images/alpha.png" />
+This makes it a bit more clear what the time constat `Tf` of the Low pass filter stands for. If your sample time is around 1millisecond (for arduino UNO this can be taken as an average) then setting the
+`Tf` value to `Tf = 0.01` will result in:
+```cpp
+alpha = 0.01/(0.01 + 0.001) = 0.91
+```
+Which means that your actual velocity measurement <i>v</i> will influence the filtered value <i>v<sub>f</sub><i> with the coeficient `1-alpha = 0.09` which is going to smooth the velocity values considerably (maybe even too muuch, depends of the application).
+
+
 
 ### Angle control loop
 This control loop allows you to move your BLDC motor to the desired angle in real time.   This mode is enabled by:
@@ -550,70 +596,49 @@ motor.controller = ControlType::angle;
 <img src="extras/Images/angle_loop.png">
 
 You can test this algorithm by running the example `angle_control.ino`.
-The angle control loop is done by adding one more control loop in cascade on the velocity control loop like showed on the figure above. The loop is closed by using simple P controller. The controller reads the angle <i>a</i> from the motor and determins which velocity <i>v<sub>d</sub></i> the motor should move to reach desire angle <i>a<sub>d</sub></i> set by the user. And then the velocity controller reads the current velocity from the motor <i>v</i> and sets the voltage <i>u<sub>q</sub></i> that is neaded to reach the velocity <i>v<sub>d</sub></i>, set by the angle loop. 
+The angle control loop is done by adding one more control loop in cascade on the velocity control loop like showed on the figure above. The loop is closed by using simple P controller. The controller reads the angle <i>a</i> from the motor and determins which velocity <i>v<sub>d</sub></i> the motor should move to reach desire angle <i>a<sub>d</sub></i> set by the user. And then the velocity controller reads the current filtered velocity from the motor <i>v<sub>f</sub></i> and sets the voltage <i>u<sub>q</sub></i> that is neaded to reach the velocity <i>v<sub>d</sub></i>, set by the angle loop. 
 
 #### Controller parameters
 To tune this control loop you can set the parameters to both angle P controller and velocity PI controller. 
 ```cpp
+// contoller configuration based on the controll type 
 // velocity PI controller parameters
-// default K=1.0 Ti = 0.003
-motor.PI_velocity.K = 0.5;
-motor.PI_velocity.Ti = 0.01;
+// default P=0.5 I = 10
+motor.PI_velocity.P = 0.2;
+motor.PI_velocity.I = 20;
+//defualt voltage_power_supply/2
 motor.PI_velocity.voltage_limit = 6;
 // jerk control using voltage voltage ramp
 // default value is 300 volts per sec  ~ 0.3V per millisecond
-motor.PI_velocity.voltage_ramp = 6;
+motor.PI_velocity.voltage_ramp = 1000;
+
+// velocity low pass filtering
+// default 5ms - try different values to see what is the best. 
+// the lower the less filtered
+motor.LPF_velocity.Tf = 0.01;
+
 // angle P controller 
-// default K=70
-motor.P_angle.K = 20;
-//  maximal velocity of the poisition control
+// default P=20
+motor.P_angle.P = 20;
+//  maximal velocity of the poisiiton control
 // default 20
-motor.P_angle.velocity_limit = 10;
+motor.P_angle.velocity_limit = 4;
 ```
 It is important to paramter both velocity PI and angle P controller to have the optimal performance.
 The velocity PI controller is parametrisized by updating the `motor.PI_velcity` structure as expalined before. 
-- Rough rule should be to lower the proportional gain `K` and raise time constant `Ti` in order to achieve less vibrations.
+- Rough rule should be to lower the proportional gain `P` in order to achieve less vibrations.
+- You probably wont have to touch the `I` value.
   
 The angle P controller can be updated by changign the `motor.P_angle` structure. 
-- Roughly proportional gain `K` will make it more responsive, but too high value will make it unstable.
+- Roughly proportional gain `P` will make it more responsive, but too high value will make it unstable.
   
+For the angle control you will be able to see the influence of the velocity LPF filter as well. But the `Tf` value should not change much form the velocity control. So once you have it tuned for the velocity loop you can leave it as is.
+
 Additionally you can configure the `velocity_limit` value of the controller. This value prevents the contorller to set too high velocities $v_d$ to the motor. 
 - If you make your `velocity_limit` very low your motor will be moving in between desired positions with exactly this velocity. If you keep it high, you will not notice that this variable even exists. :D  
 
 Finally, each application is a bit different and the chances are you will have to tune the controller values a bit to reach desired behaviour.
 
-
-### Ultra slow velocity control loop
-This control loop allows you to spin your BLDC motor with desired velocity as well as the [velocity loop](#velocity-control-loop) but it is intended for very smooth operation in very low velocityes (< 0.1 rad/s).  This mode is enabled by:
-```cpp
-// velocity ultra slow control loop
-motor.controller = ControlType::velocity_ultra_slow;
-```
-
-<img src="extras/Images/velocity_ultraslow_loop.png" >
-
-You can test this algorithm by running the example `velocity_ultrasloaw_control_serial.ino` .
-This type of the velocity control is nothing more but motor angle control. It works particularly well for the purposes of very slow movements because regular velocity calculation techniques are not vel suited for this application and regular [velocity control loop](#velocity-control-loop) would not work well. 
-The behavior is achieved by integrating the user set target velocity <i>v<sub>d</sub></i> to get the necessary angle <i>a<sub>d</sub></i>. And then controlling the motor angle <i>v</i> with high-gain PI controller. This controller reads the motor angle <i>v</i> and sets the <i>u<sub>q</sub></i> voltage to the motor in a such maner that it closely follows the target angle <i>a<sub>d</sub></i>, to achieve the velocity profile <i>v<sub>d</sub></i>, set by the user. 
-#### PI controller parameters
-To change the parameters of your PI controller to reach desired behaiour you can change `motor.PI_velocity` structure:
-```cpp
-// velocity PI controller parameters
-  // default K=120.0 Ti = 100.0
-motor.PI_velocity_ultra_slow.K = 120;
-motor.PI_velocity_ultra_slow.Ti = 100;
-motor.PI_velocity_ultra_slow.voltage_limit = 12;
-// jerk control using voltage voltage ramp
-// default value is 300 volts per sec  ~ 0.3V per millisecond
-motor.PI_velocity_ultra_slow.voltage_ramp = 6;
-```
-The parameters of the PI controller are proportional gain `K`, integral time constant `Ti` and voltage limit `voltage_limit` which is by default set to the `voltage_power_supply/2` and `voltage_ramp`. 
-- The `voltage_limit` parameter is intended if some reason you wish to limit the voltage that can be sent to your motor.  
-- In general by raising the proportional constant `K`  your motor controller will be more reactive, but too much will make it unstable. 
-- The same goes for integral time constant `Ti` the smaller it is the faster motors reaction to disturbance will be, but too small value will make it unstable. By defaualt the integral time constant `Ti` is set  `100s`. Which means that it is extreamply slow, meaning that it is not effecting the behvior of the controlle, making it basically a P controller.
-- The `voltage_ramp` value it intended to reduce the maximal change of the voltage value which is sent to the motor. The higher the value the PI controller will be able to change faster the <i>U<sib>q</sub></i> value. The lower the value the smaller the possible change and the less responsive your controller becomes. The value of this parameter is set to be `Volts per second[V/s` or in other words how many volts can your controller raise the voltage in one time unit. If you set your `voltage_ramp` value to `10 V/s`, and on average your contol loop will run each `1ms`. Your controller will be able to chnage the <i>U<sib>q</sub></i> value each time `10[V/s]*0.001[s] = 0.01V` waht is not a lot.
-
-From the PI controller parameters you can see that the values are much higher than in the [velocity control loop](#velocity-control-loop). The reason is because the angle control loop is not the main loop and we need it to follow the profile as good as possible as fast as possible. Therefore we need much higher gain than before.
 
 ### Index search routine
 Finding the encoder index is performed only if the constructor of the `Encoder` class has been provided with the `index` pin. The search is performed by setting a constant velocity of the motor until it reaches the index pin. To set the desired searching velocity alter the paramterer:
@@ -626,8 +651,8 @@ This velocity control loop is implemented exaclty the same as [velocity control 
 ```cpp
 // index search PI contoller parameters
 // default K=0.5 Ti = 0.01
-motor.PI_velocity_index_search.K = 0.1;
-motor.PI_velocity_index_search.Ti = 0.01;
+motor.PI_velocity_index_search.P = 0.1;
+motor.PI_velocity_index_search.I = 0.01;
 motor.PI_velocity_index_search.voltage_limit = 3;
 // jerk control using voltage voltage ramp
 // default value is 100 volts per sec  ~ 0.1V per millisecond
@@ -667,7 +692,7 @@ The funciton `loopFOC()` gets the current motor angle from the encoder, turns in
 // it can go as low as ~50Hz
 motor.move(target);
 ```
-The `move()` method executes the control loops of the algorihtm. If is governed by the `motor.controller` variable. It executes eigther pure voltage loop, velocity loop, angle loop or ultra slow velocity loop.
+The `move()` method executes the control loops of the algorihtm. If is governed by the `motor.controller` variable. It executes eigther pure voltage loop, velocity loop or angle loop.
 
 It receives one parameter `BLDCMotor::move(float target)` which is current user define target value.
 - If the user runs [velocity loop](#velocity-control-loop), `move` funciton will interpret `target` as the target velocity <i>v<sub>d</sub></i>.
@@ -680,7 +705,8 @@ It receives one parameter `BLDCMotor::move(float target)` which is current user 
 
 ## Examples
 Examples folder structure
-```
+```shell
+│ examples
 │   ├─── encoder examples             # EXMAPLES OF ENCODER APPLICATIONS
 │   │   ├───angle_control                   # example of angle control loop with configuraiton
 │   │   ├───change_direction                # simple motor changing velocity direction in real time
@@ -688,52 +714,79 @@ Examples folder structure
 │   │   ├───find_pole_pairs_number          # simple code example estimating pole pair number of the motor
 │   │   ├───HMBGC_example                   # example of code to be used with HMBGC controller with
 │   │   ├───velocity_control                # example of velocity control loop with configuraiton
-│   │   ├───velocity_ultraslow_control      # example of ultra slow velocity control using  with configuraiton
-│   │   └───voltage_control                 # example of the voltage control loop with configuraiton
+│   │   ├───voltage_control                 # example of the voltage control loop with configuraiton
+│   │   └───velocity_PI_tuning              # code example of tuning velcity controller by using serial terminal
 │   │
-│   └─── magnetic sensor examples      # EXMAPLES OF MAGENETIC SENSOR APPLICATIONS
+│   └─── magnetic sensor examples      # EXMAPLES OF MAGENETIC SENSOR APPLICATIONS AS5047/48
 │       ├───angle_control                   # example of angle control loop with configuraiton
 │       ├───change_direction                # simple motor changing velocity direction in real time
 │       ├───find_pole_pairs_number          # simple code example estimating pole pair number of the motor
 │       ├───magnetic_sensor_only_example    # simple example of magnetic sensor usage
 │       ├───velocity_control                # example of velocity control loop with configuraiton
-│       ├───velocity_ultraslow_control      # example of ultra slow velocity control using  with configuraiton
-│       └───voltage_control                 # example of the voltage control loop with configuraiton
+│       ├───voltage_control                 # example of the voltage control loop with configuraiton
+│       └───velocity_PI_tuning              # code example of tuning velcity controller by using serial terminal
+```
+## Simple FOC library source structure:
+```shell
+│ src
+│ │
+│ ├─ SimpleFOC.h               # SimpleFOC library include file
+│ │   
+│ ├─ BLDCMotor.cpp/h           # BLDCMotor class implementing all the FOC operations
+│ │ 
+│ ├─ Sensor.h                  # Abstract Sensor class that all the sensors implement
+│ ├─ Encoder.cpp/h             # Enocder class implementing the Quadrature encoder operations
+│ ├─ MagneticSensor.cpp/h      # class implementing SPI angle read and interface for AS5047/8 type sensors
+│ │ 
+│ └─ FOCutils.cpp/h            # Utility functions 
 ```
 
 
 # Debugging
-To debug control loop exection in the examples we added a funciton `motor_monitor()` which log the motor variables to the serial port. The funciton logs different variables based for differenc control loops.
+
+`BLDCMotor` clsss supports debugging using `Serial` port which is enabled by:
+```cpp
+motor.useDebugging(Serial);
+```
+before running `motor.init()`.
+The class will output its status during the intialisation of the motor and the FOC. Enabling tyhe debugger will not directly influence the real-time performance. By default the class will stop its debugging output once it goes to the main loop.
+
+To debug control loop exection in the examples we added a funciton `motor.monitor()` which log the motor variables to the serial port. The funciton logs different variables based for differenc control loops.
 ```cpp
 // utility function intended to be used with serial plotter to monitor motor variables
 // significantly slowing the execution down!!!!
-void motor_monitor() {
-  switch (motor.controller) {
-    case ControlType::velocity_ultra_slow:
+void BLDCMotor::monitor() {
+  if(!debugger) return;
+  switch (controller) {
     case ControlType::velocity:
-      Serial.print(motor.voltage_q);
-      Serial.print("\t");
-      Serial.print(motor.shaft_velocity_sp);
-      Serial.print("\t");
-      Serial.println(motor.shaft_velocity);
+      debugger->print(voltage_q);
+      debugger->print("\t");
+      debugger->print(shaft_velocity_sp);
+      debugger->print("\t");
+      debugger->println(shaft_velocity);
       break;
     case ControlType::angle:
-      Serial.print(motor.voltage_q);
-      Serial.print("\t");
-      Serial.print(motor.shaft_angle_sp);
-      Serial.print("\t");
-      Serial.println(motor.shaft_angle);
+      debugger->print(voltage_q);
+      debugger->print("\t");
+      debugger->print(shaft_angle_sp);
+      debugger->print("\t");
+      debugger->println(shaft_angle);
       break;
     case ControlType::voltage:
-      Serial.print(motor.voltage_q);
-      Serial.print("\t");
-      Serial.println(motor.shaft_velocity);
+      debugger->print(voltage_q);
+      debugger->print("\t");
+      debugger->print(shaft_angle);
+      debugger->print("\t");
+      debugger->println(shaft_velocity);
       break;
   }
 }
 ```
-This is just a template funciton to help you debug and create your own functions in future.
-The funciton accesses the motor variables:
+The intention of this method is to be called in main loop funciton along the `loopFOC()` and `move()` funciton. Thsi funciton is going to impaire the execution perfomance and reduce the sampling frequency so therefore take it in consideration when running the code. 
+
+If you wish to implement you own debugging functions or just output the motor variables to the `Serial` terminal here are the public varaibles of the `BLDCMotor` class.
+
+
 ```cpp
 
 class BLDCMotor
@@ -775,18 +828,19 @@ class MagneticSensor{
     float getAngle();
 }
 ```
-### BLDCMotor debugging
-Additonally a `BLDCMotor` calss now supports debugging using `Serial` port which is enabled by:
-```cpp
-motor.useDebugging(Serial);
-```
-before running `motor.init()`.
-
 
 # Work Roadmap
 ## Future work
 - [ ] Proper introduction of the **Arudino FOC Shield V1.2**
 - [ ] Publish a video tutorial fir using the library and the samples  
+  - [x] Initial video with simple demonstration
+  - [ ] Coding setup and procedure video
+  - [ ] Two motors running on HMBGC example
+  - [ ] ....
+- [ ] Implement Space Vector Modulation method 
+  -  [ ] Pure SVM
+  -  [ ] PWM SVM
+- [ ] Implement support for MOSFET control low and high pairs
 
 ## Work in progress
 - [x] Make the library accesible in the Arduino Library Manager 
@@ -796,6 +850,7 @@ before running `motor.init()`.
 - [x] Make support for magnetic encoder AS5048 ABI
 - [x] Make support for magnetic encoder AS5048 SPI
 - [x] Add support for acceleration ramping
+- [x] Velocity Low pass filter
 - [x] Timer interrupt execution rather than in the `loop()`
   - FAIL: Perfromance not improved
 - [x] Sine wave lookup table implementation
