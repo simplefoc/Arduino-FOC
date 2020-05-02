@@ -78,24 +78,22 @@ void setup() {
   // align encoder and start FOC
   motor.initFOC();
 
-  Serial.println("FOC ready.\n");
-  Serial.println("Update all the PI controller parameters from the serial temrinal:");
-  Serial.println("- Type P100.2 to you the PI_velocity.P in 100.2");
-  Serial.println("- Type I72.32 to you the PI_velocity.I in 72.32\n");
-  Serial.println("Update the time constant of the velocity filter:");
-  Serial.println("- Type F0.03 to you the LPF_velocity.Tf in 0.03\n");
-  Serial.println("Check the loop execution time (average):");
+  Serial.println("\n\n");
+  Serial.println("PI controller parameters change:");
+  Serial.println("- P value : Prefix P (ex. P0.1)");
+  Serial.println("- I value : Prefix I (ex. I0.1)\n");
+  Serial.println("Velocity filter:");
+  Serial.println("- Tf value : Prefix F (ex. F0.001)\n");
+  Serial.println("Average loop execution time:");
   Serial.println("- Type T\n");
-  Serial.println("To change the target valeocity just enter the value without any prefix.\n");
   
-  Serial.println("Initial control parameters:");
+  Serial.println("Initial parameters:");
   Serial.print("PI velocity P: ");
   Serial.print(motor.PI_velocity.P);
   Serial.print(",\t I: ");
   Serial.print(motor.PI_velocity.I);
   Serial.print(",\t Low passs filter Tf: ");
   Serial.println(motor.LPF_velocity.Tf,4);
-
   _delay(1000);
 }
 
