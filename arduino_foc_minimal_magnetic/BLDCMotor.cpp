@@ -259,27 +259,7 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
   // Ubeta =  _cos(angle) * Uq;    //  cos(angle) * Uq;
   Ualpha =  -_sin(angle) * Uq;  // -sin(angle) * Uq;
   Ubeta =  _cos(angle) * Uq;    //  cos(angle) * Uq;
-    
-	// // determine the segment I, II, III
-  // if ((angle >= 0) && (angle <= _120_D2R)) {
-  //   // section I
-  //   Ua = Ualpha + _1_SQRT3 * Ubeta;
-  //   Ub = _2_SQRT3 * Ubeta;
-  //   Uc = 0;
-
-  // } else if ((angle > _120_D2R) && (angle <= (2 * _120_D2R))) {
-  //   // section III
-  //   Ua = 0;
-  //   Ub = _1_SQRT3 * Ubeta - Ualpha;
-  //   Uc = -_1_SQRT3 * Ubeta - Ualpha;
-
-  // } else if ((angle > (2 * _120_D2R)) && (angle <= (3 * _120_D2R))) {
-  //   // section II
-  //   Ua = Ualpha - _1_SQRT3 * Ubeta;
-  //   Ub = 0;
-  //   Uc = - _2_SQRT3 * Ubeta;
-  // }
-
+   
   // Clarke transform
   Ua = Ualpha;
   Ub = -0.5 * Ualpha  + _SQRT3_2 * Ubeta;
