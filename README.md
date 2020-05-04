@@ -5,10 +5,21 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![arduino-library-badge](https://www.ardu-badge.com/badge/Simple%20FOC.svg?)](https://www.ardu-badge.com/badge/Simple%20FOC.svg)
 
-Proper low cost FOC supporting boards are very hard to find these days and even may not exist. The reason may be that the hobby community has not yet dug into it properly. But even if you would find a hardware which is capable of runing BLDC motors, a good FOC code capable of running on Arduino devices is even harder to find. Therefore this is the attempt to ***demistify the Field Oriented Control (FOC) algorithm*** and make a ***robust but simple implementation*** for ***Arduino hadrware***, as well as to introduce the new [Arduino FOC shield board](#arduino-simple-foc-shield).
+Proper low cost FOC supporting boards are very hard to find these days and even may not exist. The reason may be that the hobby community has not yet dug into it properly. But even if you would find a hardware which is capable of runing BLDC motors, a good FOC code capable of running on Arduino devices is even harder to find. Therefore this is the attempt to ***demistify the Field Oriented Control (FOC) algorithm*** and make a ***robust but simple implementation*** for ***Arduino hadrware***, as well as to introduce the new [Arduino FOC shield board](https://askuric.github.io/simplefoc.html).
+
+<p> <img src="extras/Images/shield_top_v13.png" height="200px">   <img src="extras/Images/shield_v13.png" height="200px">
+
+### Features
+- Plug and play capability with the Arduino Simple FOC library
+- Price in the range of \$20-\$40
+- Gerber files and BOM available Open Source
+- Stackable: running at least 2 motors in the same time
+
+##### If you are interested in this board, find more information on this link: [Arduino Simple FOC Shield](https://askuric.github.io/simplefoc.html)
 
 
-## A short YouTube demonstration video
+
+## A short library YouTube demonstration video
 [![](https://img.youtube.com/vi/N_fRYf7Z80k/0.jpg)](https://youtu.be/N_fRYf7Z80k)
 
 This video explains the Simple FOC library basic usage, electronic connections and demonstrates its capabilities.
@@ -150,8 +161,7 @@ We already have prototypes of the board and we are in the testing phase. We will
 - Gerber files and BOM available Open Source
 - Stackable: running at least 2 motors in the same time
   
-***Let me know if you are interested! antun.skuric@outlook.com***
-You can explore the [3D model of the board in the PDF form](extras/ArduinoFOCShieldV12.pdf).
+More information on this link: [Arduino Simple FOC Shield](https://askuric.github.io/simplefoc.html).
 
 <p> <img src="extras/Images/shield_top_v13.png" height="200px">   <img src="extras/Images/shield_v13.png" height="200px">
 </p>
