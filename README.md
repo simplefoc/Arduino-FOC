@@ -15,7 +15,7 @@ Proper low cost FOC supporting boards are very hard to find these days and even 
 - Gerber files and BOM available Open Source
 - Stackable: running at least 2 motors in the same time
 
-##### If you are interested in this board, find more information on [link](https://askuric.github.io/simplefoc.html).
+##### If you are interested in this board, find more information on this link: [Arduino Simple FOC Shield](https://askuric.github.io/simplefoc.html)
 
 
 
@@ -161,8 +161,7 @@ We already have prototypes of the board and we are in the testing phase. We will
 - Gerber files and BOM available Open Source
 - Stackable: running at least 2 motors in the same time
   
-***Let me know if you are interested! antun.skuric@outlook.com***
-You can explore the [3D model of the board in the PDF form](extras/ArduinoFOCShieldV12.pdf).
+More information on this link: [Arduino Simple FOC Shield](https://askuric.github.io/simplefoc.html).
 
 <p> <img src="extras/Images/shield_top_v13.png" height="200px">   <img src="extras/Images/shield_v13.png" height="200px">
 </p>
