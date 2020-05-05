@@ -20,7 +20,7 @@ Proper low cost FOC supporting boards are very hard to find these days and even 
 
 
 ## A short library YouTube demonstration video
-[![](https://img.youtube.com/vi/N_fRYf7Z80k/0.jpg)](https://youtu.be/N_fRYf7Z80k)
+[![](extras/Images/youtube.png)](https://youtu.be/N_fRYf7Z80k)
 
 This video explains the Simple FOC library basic usage, electronic connections and demonstrates its capabilities.
 
@@ -107,34 +107,41 @@ The code is place in the [minimal branch](https://github.com/askuric/Arduino-FOC
 # Electrical connections
 
 ## All you need for this project 
-All you need for this project is:
-- Brushless DC (BLDC) motor 
+The components you need to have to run the SimpleFOC algorithm:
+
+- BLDC motor
 - BLDC driver
 - Position sensor
-- Arduino 
+- Arduino
+
 ### BLDC motor 
 This library is compatible with any 3 phase BLDC motor out there. Feel free to choose anything that suites your applications. The most tests have been done using gimbal morots (up to 2A).
-Examples:  
-- IPower GBM4198H-120T [Ebay](https://www.ebay.com/itm/iPower-Gimbal-Brushless-Motor-GBM4108H-120T-for-5N-7N-GH2-ILDC-Aerial-photo-FPV/252025852824?hash=item3aade95398:g:q94AAOSwPcVVo571:rk:2:pf:1&frcectupt=true)
-- GARTT ML5010 300KV [Ebay](https://www.ebay.com/itm/GARTT-ML5010-300KV-Brushless-Motor-For-T960-T810-RC-Multirotor-Quadcopter-MT-092/302082779179?hash=item465589682b:g:h00AAOSwmfhX44X2)
+Examples | Description | Link | Price 
+---- | ---- | ---- | ---
+[<img src="extras/Images/mot.jpg" height="150px">](https://www.ebay.com/itm/iPower-Gimbal-Brushless-Motor-GBM4108H-120T-for-5N-7N-GH2-ILDC-Aerial-photo-FPV/254541115855?hash=item3b43d531cf:g:q94AAOSwPcVVo571) | IPower GBM4198H-120T | [Ebay](https://www.ebay.com/itm/iPower-Gimbal-Brushless-Motor-GBM4108H-120T-for-5N-7N-GH2-ILDC-Aerial-photo-FPV/252025852824?hash=item3aade95398:g:q94AAOSwPcVVo571:rk:2:pf:1&frcectupt=true) | 25$
+ [<img src="extras/Images/mot2.jpg" height="150px">](https://www.ebay.com/itm/JMT-MT3508-380KV-Motor-Disk-Motor-for-Multi-axis-Aircraft-DIY-Quadcopter-Drone/263422397574?hash=item3d5532cc86:g:31oAAOSw11BcQs6V) | GARTT ML5010 300KV | [Ebay](https://www.ebay.com/itm/GARTT-ML5010-300KV-Brushless-Motor-For-T960-T810-RC-Multirotor-Quadcopter-MT-092/302082779179?hash=item465589682b:g:h00AAOSwmfhX44X2) | 30$
+ [<img src="extras/Images/mot3.jpg" height="150px">](https://www.ebay.com/itm/Alloy-2208-90KV-Gimbal-Brushless-Motor-for-Gopro3-RC-Drone-Camera-100-200g/223195701385?hash=item33f7802089:g:cjUAAOSw1iVbyccJ) | 2208 90KV Gimbal motor | [Ebay](https://www.ebay.com/itm/Alloy-2208-90KV-Gimbal-Brushless-Motor-for-Gopro3-RC-Drone-Camera-100-200g/223195701385?hash=item33f7802089:g:cjUAAOSw1iVbyccJ) | 15$
 ### BLDC motor driver 
 This library will be compatible with the most of the 3 phase bldc motor dirvers. Such as L6234, DRV8305 or L293. 
-Examples:
--  L6234 driver [Drotek](https://store-drotek.com/212-brushless-gimbal-controller-l6234.html), [Ebay](https://www.ebay.fr/itm/L6234-Breakout-Board-/153204519965)
--  Alternatively the library supports the arduino based gimbal controllers such as: HMBGC V2.2 ([Ebay](https://www.ebay.com/itm/HMBGC-V2-0-3-Axle-Gimbal-Controller-Control-Plate-Board-Module-with-Sensor/351497840990?hash=item51d6e7695e:g:BAsAAOSw0QFXBxrZ:rk:1:pf:1))
-- [Arduino Simple FOC shield](#arduino-simple-foc-shield-v12)
+
+Examples | Description | Link | Price
+---- | ---- | ---- | ---
+[<img src="extras/Images/shield_top_v13.png" height="150px">](https://askuric.github.io/simplefoc.html)| Arduino Simple FOC shield | [More info](https://askuric.github.io/simplefoc.html) | 35$
+[<img src="extras/Images/l6234.jpg" height="150px">](https://www.ebay.com/itm/L6234-Breakout-Board/153204519965?hash=item23abb3741d:g:LE4AAOSwe35bctgg) | Dorotek L6234 breakout board| [Drotek](https://store-drotek.com/212-brushless-gimbal-controller-l6234.html), [Ebay](https://www.ebay.fr/itm/L6234-Breakout-Board-/153204519965) | 30$
+[<img src="extras/Images/pinout.jpg" height="150px">](https://www.ebay.com/itm/HMBGC-V2-0-3-Axle-Gimbal-Controller-Control-Plate-Board-Module-with-Sensor/351497840990?hash=item51d6e7695e:g:BAsAAOSw0QFXBxrZ:rk:1:pf:1) | HMBGC V2.2 | [Ebay](https://www.ebay.com/itm/HMBGC-V2-0-3-Axle-Gimbal-Controller-Control-Plate-Board-Module-with-Sensor/351497840990?hash=item51d6e7695e:g:BAsAAOSw0QFXBxrZ:rk:1:pf:1) | 20$
+
 
 ### Position sensor
 This library supports two types of position sensors: Encoder and Magnetic sensor.
 #### Encoders
-Encoders are by far most popular position sensors, both in industry and in hobby community. The main benefits are the precision, standardisation and very low noise level. The main problem with encoders is the efficiency.
+Encoders are by far most popular position sensors, both in industry and in hobby community. The main benefits are the precision, standardisation and very low noise level. The main problem with encoders is the code efficiency, since you need to continously count the impulses in order to have precise position.
 
-Examples:  
-- Optical Encoder 
-  - 2400cpr | ~10$ [Ebay](https://www.ebay.com/itm/600P-R-Photoelectric-Incremental-Rotary-Encoder-5V-24V-AB-2-Phases-Shaft-6mm-New/173145939999?epid=19011022356&hash=item28504d601f:g:PZsAAOSwdx1aKQU-:rk:1:pf:1)
-  - 490-AMT103-V | 8192cpr | ~30$ [Mouser](https://www.mouser.fr/ProductDetail/CUI-Devices/AMT103-V?qs=%2Fha2pyFaduiAsBlScvLoAWHUnKz39jAIpNPVt58AQ0PVb84dpbt53g%3D%3D)
-- Magnetic Encoders
-  - AS5047 | 16384cpr | ~15$ [Mouser](https://www.mouser.fr/ProductDetail/ams/AS5X47U-TS_EK_AB?qs=sGAEpiMZZMve4%2FbfQkoj%252BBDLPCj82ZLyYIPEtADg0FE%3D) [Youtube](https://www.youtube.com/watch?v=Gl-DiOqXXJ8)  
+Examples  | Description | Link | Price
+---- | ---- | ---- | ----
+[<img src="extras/Images/enc.jpg"  height="150px">](https://www.ebay.com/itm/360-600P-R-Photoelectric-Incremental-Rotary-Encoder-5V-24V-AB-Two-Phases-Shaft/254214673272?hash=item3b30601378:m:mDiuW1F2qXINSH51TqAjhTg)  | Optical encoder<br>2400cpr | [Drotek](https://store-drotek.com/212-brushless-gimbal-controller-l6234.html), [Ebay](https://www.ebay.fr/itm/L6234-Breakout-Board-/153204519965) | 10$
+[<img src="extras/Images/enc1.png" height="150px">](https://www.ebay.com/itm/HMBGC-V2-0-3-Axle-Gimbal-Controller-Control-Plate-Board-Module-with-Sensor/351497840990?hash=item51d6e7695e:g:BAsAAOSw0QFXBxrZ:rk:1:pf:1) | Optical encoder<br>AMT103 <br>8192cpr |  [Mouser](https://www.mouser.fr/ProductDetail/CUI-Devices/AMT103-V?qs=%2Fha2pyFaduiAsBlScvLoAWHUnKz39jAIpNPVt58AQ0PVb84dpbt53g%3D%3D)  | 20$
+[<img src="extras/Images/mag.jpg"  height="150px">](hhttps://www.mouser.fr/ProductDetail/ams/AS5X47U-TS_EK_AB?qs=sGAEpiMZZMve4%2FbfQkoj%252BBDLPCj82ZLyYIPEtADg0FE%3D) | Margetic encoder <br> AS5047U <br> 16384cpr |  [Mouser](https://www.mouser.fr/ProductDetail/ams/AS5X47U-TS_EK_AB?qs=sGAEpiMZZMve4%2FbfQkoj%252BBDLPCj82ZLyYIPEtADg0FE%3D)<br> [Youtube demo](https://www.youtube.com/watch?v=Gl-DiOqXXJ8)   | 15$
+
       
 #### Magnetic sensors | SPI  interface
 Magentic position sensor has many benefits over the encoders:
@@ -145,10 +152,10 @@ Magentic position sensor has many benefits over the encoders:
 - Very low price
 - Very simple to mount
 
-Examples:
-  - AS5048 |  16384cpr | ~15$ [Aliexpress](https://fr.aliexpress.com/item/4000034013999.html?spm=a2g0o.productlist.0.0.4a7f5c25mYwpN3&algo_pvid=8f452506-7081-4d0a-8f66-d0b725d6de66&algo_expid=8f452506-7081-4d0a-8f66-d0b725d6de66-0&btsid=0b0a0ad815873142372227604ed134&ws_ab_test=searchweb0_0,searchweb201602_,searchweb201603_)
-  - AS5047 | 16384cpr | ~15$ [Mouser](https://www.mouser.fr/ProductDetail/ams/AS5X47U-TS_EK_AB?qs=sGAEpiMZZMve4%2FbfQkoj%252BBDLPCj82ZLyYIPEtADg0FE%3D) [Youtube](https://www.youtube.com/watch?v=Gl-DiOqXXJ8) 
-
+Examples  | Description | Link | Price
+---- | ---- | ---- | ----
+[<img src="extras/Images/mag.jpg"  height="150px">](https://www.mouser.fr/ProductDetail/ams/AS5X47U-TS_EK_AB?qs=sGAEpiMZZMve4%2FbfQkoj%252BBDLPCj82ZLyYIPEtADg0FE%3D) | Margetic encoder <br> AS5047<br> absolute <br>16384cpr |  [Mouser](https://www.mouser.fr/ProductDetail/ams/AS5X47U-TS_EK_AB?qs=sGAEpiMZZMve4%2FbfQkoj%252BBDLPCj82ZLyYIPEtADg0FE%3D) | 15$
+[<img src="extras/Images/mag2.jpg"  height="150px">](https://www.ebay.com/itm/AS5048-Magnetic-Encoder-PWM-SPI-Interface-14-Bit-Precision-For-Brushless-Motor/153636871434?hash=item23c5789d0a:g:oOMAAOSwd-5ddaWQ) | Margetic encoder <br> AS5048<br> absolute <br>16384cpr |  [Mouser](https://www.ebay.com/itm/AS5048-Magnetic-Encoder-PWM-SPI-Interface-14-Bit-Precision-For-Brushless-Motor/153636871434?hash=item23c5789d0a:g:oOMAAOSwd-5ddaWQ) | 10$
 
 ## Arduino Simple FOC Shield
 
