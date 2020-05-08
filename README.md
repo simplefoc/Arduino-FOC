@@ -22,7 +22,7 @@ Therefore this is an attempt to:
 ##### If you are interested in this board, find more information on this link: [Arduino Simple FOC Shield](https://askuric.github.io/simplefoc.html)
 
 ## Arduino SimpleFOClibrary
-[![](extras/Images/youtube.png)](https://youtu.be/N_fRYf7Z80k)
+[![](https://askuric.github.io/Arduino-FOC/extras/Images/youtube.png)](https://youtu.be/N_fRYf7Z80k)
 
 This video demonstrates the Simple FOC library basic usage, electronic connections and shows its capabilities.
 
