@@ -11,7 +11,7 @@ Therefore this is an attempt to:
 - Develop a modular BLDCdriver boards: [Arduino SimpleFOC shield](https://askuric.github.io/Arduino-FOC/arduino_simplefoc_shield_showcase).
 
 ## Arduino SimpleFOC Shield
-<p> <img src="https://askuric.github.io/Arduino-FOC/extras/Images/shield_top_v13.png" height="300px">   <img src="https://askuric.github.io/Arduino-FOC/extras/Images/shield_v13.png"  height="300px"></p>
+<p align="center"><img src="https://askuric.github.io/Arduino-FOC/extras/Images/shield_to_v13.jpg" height="235px">   <img src="https://askuric.github.io/Arduino-FOC/extras/Images/shield_bo_v13.jpg"  height="235px"> <img src="https://askuric.github.io/Arduino-FOC/extras/Images/simple_foc_shield_v13_small.gif"  height="235px"></p>
 
 ### Features
 - **Plug & play**: Arduino <span class="simple">Simple<span class="foc">FOC</span>library</span> 
