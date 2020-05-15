@@ -12,55 +12,55 @@ _delay	KEYWORD3
 _micros	KEYWORD3
 _sin	KEYWORD3
 _cos	KEYWORD3
-setPwmFrequency	KEYWO
+setPwmFrequency	KEYWORD3
 monitor	KEYWORD3
 
-PI_velocity	KEYWIORD2
-LPF_velocity	KEYWIORD2
-PI_velocity_index_search	KEYWIORD2
-P_angle	KEYWIORD2
+PI_velocity	KEYWORD2
+LPF_velocity	KEYWORD2
+PI_velocity_index_search	KEYWORD2
+P_angle	KEYWORD2
 
 ControlType	KEYWORD1
 Quadrature	KEYWORD1
 Pullup	KEYWORD1
 
-linkSensor	KEYWIORD2
-handleA	KEYWIORD2
-handleB	KEYWIORD2
-handleIndex	KEYWIORD2
-enableInterrupts	KEYWIORD2
-ISR	KEYWIORD2
-getVelocity	KEYWIORD2
-setPhaseVoltage	KEYWIORD2
-getAngle	KEYWIORD2
-initRelativeZero	KEYWIORD2
-initAbsoluteZero	KEYWIORD2
-useDebugging	KEYWIORD2
+linkSensor	KEYWORD2
+handleA	KEYWORD2
+handleB	KEYWORD2
+handleIndex	KEYWORD2
+enableInterrupts	KEYWORD2
+ISR	KEYWORD2
+getVelocity	KEYWORD2
+setPhaseVoltage	KEYWORD2
+getAngle	KEYWORD2
+initRelativeZero	KEYWORD2
+initAbsoluteZero	KEYWORD2
+useDebugging	KEYWORD2
 
-voltage_q	KEYWIORD2
-shaft_angle_sp	KEYWIORD2
-shaft_velocity_sp	KEYWIORD2
-shaft_angle	KEYWIORD2
-shaft_velocity	KEYWIORD2
-controller	KEYWIORD2
-driver	KEYWIORD2
-pullup	KEYWIORD2
-quadrature	KEYWIORD2
+voltage_q	KEYWORD2
+shaft_angle_sp	KEYWORD2
+shaft_velocity_sp	KEYWORD2
+shaft_angle	KEYWORD2
+shaft_velocity	KEYWORD2
+controller	KEYWORD2
+driver	KEYWORD2
+pullup	KEYWORD2
+quadrature	KEYWORD2
 
-index_search_velocity	KEYWIORD2
+index_search_velocity	KEYWORD2
 
 
-voltage	KEYWIORD2
-velocity	KEYWIORD2
-velocity_ultra_slow	KEYWIORD2
-angle	KEYWIORD2
+voltage	KEYWORD2
+velocity	KEYWORD2
+velocity_ultra_slow	KEYWORD2
+angle	KEYWORD2
 
-P	KEYWIORD2
-I	KEYWIORD2
-Tf	KEYWIORD2
-voltage_limit	KEYWIORD2
-voltage_ramp	KEYWIORD2
-velocity_limit	KEYWIORD2
+P	KEYWORD2
+I	KEYWORD2
+Tf	KEYWORD2
+voltage_limit	KEYWORD2
+voltage_ramp	KEYWORD2
+velocity_limit	KEYWORD2
 voltage_power_supply	KEYWORD2
 
 pinA	KEYWORD2

@@ -30,7 +30,7 @@ void setup() {
 
   // link the motor to the sensor
   motor.linkSensor(&AS5x4x);
-  // intialise motor
+  // initialize motor
   motor.init();
 
 
@@ -62,7 +62,7 @@ void setup() {
   motor.setPhaseVoltage(0,0);
   _delay(1000);
 
-  // caluclate the pole pair number
+  // calculate the pole pair number
   int pp = round((pp_search_angle)/(angle_end-angle_begin));
 
   Serial.print("Estimated pole pairs number is: ");
@@ -79,14 +79,14 @@ void setup() {
   // a bit of debugging the result
   if(pp <= 0 ){
     Serial.println("Pole pair number cannot be negative");
-    Serial.println(" - Try changing the search_voltage vlaue or motor/sensor configuration.");
+    Serial.println(" - Try changing the search_voltage value or motor/sensor configuration.");
     return;
   }else if(pp > 30){
     Serial.println("Pole pair number very high, possible error.");
   }else{
     Serial.println("If pp is estimated well your motor should turn now!");
     Serial.println(" - If it is not moving try to relaunch the program!");
-    Serial.println(" - You can also try to adjust the target votage using serial terminal!");
+    Serial.println(" - You can also try to adjust the target voltage using serial terminal!");
   }
 
   

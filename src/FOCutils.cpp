@@ -22,16 +22,16 @@ void setPwmFrequency(int pin) {
   }
 }
 
-// funciton buffering delay() 
-// arduino funciton doesn't work well with interrupts
+// function buffering delay() 
+// arduino function doesn't work well with interrupts
 void _delay(unsigned long ms){
   long t = _micros();
   while((_micros() - t)/1000 < ms){};
 }
 
 
-// funciton buffering _micros() 
-// arduino funciton doesn't work well with interrupts
+// function buffering _micros() 
+// arduino function doesn't work well with interrupts
 unsigned long _micros(){
     // return the value based on the prescaler
     if((TCCR0B & 0b00000111) == 0x01) return (micros()/32);

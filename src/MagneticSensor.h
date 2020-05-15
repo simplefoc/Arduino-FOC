@@ -28,10 +28,10 @@ class MagneticSensor: public Sensor{
     float getAngle();
     // get current angular velocity (rad/s)
     float getVelocity();
-    // set current agle as zero angle 
+    // set current angle as zero angle 
     // return the angle [rad] difference
     float initRelativeZero();
-    // set absoule zero angle as zero angle
+    // set absolute zero angle as zero angle
     // return the angle [rad] difference
     float initAbsoluteZero();
     // returns 1 because it is the absolute sensor
@@ -45,7 +45,7 @@ class MagneticSensor: public Sensor{
     int chip_select_pin;
 	  bool errorFlag;
 	  SPISettings settings;
-    // spi funcitons
+    // spi functions
     void close();
     word read(word angle_register);
     byte spiCalcEvenParity(word value);
@@ -53,7 +53,7 @@ class MagneticSensor: public Sensor{
 
     // zero offset
     word zero_offset;
-    // funciton getting current register value
+    // function getting current register value
     int getRawCount();
 
     // total angle tracking variables
