@@ -9,7 +9,7 @@
 BLDCMotor motor = BLDCMotor(9, 10, 11, 0, 8);
 //  Encoder(int encA, int encB , int cpr, int index)
 Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192);
-// interrupt ruotine intialisation
+// interrupt routine intialisation
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 
@@ -23,7 +23,7 @@ void setup() {
   encoder.quadrature = Quadrature::ENABLE;
 
   // check if you need internal pullups
-  // Pullup::EXTERN - external pullup added - dafault
+  // Pullup::EXTERN - external pullup added - default
   // Pullup::INTERN - needs internal arduino pullup
   encoder.pullup = Pullup::EXTERN;
   
@@ -41,7 +41,7 @@ void setup() {
 
   // link the motor to the sensor
   motor.linkSensor(&encoder);
-  // intialise motor
+  // initialize motor
   motor.init();
 
 
@@ -74,7 +74,7 @@ void setup() {
   motor.setPhaseVoltage(0,0);
   _delay(1000);
 
-  // caluclate the pole pair number
+  // calculate the pole pair number
   int pp = round((pp_search_angle)/(angle_end-angle_begin));
 
   Serial.print("Estimated pole pairs number is: ");
@@ -91,14 +91,14 @@ void setup() {
   // a bit of debugging the result
   if(pp <= 0 ){
     Serial.println("Pole pair number cannot be negative");
-    Serial.println(" - Try changing the search_voltage vlaue or motor/encoder configuration.");
+    Serial.println(" - Try changing the search_voltage value or motor/encoder configuration.");
     return;
   }else if(pp > 30){
     Serial.println("Pole pair number very high, possible error.");
   }else{
     Serial.println("If pp is estimated well your motor should turn now!");
     Serial.println(" - If it is not moving try to relaunch the program!");
-    Serial.println(" - You can also try to adjust the target votage using serial terminal!");
+    Serial.println(" - You can also try to adjust the target voltage using serial terminal!");
   }
 
   

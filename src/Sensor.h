@@ -9,10 +9,10 @@ class Sensor{
         virtual float getAngle();
         // get current angular velocity (rad/s)
         virtual float getVelocity();
-        // set current agle as zero angle 
+        // set current angle as zero angle 
         // return the angle [rad] difference
         virtual float initRelativeZero();
-        // set absoule zero angle as zero angle
+        // set absolute zero angle as zero angle
         // return the angle [rad] difference
         virtual float initAbsoluteZero();
 

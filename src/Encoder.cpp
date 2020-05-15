@@ -26,7 +26,7 @@ Encoder::Encoder(int _encA, int _encB , float _ppr, int _index){
   index_pin = _index; // its 0 if not used
   index_pulse_counter = 0;
 
-  // velocity calculation varibles
+  // velocity calculation variables
   prev_Th = 0;
   pulse_per_second = 0;
   prev_pulse_counter = 0;
@@ -87,7 +87,7 @@ void Encoder::handleIndex() {
   if(hasIndex()){
     int I = digitalRead(index_pin);
     if(I && !I_active){
-      // aling encoder on each index 
+      // align encoder on each index 
       if(index_pulse_counter){
         long tmp = pulse_counter;
         // corrent the counter value
@@ -111,7 +111,7 @@ float Encoder::getAngle(){
 }
 /*
   Shaft velocity calculation
-  funciton using mixed time and frequency measurement technique
+  function using mixed time and frequency measurement technique
 */
 float Encoder::getVelocity(){
   // timestamp
@@ -157,20 +157,20 @@ int Encoder::needsAbsoluteZeroSearch(){
 int Encoder::hasAbsoluteZero(){
   return hasIndex();
 }
-// intialise counter to zero
+// initialize counter to zero
 float Encoder::initRelativeZero(){
   long angle_offset = -pulse_counter;
   pulse_counter = 0;
   pulse_timestamp = _micros();
   return _2PI * (angle_offset) / ((float)cpr);
 }
-// intialise index to zero
+// initialize index to zero
 float Encoder::initAbsoluteZero(){
   pulse_counter -= index_pulse_counter;
   prev_pulse_counter = pulse_counter;
   return (index_pulse_counter) / ((float)cpr) * (_2PI);
 }
-// private funciton used to determine if encoder has index
+// private function used to determine if encoder has index
 int Encoder::hasIndex(){
   return index_pin != 0;
 }
@@ -194,7 +194,7 @@ void Encoder::init(){
   // counter setup
   pulse_counter = 0;
   pulse_timestamp = _micros();
-  // velocity calculation varibles
+  // velocity calculation variables
   prev_Th = 0;
   pulse_per_second = 0;
   prev_pulse_counter = 0;
@@ -206,7 +206,7 @@ void Encoder::init(){
 
 }
 
-// funciton enabling hardware interrupts of the for the callback provided
+// function enabling hardware interrupts of the for the callback provided
 // if callback is not provided then the interrupt is not enabled
 void Encoder::enableInterrupts(void (*doA)(), void(*doB)(), void(*doIndex)()){
   // attach interrupt if functions provided
@@ -223,7 +223,7 @@ void Encoder::enableInterrupts(void (*doA)(), void(*doB)(), void(*doIndex)()){
       break;
   }
         
-  // if index used intialise the index interrupt
+  // if index used initialize the index interrupt
   if(hasIndex() && doIndex != nullptr) attachInterrupt(digitalPinToInterrupt(index_pin), doIndex, CHANGE);
 }
 

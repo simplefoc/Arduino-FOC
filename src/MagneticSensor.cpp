@@ -3,7 +3,7 @@
 
 // MagneticSensor(int cs, float _cpr, int _angle_register)
 //  cs              - SPI chip select pin 
-//  _cpr            - counF per revolution 
+//  _cpr            - count per revolution 
 // _angle_register  - (optional) angle read register - default 0x3FFF
 MagneticSensor::MagneticSensor(int cs, float _cpr, int _angle_register){
   // chip select pin
@@ -77,7 +77,7 @@ float MagneticSensor::getVelocity(){
   return vel;
 }
 
-// set current agle as zero angle 
+// set current angle as zero angle 
 // return the angle [rad] difference
 float MagneticSensor::initRelativeZero(){
   float angle_offset = -getAngle();
@@ -87,7 +87,7 @@ float MagneticSensor::initRelativeZero(){
   full_rotation_offset = 0;
   return angle_offset;
 }
-// set absoule zero angle as zero angle
+// set absolute zero angle as zero angle
 // return the angle [rad] difference
 float MagneticSensor::initAbsoluteZero(){
   float rotation = -(int)zero_offset;

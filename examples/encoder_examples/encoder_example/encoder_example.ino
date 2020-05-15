@@ -5,7 +5,7 @@
 #define arduinoInt2 3             // Arduino UNO interrupt 1
 
 Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192);
-// interrupt ruotine intialisation
+// interrupt routine intialisation
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 
@@ -19,7 +19,7 @@ void setup() {
   encoder.quadrature = Quadrature::ENABLE;
 
   // check if you need internal pullups
-  // Pullup::EXTERN - external pullup added  - dafault
+  // Pullup::EXTERN - external pullup added  - default
   // Pullup::INTERN - needs internal arduino pullup
   encoder.pullup = Pullup::EXTERN;
   

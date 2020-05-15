@@ -6,7 +6,7 @@
 #include "Sensor.h"
 
 
-// Pullup configuation structure
+// Pullup configuration structure
 enum Pullup{
     INTERN,
     EXTERN
@@ -29,7 +29,7 @@ class Encoder: public Sensor{
 
     // encoder initialise pins
     void init();
-    // funciton enabling hardware interrupts of the for the callback provided
+    // function enabling hardware interrupts of the for the callback provided
     // if callback is not provided then the interrupt is not enabled
     void enableInterrupts(void (*doA)() = nullptr, void(*doB)() = nullptr, void(*doIndex)() = nullptr);
     
@@ -57,7 +57,7 @@ class Encoder: public Sensor{
     float getAngle();
     // get current angular velocity (rad/s)
     float getVelocity();
-    // set current agle as zero angle 
+    // set current angle as zero angle 
     // return the angle [rad] difference
     float initRelativeZero();
     // set index angle as zero angle
@@ -82,7 +82,7 @@ class Encoder: public Sensor{
     volatile int I_active;              // index active
     volatile long index_pulse_counter;  // pulse counter of the index
 
-    // velocity calculation varibles
+    // velocity calculation variables
     float prev_Th, pulse_per_second;
     volatile long prev_pulse_counter, prev_timestamp_us;
 

@@ -38,7 +38,7 @@ void setup() {
   // default P=0.5 I = 10
   motor.PI_velocity.P = 0.2;
   motor.PI_velocity.I = 20;
-  //defualt voltage_power_supply/2
+  //default voltage_power_supply/2
   motor.PI_velocity.voltage_limit = 6;
   // jerk control using voltage voltage ramp
   // default value is 300 volts per sec  ~ 0.3V per millisecond
@@ -52,7 +52,7 @@ void setup() {
   // angle P controller 
   // default K=20
   motor.P_angle.P = 20;
-  //  maximal velocity of the poisiiton control
+  //  maximal velocity of the position control
   // default 20
   motor.P_angle.velocity_limit = 4;
 
@@ -63,7 +63,7 @@ void setup() {
   // link the motor to the sensor
   motor.linkSensor(&AS5x4x);
   
-  // intialise motor
+  // initialize motor
   motor.init();
   // align sensor and start FOC
   motor.initFOC();
@@ -79,15 +79,15 @@ float target_angle = 0;
 
 void loop() {
   // iterative state calculation calculating angle
-  // and setting FOC pahse voltage
-  // the faster you run this funciton the better
+  // and setting FOC phase voltage
+  // the faster you run this function the better
   // in arduino loop it should have ~1kHz
   // the best would be to be in ~10kHz range
   motor.loopFOC();
 
   // iterative function setting the outter loop target
   // velocity, position or voltage
-  // this funciton can be run at much lower frequency than loopFOC funciton
+  // this function can be run at much lower frequency than loopFOC function
   // it can go as low as ~50Hz
   motor.move(target_angle);
 
