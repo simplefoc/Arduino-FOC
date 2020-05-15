@@ -12,7 +12,7 @@ BLDCMotor motor = BLDCMotor(9, 5, 6, 11);
 
 // MagneticSensor(int cs, float _cpr, int _angle_register)
 //  cs              - SPI chip select pin 
-//  _cpr            - counF per revolution 
+//  _cpr            - count per revolution 
 // _angle_register  - (optional) angle read register - default 0x3FFF
 MagneticSensor as504x = MagneticSensor(10, 16384);
 
@@ -37,7 +37,7 @@ void setup() {
   // velocity PI controller parameters
   motor.PI_velocity.P = 0.2;
   motor.PI_velocity.I = 20;
-  //defualt voltage_power_supply/2
+  // default voltage_power_supply/2
   motor.PI_velocity.voltage_limit = 6;
   // jerk control using voltage voltage ramp
   // default value is 300 volts per sec  ~ 0.3V per millisecond
@@ -60,7 +60,7 @@ void setup() {
   // comment out if not needed
   motor.useDebugging(Serial);
 
-  // intialise motor
+  // initialize motor
   motor.init();
   // align encoder and start FOC
   motor.initFOC();
@@ -83,7 +83,7 @@ void setup() {
   Serial.print(motor.PI_velocity.P);
   Serial.print(",\t I: ");
   Serial.print(motor.PI_velocity.I);
-  Serial.print(",\t Low passs filter Tf: ");
+  Serial.print(",\t Low pass filter Tf: ");
   Serial.println(motor.LPF_velocity.Tf,4);
   
   _delay(1000);
@@ -96,7 +96,7 @@ unsigned long  t = 0;
 long timestamp = _micros();
 
 void loop() {
-  // iterative setting FOC pahse voltage
+  // iterative setting FOC phase voltage
   motor.loopFOC();
 
   // iterative function setting the outter loop target
@@ -125,7 +125,7 @@ void serialEvent() {
         Serial.print(motor.PI_velocity.P);
         Serial.print(",\t I: ");
         Serial.print(motor.PI_velocity.I);
-        Serial.print(",\t Low passs filter Tf: ");
+        Serial.print(",\t Low pass filter Tf: ");
         Serial.println(motor.LPF_velocity.Tf,4);
       }else if(inputString.charAt(0) == 'I'){
         motor.PI_velocity.I = inputString.substring(1).toFloat();
@@ -133,7 +133,7 @@ void serialEvent() {
         Serial.print(motor.PI_velocity.P);
         Serial.print(",\t I: ");
         Serial.print(motor.PI_velocity.I);
-        Serial.print(",\t Low passs filter Tf: ");
+        Serial.print(",\t Low pass filter Tf: ");
         Serial.println(motor.LPF_velocity.Tf,4);
       }else if(inputString.charAt(0) == 'F'){
         motor.LPF_velocity.Tf = inputString.substring(1).toFloat();
@@ -141,7 +141,7 @@ void serialEvent() {
         Serial.print(motor.PI_velocity.P);
         Serial.print(",\t I: ");
         Serial.print(motor.PI_velocity.I);
-        Serial.print(",\t Low passs filter Tf: ");
+        Serial.print(",\t Low pass filter Tf: ");
         Serial.println(motor.LPF_velocity.Tf,4);
       }else if(inputString.charAt(0) == 'T'){
         Serial.print("Average loop time is (microseconds): ");
@@ -158,7 +158,7 @@ void serialEvent() {
           Serial.println("velocity!");
           motor.controller = ControlType::velocity;
         }else if(cnt == 2){
-          Serial.println("volatge!");
+          Serial.println("voltage!");
           motor.controller = ControlType::voltage;
         }
         Serial.println();

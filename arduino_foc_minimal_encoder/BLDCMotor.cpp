@@ -4,10 +4,10 @@
 // - phA, phB, phC - motor A,B,C phase pwm pins
 // - pp            - pole pair number
 // - cpr           - counts per rotation number (cpm=ppm*4)
-// - enable pin    - (optionl input)
+// - enable pin    - (optional input)
 BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
 {
-  // Pin intialization
+  // Pin initialization
   pwmA = phA;
   pwmB = phB;
   pwmC = phC;
@@ -16,7 +16,7 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   // enable_pin pin
   enable_pin = en;
 
-  // Power supply woltage
+  // Power supply voltage
   voltage_power_supply = DEF_POWER_SUPPLY;
 
   // Velocity loop config
@@ -61,7 +61,7 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
 
 // init hardware pins   
 void BLDCMotor::init() {
-  if(debugger) debugger->println("DEBUG: Initilaise the motor pins.");
+  if(debugger) debugger->println("DEBUG: Initialize the motor pins.");
   // PWM pins
   pinMode(pwmA, OUTPUT);
   pinMode(pwmB, OUTPUT);
@@ -118,7 +118,7 @@ void BLDCMotor::linkSensor(Sensor* _sensor) {
 // Encoder alignment to electrical 0 angle
 int BLDCMotor::alignSensor() {
   if(debugger) debugger->println("DEBUG: Align the sensor's and motor electrical 0 angle.");
-  // align the electircal phases of the motor and sensor
+  // align the electrical phases of the motor and sensor
   setPwm(pwmA, voltage_power_supply/2.0);
   setPwm(pwmB,0);
   setPwm(pwmC,0);
@@ -159,7 +159,7 @@ int BLDCMotor::absoluteZeroAlign() {
   // disable motor
   setPhaseVoltage(0,0);
 
-  // align absoulute zero if it has been found
+  // align absolute zero if it has been found
   if(!sensor->needsAbsoluteZeroSearch()){
     // align the sensor with the absolute zero
     float zero_offset = sensor->initAbsoluteZero();
@@ -182,7 +182,7 @@ float BLDCMotor::shaftVelocity() {
   float Ts = (_micros() - LPF_velocity.timestamp) * 1e-6;
   // quick fix for strange cases (micros overflow)
   if(Ts <= 0 || Ts > 0.5) Ts = 1e-3; 
-  // calculate the fitering 
+  // calculate the filtering 
   float alpha = LPF_velocity.Tf/(LPF_velocity.Tf + Ts);
   float vel = alpha*LPF_velocity.prev + (1-alpha)*sensor->getVelocity();
   // save the variables
@@ -197,7 +197,7 @@ float BLDCMotor::electricAngle(float shaftAngle) {
 }
 
 /**
-  FOC funcitons
+  FOC functions
 */
 
 // FOC initialization function
@@ -214,14 +214,14 @@ int  BLDCMotor::initFOC() {
 void BLDCMotor::loopFOC() {
   // shaft angle 
   shaft_angle = shaftAngle();
-  // set the phase voltage - FOC heart funciton :) 
+  // set the phase voltage - FOC heart function :) 
   setPhaseVoltage(voltage_q, electricAngle(shaft_angle));
 }
 
-// Iterative funciton running outer loop of the FOC algorithm
-// Bahvior of this funciton is determined by the motor.controller variable
-// It runs either angle, veloctiy or voltage loop
-// - needs to be called iteratively it is asynchronious function
+// Iterative function running outer loop of the FOC algorithm
+// Behavior of this function is determined by the motor.controller variable
+// It runs either angle, velocity or voltage loop
+// - needs to be called iteratively it is asynchronous function
 void BLDCMotor::move(float target) {
   // get angular velocity
   shaft_velocity = shaftVelocity();
@@ -238,7 +238,7 @@ void BLDCMotor::move(float target) {
       break;
     case ControlType::velocity:
       // velocity set point
-      // inlcude velocity loop
+      // include velocity loop
       shaft_velocity_sp = target;
       voltage_q = velocityPI(shaft_velocity_sp - shaft_velocity);
       break;
@@ -250,16 +250,16 @@ void BLDCMotor::move(float target) {
 void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
 
   // angle normalisation in between 0 and 2pi
-  // only necessary if using _sin and _cos - approximation funcitons
+  // only necessary if using _sin and _cos - approximation functions
   float angle = normalizeAngle(angle_el + zero_electric_angle);
   // Inverse park transform
-  // regular sin + cos ~300us    (no memeory usaage)
+  // regular sin + cos ~300us    (no memory usaage)
   // approx  _sin + _cos ~110us  (400Byte ~ 20% of memory)
   // Ualpha =  -_sin(angle) * Uq;  // -sin(angle) * Uq;
   // Ubeta =  _cos(angle) * Uq;    //  cos(angle) * Uq;
   Ualpha =  -_sin(angle) * Uq;  // -sin(angle) * Uq;
   Ubeta =  _cos(angle) * Uq;    //  cos(angle) * Uq;
-
+  
   // Clarke transform
   Ua = Ualpha;
   Ub = -0.5 * Ualpha  + _SQRT3_2 * Ubeta;
@@ -273,24 +273,17 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
 
 
 // Set voltage to the pwm pin
-// - function a bit optimised to get better performance
+// - function a bit optimized to get better performance
 void BLDCMotor::setPwm(int pinPwm, float U) {
   // max value
   float U_max = voltage_power_supply/2.0;
   
   // sets the voltage [-U_max,U_max] to pwm [0,255]
   // u_pwm = 255 * (U + U_max)/(2*U_max)
-  // it can be further optimised 
+  // it can be further optimized 
   // (example U_max = 6 > U_pwm = 127.5 + 21.25*U)
   int U_pwm = 127.5 * (U/U_max + 1);
-
-    
-  // float U_max = voltage_power_supply;
-  // // sets the voltage [0,12V(U_max)] to pwm [0,255]
-  // // - U_max you can set in header file - default 12V
-  // // - support for HMBGC controller
-  // int U_pwm = 255.0 * (float)U / (float)U_max;
-
+     
   // limit the values between 0 and 255
   U_pwm = (U_pwm < 0) ? 0 : (U_pwm >= 255) ? 255 : U_pwm;
 
@@ -298,7 +291,7 @@ void BLDCMotor::setPwm(int pinPwm, float U) {
 }
 
 /**
-	Utility funcitons
+	Utility functions
 */
 // normalizing radian angle to [0,2PI]
 float BLDCMotor::normalizeAngle(float angle){
@@ -321,7 +314,7 @@ float BLDCMotor::controllerPI(float tracking_error, PI_s& cont){
   if(Ts <= 0 || Ts > 0.5) Ts = 1e-3; 
 
   // u(s) = (P + I/s)e(s)
-  // tustin discretisation of the PI controller ( a bit optimised )
+  // Tustin transform of the PI controller ( a bit optimized )
   // uk = uk_1  + (I*Ts/2 + P)*ek + (I*Ts/2 - P)*ek_1
   float tmp = cont.I*Ts*0.5;
   float voltage = cont.voltage_prev + (tmp + cont.P) * tracking_error + (tmp - cont.P) * cont.tracking_error_prev;
@@ -355,8 +348,36 @@ float BLDCMotor::positionP(float ek) {
 /**
  *  Debugger functions
  */
-// funciton implementing the debugger setter
+// function implementing the debugger setter
 void BLDCMotor::useDebugging(Print &print){
-  debugger = &print; //operate on the adress of print
+  debugger = &print; //operate on the address of print
   if(debugger )debugger->println("DEBUG: Serial debugger enabled!");
+}
+// utility function intended to be used with serial plotter to monitor motor variables
+// significantly slowing the execution down!!!!
+void BLDCMotor::monitor() {
+  if(!debugger) return;
+  switch (controller) {
+    case ControlType::velocity:
+      debugger->print(voltage_q);
+      debugger->print("\t");
+      debugger->print(shaft_velocity_sp);
+      debugger->print("\t");
+      debugger->println(shaft_velocity);
+      break;
+    case ControlType::angle:
+      debugger->print(voltage_q);
+      debugger->print("\t");
+      debugger->print(shaft_angle_sp);
+      debugger->print("\t");
+      debugger->println(shaft_angle);
+      break;
+    case ControlType::voltage:
+      debugger->print(voltage_q);
+      debugger->print("\t");
+      debugger->print(shaft_angle);
+      debugger->print("\t");
+      debugger->println(shaft_velocity);
+      break;
+  }
 }

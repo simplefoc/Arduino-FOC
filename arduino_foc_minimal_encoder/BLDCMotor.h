@@ -2,6 +2,8 @@
 #define BLDCMotor_h
 
 #include "Arduino.h"
+#include "MagneticSensor.h"
+#include "Encoder.h"
 #include "FOCutils.h"
 #include "Sensor.h"
 
@@ -32,7 +34,7 @@ enum ControlType{
   angle
 };
 
-// PI controller strucutre
+// PI controller structure
 struct PI_s{
   float P;
   float I;
@@ -68,7 +70,7 @@ class BLDCMotor
       - phA, phB, phC - motor A,B,C phase pwm pins
       - pp            - pole pair number
       - cpr           - counts per rotation number (cpm=ppm*4)
-      - enable pin    - (optionl input)
+      - enable pin    - (optional input)
     */
     BLDCMotor(int phA,int phB,int phC,int pp, int en = 0);
     // change driver state
@@ -112,10 +114,10 @@ class BLDCMotor
     // current voltage u_q set
     float voltage_q;
 
-    // Power supply woltage
+    // Power supply voltage
     float voltage_power_supply;
 
-    // configuraion structures
+    // configuration structures
     ControlType controller;
     PI_s PI_velocity;
     PI_s PI_velocity_index_search;  	
@@ -137,6 +139,7 @@ class BLDCMotor
 
     // debugging 
     void useDebugging(Print &print);
+    void monitor();
     Print* debugger;
     
     float Ua,Ub,Uc;
@@ -144,7 +147,7 @@ class BLDCMotor
   private:
     //Sensor alignment to electrical 0 angle
     int alignSensor();
-    //Motor and sensor alignement to the sensors absolute 0 angle
+    //Motor and sensor alignment to the sensors absolute 0 angle
     int absoluteZeroAlign();
     
     //Electrical angle calculation
@@ -152,7 +155,7 @@ class BLDCMotor
     //Set phase voltaget to pwm output
     void setPwm(int pinPwm, float U);
         
-    /** Utility funcitons */
+    /** Utility functions */
     //normalizing radian angle to [0,2PI]
     float normalizeAngle(float angle);
     // determining if the enable pin has been provided

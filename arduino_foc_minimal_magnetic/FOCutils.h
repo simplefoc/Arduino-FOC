@@ -3,7 +3,7 @@
 
 #include "Arduino.h"
 
-// sign funciton
+// sign function
 #define sign(a) ( ( (a) < 0 )  ?  -1   : ( (a) > 0 ) )
 // utility defines
 #define _2_SQRT3 1.15470053838
@@ -18,19 +18,19 @@
 // High PWM frequency
 void setPwmFrequency(int pin);
 
-// funciton buffering delay() 
-// arduino funciton doesn't work well with interrupts
+// function buffering delay() 
+// arduino function doesn't work well with interrupts
 void _delay(unsigned long ms);
 
-// funciton buffering _micros() 
-// arduino funciton doesn't work well with interrupts
+// function buffering _micros() 
+// arduino function doesn't work well with interrupts
 unsigned long _micros();
 
 // function approximating the sine calculation by using fixed size array
 // ~40us
 // it has to receive an angle in between 0 and 2PI
 float _sin(float a);
-// function approfimating cosine calculaiton by using fixed size array
+// function approximating cosine calculation by using fixed size array
 // ~50us
 // it has to receive an angle in between 0 and 2PI
 float _cos(float a);

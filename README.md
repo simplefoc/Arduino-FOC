@@ -4,13 +4,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![arduino-library-badge](https://www.ardu-badge.com/badge/Simple%20FOC.svg?)](https://www.ardu-badge.com/badge/Simple%20FOC.svg)
 
-This is the minimal Arduino example of the [Simple FOC](https://github.com/askuric/Arduino-FOC) arduino library intended for mostly for easier experiemtation and modification!
+This is the minimal Arduino example of the [Simple FOC](https://github.com/askuric/Arduino-FOC) arduino library intended for mostly for easier experimentation and modification!
 
 ### Minimal repository structure
 ```shell
 ├───arduino_foc_minimal_encoder    # Arduino minimal code for running a motor with Encoder
 │
-└───arduino_foc_minimal_magnetic   # Arduino minimal code for running a motor with magentic sensor 
+└───arduino_foc_minimal_magnetic   # Arduino minimal code for running a motor with magnetic sensor 
                                    # AS5048/47   
 ```
 
@@ -32,17 +32,17 @@ Control loop type:
 - C2 - voltage control
 
 Initial parameters:
-PI velocity P: 0.20,	 I: 20.00,	 Low passs filter Tf: 0.0000
+PI velocity P: 0.20,	 I: 20.00,	 Low pass filter Tf: 0.0000
 ```
 
 ###  Installation
 For those willing to experiment and to modify the code I suggest using the [minimal version](https://github.com/askuric/Arduino-FOC/tree/minimal) of the code. 
- > This code is completely indepenedet and you can run it as any other Arduino Schetch without the need for any libraries. 
+ > This code is completely independent and you can run it as any other Arduino Sketch without the need for any libraries. 
 
-#### Github webiste downlaod
+#### Github website download
 - Make sure you are in [minimal branch](https://github.com/askuric/Arduino-FOC/tree/minimal) 
-- Downlaod the code by clicking on the `Clone or Download > Download ZIP`.
-- Unzip it and open the schetch in Arduino IDE. 
+- Download the code by clicking on the `Clone or Download > Download ZIP`.
+- Unzip it and open the sketch in Arduino IDE. 
 
 #### Using terminal
 - Open the terminal:
@@ -60,5 +60,5 @@ Find out more information about the Arduino SimpleFOC project in [docs website](
 Branch  | Description | Status
 ------------ | ------------- | ------------ 
 [master](https://github.com/askuric/Arduino-FOC) | Stable and tested library version | ![Library Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Compile/badge.svg)
-[dev](https://github.com/askuric/Arduino-FOC/tree/dev) | Developement library version | ![Library Dev Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Dev%20Compile/badge.svg?branch=dev)
+[dev](https://github.com/askuric/Arduino-FOC/tree/dev) | Development library version | ![Library Dev Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Dev%20Compile/badge.svg?branch=dev)
 [minimal](https://github.com/askuric/Arduino-FOC/tree/minimal) | Minimal Arduino example with integrated library | ![MinimalBuild](https://github.com/askuric/Arduino-FOC/workflows/MinimalBuild/badge.svg?branch=minimal)
