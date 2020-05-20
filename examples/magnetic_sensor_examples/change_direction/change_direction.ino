@@ -27,6 +27,11 @@ void setup() {
   // default 12V
   motor.voltage_power_supply = 12;
   
+  // choose FOC algorithm to be used:
+  // FOCModulationType::SinePWM  (default)
+  // FOCModulationType::SpaceVectorPWM
+  motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
+  
   // set FOC loop to be used
   // ControlType::voltage
   // ControlType::velocity
