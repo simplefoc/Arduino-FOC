@@ -52,6 +52,11 @@ void setup() {
   // default 12V
   motor.voltage_power_supply = 12;
 
+  // choose FOC algorithm to be used:
+  // FOCModulationType::SinePWM  (default)
+  // FOCModulationType::SpaceVectorPWM
+  motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
+
   // index search velocity - default 1rad/s
   motor.index_search_velocity = 1;
   // index search PI contoller parameters
