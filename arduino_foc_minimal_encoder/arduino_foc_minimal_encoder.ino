@@ -23,6 +23,11 @@ void setup() {
   encoder.init();
   encoder.enableInterrupts(doA,doB);
 
+  // choose FOC algorithm to be used:
+  // FOCModulationType::SinePWM  (default)
+  // FOCModulationType::SpaceVectorPWM
+  motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
+
   // power supply voltage
   // default 12V
   motor.voltage_power_supply = 12;

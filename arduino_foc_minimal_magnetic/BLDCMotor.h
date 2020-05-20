@@ -2,8 +2,6 @@
 #define BLDCMotor_h
 
 #include "Arduino.h"
-#include "MagneticSensor.h"
-#include "Encoder.h"
 #include "FOCutils.h"
 #include "Sensor.h"
 
@@ -32,6 +30,12 @@ enum ControlType{
   voltage,
   velocity,
   angle
+};
+
+// FOC Type
+enum FOCModulationType{
+  SinePWM,
+  SpaceVectorPWM
 };
 
 // PI controller structure
@@ -77,7 +81,7 @@ class BLDCMotor
   	void init();
   	void disable();
     void enable();
-    // connect encoder
+    // connect sensor
     void linkSensor(Sensor* _sensor);
 
     //  initilise FOC  
@@ -119,6 +123,7 @@ class BLDCMotor
 
     // configuration structures
     ControlType controller;
+    FOCModulationType foc_modulation;
     PI_s PI_velocity;
     PI_s PI_velocity_index_search;  	
     P_s P_angle;	

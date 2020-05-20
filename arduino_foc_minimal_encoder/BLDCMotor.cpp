@@ -20,7 +20,7 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   voltage_power_supply = DEF_POWER_SUPPLY;
 
   // Velocity loop config
-  // PI contoroller constant
+  // PI controller constant
   PI_velocity.P = DEF_PI_VEL_P;
   PI_velocity.I = DEF_PI_VEL_I;
   PI_velocity.timestamp = _micros();
@@ -55,6 +55,9 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   // electric angle of the zero angle
   zero_electric_angle = 0;
 
+  // default modulation is SinePWM
+  foc_modulation = FOCModulationType::SinePWM;
+
   //debugger 
   debugger = nullptr;
 }
@@ -76,8 +79,8 @@ void BLDCMotor::init() {
   setPwmFrequency(pwmC);
 
   // sanity check for the voltage limit configuration
-  if(PI_velocity.voltage_limit > voltage_power_supply/2) PI_velocity.voltage_limit =  voltage_power_supply/2;
-  if(PI_velocity_index_search.voltage_limit > voltage_power_supply/2) PI_velocity_index_search.voltage_limit = voltage_power_supply/2;
+  if(PI_velocity.voltage_limit > 0.7*voltage_power_supply) PI_velocity.voltage_limit =  0.7*voltage_power_supply;
+  if(PI_velocity_index_search.voltage_limit > 0.7*voltage_power_supply) PI_velocity_index_search.voltage_limit = 0.7*voltage_power_supply;
 
   _delay(500);
   // enable motor
@@ -135,7 +138,7 @@ int BLDCMotor::alignSensor() {
   if(debugger){
     if(exit_flag< 0 ) debugger->println("DEBUG: Error: Absolute zero not found!");
     if(exit_flag> 0 ) debugger->println("DEBUG: Success: Absolute zero found!");
-    else  debugger->println("DEBUG: Absolute zero not availabe!");
+    else  debugger->println("DEBUG: Absolute zero not available!");
   }
   return exit_flag;
 }
@@ -199,7 +202,6 @@ float BLDCMotor::electricAngle(float shaftAngle) {
 /**
   FOC functions
 */
-
 // FOC initialization function
 int  BLDCMotor::initFOC() {
   // sensor and motor alignment
@@ -225,6 +227,7 @@ void BLDCMotor::loopFOC() {
 void BLDCMotor::move(float target) {
   // get angular velocity
   shaft_velocity = shaftVelocity();
+  // choose control loop
   switch (controller) {
     case ControlType::voltage:
       voltage_q = target;
@@ -247,43 +250,121 @@ void BLDCMotor::move(float target) {
 
 
 // Method using FOC to set Uq to the motor at the optimal angle
+// Function implementing Space Vector PWM and Sine PWM algorithms
+// 
+// Function using sine approximation
+// regular sin + cos ~300us    (no memory usaage)
+// approx  _sin + _cos ~110us  (400Byte ~ 20% of memory)
 void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
+  switch (foc_modulation)
+  {
+    case FOCModulationType::SinePWM :
+      // Sinusoidal PWM modulation 
+      // Inverse Park + Clarke transformation
 
-  // angle normalisation in between 0 and 2pi
-  // only necessary if using _sin and _cos - approximation functions
-  float angle = normalizeAngle(angle_el + zero_electric_angle);
-  // Inverse park transform
-  // regular sin + cos ~300us    (no memory usaage)
-  // approx  _sin + _cos ~110us  (400Byte ~ 20% of memory)
-  // Ualpha =  -_sin(angle) * Uq;  // -sin(angle) * Uq;
-  // Ubeta =  _cos(angle) * Uq;    //  cos(angle) * Uq;
-  Ualpha =  -_sin(angle) * Uq;  // -sin(angle) * Uq;
-  Ubeta =  _cos(angle) * Uq;    //  cos(angle) * Uq;
+      // angle normalization in between 0 and 2pi
+      // only necessary if using _sin and _cos - approximation functions
+      angle_el = normalizeAngle(angle_el + zero_electric_angle);
+      // Inverse park transform
+      Ualpha =  -_sin(angle_el) * Uq;  // -sin(angle) * Uq;
+      Ubeta =  _cos(angle_el) * Uq;    //  cos(angle) * Uq;
+
+      // Clarke transform
+      Ua = Ualpha + voltage_power_supply/2;
+      Ub = -0.5 * Ualpha  + _SQRT3_2 * Ubeta + voltage_power_supply/2;
+      Uc = -0.5 * Ualpha - _SQRT3_2 * Ubeta + voltage_power_supply/2;
+      break;
+
+    case FOCModulationType::SpaceVectorPWM :
+      // Nice video explaining the SpaceVectorModulation (SVPWM) algorithm 
+      // https://www.youtube.com/watch?v=QMSWUMEAejg
+
+      // if negative voltages change inverse the phase 
+      // angle + 180degrees
+      if(Uq < 0) angle_el += M_PI;
+      Uq = abs(Uq);
+
+      // angle normalisation in between 0 and 2pi
+      // only necessary if using _sin and _cos - approximation functions
+      angle_el = normalizeAngle(angle_el + zero_electric_angle + _PI_2);
+
+      // find the sector we are in currently
+      int sector = floor(angle_el / _PI_3) + 1;
+      // calculate the duty cycles
+      float T1 = _SQRT3*_sin(sector*_PI_3 - angle_el);
+      float T2 = _SQRT3*_sin(angle_el - (sector-1.0)*_PI_3);
+      // two versions possible 
+      // centered around voltage_power_supply/2
+      float T0 = 1 - T1 - T2;
+      // centered around 0
+      //T0 = 0;
+
+      // calculate the duty cycles(times)
+      float Ta,Tb,Tc; 
+      switch(sector){
+        case 1:
+          Ta = T1 + T2 + T0/2;
+          Tb = T2 + T0/2;
+          Tc = T0/2;
+          break;
+        case 2:
+          Ta = T1 +  T0/2;
+          Tb = T1 + T2 + T0/2;
+          Tc = T0/2;
+          break;
+        case 3:
+          Ta = T0/2;
+          Tb = T1 + T2 + T0/2;
+          Tc = T2 + T0/2;
+          break;
+        case 4:
+          Ta = T0/2;
+          Tb = T1+ T0/2;
+          Tc = T1 + T2 + T0/2;
+          break;
+        case 5:
+          Ta = T2 + T0/2;
+          Tb = T0/2;
+          Tc = T1 + T2 + T0/2;
+          break;
+        case 6:
+          Ta = T1 + T2 + T0/2;
+          Tb = T0/2;
+          Tc = T1 + T0/2;
+          break;
+        default:
+         // possible error state
+          Ta = 0;
+          Tb = 0;
+          Tc = 0;
+      }
+
+      // calculate the phase voltages
+      Ua = Ta*Uq;
+      Ub = Tb*Uq;
+      Uc = Tc*Uq;
+      break;
+  }
   
-  // Clarke transform
-  Ua = Ualpha;
-  Ub = -0.5 * Ualpha  + _SQRT3_2 * Ubeta;
-  Uc = -0.5 * Ualpha - _SQRT3_2 * Ubeta;
-  
-  // set phase voltages
+  // set the voltages in hardware
   setPwm(pwmA, Ua);
   setPwm(pwmB, Ub);
   setPwm(pwmC, Uc);
 }
 
 
+
+
 // Set voltage to the pwm pin
 // - function a bit optimized to get better performance
 void BLDCMotor::setPwm(int pinPwm, float U) {
   // max value
-  float U_max = voltage_power_supply/2.0;
-  
-  // sets the voltage [-U_max,U_max] to pwm [0,255]
-  // u_pwm = 255 * (U + U_max)/(2*U_max)
-  // it can be further optimized 
-  // (example U_max = 6 > U_pwm = 127.5 + 21.25*U)
-  int U_pwm = 127.5 * (U/U_max + 1);
-     
+  float U_max = voltage_power_supply;
+      
+  // sets the voltage [0,12V(U_max)] to pwm [0,255]
+  // - U_max you can set in header file - default 12V
+  int U_pwm = 255.0 * U / U_max;
+
   // limit the values between 0 and 255
   U_pwm = (U_pwm < 0) ? 0 : (U_pwm >= 255) ? 255 : U_pwm;
 
@@ -340,9 +421,11 @@ float BLDCMotor::velocityIndexSearchPI(float tracking_error) {
 }
 // P controller for position control loop
 float BLDCMotor::positionP(float ek) {
-  float velk = P_angle.P * ek;
-  if (abs(velk) > P_angle.velocity_limit) velk = velk > 0 ? P_angle.velocity_limit : -P_angle.velocity_limit;
-  return velk;
+  // calculate the target velocity from the position error
+  float velocity_target = P_angle.P * ek;
+  // constrain velocity target value
+  if (abs(velocity_target) > P_angle.velocity_limit) velocity_target = velocity_target > 0 ? P_angle.velocity_limit : -P_angle.velocity_limit;
+  return velocity_target;
 }
 
 /**
