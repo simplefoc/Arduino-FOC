@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "FOCutils.h"
 #include "Sensor.h"
-#include "default.h
+#include "defaults.h
 
 // controller type configuration enum
 enum ControlType{
