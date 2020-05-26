@@ -123,6 +123,7 @@ void setup() {
   motor.controller = ControlType::velocity;
   
   // use debugging with the BLDCMotor
+  Serial.begin(115200);
   // debugging port
   motor.useDebugging(Serial);
 
