@@ -1,5 +1,6 @@
 # Arduino Simple Field Oriented Control (FOC) library 
 
+
 ![Library Compile](https://github.com/askuric/Arduino-FOC/workflows/Library%20Compile/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![arduino-library-badge](https://www.ardu-badge.com/badge/Simple%20FOC.svg?)](https://www.ardu-badge.com/badge/Simple%20FOC.svg)
@@ -94,6 +95,78 @@ For those willing to experiment and to modify the code I suggest using the [mini
   git clone -b minimal https://github.com/askuric/Arduino-FOC.git
   ```
 - Then you just open it with the Arduino IDE and run it.
+
+## Arduino code example
+This is a simple Arduino code example implementing the velocity control program of a BLDC motor with encoder. 
+
+NOTE: This program uses all the default control parameters.
+
+```cpp
+#include <SimpleFOC.h>
+
+//  BLDCMotor( pin_pwmA, pin_pwmB, pin_pwmC, pole_pairs, enable (optional))
+BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
+//  Encoder(pin_A, pin_B, CPR)
+Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 2048);
+// channel A and B callbacks
+void doA(){encoder.handleA();}
+void doB(){encoder.handleB();}
+
+
+void setup() {  
+  // initialize encoder hardware
+  encoder.init();
+  // hardware interrupt enable
+  encoder.enableInterrupts(doA, doB);
+
+  // set control loop type to be used
+  motor.controller = ControlType::velocity;
+  
+  // use debugging with the BLDCMotor
+  // debugging port
+  motor.useDebugging(Serial);
+
+  // link the motor to the sensor
+  motor.linkSensor(&encoder);
+
+  // initialize motor
+  motor.init();
+  // align encoder and start FOC
+  motor.initFOC();
+}
+
+void loop() {
+  // FOC algorithm function
+  motor.loopFOC();
+
+  // velocity control loop function
+  // setting the target velocity or 2rad/s
+  motor.move(2);
+
+  // debugging function outputting motor variables to the serial terminal 
+  motor.monitor();
+}
+```
+You can find more details in the [SimpleFOC documentation](https://askuric.github.io/Arduino-FOC/).
+
+## Example projects
+Here are some of the SimpleFOC application examples. 
+### Arduino Field Oriented Controlled Reaction Wheel Inverted Pendulum
+This is a very cool open-source project of one of the simplest setups of the Reaction wheel inverted pendulum. Check out all the components and projects notes in the [github repository](https://github.com/askuric/Arduino-FOC-reaction-wheel-inverted-pendulum).  
+<p align="">
+<a href="https://youtu.be/Ih-izQyXJCI">
+<img src="https://askuric.github.io/Arduino-FOC/extras/Images/youtube_pendulum.png"  height="350px">
+</a>
+</p>
+
+**The main benefits of using the BLDC motor in this project are:**
+- High torque to weight ratio
+  - The lighter the better
+- Lots of torque for low angular velocities
+  - No need to spin the motor to very high PRM to achieve high torques
+- No gearboxes and backlash
+  - Very smooth operation = very stable pendulum
+
 
 ## Documentation
 Find out more information about the Arduino SimpleFOC project in [docs website](https://askuric.github.io/Arduino-FOC/) 
