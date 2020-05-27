@@ -19,7 +19,7 @@ Therefore this is an attempt to:
 </p>
 
 ### Features
-- **Plug & play**: In combinations with Arduino <span class="simple">Simple<span class="foc">FOC</span>library</span> 
+- **Plug & play**: In combination with Arduino <span class="simple">Simple<span class="foc">FOC</span>library</span> 
 - **Low-cost**: Price of €20 - [Check the pricing](https://askuric.github.io/simplefoc_shield_product) 
 - **Open Source**: Fully available [Gerber files and BOM](https://askuric.github.io/Arduino-FOC/arduino_simplefoc_shield_fabrication)
 - **Stackable**: running 2 motors in the same time
