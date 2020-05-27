@@ -14,16 +14,18 @@ Therefore this is an attempt to:
 
 <p align="">
 <a href="https://youtu.be/G5pbo0C6ujE">
-<img src="https://askuric.github.io/Arduino-FOC/extras/Images/foc_shield_video.jpg"  height="350px">
+<img src="https://askuric.github.io/Arduino-FOC/extras/Images/foc_shield_video.jpg"  height="320px">
 </a>
 </p>
 
 ### Features
-
-- **Plug & play**: Arduino <span class="simple">Simple<span class="foc">FOC</span>library</span> 
-- **Low-cost**: Price in the range of \$20-\$40
-- **Open Source**: Gerber files and BOM available
+- **Plug & play**: In combinations with Arduino <span class="simple">Simple<span class="foc">FOC</span>library</span> 
+- **Low-cost**: Price of €20 - [Check the pricing](https://askuric.github.io/simplefoc_shield_product) 
+- **Open Source**: Fully available [Gerber files and BOM](https://askuric.github.io/Arduino-FOC/arduino_simplefoc_shield_fabrication)
 - **Stackable**: running 2 motors in the same time
+- **Encoder interface**: Integrated 3kOhm pullups (configurable)
+- **Configurable pinout**: Hardware configuration - soldering connections
+
 ##### If you are interested in this board, preorder your version on this link: [Arduino Simple FOC Shield](https://askuric.github.io/simplefoc_shield_product)
 
 <p align=""><img src="https://askuric.github.io/Arduino-FOC/extras/Images/shield_to_v13.jpg" height="180px">   <img src="https://askuric.github.io/Arduino-FOC/extras/Images/shield_bo_v13.jpg"  height="180px"> <img src="https://askuric.github.io/Arduino-FOC/extras/Images/simple_foc_shield_v13_small.gif"  height="180x"></p>
@@ -33,7 +35,7 @@ Therefore this is an attempt to:
 
 <p align="">
 <a href="https://youtu.be/N_fRYf7Z80k">
-<img src="https://askuric.github.io/Arduino-FOC/extras/Images/youtube.png"  height="350px">
+<img src="https://askuric.github.io/Arduino-FOC/extras/Images/youtube.png"  height="320px">
 </a>
 </p>
 
@@ -156,7 +158,7 @@ Here are some of the SimpleFOC application examples.
 This is a very cool open-source project of one of the simplest setups of the Reaction wheel inverted pendulum. Check out all the components and projects notes in the [github repository](https://github.com/askuric/Arduino-FOC-reaction-wheel-inverted-pendulum).  
 <p align="">
 <a href="https://youtu.be/Ih-izQyXJCI">
-<img src="https://askuric.github.io/Arduino-FOC/extras/Images/youtube_pendulum.png"  height="350px">
+<img src="https://askuric.github.io/Arduino-FOC/extras/Images/youtube_pendulum.png"  height="320px">
 </a>
 </p>
 
