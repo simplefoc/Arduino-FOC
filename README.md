@@ -21,7 +21,7 @@ Therefore this is an attempt to:
 ### Features
 - **Plug & play**: In combination with Arduino <span class="simple">Simple<span class="foc">FOC</span>library</span> 
 - **Low-cost**: Price of €20 - [Check the pricing](https://askuric.github.io/simplefoc_shield_product) 
-- **Open Source**: Fully available [Gerber files and BOM](https://askuric.github.io/Arduino-FOC/arduino_simplefoc_shield_fabrication)
+- **Open Source**: Fully available fabrication files - [how to make it yourself](https://askuric.github.io/Arduino-FOC/arduino_simplefoc_shield_fabrication)
 - **Stackable**: running 2 motors in the same time
 - **Encoder interface**: Integrated 3kOhm pullups (configurable)
 - **Configurable pinout**: Hardware configuration - soldering connections
@@ -34,7 +34,7 @@ Therefore this is an attempt to:
 ## Arduino SimpleFOClibrary
 
 <p align="">
-<a href="https://youtu.be/N_fRYf7Z80k">
+<a href="https://youtu.be/Y5kLeqTc6Zk">
 <img src="https://askuric.github.io/Arduino-FOC/extras/Images/youtube.png"  height="320px">
 </a>
 </p>
