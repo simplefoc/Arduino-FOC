@@ -51,7 +51,7 @@ This video demonstrates the Simple FOC library basic usage, electronic connectio
   - Supports as many application requirements as possible
 - **Plug & play**: Arduino SimpleFOC shield
 
-<p align=""> <img src="https://askuric.github.io/Arduino-FOC/extras/Images/uno_l6234.jpg"  height="170px">  <img src="https://askuric.github.io/Arduino-FOC/extras/Images/hmbgc_v22.jpg" height="170px">  <img src="https://askuric.github.io/Arduino-FOC/extras/Images/foc_shield_v12.jpg"  height="170px"></p>
+<p align=""> <img src="https://askuric.github.io/Arduino-FOC/extras/Images/uno_l6234.jpg"  height="170px">  <img src="https://askuric.github.io/Arduino-FOC/extras/Images/hmbgc_v22.jpg" height="170px">  <img src="https://askuric.github.io/Arduino-FOC/extras/Images/foc_shield_v13.jpg"  height="170px"></p>
 
 ## Getting Started
 Depending on if you want to use this library as the plug and play Arduino library or you want to get insight in the algorithm and make changes there are two ways to install this code.
