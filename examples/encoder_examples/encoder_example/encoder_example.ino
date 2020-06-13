@@ -10,14 +10,10 @@ void setup() {
   // debugging port
   Serial.begin(115200);
 
-  // check if you need internal pullups
-  //  Quadrature::ENABLE - CPR = 4xPPR  - default
-  //  Quadrature::DISABLE - CPR = PPR
-  encoder.quadrature = Quadrature::ENABLE;
+  // enable/disable quadrature mode
+  encoder.quadrature = Quadrature::ON;
 
   // check if you need internal pullups
-  // Pullup::EXTERN - external pullup added  - default
-  // Pullup::INTERN - needs internal arduino pullup
   encoder.pullup = Pullup::EXTERN;
   
   // initialise encoder hardware
