@@ -2,7 +2,7 @@ name: Library Compile
 on: push
 jobs:
   build:
-    name: Test compiling examples for UNO
+    name: Test compiling 
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -11,3 +11,4 @@ jobs:
       uses: ArminJo/arduino-test-compile@v1.0.0
       with:
         libraries:  PciManager 
+        examples-exclude: bluepill_example
