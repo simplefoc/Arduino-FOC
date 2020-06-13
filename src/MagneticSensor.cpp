@@ -1,6 +1,5 @@
 #include "MagneticSensor.h"
 
-
 // MagneticSensor(int cs, float _cpr, int _angle_register)
 //  cs              - SPI chip select pin 
 //  _cpr            - count per revolution 
@@ -23,9 +22,14 @@ void MagneticSensor::init(){
 	//setup pins
 	pinMode(chip_select_pin, OUTPUT);
 
+  
 	//SPI has an internal SPI-device counter, it is possible to call "begin()" from different devices
 	SPI.begin();
+	SPI.setBitOrder(MSBFIRST); // Set the SPI_1 bit order
+	SPI.setDataMode(SPI_MODE1) ;
+	SPI.setClockDivider(SPI_CLOCK_DIV8);
 
+	digitalWrite(chip_select_pin, HIGH);
 	// velocity calculation init
 	angle_prev = 0;
 	velocity_calc_timestamp = _micros(); 
@@ -36,27 +40,27 @@ void MagneticSensor::init(){
 	zero_offset = 0;
 }
 
-//	Shaft angle calculation
+//  Shaft angle calculation
 //  angle is in radians [rad]
 float MagneticSensor::getAngle(){
-	// raw data from the sensor
-	float angle_data = getRawCount(); 
+  // raw data from the sensor
+  float angle_data = getRawCount(); 
 
-	// tracking the number of rotations 
-	// in order to expand angle range form [0,2PI] 
-	// to basically infinity
-	float d_angle = angle_data - angle_data_prev;
-	// if overflow happened track it as full rotation
-	if(abs(d_angle) > (0.8*cpr) ) full_rotation_offset += d_angle > 0 ? -_2PI : _2PI; 
-	// save the current angle value for the next steps
-	// in order to know if overflow happened
-	angle_data_prev = angle_data;
+  // tracking the number of rotations 
+  // in order to expand angle range form [0,2PI] 
+  // to basically infinity
+  float d_angle = angle_data - angle_data_prev;
+  // if overflow happened track it as full rotation
+  if(abs(d_angle) > (0.8*cpr) ) full_rotation_offset += d_angle > 0 ? -_2PI : _2PI; 
+  // save the current angle value for the next steps
+  // in order to know if overflow happened
+  angle_data_prev = angle_data;
 
-	// zero offset adding
-	angle_data -= (int)zero_offset;
-	// return the full angle 
-	// (number of full rotations)*2PI + current sensor angle
- 	return full_rotation_offset + ( angle_data / (float)cpr) * _2PI;
+  // zero offset adding
+  angle_data -= (int)zero_offset;
+  // return the full angle 
+  // (number of full rotations)*2PI + current sensor angle
+  return full_rotation_offset + ( angle_data / (float)cpr) * _2PI;
 }
 
 // Shaft velocity calculation
@@ -150,33 +154,38 @@ word MagneticSensor::read(word angle_register){
 	byte right_byte = command & 0xFF;
 	byte left_byte = ( command >> 8 ) & 0xFF;
 
-	//SPI - begin transaction
-	SPI.beginTransaction(settings);
 
-	//Send the command
-	digitalWrite(chip_select_pin, LOW);
-	SPI.transfer(left_byte);
-	SPI.transfer(right_byte);
-	digitalWrite(chip_select_pin,HIGH);
+#if !defined(_STM32_DEF_) // if not stm chips
+  //SPI - begin transaction
+  SPI.beginTransaction(settings);
+#endif
+  //SPI - begin transaction
+  //SPI.beginTransaction(settings);
 
-	//Now read the response
-	digitalWrite(chip_select_pin, LOW);
-	left_byte = SPI.transfer(0x00);
-	right_byte = SPI.transfer(0x00);
-	digitalWrite(chip_select_pin, HIGH);
+  //Send the command
+  digitalWrite(chip_select_pin, LOW);
+  digitalWrite(chip_select_pin, LOW);
+  SPI.transfer(left_byte);
+  SPI.transfer(right_byte);
+  digitalWrite(chip_select_pin,HIGH);
+  digitalWrite(chip_select_pin,HIGH);
+  
+  delayMicroseconds(10);
+  
+  //Now read the response
+  digitalWrite(chip_select_pin, LOW);
+  digitalWrite(chip_select_pin, LOW);
+  left_byte = SPI.transfer(0x00);
+  right_byte = SPI.transfer(0x00);
+  digitalWrite(chip_select_pin, HIGH);
+  digitalWrite(chip_select_pin,HIGH);
 
-	//SPI - end transaction
-	SPI.endTransaction();
+#if !defined(_STM32_DEF_) // if not stm chips
+  //SPI - end transaction
+  SPI.endTransaction();
+#endif
 
-	//Check if the error bit is set
-	if (left_byte & 0x40) {
-		errorFlag = true;
-	}
-	else {
-		errorFlag = false;
-	}
-
-	//Return the data, stripping the parity and error bits
+	// Return the data, stripping the parity and error bits
 	return (( ( left_byte & 0xFF ) << 8 ) | ( right_byte & 0xFF )) & ~0xC000;
 }
 

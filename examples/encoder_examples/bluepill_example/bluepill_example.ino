@@ -1,8 +1,8 @@
 /**
  * 
- * HMBGC position motion control example with encoder
+ * STM32 Bluepill position motion control example with encoder
  * 
- * This board doesn't have any interrupt pins so we need to run all the encoder channels wiht the software interrupt library PciManager
+ * The same example can be ran with any STM32 board - just make sure that put right pin numbers.
  * 
  */
 #include <SimpleFOC.h>
@@ -10,29 +10,24 @@
 #include <PciManager.h>
 #include <PciListenerImp.h>
 
-
 // motor instance
-BLDCMotor motor = BLDCMotor(9, 10, 11, 11);
+BLDCMotor motor = BLDCMotor(PB6, PB7, PB8, 11, PB5);
 
 // encoder instance
-Encoder encoder = Encoder(A0, A1, 2048);
+Encoder encoder = Encoder(PA8, PA9, 8192, PA10);
 
 // Interrupt routine intialisation
 // channel A and B callbacks
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
-
-// encoder interrupt init
-PciListenerImp listenerA(encoder.pinA, doA);
-PciListenerImp listenerB(encoder.pinB, doB);
+void doI(){encoder.handleIndex();}
 
 void setup() {
-
-  // initialise encoder hardware
+  
+  // initialize encoder sensor hardware
   encoder.init();
-  // interrupt initialization
-  PciManager.registerListener(&listenerA);
-  PciManager.registerListener(&listenerB);
+  encoder.enableInterrupts(doA, doB, doI); 
+
   // link the motor to the sensor
   motor.linkSensor(&encoder);
 
@@ -44,7 +39,7 @@ void setup() {
   motor.velocity_index_search = 3;
 
   // set motion control loop to be used
-  motor.controller = ControlType::angle;
+  motor.controller = ControlType::velocity;
 
   // contoller configuration 
   // default parameters in defaults.h

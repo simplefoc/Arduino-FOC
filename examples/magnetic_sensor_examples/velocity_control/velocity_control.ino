@@ -1,49 +1,32 @@
 #include <SimpleFOC.h>
 
-// Only pins 2 and 3 are supported
-#define arduinoInt1 2             // Arduino UNO interrupt 0
-#define arduinoInt2 3             // Arduino UNO interrupt 1
-
-//  BLDCMotor( int phA, int phB, int phC, int pp, int en)
-//  - phA, phB, phC - motor A,B,C phase pwm pins
-//  - pp            - pole pair number
-//  - enable pin    - (optional input)
-BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
-
-// MagneticSensor(int cs, float _cpr, int _angle_register)
-//  cs              - SPI chip select pin 
-//  _cpr            - counts per revolution 
-// _angle_register  - (optional) angle read register - default 0x3FFF
+// Magnetic sensor instance
 MagneticSensor AS5x4x = MagneticSensor(10, 16384, 0x3FFF);
 
+// Motor instance
+BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
+
 void setup() {
-  // debugging port
-  Serial.begin(115200);
-  
+ 
   // initialise magnetic sensor hardware
   AS5x4x.init();
+  // link the motor to the sensor
+  motor.linkSensor(&AS5x4x);
 
   // power supply voltage
   // default 12V
   motor.voltage_power_supply = 12;
-  
-  // choose FOC algorithm to be used:
-  // FOCModulationType::SinePWM  (default)
-  // FOCModulationType::SpaceVectorPWM
-  motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
 
-  // set control loop type to be used
-  // ControlType::voltage
-  // ControlType::velocity
-  // ControlType::angle
+  // set motion control loop to be used
   motor.controller = ControlType::velocity;
 
-  // contoller configuration based on the controll type 
+  // contoller configuration 
+  // default parameters in defaults.h
+
   // velocity PI controller parameters
-  // default P=0.5 I = 10
   motor.PI_velocity.P = 0.2;
   motor.PI_velocity.I = 20;
-  // default voltage_power_supply/2
+  // default voltage_power_supply
   motor.PI_velocity.voltage_limit = 6;
   // jerk control using voltage voltage ramp
   // default value is 300 volts per sec  ~ 0.3V per millisecond
@@ -54,12 +37,10 @@ void setup() {
   // the lower the less filtered
   motor.LPF_velocity.Tf = 0.01;
 
-  // use debugging with serial for motor init
+  // use debugging with serial 
+  Serial.begin(115200);
   // comment out if not needed
   motor.useDebugging(Serial);
-
-  // link the motor to the sensor
-  motor.linkSensor(&AS5x4x);
 
   // initialize motor
   motor.init();
@@ -75,42 +56,49 @@ void setup() {
 float target_velocity = 0;
 
 void loop() {
-  // iterative state calculation calculating angle
-  // and setting FOC phase voltage
+  // main FOC algorithm function
   // the faster you run this function the better
-  // in arduino loop it should have ~1kHz
-  // the best would be to be in ~10kHz range
+  // Arduino UNO loop  ~1kHz
+  // Bluepill loop ~10kHz 
   motor.loopFOC();
 
-  // iterative function setting the outter loop target
-  // velocity, position or voltage
-  // this function can be run at much lower frequency than loopFOC function
-  // it can go as low as ~50Hz
+  // Motion control function
+  // velocity, position or voltage (defined in motor.controller)
+  // this function can be run at much lower frequency than loopFOC() function
+  // You can also use motor.move() and set the motor.target in the code
   motor.move(target_velocity);
-
 
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
   // motor.monitor();
+  
+  // user communication
+  serialReceiveUserCommand();
 }
 
-// Serial communication callback function
-// gets the target value from the user
-void serialEvent() {
+// utility function enabling serial communication with the user to set the target values
+// this function can be implemented in serialEvent function as well
+void serialReceiveUserCommand() {
+  
   // a string to hold incoming data
-  static String inputString; 
+  static String received_chars;
+  
   while (Serial.available()) {
     // get the new byte:
     char inChar = (char)Serial.read();
-    // add it to the inputString:
-    inputString += inChar;
-    // if the incoming character is a newline
-    // end of input
+    // add it to the string buffer:
+    received_chars += inChar;
+    // end of user input
     if (inChar == '\n') {
-      target_velocity = inputString.toFloat();
+      
+      // change the motor target
+      target_velocity = received_chars.toFloat();
       Serial.print("Target velocity: ");
       Serial.println(target_velocity);
-      inputString = "";
+      
+      // reset the command buffer 
+      received_chars = "";
     }
   }
 }
+

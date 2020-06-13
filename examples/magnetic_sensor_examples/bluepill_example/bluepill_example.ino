@@ -1,47 +1,34 @@
 /**
  * 
- * HMBGC position motion control example with encoder
+ * STM32 Bluepill position motion control example with magnetic sensor
  * 
- * This board doesn't have any interrupt pins so we need to run all the encoder channels wiht the software interrupt library PciManager
+ * The same example can be ran with any STM32 board - just make sure that put right pin numbers.
  * 
  */
 #include <SimpleFOC.h>
-// software interrupt library
-#include <PciManager.h>
-#include <PciListenerImp.h>
 
+// Magnetic sensor instance 
+// MISO PA7
+// MOSI PA6
+// SCK PA5
+MagneticSensor AS5x4x = MagneticSensor(PA4, 16384, 0x3FFF);
 
-// motor instance
-BLDCMotor motor = BLDCMotor(9, 10, 11, 11);
-
-// encoder instance
-Encoder encoder = Encoder(A0, A1, 2048);
-
-// Interrupt routine intialisation
-// channel A and B callbacks
-void doA(){encoder.handleA();}
-void doB(){encoder.handleB();}
-
-// encoder interrupt init
-PciListenerImp listenerA(encoder.pinA, doA);
-PciListenerImp listenerB(encoder.pinB, doB);
+// Motor instance
+BLDCMotor motor = BLDCMotor(PB6, PB7, PB8, 11, PA5);
 
 void setup() {
 
-  // initialise encoder hardware
-  encoder.init();
-  // interrupt initialization
-  PciManager.registerListener(&listenerA);
-  PciManager.registerListener(&listenerB);
+  // initialise magnetic sensor hardware
+  AS5x4x.init();
   // link the motor to the sensor
-  motor.linkSensor(&encoder);
+  motor.linkSensor(&AS5x4x);
 
-  // power supply voltage [V]
+  // power supply voltage
+  // default 12V
   motor.voltage_power_supply = 12;
-  // aligning voltage [V]
-  motor.voltage_sensor_align = 3;
-  // index search velocity [rad/s]
-  motor.velocity_index_search = 3;
+  
+  // choose FOC modulation (optional)
+  motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
 
   // set motion control loop to be used
   motor.controller = ControlType::angle;
@@ -52,29 +39,27 @@ void setup() {
   // velocity PI controller parameters
   motor.PI_velocity.P = 0.2;
   motor.PI_velocity.I = 20;
-  // default voltage_power_supply
+  // maximal voltage to be set to the motor
   motor.PI_velocity.voltage_limit = 6;
-  // jerk control using voltage voltage ramp
-  // default value is 300 volts per sec  ~ 0.3V per millisecond
-  motor.PI_velocity.voltage_ramp = 1000;
- 
+  
   // velocity low pass filtering time constant
+  // the lower the less filtered
   motor.LPF_velocity.Tf = 0.01;
 
-  // angle P controller
+  // angle P controller 
   motor.P_angle.P = 20;
-  //  maximal velocity of the position control
+  // maximal velocity of the position control
   motor.P_angle.velocity_limit = 4;
-
 
   // use debugging with serial 
   Serial.begin(115200);
   // comment out if not needed
   motor.useDebugging(Serial);
+
   
   // initialize motor
   motor.init();
-  // align encoder and start FOC
+  // align sensor and start FOC
   motor.initFOC();
 
 
@@ -87,6 +72,7 @@ void setup() {
 float target_angle = 0;
 
 void loop() {
+
   // main FOC algorithm function
   // the faster you run this function the better
   // Arduino UNO loop  ~1kHz
@@ -98,6 +84,7 @@ void loop() {
   // this function can be run at much lower frequency than loopFOC() function
   // You can also use motor.move() and set the motor.target in the code
   motor.move(target_angle);
+
 
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
@@ -132,3 +119,5 @@ void serialReceiveUserCommand() {
     }
   }
 }
+
+

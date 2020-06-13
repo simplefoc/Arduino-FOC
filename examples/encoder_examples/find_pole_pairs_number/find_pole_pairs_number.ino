@@ -1,50 +1,35 @@
 #include <SimpleFOC.h>
 
-// Only pins 2 and 3 are supported
-#define arduinoInt1 2             // Arduino UNO interrupt 0
-#define arduinoInt2 3             // Arduino UNO interrupt 1
-
 //  BLDCMotor( int phA, int phB, int phC, int pp, int en)
 // its not important how many pole pairs do you set, the progam will find it alone
 BLDCMotor motor = BLDCMotor(9, 10, 11, 0, 8);
 //  Encoder(int encA, int encB , int cpr, int index)
-Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192);
+Encoder encoder = Encoder(2, 3, 8192);
 // interrupt routine intialisation
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 
 void setup() {
-  // debugging port
-  Serial.begin(115200);
-
-  // check if you need internal pullups
-  //  Quadrature::ENABLE - CPR = 4xPPR  - default
-  //  Quadrature::DISABLE - CPR = PPR
-  encoder.quadrature = Quadrature::ENABLE;
-
-  // check if you need internal pullups
-  // Pullup::EXTERN - external pullup added - default
-  // Pullup::INTERN - needs internal arduino pullup
-  encoder.pullup = Pullup::EXTERN;
   
   // initialise encoder hardware
   encoder.init();
   // hardware interrupt enable
   encoder.enableInterrupts(doA, doB);
+  // link the motor to the sensor
+  motor.linkSensor(&encoder);
 
   // power supply voltage
-  // default 12V
   motor.voltage_power_supply = 12;
 
   // set FOC loop to be used
   motor.controller = ControlType::voltage;
 
-  // link the motor to the sensor
-  motor.linkSensor(&encoder);
   // initialize motor
   motor.init();
 
 
+  // debugging port
+  Serial.begin(115200);
 
   // pole pairs calculation routine
   Serial.println("Motor pole pair number estimation example");
@@ -117,32 +102,45 @@ float target_voltage = 2;
 
 void loop() {
 
-  // iterative foc voltage loop
+  // main FOC algorithm function
+  // the faster you run this function the better
+  // Arduino UNO loop  ~1kHz
+  // Bluepill loop ~10kHz 
   motor.loopFOC();
 
-  // iterative function setting the outter loop target
+  // Motion control function
+  // velocity, position or voltage (defined in motor.controller)
+  // this function can be run at much lower frequency than loopFOC() function
+  // You can also use motor.move() and set the motor.target in the code
   motor.move(target_voltage);
-
+  
+  // communicate with the user
+  serialReceiveUserCommand();
 }
 
 
-// Serial communication callback function
-// gets the target value from the user
-void serialEvent() {
+// utility function enabling serial communication with the user to set the target values
+// this function can be implemented in serialEvent function as well
+void serialReceiveUserCommand() {
+  
   // a string to hold incoming data
-  static String inputString; 
+  static String received_chars;
+  
   while (Serial.available()) {
     // get the new byte:
     char inChar = (char)Serial.read();
-    // add it to the inputString:
-    inputString += inChar;
-    // if the incoming character is a newline
-    // end of input
+    // add it to the string buffer:
+    received_chars += inChar;
+    // end of user input
     if (inChar == '\n') {
-      target_voltage = inputString.toFloat();
+      
+      // change the motor target
+      target_voltage = received_chars.toFloat();
       Serial.print("Target voltage: ");
       Serial.println(target_voltage);
-      inputString = "";
+      
+      // reset the command buffer 
+      received_chars = "";
     }
   }
 }

@@ -6,86 +6,106 @@
 #include "Sensor.h"
 
 
-// Pullup configuration structure
+/**
+ *  Pullup configuration structure
+ */
 enum Pullup{
-    INTERN,
-    EXTERN
+    INTERN, //!< Use internal pullups
+    EXTERN //!< Use external pullups
 };
 
+/**
+ *  Quadrature mode configuration structure
+ */
 enum Quadrature{
-  ENABLE, // CPR = 4xPPR
-  DISABLE // CPR = PPR
+  ON, //!<  Enable quadrature mode CPR = 4xPPR
+  OFF //!<  Disable quadrature mode / CPR = PPR
 };
 
 class Encoder: public Sensor{
  public:
-    /*
-    Encoder(int encA, int encB , int cpr, int index)
-    - encA, encB    - encoder A and B pins
-    - ppr           - impulses per rotation  (cpr=ppr*4)
-    - index pin     - (optional input)
+    /**
+    Encoder class constructor
+    @param encA  encoder B pin
+    @param encB  encoder B pin
+    @param ppr  impulses per rotation  (cpr=ppr*4)
+    @param index index pin number (optional input)
     */
     Encoder(int encA, int encB , float ppr, int index = 0);
 
-    // encoder initialise pins
+    /** encoder initialise pins */
     void init();
-    // function enabling hardware interrupts of the for the callback provided
-    // if callback is not provided then the interrupt is not enabled
+    /**
+     *  function enabling hardware interrupts for the encoder channels with provided callback functions
+     *  if callback is not provided then the interrupt is not enabled
+     * 
+     * @param doA pointer to the A channel interrupt handler function
+     * @param doB pointer to the B channel interrupt handler function
+     * @param doIndex pointer to the Index channel interrupt handler function
+     * 
+     */
     void enableInterrupts(void (*doA)() = nullptr, void(*doB)() = nullptr, void(*doIndex)() = nullptr);
     
     //  Encoder interrupt callback functions
-    //  enabling CPR=4xPPR behaviour
-    // A channel
+    /** A channel callback function */
     void handleA();
-    // B channel
+    /** B channel callback function */
     void handleB();
-    // index handle
+    /** Index channel callback function */
     void handleIndex();
     
     
     // pins A and B
-    int pinA, pinB;           // encoder hardware pins
-    // index pin
-    int index_pin;
-    // encoder pullup type
-    Pullup pullup;
-    // use 4xppr or not
-    Quadrature quadrature;
+    int pinA; //!< encoder hardware pin A
+    int pinB; //!< encoder hardware pin B
+    int index_pin; //!< index pin
 
-    // implementation of abstract functions of the Sensor class
-    // get current angle (rad)
+    // Encoder configuration
+    Pullup pullup; //!< Configuration parameter internal or external pullups
+    Quadrature quadrature;//!< Configuration parameter enable or disable quadrature mode
+    float cpr;//!< encoder cpr number
+
+    // Abstract functions of the Sensor class implementation
+    /** get current angle (rad) */
     float getAngle();
-    // get current angular velocity (rad/s)
+    /**  get current angular velocity (rad/s) */
     float getVelocity();
-    // set current angle as zero angle 
-    // return the angle [rad] difference
+    /** 
+     *  set current angle as zero angle 
+     * return the angle [rad] difference
+     */
     float initRelativeZero();
-    // set index angle as zero angle
-    // return the angle [rad] difference
+    /**
+     * set index angle as zero angle
+     * return the angle [rad] difference
+     */
     float initAbsoluteZero();
-    // returns 0 if it has no index 
-    // 0 - encoder without index
-    // 1 - encoder with index 
+    /**
+     *  returns 0 if it has no index 
+     * 0 - encoder without index
+     * 1 - encoder with index 
+     */
     int hasAbsoluteZero();
-    // returns 0 if it does need search for absolute zero
-    // 0 - encoder without index 
-    // 1 - ecoder with index
+    /**
+     * returns 0 if it does need search for absolute zero
+     * 0 - encoder without index 
+     * 1 - ecoder with index
+     */
     int needsAbsoluteZeroSearch();
 
   private:
-    int hasIndex();
+    int hasIndex(); //!< function returning 1 if encoder has index pin and 0 if not.
 
-    volatile long pulse_counter;        // current pulse counter
-    volatile long pulse_timestamp;      // last impulse timestamp in us
-    float cpr;                 // impulse cpr
-    volatile int A_active, B_active;    // current active states of A and B line
-    volatile int I_active;              // index active
-    volatile long index_pulse_counter;  // pulse counter of the index
+    volatile long pulse_counter;//!< current pulse counter
+    volatile long pulse_timestamp;//!< last impulse timestamp in us
+    volatile int A_active; //!< current active states of A channel
+    volatile int B_active; //!< current active states of B channel
+    volatile int I_active; //!< current active states of Index channel
+    volatile long index_pulse_counter; //!< impulse counter number upon first index interrupt
 
     // velocity calculation variables
     float prev_Th, pulse_per_second;
     volatile long prev_pulse_counter, prev_timestamp_us;
-
 };
 
 

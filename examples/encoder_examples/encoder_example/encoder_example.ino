@@ -1,10 +1,7 @@
 #include <SimpleFOC.h>
 
-// Only pins 2 and 3 are supported
-#define arduinoInt1 2             // Arduino UNO interrupt 0
-#define arduinoInt2 3             // Arduino UNO interrupt 1
 
-Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 8192);
+Encoder encoder = Encoder(2, 3, 8192);
 // interrupt routine intialisation
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
