@@ -36,7 +36,7 @@ setPhaseVoltage	KEYWORD2
 getAngle	KEYWORD2
 initRelativeZero	KEYWORD2
 initAbsoluteZero	KEYWORD2
-useDebugging	KEYWORD2
+useMonitoring	KEYWORD2
 
 voltage_q	KEYWORD2
 shaft_angle_sp	KEYWORD2

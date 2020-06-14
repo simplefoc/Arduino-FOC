@@ -31,14 +31,14 @@ void setup() {
   // set motion control loop to be used
   motor.controller = ControlType::voltage;
 
-  // use debugging with serial for motor init
+  // use monitoring with serial for motor init
   // comment out if not needed
-  motor.useDebugging(Serial);
+  motor.useMonitoring(Serial);
 
-  // use debugging with serial 
+  // use monitoring with serial 
   Serial.begin(115200);
   // comment out if not needed
-  motor.useDebugging(Serial);
+  motor.useMonitoring(Serial);
 
   // initialize motor
   motor.init();

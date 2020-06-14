@@ -50,10 +50,10 @@ void setup() {
   // set control loop type to be used
   motor.controller = ControlType::velocity;
   
-  // use debugging with the BLDCMotor
+  // use monitoring with the BLDCMotor
   Serial.begin(115200);
-  // debugging port
-  motor.useDebugging(Serial);
+  // monitoring port
+  motor.useMonitoring(Serial);
 
   // link the motor to the sensor
   motor.linkSensor(&encoder);
@@ -72,7 +72,7 @@ void loop() {
   // setting the target velocity or 2rad/s
   motor.move(2);
 
-  // debugging function outputting motor variables to the serial terminal 
+  // monitoring function outputting motor variables to the serial terminal 
   motor.monitor();
 }
  * @endcode 

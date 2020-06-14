@@ -25,7 +25,7 @@ PciListenerImp listenerA(encoder.pinA, doA);
 PciListenerImp listenerB(encoder.pinB, doB);
 
 void setup() {
-  // debugging port
+  // monitoring port
   Serial.begin(115200);
 
   // enable/disable quadrature mode
