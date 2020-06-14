@@ -7,35 +7,36 @@
 
 Proper low-cost and low-power FOC supporting boards are very hard to find these days and even may not exist. Even harder to find is a stable and simple FOC algorithm code capable of running on Arduino devices. 
 Therefore this is an attempt to: 
-- Demystify FOC algorithm and make a robust but simple Arduino library: [Arduino SimpleFOC library](https://askuric.github.io/Arduino-FOC/arduino_simplefoc_library_showcase)
-- Develop a modular BLDC driver board: [Arduino SimpleFOC shield](https://askuric.github.io/Arduino-FOC/arduino_simplefoc_shield_showcase).
+- Demystify FOC algorithm and make a robust but simple Arduino library: [Arduino SimpleFOC library](https://docs.simplefoc.com/arduino_simplefoc_library_showcase)
+- Develop a modular BLDC driver board: [Arduino SimpleFOC shield](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
 
 ## Arduino SimpleFOCShield
 
 <p align="">
 <a href="https://youtu.be/G5pbo0C6ujE">
-<img src="https://askuric.github.io/Arduino-FOC/extras/Images/foc_shield_video.jpg"  height="320px">
+<img src="https://docs.simplefoc.com/extras/Images/foc_shield_video.jpg"  height="320px">
 </a>
 </p>
 
 ### Features
 - **Plug & play**: In combination with Arduino <span class="simple">Simple<span class="foc">FOC</span>library</span> 
-- **Low-cost**: Price of €20 - [Check the pricing](https://askuric.github.io/simplefoc_shield_product) 
-- **Open Source**: Fully available fabrication files - [how to make it yourself](https://askuric.github.io/Arduino-FOC/arduino_simplefoc_shield_fabrication)
+- **Low-cost**: Price of €20 - [Check the pricing](https://www.simplefoc.com/simplefoc_shield_product) 
+- **Open Source**: Fully available fabrication files - [how to make it yourself](https://docs.simplefoc.com/arduino_simplefoc_shield_fabrication)
 - **Stackable**: running 2 motors in the same time
 - **Encoder interface**: Integrated 3kOhm pullups (configurable)
 - **Configurable pinout**: Hardware configuration - soldering connections
+- **Arduino headers**: Arduino UNO, Arduino MEGA, STM32 Nucleo boards...
 
-##### If you are interested in this board, preorder your version on this link: [Arduino Simple FOC Shield](https://askuric.github.io/simplefoc_shield_product)
+##### If you are interested in this board, order your version on this link: [Arduino Simple FOC Shield](https://www.simplefoc.com/simplefoc_shield_product)
 
-<p align=""><img src="https://askuric.github.io/Arduino-FOC/extras/Images/shield_to_v13.jpg" height="180px">   <img src="https://askuric.github.io/Arduino-FOC/extras/Images/shield_bo_v13.jpg"  height="180px"> <img src="https://askuric.github.io/Arduino-FOC/extras/Images/simple_foc_shield_v13_small.gif"  height="180x"></p>
+<p align=""><img src="https://docs.simplefoc.com/extras/Images/shield_to_v13.jpg" height="180px">   <img src="https://docs.simplefoc.com/extras/Images/shield_bo_v13.jpg"  height="180px"> <img src="https://docs.simplefoc.com/extras/Images/simple_foc_shield_v13_small.gif"  height="180x"></p>
 
 
 ## Arduino SimpleFOClibrary
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">
-<img src="https://askuric.github.io/Arduino-FOC/extras/Images/youtube.png"  height="320px">
+<img src="https://docs.simplefoc.com/extras/Images/youtube.png"  height="320px">
 </a>
 </p>
 
@@ -45,19 +46,23 @@ This video demonstrates the Simple FOC library basic usage, electronic connectio
 - **Arduino compatible**: Arduino library code
 - **Easy to setup and configure**: 
   - Easy hardware configuration
-  - Easy [tuning the control loops](https://askuric.github.io/Arduino-FOC/control_loops)
+  - Easy [tuning the control loops](https://docs.simplefoc.com/control_loops)
 - **Modular**:
-  - Supports as many [sensors ,  BLDC motors  and  driver boards](https://askuric.github.io/Arduino-FOC/supported_hardware) as possible
+  - Supports as many [sensors ,  BLDC motors  and  driver boards](https://docs.simplefoc.com/supported_hardware) as possible
   - Supports as many application requirements as possible
-- **Plug & play**: Arduino SimpleFOC shield
+  - Supports multiple [MCU architectures](https://docs.simplefoc.com/microcontrollers):
+     - Arduino: UNO, MEGA, any board with ATMega328 chips
+     - STM32 boards: [Nucleo](https://www.st.com/en/evaluation-tools/stm32-nucleo-boards.html) and [Bluepill](https://stm32-base.org/boards/STM32F103C8T6-Blue-Pill.html)
+     - ESP32 (very soon)
+- **Plug & play**: Arduino *SimpleFOCShield*
 
-<p align=""> <img src="https://askuric.github.io/Arduino-FOC/extras/Images/uno_l6234.jpg"  height="170px">  <img src="https://askuric.github.io/Arduino-FOC/extras/Images/hmbgc_v22.jpg" height="170px">  <img src="https://askuric.github.io/Arduino-FOC/extras/Images/foc_shield_v13.jpg"  height="170px"></p>
+<p align=""> <img src="https://docs.simplefoc.com/extras/Images/uno_l6234.jpg"  height="170px">  <img src="https://docs.simplefoc.com/extras/Images/hmbgc_v22.jpg" height="170px">  <img src="https://docs.simplefoc.com/extras/Images/foc_shield_v13.jpg"  height="170px"></p>
 
 ## Getting Started
 Depending on if you want to use this library as the plug and play Arduino library or you want to get insight in the algorithm and make changes there are two ways to install this code.
 
-- Full library installation [Docs](https://askuric.github.io/Arduino-FOC/library_download)
-- Minimal code installation [Docs](https://askuric.github.io/Arduino-FOC/minimal_download)
+- Full library installation [Docs](https://docs.simplefoc.com/library_download)
+- Minimal code installation [Docs](https://docs.simplefoc.com/minimal_download)
 
 ### Arduino SimpleFOC library installation to Arduino IDE
 #### Arduino Library Manager 
@@ -109,7 +114,7 @@ NOTE: This program uses all the default control parameters.
 //  BLDCMotor( pin_pwmA, pin_pwmB, pin_pwmC, pole_pairs, enable (optional))
 BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
 //  Encoder(pin_A, pin_B, CPR)
-Encoder encoder = Encoder(arduinoInt1, arduinoInt2, 2048);
+Encoder encoder = Encoder(2, 3, 2048);
 // channel A and B callbacks
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
@@ -150,7 +155,7 @@ void loop() {
   motor.monitor();
 }
 ```
-You can find more details in the [SimpleFOC documentation](https://askuric.github.io/Arduino-FOC/).
+You can find more details in the [SimpleFOC documentation](https://docs.simplefoc.com/).
 
 ## Example projects
 Here are some of the SimpleFOC application examples. 
@@ -158,7 +163,7 @@ Here are some of the SimpleFOC application examples.
 This is a very cool open-source project of one of the simplest setups of the Reaction wheel inverted pendulum. Check out all the components and projects notes in the [github repository](https://github.com/askuric/Arduino-FOC-reaction-wheel-inverted-pendulum).  
 <p align="">
 <a href="https://youtu.be/Ih-izQyXJCI">
-<img src="https://askuric.github.io/Arduino-FOC/extras/Images/youtube_pendulum.png"  height="320px">
+<img src="https://docs.simplefoc.com/extras/Images/youtube_pendulum.png"  height="320px">
 </a>
 </p>
 
@@ -172,7 +177,7 @@ This is a very cool open-source project of one of the simplest setups of the Rea
 
 
 ## Documentation
-Find out more information about the Arduino SimpleFOC project in [docs website](https://askuric.github.io/Arduino-FOC/) 
+Find out more information about the Arduino SimpleFOC project in [docs website](https://docs.simplefoc.com/) 
 
 
 ## Arduino FOC repo structure

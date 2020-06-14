@@ -27,7 +27,7 @@ void setPwmFrequency(int pin) {
 }
 
 // function buffering delay() 
-// arduino function doesn't work well with interrupts
+// arduino uno function doesn't work well with interrupts
 void _delay(unsigned long ms){
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
   // if arduino uno and other atmega328p chips

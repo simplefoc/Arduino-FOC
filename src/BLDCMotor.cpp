@@ -465,8 +465,6 @@ void BLDCMotor::monitor() {
   }
 }
 
-// Serial communication function
-// enabling user to set the target values and configure the FOC parameters (see readme for details)
 int BLDCMotor::command(String user_command) {
   // error flag
   int errorFlag = 1;
@@ -562,6 +560,10 @@ int BLDCMotor::command(String user_command) {
           case 2: // get angle
             if(debugger) debugger->print("Angle: ");
             if(debugger) debugger->println(shaft_angle);
+            break;
+          case 3: // get angle
+            if(debugger) debugger->print("Target: ");
+            if(debugger) debugger->println(target);
             break;
           default: // not valid command
             errorFlag = 0;
