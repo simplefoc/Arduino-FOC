@@ -7,10 +7,13 @@
 
 Proper low-cost and low-power FOC supporting boards are very hard to find these days and even may not exist. Even harder to find is a stable and simple FOC algorithm code capable of running on Arduino devices. 
 Therefore this is an attempt to: 
-- Demystify FOC algorithm and make a robust but simple Arduino library: [Arduino SimpleFOC library](https://docs.simplefoc.com/arduino_simplefoc_library_showcase)
-- Develop a modular BLDC driver board: [Arduino SimpleFOC shield](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
+- Demystify FOC algorithm and make a robust but simple Arduino library: [Arduino *SimpleFOClibrary*](https://docs.simplefoc.com/arduino_simplefoc_library_showcase)
+- Develop a modular BLDC driver board: [Arduino *SimpleFOCShield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
 
-## Arduino SimpleFOCShield
+
+> ***UPDATE: Arduino *SimpleFOCShield* now supports STM32 boards [Nucleo](https://www.st.com/en/evaluation-tools/stm32-nucleo-boards.html) and [Bluepill](https://stm32-base.org/boards/STM32F103C8T6-Blue-Pill.html).***
+
+## Arduino *SimpleFOCShield*
 
 <p align="">
 <a href="https://youtu.be/G5pbo0C6ujE">
@@ -32,7 +35,7 @@ Therefore this is an attempt to:
 <p align=""><img src="https://docs.simplefoc.com/extras/Images/shield_to_v13.jpg" height="180px">   <img src="https://docs.simplefoc.com/extras/Images/shield_bo_v13.jpg"  height="180px"> <img src="https://docs.simplefoc.com/extras/Images/simple_foc_shield_v13_small.gif"  height="180x"></p>
 
 
-## Arduino SimpleFOClibrary
+## Arduino *SimpleFOClibrary*
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">
