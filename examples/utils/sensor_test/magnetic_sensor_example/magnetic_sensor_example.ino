@@ -7,7 +7,7 @@
 MagneticSensor AS5x4x = MagneticSensor(10, 16384, 0x3FFF);
 
 void setup() {
-  // debugging port
+  // monitoring port
   Serial.begin(115200);
 
   // initialise magnetic sensor hardware

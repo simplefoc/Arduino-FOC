@@ -176,15 +176,15 @@ class BLDCMotor
     */
     void setPhaseVoltage(float Uq, float angle_el);
 
-    // debugging functions
-    Print* debugger; //!< Serial terminal variable if provided
+    // monitoring functions
+    Print* monitor_port; //!< Serial terminal variable if provided
     /**
      * Function providing BLDCMotor class with the 
-     * Serial interface and enabling debugging mode
+     * Serial interface and enabling monitoring mode
      * 
-     * @param serial Debuggin Serial class reference
+     * @param serial Monitoring Serial class reference
      */
-    void useDebugging(Print &serial);
+    void useMonitoring(Print &serial);
     /**
      * Utility function intended to be used with serial plotter to monitor motor variables
      * significantly slowing the execution down!!!!
@@ -193,7 +193,7 @@ class BLDCMotor
 
      /**
      * Function setting the configuration parameters  of the motor, target value of the control loop
-     * and outputing them to the debugger( if available ) :
+     * and outputing them to the monitoring port( if available ) :
      * - configure PID controller constants
      * - change motion control loops
      * - monitor motor variabels

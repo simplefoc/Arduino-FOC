@@ -79,11 +79,11 @@ void setup() {
   // angle loop velocity limit
   motor.P_angle.velocity_limit = 50;
 
-  // use debugging with serial for motor init
-  // debugging port
+  // use monitoring with serial for motor init
+  // monitoring port
   Serial.begin(115200);
   // comment out if not needed
-  motor.useDebugging(Serial);
+  motor.useMonitoring(Serial);
 
   // initialise motor
   motor.init();
@@ -112,7 +112,7 @@ void loop() {
   // if tatget not set in parameter uses motor.target variable
   motor.move();
 
-  // output motor state variabels to the debugging port (Serial)
+  // output motor state variabels to the monitoring port (Serial)
   // motor.monitor();
   
   // user communication

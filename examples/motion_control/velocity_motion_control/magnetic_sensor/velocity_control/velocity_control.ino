@@ -49,10 +49,10 @@ void setup() {
   // the lower the less filtered
   motor.LPF_velocity.Tf = 0.01;
 
-  // use debugging with serial 
+  // use monitoring with serial 
   Serial.begin(115200);
   // comment out if not needed
-  motor.useDebugging(Serial);
+  motor.useMonitoring(Serial);
 
   // initialize motor
   motor.init();

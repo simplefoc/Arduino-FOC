@@ -84,10 +84,10 @@ void setup() {
   motor.P_angle.velocity_limit = 4;
 
 
-  // use debugging with serial 
+  // use monitoring with serial 
   Serial.begin(115200);
   // comment out if not needed
-  motor.useDebugging(Serial);
+  motor.useMonitoring(Serial);
   
   // initialize motor
   motor.init();

@@ -128,20 +128,19 @@ void setup() {
   encoder.init();
   // hardware interrupt enable
   encoder.enableInterrupts(doA, doB);
+  // link the motor to the sensor
+  motor.linkSensor(&encoder);
+  
+  // use monitoring with the BLDCMotor
+  Serial.begin(115200);
+  // monitoring port
+  motor.useMonitoring(Serial);
 
   // set control loop type to be used
   motor.controller = ControlType::velocity;
-  
-  // use debugging with the BLDCMotor
-  Serial.begin(115200);
-  // debugging port
-  motor.useDebugging(Serial);
-
-  // link the motor to the sensor
-  motor.linkSensor(&encoder);
-
   // initialize motor
   motor.init();
+  
   // align encoder and start FOC
   motor.initFOC();
 }
@@ -154,7 +153,7 @@ void loop() {
   // setting the target velocity or 2rad/s
   motor.move(2);
 
-  // debugging function outputting motor variables to the serial terminal 
+  // monitoring function outputting motor variables to the serial terminal 
   motor.monitor();
 }
 ```

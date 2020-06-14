@@ -54,20 +54,20 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   // default target value
   target = 0;
   
-  //debugger 
-  debugger = nullptr;
+  //monitor_port 
+  monitor_port = nullptr;
 }
 
 // init hardware pins   
 void BLDCMotor::init() {
-  if(debugger) debugger->println("DEBUG: Initialize the motor pins.");
+  if(monitor_port) monitor_port->println("MONITOR: Initialize the motor pins.");
   // PWM pins
   pinMode(pwmA, OUTPUT);
   pinMode(pwmB, OUTPUT);
   pinMode(pwmC, OUTPUT);
   if(hasEnable()) pinMode(enable_pin, OUTPUT);
 
-  if(debugger) debugger->println("DEBUG: Set high frequency PWM.");
+  if(monitor_port) monitor_port->println("MONITOR: Set high frequency PWM.");
   // Increase PWM frequency to 32 kHz
   // make silent
   setPwmFrequency(pwmA);
@@ -79,7 +79,7 @@ void BLDCMotor::init() {
 
   _delay(500);
   // enable motor
-  if(debugger) debugger->println("DEBUG: Enabling motor.");
+  if(monitor_port) monitor_port->println("MONITOR: Enabling motor.");
   enable();
   _delay(500);
   
@@ -115,7 +115,7 @@ void BLDCMotor::linkSensor(Sensor* _sensor) {
 
 // Encoder alignment to electrical 0 angle
 int BLDCMotor::alignSensor() {
-  if(debugger) debugger->println("DEBUG: Align the sensor's and motor electrical 0 angle.");
+  if(monitor_port) monitor_port->println("MONITOR: Align the sensor's and motor electrical 0 angle.");
   // align the electrical phases of the motor and sensor
   // set angle -90 degrees 
   setPhaseVoltage(voltage_sensor_align, _3PI_2);
@@ -130,10 +130,10 @@ int BLDCMotor::alignSensor() {
   // find the index if available
   int exit_flag = absoluteZeroAlign();
   _delay(500);
-  if(debugger){
-    if(exit_flag< 0 ) debugger->println("DEBUG: Error: Absolute zero not found!");
-    if(exit_flag> 0 ) debugger->println("DEBUG: Success: Absolute zero found!");
-    else  debugger->println("DEBUG: Absolute zero not available!");
+  if(monitor_port){
+    if(exit_flag< 0 ) monitor_port->println("MONITOR: Error: Absolute zero not found!");
+    if(exit_flag> 0 ) monitor_port->println("MONITOR: Success: Absolute zero found!");
+    else  monitor_port->println("MONITOR: Absolute zero not available!");
   }
   return exit_flag;
 }
@@ -145,9 +145,9 @@ int BLDCMotor::absoluteZeroAlign() {
   // if no absolute zero return
   if(!sensor->hasAbsoluteZero()) return 0;
   
-  if(debugger) debugger->println("DEBUG: Aligning the absolute zero.");
+  if(monitor_port) monitor_port->println("MONITOR: Aligning the absolute zero.");
 
-  if(debugger && sensor->needsAbsoluteZeroSearch()) debugger->println("DEBUG: Searching for absolute zero.");
+  if(monitor_port && sensor->needsAbsoluteZeroSearch()) monitor_port->println("MONITOR: Searching for absolute zero.");
   // search the absolute zero with small velocity
   while(sensor->needsAbsoluteZeroSearch() && shaft_angle < _2PI){
     loopFOC();   
@@ -204,7 +204,7 @@ int  BLDCMotor::initFOC() {
   int exit_flag = alignSensor();
   _delay(500);
   
-  if(debugger) debugger->println("DEBUG: FOC init finished - motor ready.");
+  if(monitor_port) monitor_port->println("MONITOR: FOC init finished - motor ready.");
 
   return exit_flag;
 }
@@ -429,38 +429,38 @@ float BLDCMotor::positionP(float ek) {
 }
 
 /**
- *  Debugger functions
+ *  Monitoring functions
  */
-// function implementing the debugger setter
-void BLDCMotor::useDebugging(Print &print){
-  debugger = &print; //operate on the address of print
-  if(debugger )debugger->println("DEBUG: Serial debugger enabled!");
+// function implementing the monitor_port setter
+void BLDCMotor::useMonitoring(Print &print){
+  monitor_port = &print; //operate on the address of print
+  if(monitor_port ) monitor_port->println("MONITOR: Serial monitor enabled!");
 }
 // utility function intended to be used with serial plotter to monitor motor variables
 // significantly slowing the execution down!!!!
 void BLDCMotor::monitor() {
-  if(!debugger) return;
+  if(!monitor_port) return;
   switch (controller) {
     case ControlType::velocity:
-      debugger->print(voltage_q);
-      debugger->print("\t");
-      debugger->print(shaft_velocity_sp);
-      debugger->print("\t");
-      debugger->println(shaft_velocity);
+      monitor_port->print(voltage_q);
+      monitor_port->print("\t");
+      monitor_port->print(shaft_velocity_sp);
+      monitor_port->print("\t");
+      monitor_port->println(shaft_velocity);
       break;
     case ControlType::angle:
-      debugger->print(voltage_q);
-      debugger->print("\t");
-      debugger->print(shaft_angle_sp);
-      debugger->print("\t");
-      debugger->println(shaft_angle);
+      monitor_port->print(voltage_q);
+      monitor_port->print("\t");
+      monitor_port->print(shaft_angle_sp);
+      monitor_port->print("\t");
+      monitor_port->println(shaft_angle);
       break;
     case ControlType::voltage:
-      debugger->print(voltage_q);
-      debugger->print("\t");
-      debugger->print(shaft_angle);
-      debugger->print("\t");
-      debugger->println(shaft_velocity);
+      monitor_port->print(voltage_q);
+      monitor_port->print("\t");
+      monitor_port->print(shaft_angle);
+      monitor_port->print("\t");
+      monitor_port->println(shaft_velocity);
       break;
   }
 }
@@ -478,68 +478,68 @@ int BLDCMotor::command(String user_command) {
   // apply the the command
   switch(cmd){
     case 'P':      // velocity P gain change
-      if(debugger) debugger->print("PI velocity P: ");
+      if(monitor_port) monitor_port->print("PI velocity P: ");
       if(!GET) PI_velocity.P = value;
-      if(debugger) debugger->println(PI_velocity.P);
+      if(monitor_port) monitor_port->println(PI_velocity.P);
       break;
     case 'I':      // velocity I gain change
-      if(debugger) debugger->print("PI velocity I: ");
+      if(monitor_port) monitor_port->print("PI velocity I: ");
       if(!GET) PI_velocity.I = value;
-      if(debugger) debugger->println(PI_velocity.I);
+      if(monitor_port) monitor_port->println(PI_velocity.I);
       break;
     case 'L':      // velocity voltage limit change
-      if(debugger) debugger->print("PI velocity voltage limit: ");
+      if(monitor_port) monitor_port->print("PI velocity voltage limit: ");
       if(!GET)PI_velocity.voltage_limit = value;
-      if(debugger) debugger->println(PI_velocity.voltage_limit);
+      if(monitor_port) monitor_port->println(PI_velocity.voltage_limit);
       break;
     case 'R':      // velocity voltage ramp change
-      if(debugger) debugger->print("PI velocity voltage ramp: ");
+      if(monitor_port) monitor_port->print("PI velocity voltage ramp: ");
       if(!GET) PI_velocity.voltage_ramp = value;
-      if(debugger) debugger->println(PI_velocity.voltage_ramp);
+      if(monitor_port) monitor_port->println(PI_velocity.voltage_ramp);
       break;
     case 'F':      // velocity Tf low pass filter change
-      if(debugger) debugger->print("LPF velocity time constant: ");
+      if(monitor_port) monitor_port->print("LPF velocity time constant: ");
       if(!GET) LPF_velocity.Tf = value;
-      if(debugger) debugger->println(LPF_velocity.Tf);
+      if(monitor_port) monitor_port->println(LPF_velocity.Tf);
       break;
     case 'K':      // angle loop gain P change
-      if(debugger) debugger->print("P angle P value: ");
+      if(monitor_port) monitor_port->print("P angle P value: ");
       if(!GET) P_angle.P = value;
-      if(debugger) debugger->println(P_angle.P);
+      if(monitor_port) monitor_port->println(P_angle.P);
       break;
     case 'N':      // angle loop gain velocity_limit change
-      if(debugger) debugger->print("P angle velocity limit: ");
+      if(monitor_port) monitor_port->print("P angle velocity limit: ");
       if(!GET) P_angle.velocity_limit = value;
-      if(debugger) debugger->println(P_angle.velocity_limit);
+      if(monitor_port) monitor_port->println(P_angle.velocity_limit);
       break;
     case 'C':
       // change control type
-      if(debugger) debugger->print("Contoller type: ");
+      if(monitor_port) monitor_port->print("Contoller type: ");
       
       if(GET){ // if get commang
         switch(controller){
           case ControlType::voltage:
-            if(debugger) debugger->println("voltage");
+            if(monitor_port) monitor_port->println("voltage");
             break;
           case ControlType::velocity:
-            if(debugger) debugger->println("velocity");
+            if(monitor_port) monitor_port->println("velocity");
             break;
           case ControlType::angle:
-            if(debugger) debugger->println("angle");
+            if(monitor_port) monitor_port->println("angle");
             break;
         }
       }else{ // if set command
         switch((int)value){
           case 0:
-            if(debugger) debugger->println("voltage");
+            if(monitor_port) monitor_port->println("voltage");
             controller = ControlType::voltage;
             break;
           case 1:
-            if(debugger) debugger->println("velocity");
+            if(monitor_port) monitor_port->println("velocity");
             controller = ControlType::velocity;
             break;
           case 2:
-            if(debugger) debugger->println("angle");
+            if(monitor_port) monitor_port->println("angle");
             controller = ControlType::angle;
             break;
           default: // not valid command
@@ -550,29 +550,29 @@ int BLDCMotor::command(String user_command) {
     case 'V':     // get current values of the state variables
         switch((int)value){
           case 0: // get voltage
-            if(debugger) debugger->print("Uq: ");
-            if(debugger) debugger->println(voltage_q);
+            if(monitor_port) monitor_port->print("Uq: ");
+            if(monitor_port) monitor_port->println(voltage_q);
             break;
           case 1: // get velocity
-            if(debugger) debugger->print("Velocity: ");
-            if(debugger) debugger->println(shaft_velocity);
+            if(monitor_port) monitor_port->print("Velocity: ");
+            if(monitor_port) monitor_port->println(shaft_velocity);
             break;
           case 2: // get angle
-            if(debugger) debugger->print("Angle: ");
-            if(debugger) debugger->println(shaft_angle);
+            if(monitor_port) monitor_port->print("Angle: ");
+            if(monitor_port) monitor_port->println(shaft_angle);
             break;
           case 3: // get angle
-            if(debugger) debugger->print("Target: ");
-            if(debugger) debugger->println(target);
+            if(monitor_port) monitor_port->print("Target: ");
+            if(monitor_port) monitor_port->println(target);
             break;
           default: // not valid command
             errorFlag = 0;
         }
       break;
     default:  // target change
-      if(debugger) debugger->print("Target : ");
+      if(monitor_port) monitor_port->print("Target : ");
       target = user_command.toFloat();
-      if(debugger) debugger->println(target);
+      if(monitor_port) monitor_port->println(target);
   }
   // return 0 if error and 1 if ok
   return errorFlag;

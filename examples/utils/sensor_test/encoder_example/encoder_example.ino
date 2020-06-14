@@ -14,7 +14,7 @@ void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 
 void setup() {
-  // debugging port
+  // monitoring port
   Serial.begin(115200);
 
   // enable/disable quadrature mode

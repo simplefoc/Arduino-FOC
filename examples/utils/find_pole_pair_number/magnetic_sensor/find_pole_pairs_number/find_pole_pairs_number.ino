@@ -37,7 +37,7 @@ void setup() {
   // initialize motor hardware
   motor.init();
 
-  // debugging port
+  // monitoring port
   Serial.begin(115200);
 
   // pole pairs calculation routine
@@ -82,7 +82,7 @@ void setup() {
   Serial.println();
    
 
-  // a bit of debugging the result
+  // a bit of monitoring the result
   if(pp <= 0 ){
     Serial.println("Pole pair number cannot be negative");
     Serial.println(" - Try changing the search_voltage value or motor/sensor configuration.");
