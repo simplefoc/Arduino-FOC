@@ -11,7 +11,7 @@ Therefore this is an attempt to:
 - Develop a modular BLDC driver board: [Arduino *SimpleFOCShield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
 
 
-> ***UPDATE: Arduino *SimpleFOCShield* now supports STM32 boards [Nucleo](https://www.st.com/en/evaluation-tools/stm32-nucleo-boards.html) and [Bluepill](https://stm32-base.org/boards/STM32F103C8T6-Blue-Pill.html).***
+> ***UPDATE:*** Arduino *SimpleFOClibrary* now supports STM32 boards [Nucleo](https://www.st.com/en/evaluation-tools/stm32-nucleo-boards.html) and [Bluepill](https://stm32-base.org/boards/STM32F103C8T6-Blue-Pill.html).
 
 ## Arduino *SimpleFOCShield*
 
