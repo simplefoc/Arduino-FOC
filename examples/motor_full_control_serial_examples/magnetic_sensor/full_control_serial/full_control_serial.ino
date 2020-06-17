@@ -110,11 +110,7 @@ void loop() {
   motor.command(serialReceiveUserCommand());
 }
 
-// utility function enabling serial communication function with the user
-// user can set the target values and set/get the motor configuration useing motor commands 
-// see documentation for full command list 
-// 
-// this function can be implemented in serialEvent function as well
+// utility function enabling serial communication the user
 String serialReceiveUserCommand() {
   
   // a string to hold incoming data
