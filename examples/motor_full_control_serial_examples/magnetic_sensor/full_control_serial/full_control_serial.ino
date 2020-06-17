@@ -59,7 +59,7 @@ void setup() {
   // set control loop type to be used
   motor.controller = ControlType::voltage;
 
-  // contoller configuration based on the controll type 
+  // contoller configuration based on the control type 
   motor.PI_velocity.P = 0.2;
   motor.PI_velocity.I = 20;
   // default voltage_power_supply
@@ -105,12 +105,9 @@ void loop() {
   // velocity, position or voltage
   // if tatget not set in parameter uses motor.target variable
   motor.move();
-
-  // output motor state variabels to the monitoring port (Serial)
-  // motor.monitor();
   
   // user communication
-  serialReceiveUserCommand();
+  motor.command(serialReceiveUserCommand());
 }
 
 // utility function enabling serial communication function with the user
@@ -118,11 +115,13 @@ void loop() {
 // see documentation for full command list 
 // 
 // this function can be implemented in serialEvent function as well
-void serialReceiveUserCommand() {
+String serialReceiveUserCommand() {
   
   // a string to hold incoming data
   static String received_chars;
   
+  String command = "";
+
   while (Serial.available()) {
     // get the new byte:
     char inChar = (char)Serial.read();
@@ -133,11 +132,12 @@ void serialReceiveUserCommand() {
     if (inChar == '\n') {
       
       // execute the user command
-      motor.command(received_chars);
+      command = received_chars;
 
       // reset the command buffer 
       received_chars = "";
     }
   }
+  return command;
 }
 
