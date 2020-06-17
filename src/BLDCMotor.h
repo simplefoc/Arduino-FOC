@@ -95,12 +95,12 @@ class BLDCMotor
     void linkSensor(Sensor* sensor);
 
     /**
-     * Function intializing FOC algorithm
-     * and aligning sensor's and motors's zero position 
+     * Function initializing FOC algorithm
+     * and aligning sensor's and motors' zero position 
      */  
     int initFOC(); 
     /**
-     * Function runing FOC algorithm in real-time
+     * Function running FOC algorithm in real-time
      * it calculates the gets motor angle and sets the appropriate voltages 
      * to the phase pwm signals
      * - the faster you can run it the better Arduino UNO ~1ms, Bluepill ~ 100us
@@ -171,7 +171,7 @@ class BLDCMotor
     * Method using FOC to set Uq to the motor at the optimal angle
     * Heart of the FOC algorithm
     * 
-    * @param Uq Current volatge in q axis to set to the motor
+    * @param Uq Current voltage in q axis to set to the motor
     * @param angle_el current electrical angle of the motor
     */
     void setPhaseVoltage(float Uq, float angle_el);
