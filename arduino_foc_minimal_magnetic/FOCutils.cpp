@@ -1,10 +1,10 @@
 #include "FOCutils.h"
 
-/*
-  High PWM frequency
-  https://sites.google.com/site/qeewiki/books/avr-guide/timers-on-the-atmega328
-*/
+
 void setPwmFrequency(int pin) {
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__) // if arduino uno and other atmega328p chips
+//  High PWM frequency
+//  https://sites.google.com/site/qeewiki/books/avr-guide/timers-on-the-atmega328
   if (pin == 5 || pin == 6 || pin == 9 || pin == 10) {
     if (pin == 5 || pin == 6) {
       // configure the pwm phase-corrected mode
@@ -20,22 +20,39 @@ void setPwmFrequency(int pin) {
       // set prescaler to 1
     TCCR2B = ((TCCR2B & 0b11111000) | 0x01);
   }
+#elif defined(_STM32_DEF_) // if stm chips
+    analogWrite(pin,0);
+    analogWriteFrequency(50000);  // la valeur par défaut est 20000 Hz
+#endif
 }
 
 // function buffering delay() 
-// arduino function doesn't work well with interrupts
+// arduino uno function doesn't work well with interrupts
 void _delay(unsigned long ms){
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
+  // if arduino uno and other atmega328p chips
+  // return the value based on the prescaler
   long t = _micros();
-  while((_micros() - t)/1000 < ms){};
+  while((_micros() - t)/1000 < ms){}; 
+#else
+  // regular micros
+  return delay(ms);
+#endif
 }
 
 
 // function buffering _micros() 
 // arduino function doesn't work well with interrupts
 unsigned long _micros(){
-    // return the value based on the prescaler
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
+// if arduino uno and other atmega328p chips
+    //return the value based on the prescaler
     if((TCCR0B & 0b00000111) == 0x01) return (micros()/32);
     else return (micros());
+#else
+  // regular micros
+  return micros();
+#endif
 }
 
 
@@ -54,21 +71,21 @@ int sine_array[200] = {0,79,158,237,316,395,473,552,631,710,789,867,946,1024,110
 // it has to receive an angle in between 0 and 2PI
 float _sin(float a){
   if(a < _PI_2){
-    //return sine_array[(int)(199.0*( a / (M_PI/2.0)))];
+    //return sine_array[(int)(199.0*( a / (_PI/2.0)))];
     //return sine_array[(int)(126.6873* a)];           // float array optimised
-    return 0.0001*sine_array[round(126.6873* a)];      // int array optimised
-  }else if(a < M_PI){
-    // return sine_array[(int)(199.0*(1.0 - (a-M_PI/2.0) / (M_PI/2.0)))];
+    return 0.0001*sine_array[_round(126.6873* a)];      // int array optimised
+  }else if(a < _PI){
+    // return sine_array[(int)(199.0*(1.0 - (a-_PI/2.0) / (_PI/2.0)))];
     //return sine_array[398 - (int)(126.6873*a)];          // float array optimised
-    return 0.0001*sine_array[398 - round(126.6873*a)];     // int array optimised
+    return 0.0001*sine_array[398 - _round(126.6873*a)];     // int array optimised
   }else if(a < _3PI_2){
-    // return -sine_array[(int)(199.0*((a - M_PI) / (M_PI/2.0)))];
+    // return -sine_array[(int)(199.0*((a - _PI) / (_PI/2.0)))];
     //return -sine_array[-398 + (int)(126.6873*a)];           // float array optimised
-    return -0.0001*sine_array[-398 + round(126.6873*a)];      // int array optimised
+    return -0.0001*sine_array[-398 + _round(126.6873*a)];      // int array optimised
   } else {
-    // return -sine_array[(int)(199.0*(1.0 - (a - 3*M_PI/2) / (M_PI/2.0)))];
+    // return -sine_array[(int)(199.0*(1.0 - (a - 3*_PI/2) / (_PI/2.0)))];
     //return -sine_array[796 - (int)(126.6873*a)];           // float array optimised
-    return -0.0001*sine_array[796 - round(126.6873*a)];      // int array optimised
+    return -0.0001*sine_array[796 - _round(126.6873*a)];      // int array optimised
   }
 }
 

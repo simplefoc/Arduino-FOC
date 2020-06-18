@@ -4,7 +4,6 @@
 #include "FOCutils.h"
 #include "Sensor.h"
 #include "Encoder.h"
-#include "MagneticSensor.h"
 #include "BLDCMotor.h"
 
 #endif

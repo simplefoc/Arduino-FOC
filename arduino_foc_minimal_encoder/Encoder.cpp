@@ -35,7 +35,7 @@ Encoder::Encoder(int _encA, int _encB , float _ppr, int _index){
   // extern pullup as default
   pullup = Pullup::EXTERN;
   // enable quadrature encoder by default
-  quadrature = Quadrature::ENABLE;
+  quadrature = Quadrature::ON;
 }
 
 //  Encoder interrupt callback functions
@@ -43,7 +43,7 @@ Encoder::Encoder(int _encA, int _encB , float _ppr, int _index){
 void Encoder::handleA() {
   int A = digitalRead(pinA);
   switch (quadrature){
-    case Quadrature::ENABLE:
+    case Quadrature::ON:
       // CPR = 4xPPR
       if ( A != A_active ) {
         pulse_counter += (A_active == B_active) ? 1 : -1;
@@ -51,7 +51,7 @@ void Encoder::handleA() {
         A_active = A;
       }
       break;
-    case Quadrature::DISABLE:
+    case Quadrature::OFF:
       // CPR = PPR
       if(A && !digitalRead(pinB)){
         pulse_counter++;
@@ -64,7 +64,7 @@ void Encoder::handleA() {
 void Encoder::handleB() {
   int B = digitalRead(pinB);
   switch (quadrature){
-    case Quadrature::ENABLE:
+    case Quadrature::ON:
   //     // CPR = 4xPPR
       if ( B != B_active ) {
         pulse_counter += (A_active != B_active) ? 1 : -1;
@@ -72,7 +72,7 @@ void Encoder::handleB() {
         B_active = B;
       }
       break;
-    case Quadrature::DISABLE:
+    case Quadrature::OFF:
       // CPR = PPR
       if(B && !digitalRead(pinA)){
         pulse_counter--;
@@ -134,8 +134,8 @@ float Encoder::getVelocity(){
   float dt = Ts + prev_Th - Th;
   pulse_per_second = (dN != 0 && dt > Ts/2) ? dN / dt : pulse_per_second;
   
-  // if more than 0.3 passed in between impulses
-  if ( Th > 0.15) pulse_per_second = 0;
+  // if more than 0.05 passed in between impulses
+  if ( Th > 0.1) pulse_per_second = 0;
 
   // velocity calculation
   float velocity = pulse_per_second / ((float)cpr) * (_2PI);
@@ -202,7 +202,7 @@ void Encoder::init(){
 
   // initial cpr = PPR
   // change it if the mode is quadrature
-  if(quadrature == Quadrature::ENABLE) cpr = 4*cpr;
+  if(quadrature == Quadrature::ON) cpr = 4*cpr;
 
 }
 
@@ -211,12 +211,12 @@ void Encoder::init(){
 void Encoder::enableInterrupts(void (*doA)(), void(*doB)(), void(*doIndex)()){
   // attach interrupt if functions provided
   switch(quadrature){
-    case Quadrature::ENABLE:
+    case Quadrature::ON:
       // A callback and B callback
       if(doA != nullptr) attachInterrupt(digitalPinToInterrupt(pinA), doA, CHANGE);
       if(doB != nullptr) attachInterrupt(digitalPinToInterrupt(pinB), doB, CHANGE);
       break;
-    case Quadrature::DISABLE:
+    case Quadrature::OFF:
       // A callback and B callback
       if(doA != nullptr) attachInterrupt(digitalPinToInterrupt(pinA), doA, RISING);
       if(doB != nullptr) attachInterrupt(digitalPinToInterrupt(pinB), doB, RISING);
