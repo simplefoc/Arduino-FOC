@@ -14,26 +14,28 @@ This is the minimal Arduino example of the [Simple FOC](https://github.com/askur
                                    # AS5048/47   
 ```
 
-Each of the examples will give you the opportunity to change the PI velocity parameters `P` and `I`, Low pass filter time constant `Tf`, change the control loop in real time and check the average loop execution time, all from the serial terminal.
-```
-PI controller parameters change:
-- P value : Prefix P (ex. P0.1)
-- I value : Prefix I (ex. I0.1)
+Each of the examples will give you the opportunity to change the PI velocity parameters `P` and `I`, Low pass filter time constant `Tf`, change the control loop in real time and check the average loop execution time, all from the serial terminal. 
 
-Velocity filter:
-- Tf value : Prefix F (ex. F0.001)
+List of commands:
+- **P**: velocity PI controller P gain
+- **I**: velocity PI controller I gain
+- **L**: velocity PI controller voltage limit
+- **R**: velocity PI controller voltage ramp
+- **F**: velocity Low pass filter time constant
+- **K**: angle P controller P gain
+- **N**: angle P controller velocity limit
+- **C**: control loop 
+  - **0**: voltage 
+  - **1**: velocity 
+  - **2**: angle
+- **V**: get motor variables
+  - **0**: currently set voltage
+  - **1**: current velocity
+  - **2**: current angle
+  - **3**: current target value
 
-Average loop execution time:
-- Type T
 
-Control loop type:
-- C0 - angle control
-- C1 - velocity control
-- C2 - voltage control
-
-Initial parameters:
-PI velocity P: 0.20,	 I: 20.00,	 Low pass filter Tf: 0.0000
-```
+Find more information about the **motor commands** in the [docs.simplefoc.com](https://docs.simplefoc.com/communication)
 
 ###  Installation
 For those willing to experiment and to modify the code I suggest using the [minimal version](https://github.com/askuric/Arduino-FOC/tree/minimal) of the code. 

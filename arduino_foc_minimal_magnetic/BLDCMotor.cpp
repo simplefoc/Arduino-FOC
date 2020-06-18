@@ -468,6 +468,9 @@ void BLDCMotor::monitor() {
 int BLDCMotor::command(String user_command) {
   // error flag
   int errorFlag = 1;
+  // if empty string
+  if(user_command.length() < 1) return errorFlag;
+
   // parse command letter
   char cmd = user_command.charAt(0);
   // check if get command
@@ -508,6 +511,11 @@ int BLDCMotor::command(String user_command) {
       if(monitor_port) monitor_port->println(P_angle.P);
       break;
     case 'N':      // angle loop gain velocity_limit change
+      if(monitor_port) monitor_port->print("P angle velocity limit: ");
+      if(!GET) P_angle.velocity_limit = value;
+      if(monitor_port) monitor_port->println(P_angle.velocity_limit);
+      break;
+    case 'T':      // angle loop gain velocity_limit change
       if(monitor_port) monitor_port->print("P angle velocity limit: ");
       if(!GET) P_angle.velocity_limit = value;
       if(monitor_port) monitor_port->println(P_angle.velocity_limit);

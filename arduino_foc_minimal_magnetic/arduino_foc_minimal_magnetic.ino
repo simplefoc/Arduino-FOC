@@ -1,20 +1,59 @@
+/**
+ * Comprehensive BLDC motor control example using magnetic sensor and the minimal version off the SimpleFOC library
+ * - THis code is completely stand alone and you dont need to have SimpleFOClibary installed to run it 
+ * 
+ * Check the docs.simplefoc.com for more information
+ * 
+ * Using serial terminal user can send motor commands and configure the motor and FOC in real-time:
+ * - configure PID controller constants
+ * - change motion control loops
+ * - monitor motor variabels
+ * - set target values
+ * - check all the configuration values 
+ * 
+ * To check the config value just enter the command letter.
+ * For example: - to read velocity PI controller P gain run: P
+ *              - to set velocity PI controller P gain  to 1.2 run: P1.2
+ * 
+ * To change the target value just enter a number in the terminal:
+ * For example: - to change the target value to -0.1453 enter: -0.1453
+ *              - to get the current target value enter: V3 
+ * 
+ * List of commands:
+ *  - P: velocity PI controller P gain
+ *  - I: velocity PI controller I gain
+ *  - L: velocity PI controller voltage limit
+ *  - R: velocity PI controller voltage ramp
+ *  - F: velocity Low pass filter time constant
+ *  - K: angle P controller P gain
+ *  - N: angle P controller velocity limit
+ *  - C: control loop 
+ *    - 0: voltage 
+ *    - 1: velocity 
+ *    - 2: angle
+ *  - V: get motor variables
+ *    - 0: currently set voltage
+ *    - 1: current velocity
+ *    - 2: current angle
+ *    - 3: current target value
+ *
+ */
+
+
 #include "SimpleFOC.h"
-// // software interrupt library
-// #include <PciManager.h>
-// #include <PciListenerImp.h>
 
 //  BLDCMotor( int phA, int phB, int phC, int pp, int en)
 //  - phA, phB, phC - motor A,B,C phase pwm pins
 //  - pp            - pole pair number
 //  - enable pin    - (optional input)
-BLDCMotor motor = BLDCMotor(9, 5, 6, 11);
+BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
 
 
 // MagneticSensor(int cs, float _cpr, int _angle_register)
 //  cs              - SPI chip select pin 
 //  _cpr            - count per revolution 
 // _angle_register  - (optional) angle read register - default 0x3FFF
-MagneticSensor as504x = MagneticSensor(10, 16384);
+MagneticSensor as504x = MagneticSensor(2, 16384);
 
 void setup() { 
   // debugging port
@@ -22,23 +61,28 @@ void setup() {
 
   // initialise magnetic sensor hardware
   as504x.init();
+  // link sensor and motor
+  motor.linkSensor(&as504x);
 
   // choose FOC algorithm to be used:
   // FOCModulationType::SinePWM  (default)
   // FOCModulationType::SpaceVectorPWM
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
 
-  // power supply voltage
+  // power supply voltage [V]
   // default 12V
   motor.voltage_power_supply = 12;
+  // motor and sensor aligning voltage [V]
+  // default 6V
+  motor.voltage_sensor_align = 3;
   
   // set control loop type to be used
   // ControlType::voltage
   // ControlType::velocity
   // ControlType::angle
-  motor.controller = ControlType::angle;
+  motor.controller = ControlType::voltage;
 
-  // contoller configuration based on the controll type 
+  // controller configuration based on the control type 
   // velocity PI controller parameters
   motor.PI_velocity.P = 0.2;
   motor.PI_velocity.I = 20;
@@ -57,41 +101,25 @@ void setup() {
   motor.P_angle.P = 3;
   motor.P_angle.velocity_limit = 10;
 
-  // link the motor to the sensor
-  motor.linkSensor(&as504x);
+  // use monitoring with serial for motor init
+  // monitoring port
+  Serial.begin(115200);
+  // enable monitoring
+  motor.useMonitoring(Serial);
 
-
-  // use debugging with serial for motor init
-  // comment out if not needed
-  motor.useDebugging(Serial);
-
-  // initialize motor
+  // initialise motor
   motor.init();
   // align encoder and start FOC
   motor.initFOC();
 
-  // this serial print takes about 20% of arduino memory!!
-  Serial.println("\n\n");
-  Serial.println("PI controller parameters change:");
-  Serial.println("- P value : Prefix P (ex. P0.1)");
-  Serial.println("- I value : Prefix I (ex. I0.1)\n");
-  Serial.println("Velocity filter:");
-  Serial.println("- Tf value : Prefix F (ex. F0.001)\n");
-  Serial.println("Average loop execution time:");
-  Serial.println("- Type T\n");
-  Serial.println("Control loop type:");
-  Serial.println("- C0 - angle control");
-  Serial.println("- C1 - velocity control");
-  Serial.println("- C2 - voltage control\n");
-  Serial.println("Initial parameters:");
-  Serial.print("PI velocity P: ");
-  Serial.print(motor.PI_velocity.P);
-  Serial.print(",\t I: ");
-  Serial.print(motor.PI_velocity.I);
-  Serial.print(",\t Low pass filter Tf: ");
-  Serial.println(motor.LPF_velocity.Tf,4);
+  // set the inital target value
+  motor.target = 2;
+
+  Serial.println("Full control example: ");
+  Serial.println("Voltage control target 2V.");
   
   _delay(1000);
+
 }
 
 // target velocity variable
@@ -106,76 +134,36 @@ void loop() {
 
   // iterative function setting the outter loop target
   // velocity, position or voltage
-  motor.move(target);
+  // if tatget not set in parameter uses motor.target variable
+  motor.move();
 
-  // keep track of loop number
-  t++;
+  // user communication
+  motor.command(serialReceiveUserCommand());
 }
 
-// Serial communication callback
-void serialEvent() {
+// utility function enabling serial communication the user
+String serialReceiveUserCommand() {
+  
   // a string to hold incoming data
-  static String inputString;
+  static String received_chars;
+  
+  String command = "";
+
   while (Serial.available()) {
     // get the new byte:
     char inChar = (char)Serial.read();
-    // add it to the inputString:
-    inputString += inChar;
-    // if the incoming character is a newline
-    // end of input
+    // add it to the string buffer:
+    received_chars += inChar;
+
+    // end of user input
     if (inChar == '\n') {
-      if(inputString.charAt(0) == 'P'){
-        motor.PI_velocity.P = inputString.substring(1).toFloat();
-        Serial.print("PI velocity P: ");
-        Serial.print(motor.PI_velocity.P);
-        Serial.print(",\t I: ");
-        Serial.print(motor.PI_velocity.I);
-        Serial.print(",\t Low pass filter Tf: ");
-        Serial.println(motor.LPF_velocity.Tf,4);
-      }else if(inputString.charAt(0) == 'I'){
-        motor.PI_velocity.I = inputString.substring(1).toFloat();
-        Serial.print("PI velocity P: ");
-        Serial.print(motor.PI_velocity.P);
-        Serial.print(",\t I: ");
-        Serial.print(motor.PI_velocity.I);
-        Serial.print(",\t Low pass filter Tf: ");
-        Serial.println(motor.LPF_velocity.Tf,4);
-      }else if(inputString.charAt(0) == 'F'){
-        motor.LPF_velocity.Tf = inputString.substring(1).toFloat();
-        Serial.print("PI velocity P: ");
-        Serial.print(motor.PI_velocity.P);
-        Serial.print(",\t I: ");
-        Serial.print(motor.PI_velocity.I);
-        Serial.print(",\t Low pass filter Tf: ");
-        Serial.println(motor.LPF_velocity.Tf,4);
-      }else if(inputString.charAt(0) == 'T'){
-        Serial.print("Average loop time is (microseconds): ");
-        Serial.println((_micros() - timestamp)/t);
-        t = 0;
-        timestamp = _micros();
-      }else if(inputString.charAt(0) == 'C'){
-        Serial.print("Contoller type: ");
-        int cnt = inputString.substring(1).toFloat();
-        if(cnt == 0){
-          Serial.println("angle!");
-          motor.controller = ControlType::angle;
-        }else if(cnt == 1){
-          Serial.println("velocity!");
-          motor.controller = ControlType::velocity;
-        }else if(cnt == 2){
-          Serial.println("voltage!");
-          motor.controller = ControlType::voltage;
-        }
-        Serial.println();
-        t = 0;
-        timestamp = _micros();
-      }else{
-        target = inputString.toFloat();
-        Serial.print("Target : ");
-        Serial.println(target);
-        inputString = "";
-      }
-      inputString = "";
+      
+      // execute the user command
+      command = received_chars;
+
+      // reset the command buffer 
+      received_chars = "";
     }
   }
+  return command;
 }
