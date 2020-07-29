@@ -1,21 +1,21 @@
-#include "MagneticSensor.h"
+#include "MagneticSensorSPI.h"
 
-// MagneticSensor(int cs, float _cpr, int _angle_register)
+// MagneticSensorSPI(int cs, float _bit_resolution, int _angle_register)
 //  cs              - SPI chip select pin 
-//  _cpr            - count per revolution 
+//  _bit_resolution   sensor resolution bit number
 // _angle_register  - (optional) angle read register - default 0x3FFF
-MagneticSensor::MagneticSensor(int cs, float _cpr, int _angle_register){
+MagneticSensorSPI::MagneticSensorSPI(int cs, float _bit_resolution, int _angle_register){
   // chip select pin
   chip_select_pin = cs; 
   // angle read register of the magnetic sensor
   angle_register = _angle_register ? _angle_register : DEF_ANGLE_REGISTAR;
   // register maximum value (counts per revolution)
-  cpr = _cpr;
+  cpr = pow(2,_bit_resolution);
 
 }
 
 
-void MagneticSensor::init(){
+void MagneticSensorSPI::init(){
 	// 1MHz clock (AMS should be able to accept up to 10MHz)
 	settings = SPISettings(1000000, MSBFIRST, SPI_MODE1);
 
@@ -42,7 +42,7 @@ void MagneticSensor::init(){
 
 //  Shaft angle calculation
 //  angle is in radians [rad]
-float MagneticSensor::getAngle(){
+float MagneticSensorSPI::getAngle(){
   // raw data from the sensor
   float angle_data = getRawCount(); 
 
@@ -64,7 +64,7 @@ float MagneticSensor::getAngle(){
 }
 
 // Shaft velocity calculation
-float MagneticSensor::getVelocity(){
+float MagneticSensorSPI::getVelocity(){
   // calculate sample time
   float Ts = (_micros() - velocity_calc_timestamp)*1e-6;
   // quick fix for strange cases (micros overflow)
@@ -83,7 +83,7 @@ float MagneticSensor::getVelocity(){
 
 // set current angle as zero angle 
 // return the angle [rad] difference
-float MagneticSensor::initRelativeZero(){
+float MagneticSensorSPI::initRelativeZero(){
   float angle_offset = -getAngle();
   zero_offset = getRawCount();
 
@@ -93,7 +93,7 @@ float MagneticSensor::initRelativeZero(){
 }
 // set absolute zero angle as zero angle
 // return the angle [rad] difference
-float MagneticSensor::initAbsoluteZero(){
+float MagneticSensorSPI::initAbsoluteZero(){
   float rotation = -(int)zero_offset;
   // init absolute zero
   zero_offset = 0;
@@ -106,27 +106,27 @@ float MagneticSensor::initAbsoluteZero(){
 // returns 0 if it has no absolute 0 measurement
 // 0 - incremental encoder without index
 // 1 - encoder with index & magnetic sensors
-int MagneticSensor::hasAbsoluteZero(){
+int MagneticSensorSPI::hasAbsoluteZero(){
   return 1;
 }
 // returns 0 if it does need search for absolute zero
 // 0 - magnetic sensor 
 // 1 - ecoder with index
-int MagneticSensor::needsAbsoluteZeroSearch(){
+int MagneticSensorSPI::needsAbsoluteZeroSearch(){
   return 0;
 }
 
 
 // function reading the raw counter of the magnetic sensor
-int MagneticSensor::getRawCount(){
-	return (int)MagneticSensor::read(angle_register);
+int MagneticSensorSPI::getRawCount(){
+	return (int)MagneticSensorSPI::read(angle_register);
 }
 
 // SPI functions 
 /**
  * Utility function used to calculate even parity of word
  */
-byte MagneticSensor::spiCalcEvenParity(word value){
+byte MagneticSensorSPI::spiCalcEvenParity(word value){
 	byte cnt = 0;
 	byte i;
 
@@ -143,7 +143,7 @@ byte MagneticSensor::spiCalcEvenParity(word value){
   * Takes the address of the register as a 16 bit word
   * Returns the value of the register
   */
-word MagneticSensor::read(word angle_register){
+word MagneticSensorSPI::read(word angle_register){
 	word command = 0b0100000000000000; // PAR=0 R/W=R
 	command = command | angle_register;
 
@@ -193,6 +193,6 @@ word MagneticSensor::read(word angle_register){
  * Closes the SPI connection
  * SPI has an internal SPI-device counter, for each init()-call the close() function must be called exactly 1 time
  */
-void MagneticSensor::close(){
+void MagneticSensorSPI::close(){
 	SPI.end();
 }

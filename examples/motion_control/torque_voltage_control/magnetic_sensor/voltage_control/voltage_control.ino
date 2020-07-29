@@ -8,8 +8,10 @@
  */
 #include <SimpleFOC.h>
 
-// Magnetic sensor instance
-MagneticSensor AS5x4x = MagneticSensor(10, 16384, 0x3FFF);
+// magnetic sensor instance
+MagneticSensorSPI sensor = MagneticSensorSPI(10, 16384, 0x3FFF);
+// magnetic sensor instance
+//MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
 
 // Motor instance
 BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
@@ -17,9 +19,9 @@ BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
 void setup() {
 
   // initialise magnetic sensor hardware
-  AS5x4x.init();
+  sensor.init();
   // link the motor to the sensor
-  motor.linkSensor(&AS5x4x);
+  motor.linkSensor(&sensor);
 
   // power supply voltage
   // default 12V

@@ -7,21 +7,27 @@
  */
 #include <SimpleFOC.h>
 
-// Magnetic sensor instance 
+// SPI Magnetic sensor instance (AS5047U example)
 // MISO PA7
 // MOSI PA6
 // SCK PA5
-MagneticSensor AS5x4x = MagneticSensor(PA4, 16384, 0x3FFF);
+MagneticSensorSPI sensor = MagneticSensorSPI(PA4, 14, 0x3FFF);
+
+// I2C Magnetic sensor instance (AS5600 example)
+// make sure to use the pull-ups!!
+// SDA PB7
+// SCL PB6
+//MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
 
 // Motor instance
-BLDCMotor motor = BLDCMotor(PB6, PB7, PB8, 11, PA5);
+BLDCMotor motor = BLDCMotor(PA3, PA2, PA1, 11, PA0);
 
 void setup() {
 
   // initialise magnetic sensor hardware
-  AS5x4x.init();
+  sensor.init();
   // link the motor to the sensor
-  motor.linkSensor(&AS5x4x);
+  motor.linkSensor(&sensor);
 
   // power supply voltage
   // default 12V

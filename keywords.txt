@@ -2,7 +2,8 @@ ArduinoFOC	KEYWORD1
 SimpleFOC	KEYWORD1
 BLDCMotor	KEYWORD1
 Encoder	KEYWORD1
-MagneticSensor	KEYWORD1
+MagneticSensorSPI	KEYWORD1
+MagneticSensorI2C	KEYWORD1
 
 initFOC	KEYWORD2
 loopFOC	KEYWORD2
@@ -12,7 +13,7 @@ _delay	KEYWORD3
 _micros	KEYWORD3
 _sin	KEYWORD3
 _cos	KEYWORD3
-setPwmFrequency	KEYWORD3
+_setPwmFrequency	KEYWORD3
 monitor	KEYWORD3
 command	KEYWORD3
 

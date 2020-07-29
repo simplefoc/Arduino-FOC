@@ -20,14 +20,16 @@
 BLDCMotor motor = BLDCMotor(9, 5, 6, 0, 8);
 
 // magnetic sensor instance
-MagneticSensor AS5x4x = MagneticSensor(10, 16384, 0x3FFF);
+MagneticSensorSPI sensor = MagneticSensorSPI(10, 16384, 0x3FFF);
+// magnetic sensor instance
+//MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
 
 void setup() {
 
   // initialise magnetic sensor hardware
-  AS5x4x.init();
+  sensor.init();
   // link the motor to the sensor
-  motor.linkSensor(&AS5x4x);
+  motor.linkSensor(&sensor);
 
   // power supply voltage
   motor.voltage_power_supply = 12;
@@ -51,7 +53,7 @@ void setup() {
   motor.setPhaseVoltage(pp_search_voltage, 0);
   _delay(1000);
   // read the sensor angle 
-  float angle_begin = AS5x4x.getAngle();
+  float angle_begin = sensor.getAngle();
   _delay(50);
   
   // move the motor slowly to the electrical angle pp_search_angle
@@ -62,7 +64,7 @@ void setup() {
   }
   _delay(1000);
   // read the sensor value for 180
-  float angle_end = AS5x4x.getAngle();
+  float angle_end = sensor.getAngle();
   _delay(50);
   // turn off the motor
   motor.setPhaseVoltage(0,0);
