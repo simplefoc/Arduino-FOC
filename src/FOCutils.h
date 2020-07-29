@@ -26,7 +26,7 @@
  * 
  * @param pin pin number to configure
  */
-void setPwmFrequency(int pin);
+void _setPwmFrequency(int pin);
 
 /** 
  * Function implementing delay() function in milliseconds 

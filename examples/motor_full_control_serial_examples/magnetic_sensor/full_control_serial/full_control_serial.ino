@@ -37,8 +37,10 @@
  */
 #include <SimpleFOC.h>
 
-// magnetic sensor instance
-MagneticSensor AS5x4x = MagneticSensor(10, 16384, 0x3FFF);
+// SPI magnetic sensor instance
+MagneticSensorSPI sensor = MagneticSensorSPI(10, 16384, 0x3FFF);
+// I2C magnetic sensor instance
+//MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
 
 // motor instance
 BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
@@ -46,9 +48,9 @@ BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
 void setup() {
 
   // initialise magnetic sensor hardware
-  AS5x4x.init();
+  sensor.init();
   // link the motor to the sensor
-  motor.linkSensor(&AS5x4x);
+  motor.linkSensor(&sensor);
 
   // choose FOC modulation
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
@@ -88,10 +90,8 @@ void setup() {
   motor.target = 2;
 
 
-  Serial.println("Full control example: ");
-  Serial.println("Run user commands to configure and the motor (find the full command list in docs.simplefoc.com) \n ");
-  Serial.println("Initial motion control loop is voltage loop.");
-  Serial.println("Initial target voltage 2V.");
+  // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)
+  Serial.println("Motor commands sketch | Initial motion control > torque/voltage : target 2V.");
   
   _delay(1000);
 }

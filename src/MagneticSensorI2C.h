@@ -1,22 +1,22 @@
-#ifndef MAGNETICSENSOR_LIB_H
-#define MAGNETICSENSOR_LIB_H
+#ifndef MAGNETICSENSORI2C_LIB_H
+#define MAGNETICSENSORI2C_LIB_H
 
 #include "Arduino.h"
-#include <SPI.h>
+#include <Wire.h>
 #include "FOCutils.h"
 #include "Sensor.h"
 
-#define DEF_ANGLE_REGISTAR 0x3FFF
 
-class MagneticSensor: public Sensor{
+class MagneticSensorI2C: public Sensor{
  public:
     /**
-     *  MagneticSensor class constructor
-     * @param cs  SPI chip select pin 
-     * @param cpr  counts per revolution 
-     * @param angle_register  (optional) angle read register - default 0x3FFF
+     * MagneticSensorI2C class constructor
+     * @param chip_address  I2C chip address
+     * @param bits number of bits of the sensor resolution 
+     * @param angle_register_msb  angle read register msb
+     * @param _bits_used_msb number of used bits in msb
      */
-    MagneticSensor(int cs, float cpr, int angle_register = 0);
+    MagneticSensorI2C(uint8_t _chip_address, int _bit_resolution, uint8_t _angle_register_msb, int _msb_bits_used);
     
 
     /** sensor initialise pins */
@@ -45,18 +45,17 @@ class MagneticSensor: public Sensor{
 
   private:
     float cpr; //!< Maximum range of the magnetic sensor
-    // spi variables
-    int angle_register; //!< SPI angle register to read
-    int chip_select_pin; //!< SPI chip select pin
-	  SPISettings settings; //!< SPI settings variable
-    // spi functions
-    /** Stop SPI communication */
-    void close(); 
-    /** Read one SPI register value */
-    word read(word angle_register);
-    /** Calculate parity value  */
-    byte spiCalcEvenParity(word value);
+    uint16_t lsb_used; //!< Number of bits used in LSB register
+    uint8_t lsb_mask;
+    uint8_t msb_mask;
+    
+    // I2C variables
+    uint8_t angle_register_msb; //!< I2C angle register to read
+    uint8_t chip_address; //!< I2C chip select pins
 
+    // I2C functions
+    /** Read one I2C register value */
+    int read(uint8_t angle_register_msb);
 
     word zero_offset; //!< user defined zero offset
     /**

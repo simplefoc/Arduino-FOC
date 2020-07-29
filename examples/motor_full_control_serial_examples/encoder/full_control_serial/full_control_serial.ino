@@ -94,10 +94,8 @@ void setup() {
   motor.target = 2;
 
 
-  Serial.println("Full control example: ");
-  Serial.println("Run user commands to configure and the motor (find the full command list in docs.simplefoc.com) \n ");
-  Serial.println("Initial motion control loop is voltage loop.");
-  Serial.println("Initial target voltage 2V.");
+  // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)
+  Serial.println("Motor commands sketch | Initial motion control > torque/voltage : target 2V.");
   
   _delay(1000);
 }

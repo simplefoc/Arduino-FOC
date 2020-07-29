@@ -89,7 +89,8 @@ void loop() {
 #include "FOCutils.h"
 #include "Sensor.h"
 #include "Encoder.h"
-#include "MagneticSensor.h"
+#include "MagneticSensorSPI.h"
+#include "MagneticSensorI2C.h"
 #include "BLDCMotor.h"
 
 #endif
