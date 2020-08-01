@@ -38,7 +38,6 @@
  *    - 3: current target value
  *
  */
-
 #include "BLDCMotor.h"
 #include "Encoder.h"
 
@@ -46,7 +45,7 @@
 //  - phA, phB, phC - motor A,B,C phase pwm pins
 //  - pp            - pole pair number
 //  - enable pin    - (optional input)
-BLDCMotor motor = BLDCMotor(9, 10, 11, 11,8);
+BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
 
 //Encoder(int encA, int encB , int cpr, int index)
 //    - encA, encB    - encoder A and B pins
