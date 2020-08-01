@@ -39,19 +39,20 @@
  *
  */
 
-#include "SimpleFOC.h"
+#include "BLDCMotor.h"
+#include "Encoder.h"
 
 //  BLDCMotor( int phA, int phB, int phC, int pp, int en)
 //  - phA, phB, phC - motor A,B,C phase pwm pins
 //  - pp            - pole pair number
 //  - enable pin    - (optional input)
-BLDCMotor motor = BLDCMotor(3, 10, 11, 11,7);
+BLDCMotor motor = BLDCMotor(9, 10, 11, 11,8);
 
 //Encoder(int encA, int encB , int cpr, int index)
 //    - encA, encB    - encoder A and B pins
 //    - ppr           - impulses per rotation  (cpr=ppr*4)
 //    - index pin     - (optional input)
-Encoder encoder = Encoder(A1, A2, 8196);
+Encoder encoder = Encoder(2, 3, 8196);
 // interrupt routine intialisation
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}

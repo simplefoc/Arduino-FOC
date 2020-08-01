@@ -40,7 +40,24 @@
  */
 
 
-#include "SimpleFOC.h"
+#include "BLDCMotor.h"
+// choose which one you would like to use I2C or SPI
+#include "MagneticSensorSPI.h"
+//#include "MagneticSensorI2C.h"
+
+// MagneticSensorSPI(int cs, float _cpr, int _angle_register)
+//  cs              - SPI chip select pin 
+//  bit_resolution - magnetic sensor resolution
+//  angle_register  - (optional) angle read register - default 0x3FFF
+MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
+
+// MagneticSensorI2C(uint8_t _chip_address, float _cpr, uint8_t _angle_register_msb)
+//  chip_address         - I2C chip address
+//  bit_resolution       - resolution of the sensor
+//  angle_register_msb   - angle read register msb
+//  bits_used_msb        - number of used bits in msb register
+//MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
+
 
 //  BLDCMotor( int phA, int phB, int phC, int pp, int en)
 //  - phA, phB, phC - motor A,B,C phase pwm pins
@@ -48,21 +65,14 @@
 //  - enable pin    - (optional input)
 BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
 
-
-// MagneticSensor(int cs, float _cpr, int _angle_register)
-//  cs              - SPI chip select pin 
-//  _cpr            - count per revolution 
-// _angle_register  - (optional) angle read register - default 0x3FFF
-MagneticSensor as504x = MagneticSensor(2, 16384);
-
 void setup() { 
   // debugging port
   Serial.begin(115200);
 
   // initialise magnetic sensor hardware
-  as504x.init();
+  sensor.init();
   // link sensor and motor
-  motor.linkSensor(&as504x);
+  motor.linkSensor(&sensor);
 
   // choose FOC algorithm to be used:
   // FOCModulationType::SinePWM  (default)

@@ -1,7 +1,7 @@
 #include "FOCutils.h"
 
 
-void setPwmFrequency(int pin) {
+void _setPwmFrequency(int pin) {
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__) // if arduino uno and other atmega328p chips
 //  High PWM frequency
 //  https://sites.google.com/site/qeewiki/books/avr-guide/timers-on-the-atmega328

@@ -70,9 +70,9 @@ void BLDCMotor::init() {
   if(monitor_port) monitor_port->println("MONITOR: Set high frequency PWM.");
   // Increase PWM frequency to 32 kHz
   // make silent
-  setPwmFrequency(pwmA);
-  setPwmFrequency(pwmB);
-  setPwmFrequency(pwmC);
+  _setPwmFrequency(pwmA);
+  _setPwmFrequency(pwmB);
+  _setPwmFrequency(pwmC);
 
   // sanity check for the voltage limit configuration
   if(PI_velocity.voltage_limit > voltage_power_supply) PI_velocity.voltage_limit =  voltage_power_supply;
