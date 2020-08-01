@@ -11,7 +11,6 @@ This is the minimal Arduino example of the [Simple FOC](https://github.com/askur
 ├───arduino_foc_minimal_encoder    # Arduino minimal code for running a motor with Encoder
 │
 └───arduino_foc_minimal_magnetic   # Arduino minimal code for running a motor with magnetic sensor 
-                                   # AS5048/47   
 ```
 
 Each of the examples will give you the opportunity to change the PI velocity parameters `P` and `I`, Low pass filter time constant `Tf`, change the control loop in real time and check the average loop execution time, all from the serial terminal. 
