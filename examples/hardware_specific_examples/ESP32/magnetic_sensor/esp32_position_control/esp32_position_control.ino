@@ -1,9 +1,5 @@
 /**
- * 
- * STM32 Bluepill position motion control example with magnetic sensor
- * 
- * The same example can be ran with any STM32 board - just make sure that put right pin numbers.
- * 
+ * ESP32 position motion control example with magnetic sensor
  */
 #include <SimpleFOC.h>
 
