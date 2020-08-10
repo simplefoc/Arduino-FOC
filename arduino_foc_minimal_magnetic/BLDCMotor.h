@@ -245,8 +245,15 @@ class BLDCMotor
     
     /** Electrical angle calculation  */
     float electricAngle(float shaftAngle);
-    /** Set phase voltaget to pwm output */
-    void setPwm(int pinPwm, float U);
+
+    /** 
+     * Set phase voltages to the harware 
+     * 
+     * @param Ua phase A voltage
+     * @param Ub phase B voltage
+     * @param Uc phase C voltage
+    */
+    void setPwm(float Ua, float Ub, float Uc);
         
     // Utility functions 
     /** normalizing radian angle to [0,2PI]  */

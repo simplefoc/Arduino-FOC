@@ -3,6 +3,15 @@
 
 #include "Arduino.h"
 
+
+#if defined(ESP_H) // if esp32 boards
+
+#include "driver/mcpwm.h"
+#include "soc/mcpwm_reg.h"
+#include "soc/mcpwm_struct.h"
+
+#endif
+
 // sign function
 #define sign(a) ( ( (a) < 0 )  ?  -1   : ( (a) > 0 ) )
 #define _round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
@@ -24,15 +33,17 @@
  * High PWM frequency setting function
  * - hardware specific
  * 
- * @param pin pin number to configure
+ * @param pinA pinA number to configure
+ * @param pinB pinB number to configure
+ * @param pinC pinC number to configure
  */
-void _setPwmFrequency(int pin);
+void _setPwmFrequency(int pinA, int pinB, int pinC);
 
 /** 
  * Function implementing delay() function in milliseconds 
  * - blocking function
  * - hardware specific
- * 
+
  * @param ms number of milliseconds to wait
  */
 void _delay(unsigned long ms);
@@ -42,6 +53,20 @@ void _delay(unsigned long ms);
  * hardware specific
  */
 unsigned long _micros();
+
+/** 
+ * Function setting the duty cycle to the pwm pin (ex. analogWrite())
+ * hardware specific
+ * 
+ * @param dc_a  duty cycle phase A [0, 1]
+ * @param dc_b  duty cycle phase B [0, 1]
+ * @param dc_c  duty cycle phase C [0, 1]
+ * @param pinA  phase A hardware pin number
+ * @param pinB  phase B hardware pin number
+ * @param pinC  phase C hardware pin number
+ */ 
+void _writeDutyCycle(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC );
+
 
 /**
  *  Function approximating the sine calculation by using fixed size array
