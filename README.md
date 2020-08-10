@@ -10,11 +10,11 @@ Therefore this is an attempt to:
 - Demystify FOC algorithm and make a robust but simple Arduino library: [Arduino *SimpleFOClibrary*](https://docs.simplefoc.com/arduino_simplefoc_library_showcase)
 - Develop a modular BLDC driver board: [Arduino *SimpleFOCShield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
 
+> ***NEWS:*** 📢 Arduino *SimpleFOClibrary* now supports ESP32 boards! Check out the library [docs](https://docs.simplefoc.com/microcontrollers)  to see how to use them with your project. You can also find full configuration in the library examples. 
+
 > ***NEWS:*** 📢 Arduino *SimpleFOClibrary* now supports magnetic sensors using I2C communication! Check out the library [docs](https://docs.simplefoc.com/sensors)  to see how to use them with your project. You can also find full configuration in the library examples. <br>
 > ***BEWARE:*** 📢 The `MagneticSensor` class has been renamed and divided to `MagneticSensorSPI` and `MagneticSensorI2C` classes.
 
-> ***NEWS:*** 📢 Arduino *SimpleFOClibrary* now supports high performance DRV8302 driver boards (60V, 15A, 30$). [YouTube link](https://www.youtube.com/watch?v=RI4nNMF608I).
-> You can find the board by clicking on [Aliexpress link](https://bit.ly/2BZZ5fG) and the  Arduino code example in the examples folder!
 
 
 ## Arduino *SimpleFOCShield*

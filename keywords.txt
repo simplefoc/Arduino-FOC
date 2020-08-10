@@ -14,6 +14,8 @@ _micros	KEYWORD3
 _sin	KEYWORD3
 _cos	KEYWORD3
 _setPwmFrequency	KEYWORD3
+_writeDutyCycle	KEYWORD3
+_round	KEYWORD3
 monitor	KEYWORD3
 command	KEYWORD3
 
@@ -37,6 +39,8 @@ setPhaseVoltage	KEYWORD2
 getAngle	KEYWORD2
 initRelativeZero	KEYWORD2
 initAbsoluteZero	KEYWORD2
+hasAbsoluteZero	KEYWORD2
+needsAbsoluteZeroSearch	KEYWORD2
 useMonitoring	KEYWORD2
 
 voltage_q	KEYWORD2
@@ -50,8 +54,6 @@ pullup	KEYWORD2
 quadrature	KEYWORD2
 foc_modulation	KEYWORD2
 target	KEYWORD2
-
-
 
 
 voltage	KEYWORD2

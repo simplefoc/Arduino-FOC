@@ -1,20 +1,26 @@
 /**
- * Torque control example using voltage control loop.
  * 
- * Most of the low-end BLDC driver boards doesn't have current measurement therefore SimpleFOC offers 
- * you a way to control motor torque by setting the voltage to the motor instead hte current. 
+ * STM32 Bluepill position motion control example with magnetic sensor
  * 
- * This makes the BLDC motor effectively a DC motor, and you can use it in a same way.
+ * The same example can be ran with any STM32 board - just make sure that put right pin numbers.
+ * 
  */
 #include <SimpleFOC.h>
 
-// magnetic sensor instance
-MagneticSensorSPI sensor = MagneticSensorSPI(10, 16384, 0x3FFF);
-// magnetic sensor instance
+// SPI Magnetic sensor instance (AS5047U example)
+// MISO 12
+// MOSI 9
+// SCK 14
+MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
+
+// I2C Magnetic sensor instance (AS5600 example)
+// make sure to use the pull-ups!!
+// SDA 21
+// SCL 22
 //MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
 
 // Motor instance
-BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
+BLDCMotor motor = BLDCMotor(25, 26, 27, 7);
 
 void setup() {
 
@@ -26,36 +32,50 @@ void setup() {
   // power supply voltage
   // default 12V
   motor.voltage_power_supply = 12;
-  // aligning voltage 
-  motor.voltage_sensor_align = 5;
   
   // choose FOC modulation (optional)
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
 
   // set motion control loop to be used
-  motor.controller = ControlType::voltage;
+  motor.controller = ControlType::angle;
 
-  // use monitoring with serial for motor init
-  // comment out if not needed
-  motor.useMonitoring(Serial);
+  // contoller configuration 
+  // default parameters in defaults.h
+
+  // velocity PI controller parameters
+  motor.PI_velocity.P = 0.2;
+  motor.PI_velocity.I = 20;
+  // maximal voltage to be set to the motor
+  motor.PI_velocity.voltage_limit = 6;
+  
+  // velocity low pass filtering time constant
+  // the lower the less filtered
+  motor.LPF_velocity.Tf = 0.01;
+
+  // angle P controller 
+  motor.P_angle.P = 20;
+  // maximal velocity of the position control
+  motor.P_angle.velocity_limit = 40;
 
   // use monitoring with serial 
   Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
 
+  
   // initialize motor
   motor.init();
   // align sensor and start FOC
   motor.initFOC();
 
+
   Serial.println("Motor ready.");
-  Serial.println("Set the target voltage using serial terminal:");
+  Serial.println("Set the target angle using serial terminal:");
   _delay(1000);
 }
 
-// target voltage to be set to the motor
-float target_voltage = 2;
+// angle set point variable
+float target_angle = 0;
 
 void loop() {
 
@@ -69,12 +89,16 @@ void loop() {
   // velocity, position or voltage (defined in motor.controller)
   // this function can be run at much lower frequency than loopFOC() function
   // You can also use motor.move() and set the motor.target in the code
-  motor.move(target_voltage);
+  motor.move(target_angle);
+
+
+  // function intended to be used with serial plotter to monitor motor variables
+  // significantly slowing the execution down!!!!
+  // motor.monitor();
   
-  // communicate with the user
+  // user communication
   serialReceiveUserCommand();
 }
-
 
 // utility function enabling serial communication with the user to set the target values
 // this function can be implemented in serialEvent function as well
@@ -92,12 +116,14 @@ void serialReceiveUserCommand() {
     if (inChar == '\n') {
       
       // change the motor target
-      target_voltage = received_chars.toFloat();
-      Serial.print("Target voltage: ");
-      Serial.println(target_voltage);
+      target_angle = received_chars.toFloat();
+      Serial.print("Target angle: ");
+      Serial.println(target_angle);
       
       // reset the command buffer 
       received_chars = "";
     }
   }
 }
+
+
