@@ -47,8 +47,8 @@ void setup() {
   Serial.begin(115200);
 
   // pole pairs calculation routine
-  Serial.println("Motor pole pair number estimation example");
-  Serial.println("---------------------------------------------\n");
+  Serial.println("Pole pairs (PP) estimator");
+  Serial.println("-\n");
 
   float pp_search_voltage = 4; // maximum power_supply_voltage/2
   float pp_search_angle = 6*M_PI; // search electrical angle to turn
@@ -77,9 +77,9 @@ void setup() {
   // calculate the pole pair number
   int pp = round((pp_search_angle)/(angle_end-angle_begin));
 
-  Serial.print("Estimated pole pairs number is: ");
+  Serial.print("Estimated PP : ");
   Serial.println(pp);
-  Serial.println("Electrical angle / Encoder angle = Pole pairs ");
+  Serial.println("PP = Electrical angle / Encoder angle ");
   Serial.print(pp_search_angle*180/M_PI);
   Serial.print("/");
   Serial.print((angle_end-angle_begin)*180/M_PI);
@@ -90,13 +90,13 @@ void setup() {
 
   // a bit of monitoring the result
   if(pp <= 0 ){
-    Serial.println("Pole pair number cannot be negative");
+    Serial.println("PP number cannot be negative");
     Serial.println(" - Try changing the search_voltage value or motor/encoder configuration.");
     return;
   }else if(pp > 30){
-    Serial.println("Pole pair number very high, possible error.");
+    Serial.println("PP number very high, possible error.");
   }else{
-    Serial.println("If pp is estimated well your motor should turn now!");
+    Serial.println("If PP is estimated well your motor should turn now!");
     Serial.println(" - If it is not moving try to relaunch the program!");
     Serial.println(" - You can also try to adjust the target voltage using serial terminal!");
   }
