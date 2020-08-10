@@ -11,4 +11,4 @@ jobs:
       uses: ArminJo/arduino-test-compile@v1.0.0
       with:
         libraries:  PciManager 
-        examples-exclude: bluepill_position_control
+        examples-exclude: bluepill_position_control, esp32_position_control
