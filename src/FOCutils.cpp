@@ -32,11 +32,11 @@ void _delay(unsigned long ms){
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
   // if arduino uno and other atmega328p chips
   // return the value based on the prescaler
-  long t = _micros();
-  while((_micros() - t)/1000 < ms){}; 
+  unsigned long t = _micros();
+  while(_round((_micros() - t)/1000) < ms){}; 
 #else
   // regular micros
-  return delay(ms);
+  delay(ms);
 #endif
 }
 

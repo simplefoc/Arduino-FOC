@@ -60,14 +60,14 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
 
 // init hardware pins   
 void BLDCMotor::init() {
-  if(monitor_port) monitor_port->println("MONITOR: Initialize the motor pins.");
+  if(monitor_port) monitor_port->println("MOT: Init pins.");
   // PWM pins
   pinMode(pwmA, OUTPUT);
   pinMode(pwmB, OUTPUT);
   pinMode(pwmC, OUTPUT);
   if(hasEnable()) pinMode(enable_pin, OUTPUT);
 
-  if(monitor_port) monitor_port->println("MONITOR: Set high frequency PWM.");
+  if(monitor_port) monitor_port->println("MOT: PWM config.");
   // Increase PWM frequency to 32 kHz
   // make silent
   _setPwmFrequency(pwmA);
@@ -79,7 +79,7 @@ void BLDCMotor::init() {
 
   _delay(500);
   // enable motor
-  if(monitor_port) monitor_port->println("MONITOR: Enabling motor.");
+  if(monitor_port) monitor_port->println("MOT: Enable.");
   enable();
   _delay(500);
   
@@ -115,7 +115,7 @@ void BLDCMotor::linkSensor(Sensor* _sensor) {
 
 // Encoder alignment to electrical 0 angle
 int BLDCMotor::alignSensor() {
-  if(monitor_port) monitor_port->println("MONITOR: Align the sensor's and motor electrical 0 angle.");
+  if(monitor_port) monitor_port->println("MOT: Align sensor.");
   // align the electrical phases of the motor and sensor
   // set angle -90 degrees 
   setPhaseVoltage(voltage_sensor_align, _3PI_2);
@@ -131,9 +131,9 @@ int BLDCMotor::alignSensor() {
   int exit_flag = absoluteZeroAlign();
   _delay(500);
   if(monitor_port){
-    if(exit_flag< 0 ) monitor_port->println("MONITOR: Error: Absolute zero not found!");
-    if(exit_flag> 0 ) monitor_port->println("MONITOR: Success: Absolute zero found!");
-    else  monitor_port->println("MONITOR: Absolute zero not available!");
+    if(exit_flag< 0 ) monitor_port->println("MOT: Error: Not found!");
+    if(exit_flag> 0 ) monitor_port->println("MOT: Success!");
+    else  monitor_port->println("MOT: Not available!");
   }
   return exit_flag;
 }
@@ -145,9 +145,9 @@ int BLDCMotor::absoluteZeroAlign() {
   // if no absolute zero return
   if(!sensor->hasAbsoluteZero()) return 0;
   
-  if(monitor_port) monitor_port->println("MONITOR: Aligning the absolute zero.");
+  if(monitor_port) monitor_port->println("MOT: Absolute zero align.");
 
-  if(monitor_port && sensor->needsAbsoluteZeroSearch()) monitor_port->println("MONITOR: Searching for absolute zero.");
+  if(monitor_port && sensor->needsAbsoluteZeroSearch()) monitor_port->println("MOT: Searching...");
   // search the absolute zero with small velocity
   while(sensor->needsAbsoluteZeroSearch() && shaft_angle < _2PI){
     loopFOC();   
@@ -204,7 +204,7 @@ int  BLDCMotor::initFOC() {
   int exit_flag = alignSensor();
   _delay(500);
   
-  if(monitor_port) monitor_port->println("MONITOR: FOC init finished - motor ready.");
+  if(monitor_port) monitor_port->println("MOT: Motor ready.");
 
   return exit_flag;
 }
@@ -434,7 +434,7 @@ float BLDCMotor::positionP(float ek) {
 // function implementing the monitor_port setter
 void BLDCMotor::useMonitoring(Print &print){
   monitor_port = &print; //operate on the address of print
-  if(monitor_port ) monitor_port->println("MONITOR: Serial monitor enabled!");
+  if(monitor_port ) monitor_port->println("MOT: Monitor enabled!");
 }
 // utility function intended to be used with serial plotter to monitor motor variables
 // significantly slowing the execution down!!!!
@@ -478,51 +478,63 @@ int BLDCMotor::command(String user_command) {
   // parse command values
   float value = user_command.substring(1).toFloat();
 
+  // a bit of optimisation of variable memory for Arduino UNO (atmega328)
+  switch(cmd){
+    case 'P':      // velocity P gain change
+    case 'I':      // velocity I gain change
+    case 'L':      // velocity voltage limit change
+    case 'R':      // velocity voltage ramp change
+      if(monitor_port) monitor_port->print(" PI velocity| ");
+      break;
+    case 'F':      // velocity Tf low pass filter change
+      if(monitor_port) monitor_port->print(" LPF velocity| ");
+      break;
+    case 'K':      // angle loop gain P change
+    case 'N':      // angle loop gain velocity_limit change
+      if(monitor_port) monitor_port->print(" P angle| ");
+      break;
+  }
+
   // apply the the command
   switch(cmd){
     case 'P':      // velocity P gain change
-      if(monitor_port) monitor_port->print("PI velocity P: ");
+      if(monitor_port) monitor_port->print("P: ");
       if(!GET) PI_velocity.P = value;
       if(monitor_port) monitor_port->println(PI_velocity.P);
       break;
     case 'I':      // velocity I gain change
-      if(monitor_port) monitor_port->print("PI velocity I: ");
+      if(monitor_port) monitor_port->print("I: ");
       if(!GET) PI_velocity.I = value;
       if(monitor_port) monitor_port->println(PI_velocity.I);
       break;
     case 'L':      // velocity voltage limit change
-      if(monitor_port) monitor_port->print("PI velocity voltage limit: ");
+      if(monitor_port) monitor_port->print("volt_limit: ");
       if(!GET)PI_velocity.voltage_limit = value;
       if(monitor_port) monitor_port->println(PI_velocity.voltage_limit);
       break;
     case 'R':      // velocity voltage ramp change
-      if(monitor_port) monitor_port->print("PI velocity voltage ramp: ");
+      if(monitor_port) monitor_port->print("volt_ramp: ");
       if(!GET) PI_velocity.voltage_ramp = value;
       if(monitor_port) monitor_port->println(PI_velocity.voltage_ramp);
       break;
     case 'F':      // velocity Tf low pass filter change
-      if(monitor_port) monitor_port->print("LPF velocity time constant: ");
+      if(monitor_port) monitor_port->print("Tf: ");
       if(!GET) LPF_velocity.Tf = value;
       if(monitor_port) monitor_port->println(LPF_velocity.Tf);
       break;
     case 'K':      // angle loop gain P change
-      if(monitor_port) monitor_port->print("P angle P value: ");
+      if(monitor_port) monitor_port->print(" P: ");
       if(!GET) P_angle.P = value;
       if(monitor_port) monitor_port->println(P_angle.P);
       break;
     case 'N':      // angle loop gain velocity_limit change
-      if(monitor_port) monitor_port->print("P angle velocity limit: ");
-      if(!GET) P_angle.velocity_limit = value;
-      if(monitor_port) monitor_port->println(P_angle.velocity_limit);
-      break;
-    case 'T':      // angle loop gain velocity_limit change
-      if(monitor_port) monitor_port->print("P angle velocity limit: ");
+      if(monitor_port) monitor_port->print("vel_limit: ");
       if(!GET) P_angle.velocity_limit = value;
       if(monitor_port) monitor_port->println(P_angle.velocity_limit);
       break;
     case 'C':
       // change control type
-      if(monitor_port) monitor_port->print("Contoller type: ");
+      if(monitor_port) monitor_port->print("Control: ");
       
       if(GET){ // if get commang
         switch(controller){
