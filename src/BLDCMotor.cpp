@@ -70,9 +70,7 @@ void BLDCMotor::init() {
   if(monitor_port) monitor_port->println("MOT: PWM config.");
   // Increase PWM frequency to 32 kHz
   // make silent
-  _setPwmFrequency(pwmA);
-  _setPwmFrequency(pwmB);
-  _setPwmFrequency(pwmC);
+  _setPwmFrequency(pwmA, pwmB, pwmC);
 
   // sanity check for the voltage limit configuration
   if(PI_velocity.voltage_limit > voltage_power_supply) PI_velocity.voltage_limit =  voltage_power_supply;
@@ -92,17 +90,13 @@ void BLDCMotor::disable()
   // disable the driver - if enable_pin pin available
   if (hasEnable()) digitalWrite(enable_pin, LOW);
   // set zero to PWM
-  setPwm(pwmA, 0);
-  setPwm(pwmB, 0);
-  setPwm(pwmC, 0);
+  setPwm(0, 0, 0);
 }
 // enable motor driver
 void BLDCMotor::enable()
 {
   // set zero to PWM
-  setPwm(pwmA, 0);
-  setPwm(pwmB, 0);
-  setPwm(pwmC, 0);
+  setPwm(0, 0, 0);
   // enable_pin the driver - if enable_pin pin available
   if (hasEnable()) digitalWrite(enable_pin, HIGH);
 
@@ -142,10 +136,11 @@ int BLDCMotor::alignSensor() {
 // Encoder alignment the absolute zero angle 
 // - to the index
 int BLDCMotor::absoluteZeroAlign() {
-  // if no absolute zero return
+
+  if(monitor_port) monitor_port->println("MOT: Absolute zero align.");
+    // if no absolute zero return
   if(!sensor->hasAbsoluteZero()) return 0;
   
-  if(monitor_port) monitor_port->println("MOT: Absolute zero align.");
 
   if(monitor_port && sensor->needsAbsoluteZeroSearch()) monitor_port->println("MOT: Searching...");
   // search the absolute zero with small velocity
@@ -348,28 +343,21 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
   }
   
   // set the voltages in hardware
-  setPwm(pwmA, Ua);
-  setPwm(pwmB, Ub);
-  setPwm(pwmC, Uc);
+  setPwm(Ua, Ub, Uc);
 }
 
 
 
 
 // Set voltage to the pwm pin
-// - function a bit optimized to get better performance
-void BLDCMotor::setPwm(int pinPwm, float U) {
-  // max value
-  float U_max = voltage_power_supply;
-      
-  // sets the voltage [0,12V(U_max)] to pwm [0,255]
-  // - U_max you can set in header file - default 12V
-  int U_pwm = 255.0 * U / U_max;
-
-  // limit the values between 0 and 255
-  U_pwm = (U_pwm < 0) ? 0 : (U_pwm >= 255) ? 255 : U_pwm;
-
-  analogWrite(pinPwm, U_pwm);
+void BLDCMotor::setPwm(float Ua, float Ub, float Uc) {      
+  // calculate duty cycle
+  // limited in [0,1]
+  float dc_a = (Ua < 0) ? 0 : (Ua >= voltage_power_supply) ? 1 : Ua / voltage_power_supply;  
+  float dc_b = (Ub < 0) ? 0 : (Ub >= voltage_power_supply) ? 1 : Ub / voltage_power_supply;  
+  float dc_c = (Uc < 0) ? 0 : (Uc >= voltage_power_supply) ? 1 : Uc / voltage_power_supply;  
+  // hardware specific writing
+  _writeDutyCycle(dc_a, dc_b, dc_c, pwmA, pwmB, pwmC );
 }
 
 /**
@@ -597,5 +585,3 @@ int BLDCMotor::command(String user_command) {
   // return 0 if error and 1 if ok
   return errorFlag;
 }
-
-

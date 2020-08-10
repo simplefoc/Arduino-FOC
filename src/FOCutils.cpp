@@ -1,39 +1,156 @@
 #include "FOCutils.h"
 
+#if defined(ESP_H) // if ESP32 board
+// empty motor slot 
+#define _EMPTY_SLOT -20
 
-void _setPwmFrequency(int pin) {
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__) // if arduino uno and other atmega328p chips
-//  High PWM frequency
-//  https://sites.google.com/site/qeewiki/books/avr-guide/timers-on-the-atmega328
-  if (pin == 5 || pin == 6 || pin == 9 || pin == 10) {
-    if (pin == 5 || pin == 6) {
-      // configure the pwm phase-corrected mode
-      TCCR0A = ((TCCR0A & 0b11111100) | 0x01);
-      // set prescaler to 1
-      TCCR0B = ((TCCR0B & 0b11110000) | 0x01);
-    } else {
-      // set prescaler to 1
-      TCCR1B = ((TCCR1B & 0b11111000) | 0x01);
+// structure containing motor slot configuration
+// this library supports up to 4 motors
+typedef struct {
+  int pinA;
+  mcpwm_dev_t* mcpwm_num;
+  mcpwm_unit_t mcpwm_unit;
+  mcpwm_operator_t mcpwm_operator;
+  mcpwm_io_signals_t mcpwm_a;
+  mcpwm_io_signals_t mcpwm_b;
+  mcpwm_io_signals_t mcpwm_c;
+
+} motor_slots_t;
+
+// define motor slots array
+motor_slots_t esp32_motor_slots[4] =  { 
+  {_EMPTY_SLOT, &MCPWM0, MCPWM_UNIT_0, MCPWM_OPR_A, MCPWM0A, MCPWM1A, MCPWM2A}, // 1st motor will be MCPWM0 channel A
+  {_EMPTY_SLOT, &MCPWM0, MCPWM_UNIT_0, MCPWM_OPR_B, MCPWM0B, MCPWM1B, MCPWM2B}, // 2nd motor will be MCPWM0 channel B
+  {_EMPTY_SLOT, &MCPWM1, MCPWM_UNIT_1, MCPWM_OPR_A, MCPWM0A, MCPWM1A, MCPWM2A}, // 3rd motor will be MCPWM1 channel A
+  {_EMPTY_SLOT, &MCPWM1, MCPWM_UNIT_1, MCPWM_OPR_B, MCPWM0B, MCPWM1B, MCPWM2B}  // 4th motor will be MCPWM1 channel B
+  };
+
+#endif
+
+
+// function setting the high pwm frequency to the supplied pins
+// - hardware speciffic
+// supports Arudino/ATmega328, STM32 and ESP32 
+void _setPwmFrequency(const int pinA, const int pinB, const int pinC) {
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__) // if arduino uno and other ATmega328p chips
+  //  High PWM frequency
+  //  https://sites.google.com/site/qeewiki/books/avr-guide/timers-on-the-atmega328
+  if (pinA == 5 || pinA == 6 || pinB == 5 || pinB == 6 || pinC == 5 || pinC == 6 ) {
+      TCCR0A = ((TCCR0A & 0b11111100) | 0x01); // configure the pwm phase-corrected mode
+      TCCR0B = ((TCCR0B & 0b11110000) | 0x01); // set prescaler to 1
+  }
+  if (pinA == 9 || pinA == 10 || pinB == 9 || pinB == 10 || pinC == 9 || pinC == 10 )
+      TCCR1B = ((TCCR1B & 0b11111000) | 0x01);     // set prescaler to 1
+  if (pinA == 3 || pinA == 11 || pinB == 3 || pinB == 11 || pinC == 3 || pinC == 11 ) 
+      TCCR2B = ((TCCR2B & 0b11111000) | 0x01);// set prescaler to 1
+  
+#elif defined(_STM32_DEF_) // if stm chips
+
+  analogWrite(pinA, 0);
+  analogWriteFrequency(50000);  // set 50kHz
+  analogWrite(pinB, 0);
+  analogWriteFrequency(50000);  // set 50kHz
+  analogWrite(pinC, 0);
+  analogWriteFrequency(50000);  // set 50kHz
+
+#elif defined(ESP_H) // if esp32 boards
+
+  motor_slots_t m_slot = {};
+
+  // determine which motor are we connecting
+  // and set the appropriate configuration parameters 
+  for(int i = 0; i < 4; i++){
+    if(esp32_motor_slots[i].pinA == _EMPTY_SLOT){ // put the new motor in the first empty slot
+      esp32_motor_slots[i].pinA = pinA;
+      m_slot = esp32_motor_slots[i];
+      break;
     }
   }
-  else if (pin == 3 || pin == 11) {
-      // set prescaler to 1
-    TCCR2B = ((TCCR2B & 0b11111000) | 0x01);
-  }
-#elif defined(_STM32_DEF_) // if stm chips
-    analogWrite(pin,0);
-    analogWriteFrequency(50000);  // la valeur par défaut est 20000 Hz
+        
+  // configure pins
+  mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_a, pinA);
+  mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_b, pinB);
+  mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_c, pinC);
+
+  mcpwm_config_t pwm_config;
+  pwm_config.frequency = 4000000;  //frequency = 20000Hz
+  pwm_config.cmpr_a = 0;      //duty cycle of PWMxA = 50.0%
+  pwm_config.cmpr_b = 0;      //duty cycle of PWMxB = 50.0%
+  pwm_config.counter_mode = MCPWM_UP_DOWN_COUNTER; // Up-down counter (triangle wave)
+  pwm_config.duty_mode = MCPWM_DUTY_MODE_0; // Active HIGH
+  mcpwm_init(m_slot.mcpwm_unit, MCPWM_TIMER_0, &pwm_config);    //Configure PWM0A & PWM0B with above settings
+  mcpwm_init(m_slot.mcpwm_unit, MCPWM_TIMER_1, &pwm_config);    //Configure PWM0A & PWM0B with above settings
+  mcpwm_init(m_slot.mcpwm_unit, MCPWM_TIMER_2, &pwm_config);    //Configure PWM0A & PWM0B with above settings
+
+  _delay(100);
+
+  mcpwm_stop(m_slot.mcpwm_unit, MCPWM_TIMER_0);
+  mcpwm_stop(m_slot.mcpwm_unit, MCPWM_TIMER_1);
+  mcpwm_stop(m_slot.mcpwm_unit, MCPWM_TIMER_2);
+  m_slot.mcpwm_num->clk_cfg.prescale = 0;
+
+  m_slot.mcpwm_num->timer[0].period.prescale = 4;
+  m_slot.mcpwm_num->timer[1].period.prescale = 4;
+  m_slot.mcpwm_num->timer[2].period.prescale = 4;    
+  _delay(1);
+  m_slot.mcpwm_num->timer[0].period.period = 2048;
+  m_slot.mcpwm_num->timer[1].period.period = 2048;
+  m_slot.mcpwm_num->timer[2].period.period = 2048;
+  _delay(1);
+  m_slot.mcpwm_num->timer[0].period.upmethod = 0;
+  m_slot.mcpwm_num->timer[1].period.upmethod = 0;
+  m_slot.mcpwm_num->timer[2].period.upmethod = 0;
+  _delay(1); 
+  mcpwm_start(m_slot.mcpwm_unit, MCPWM_TIMER_0);
+  mcpwm_start(m_slot.mcpwm_unit, MCPWM_TIMER_1);
+  mcpwm_start(m_slot.mcpwm_unit, MCPWM_TIMER_2);
+
+  mcpwm_sync_enable(m_slot.mcpwm_unit, MCPWM_TIMER_0, MCPWM_SELECT_SYNC_INT0, 0);
+  mcpwm_sync_enable(m_slot.mcpwm_unit, MCPWM_TIMER_1, MCPWM_SELECT_SYNC_INT0, 0);
+  mcpwm_sync_enable(m_slot.mcpwm_unit, MCPWM_TIMER_2, MCPWM_SELECT_SYNC_INT0, 0);
+  _delay(1);
+  m_slot.mcpwm_num->timer[0].sync.out_sel = 1;
+  _delay(1);
+  m_slot.mcpwm_num->timer[0].sync.out_sel = 0;
 #endif
 }
+
+// function setting the pwm duty cycle to the hardware
+//- hardware speciffic
+//
+// Arduino and STM32 devices use analogWrite()
+// ESP32 uses MCPWM
+void _writeDutyCycle(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC){
+#if defined(ESP_H) // if ESP32 boards
+  // determine which motor slot is the motor connected to 
+  for(int i = 0; i < 4; i++){
+    if(esp32_motor_slots[i].pinA == pinA){ // if motor slot found
+      // se the PWM on the slot timers
+      // transform duty cycle from [0,1] to [0,2047]
+      esp32_motor_slots[i].mcpwm_num->channel[0].cmpr_value[esp32_motor_slots[i].mcpwm_operator].cmpr_val = dc_a*2047;
+      esp32_motor_slots[i].mcpwm_num->channel[1].cmpr_value[esp32_motor_slots[i].mcpwm_operator].cmpr_val = dc_b*2047;
+      esp32_motor_slots[i].mcpwm_num->channel[2].cmpr_value[esp32_motor_slots[i].mcpwm_operator].cmpr_val = dc_c*2047;
+      break;
+    }
+  }
+#else // Arduino & STM32 devices
+  // transform duty cycle from [0,1] to [0,255]
+  analogWrite(pinA, 255*dc_a);
+  analogWrite(pinB, 255*dc_b);
+  analogWrite(pinC, 255*dc_c);
+#endif
+}
+
 
 // function buffering delay() 
 // arduino uno function doesn't work well with interrupts
 void _delay(unsigned long ms){
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
   // if arduino uno and other atmega328p chips
-  // return the value based on the prescaler
-  unsigned long t = _micros();
-  while(_round((_micros() - t)/1000) < ms){}; 
+  // use while instad of delay, 
+  // due to wrong measurement based on changed timer0
+  unsigned long t = _micros() + ms*1000;
+  while( _micros() < t ){}; 
 #else
   // regular micros
   delay(ms);
@@ -56,9 +173,6 @@ unsigned long _micros(){
 }
 
 
-// lookup table for sine calculation in between 0 and 90 degrees
-//float sine_array[200] = {0.0000,0.0079,0.0158,0.0237,0.0316,0.0395,0.0473,0.0552,0.0631,0.0710,0.0789,0.0867,0.0946,0.1024,0.1103,0.1181,0.1260,0.1338,0.1416,0.1494,0.1572,0.1650,0.1728,0.1806,0.1883,0.1961,0.2038,0.2115,0.2192,0.2269,0.2346,0.2423,0.2499,0.2575,0.2652,0.2728,0.2804,0.2879,0.2955,0.3030,0.3105,0.3180,0.3255,0.3329,0.3404,0.3478,0.3552,0.3625,0.3699,0.3772,0.3845,0.3918,0.3990,0.4063,0.4135,0.4206,0.4278,0.4349,0.4420,0.4491,0.4561,0.4631,0.4701,0.4770,0.4840,0.4909,0.4977,0.5046,0.5113,0.5181,0.5249,0.5316,0.5382,0.5449,0.5515,0.5580,0.5646,0.5711,0.5775,0.5839,0.5903,0.5967,0.6030,0.6093,0.6155,0.6217,0.6279,0.6340,0.6401,0.6461,0.6521,0.6581,0.6640,0.6699,0.6758,0.6815,0.6873,0.6930,0.6987,0.7043,0.7099,0.7154,0.7209,0.7264,0.7318,0.7371,0.7424,0.7477,0.7529,0.7581,0.7632,0.7683,0.7733,0.7783,0.7832,0.7881,0.7930,0.7977,0.8025,0.8072,0.8118,0.8164,0.8209,0.8254,0.8298,0.8342,0.8385,0.8428,0.8470,0.8512,0.8553,0.8594,0.8634,0.8673,0.8712,0.8751,0.8789,0.8826,0.8863,0.8899,0.8935,0.8970,0.9005,0.9039,0.9072,0.9105,0.9138,0.9169,0.9201,0.9231,0.9261,0.9291,0.9320,0.9348,0.9376,0.9403,0.9429,0.9455,0.9481,0.9506,0.9530,0.9554,0.9577,0.9599,0.9621,0.9642,0.9663,0.9683,0.9702,0.9721,0.9739,0.9757,0.9774,0.9790,0.9806,0.9821,0.9836,0.9850,0.9863,0.9876,0.9888,0.9899,0.9910,0.9920,0.9930,0.9939,0.9947,0.9955,0.9962,0.9969,0.9975,0.9980,0.9985,0.9989,0.9992,0.9995,0.9997,0.9999,1.0000,1.0000};
-
 // int array instead of float array 
 // 2x storage save (int 2Byte float 4 Byte )
 // sin*10000
@@ -72,24 +186,24 @@ int sine_array[200] = {0,79,158,237,316,395,473,552,631,710,789,867,946,1024,110
 float _sin(float a){
   if(a < _PI_2){
     //return sine_array[(int)(199.0*( a / (_PI/2.0)))];
-    //return sine_array[(int)(126.6873* a)];           // float array optimised
-    return 0.0001*sine_array[_round(126.6873* a)];      // int array optimised
+    //return sine_array[(int)(126.6873* a)];           // float array optimized
+    return 0.0001*sine_array[_round(126.6873* a)];      // int array optimized
   }else if(a < _PI){
     // return sine_array[(int)(199.0*(1.0 - (a-_PI/2.0) / (_PI/2.0)))];
-    //return sine_array[398 - (int)(126.6873*a)];          // float array optimised
-    return 0.0001*sine_array[398 - _round(126.6873*a)];     // int array optimised
+    //return sine_array[398 - (int)(126.6873*a)];          // float array optimized
+    return 0.0001*sine_array[398 - _round(126.6873*a)];     // int array optimized
   }else if(a < _3PI_2){
     // return -sine_array[(int)(199.0*((a - _PI) / (_PI/2.0)))];
-    //return -sine_array[-398 + (int)(126.6873*a)];           // float array optimised
-    return -0.0001*sine_array[-398 + _round(126.6873*a)];      // int array optimised
+    //return -sine_array[-398 + (int)(126.6873*a)];           // float array optimized
+    return -0.0001*sine_array[-398 + _round(126.6873*a)];      // int array optimized
   } else {
     // return -sine_array[(int)(199.0*(1.0 - (a - 3*_PI/2) / (_PI/2.0)))];
-    //return -sine_array[796 - (int)(126.6873*a)];           // float array optimised
-    return -0.0001*sine_array[796 - _round(126.6873*a)];      // int array optimised
+    //return -sine_array[796 - (int)(126.6873*a)];           // float array optimized
+    return -0.0001*sine_array[796 - _round(126.6873*a)];      // int array optimized
   }
 }
 
-// function approfimating cosine calculaiton by using fixed size array
+// function approximating cosine calculation by using fixed size array
 // ~55us (float array)
 // ~56us (int array)
 // precision +-0.005
