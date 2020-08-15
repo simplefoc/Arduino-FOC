@@ -335,10 +335,10 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
           Tc = 0;
       }
 
-      // calculate the phase voltages
-      Ua = Ta*Uq;
-      Ub = Tb*Uq;
-      Uc = Tc*Uq;
+      // calculate the phase voltages and center
+      Ua = Ta*Uq  + (voltage_power_supply - Uq) / 2;
+      Ub = Tb*Uq  + (voltage_power_supply - Uq) / 2;
+      Uc = Tc*Uq  + (voltage_power_supply - Uq) / 2;
       break;
   }
   
