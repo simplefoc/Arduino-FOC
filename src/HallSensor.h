@@ -11,10 +11,11 @@ class HallSensor: public Sensor{
     HallSensor class constructor
     @param encA  HallSensor B pin
     @param encB  HallSensor B pin
-    @param ppr  impulses per rotation  (cpr=ppr*4)
+    @param encC  HallSensor B pin
+    @param pp  pole pairs  (e.g hoverboard motor has 15pp and small gimbals often have 7pp)
     @param index index pin number (optional input)
     */
-    HallSensor(int encA, int encB , float ppr, int index = 0);
+    HallSensor(int encA, int encB, int encC, int pp);
 
     /** HallSensor initialise pins */
     void init();
@@ -27,21 +28,21 @@ class HallSensor: public Sensor{
      * @param doIndex pointer to the Index channel interrupt handler function
      * 
      */
-    void enableInterrupts(void (*doA)() = nullptr, void(*doB)() = nullptr, void(*doIndex)() = nullptr);
+    void enableInterrupts(void (*doA)() = nullptr, void(*doB)() = nullptr, void(*doC)() = nullptr);
     
     //  HallSensor interrupt callback functions
     /** A channel callback function */
     void handleA();
     /** B channel callback function */
     void handleB();
-    /** Index channel callback function */
-    void handleIndex();
+    /** C channel callback function */
+    void handleC();
     
     
     // pins A and B
     int pinA; //!< HallSensor hardware pin A
     int pinB; //!< HallSensor hardware pin B
-    int index_pin; //!< index pin
+    int pinC; //!< index pin
 
     // HallSensor configuration
     Pullup pullup; //!< Configuration parameter internal or external pullups
@@ -82,8 +83,7 @@ class HallSensor: public Sensor{
     volatile long pulse_timestamp;//!< last impulse timestamp in us
     volatile int A_active; //!< current active states of A channel
     volatile int B_active; //!< current active states of B channel
-    volatile int I_active; //!< current active states of Index channel
-    volatile long index_pulse_counter; //!< impulse counter number upon first index interrupt
+    volatile int C_active; //!< current active states of Index channel
 
     // velocity calculation variables
     float prev_Th, pulse_per_second;

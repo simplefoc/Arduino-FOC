@@ -2,29 +2,26 @@
 
 
 /*
-  HallSensor(int encA, int encB , int cpr, int index)
-  - encA, encB    - HallSensor A and B pins
-  - cpr           - counts per rotation number (cpm=ppm*4)
-  - index pin     - (optional input)
+  HallSensor(int hallA, int hallB , int cpr, int index)
+  - hallA, hallB, hallC    - HallSensor A, B and C pins
+  - pp           - pole pairs
 */
 
-HallSensor::HallSensor(int _encA, int _encB , float _ppr, int _index){
+HallSensor::HallSensor(int _hallA, int _hallB, int _hallC, int _pp){
   
   // HallSensor measurement structure init
   // hardware pins
-  pinA = _encA;
-  pinB = _encB;
+  pinA = _hallA;
+  pinB = _hallB;
+  pinC = _hallC;
   // counter setup
   pulse_counter = 0;
   pulse_timestamp = 0;
 
-  cpr = _ppr;
+  cpr = _pp * 6; // hall has 6 segments per electrical revolution
   A_active = 0;
   B_active = 0;
-  I_active = 0;
-  // index pin
-  index_pin = _index; // its 0 if not used
-  index_pulse_counter = 0;
+  C_active = 0;
 
   // velocity calculation variables
   prev_Th = 0;
@@ -34,7 +31,6 @@ HallSensor::HallSensor(int _encA, int _encB , float _ppr, int _index){
 
   // extern pullup as default
   pullup = Pullup::EXTERN;
-  // enable quadrature HallSensor by default
 
 }
 
@@ -57,6 +53,18 @@ void HallSensor::handleB() {
     pulse_counter += (A_active != B_active) ? 1 : -1;
     pulse_timestamp = _micros();
     B_active = B;
+  }
+ 
+}
+
+// C channel
+void HallSensor::handleC() {
+  int C = digitalRead(pinB);
+ 
+  if ( C != C_active ) {
+    pulse_counter += (A_active != C_active) ? 1 : -1;
+    pulse_timestamp = _micros();
+    C_active = C;
   }
  
 }
@@ -109,30 +117,24 @@ float HallSensor::getVelocity(){
 // getter for index pin
 // return -1 if no index
 int HallSensor::needsAbsoluteZeroSearch(){
-  return index_pulse_counter == 0;
+  return 0;
 }
 // getter for index pin
 int HallSensor::hasAbsoluteZero(){
-  return hasIndex();
+  return 0;
 }
 // initialize counter to zero
 float HallSensor::initRelativeZero(){
-  long angle_offset = -pulse_counter;
-  pulse_counter = 0;
-  pulse_timestamp = _micros();
-  return _2PI * (angle_offset) / ((float)cpr);
+  return 0.0;
 }
 // initialize index to zero
 float HallSensor::initAbsoluteZero(){
-  pulse_counter -= index_pulse_counter;
-  prev_pulse_counter = pulse_counter;
-  return (index_pulse_counter) / ((float)cpr) * (_2PI);
+  return 0.0;
 }
 // private function used to determine if HallSensor has index
 int HallSensor::hasIndex(){
-  return index_pin != 0;
+  return 0;
 }
-
 
 // HallSensor initialisation of the hardware pins 
 // and calculation variables
@@ -142,11 +144,11 @@ void HallSensor::init(){
   if(pullup == Pullup::INTERN){
     pinMode(pinA, INPUT_PULLUP);
     pinMode(pinB, INPUT_PULLUP);
-    if(hasIndex()) pinMode(index_pin,INPUT_PULLUP);
+    pinMode(pinC, INPUT_PULLUP);
   }else{
     pinMode(pinA, INPUT);
     pinMode(pinB, INPUT);
-    if(hasIndex()) pinMode(index_pin,INPUT);
+    pinMode(pinC, INPUT);
   }
   
   // counter setup
@@ -162,11 +164,12 @@ void HallSensor::init(){
 
 // function enabling hardware interrupts of the for the callback provided
 // if callback is not provided then the interrupt is not enabled
-void HallSensor::enableInterrupts(void (*doA)(), void(*doB)(), void(*doIndex)()){
+void HallSensor::enableInterrupts(void (*doA)(), void(*doB)(), void(*doC)()){
   // attach interrupt if functions provided
 
-  // A callback and B callback
+  // A, B and C callback
   if(doA != nullptr) attachInterrupt(digitalPinToInterrupt(pinA), doA, CHANGE);
   if(doB != nullptr) attachInterrupt(digitalPinToInterrupt(pinB), doB, CHANGE);
+  if(doC != nullptr) attachInterrupt(digitalPinToInterrupt(pinC), doC, CHANGE);
 }
 
