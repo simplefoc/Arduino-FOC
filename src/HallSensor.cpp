@@ -24,94 +24,108 @@ HallSensor::HallSensor(int _hallA, int _hallB, int _hallC, int _pp){
   C_active = 0;
 
   // velocity calculation variables
-  prev_Th = 0;
-  pulse_per_second = 0;
+
   prev_pulse_counter = 0;
   prev_timestamp_us = _micros();
 
   // extern pullup as default
   pullup = Pullup::EXTERN;
-
 }
 
 //  HallSensor interrupt callback functions
 // A channel
 void HallSensor::handleA() {
-  int A = digitalRead(pinA);
-
-  if ( A != A_active ) {
-    pulse_counter += (A_active == B_active) ? 1 : -1;
-    pulse_timestamp = _micros();
-    A_active = A;
-  }
+  A_active= digitalRead(pinA);
+  updateState();
 }
 // B channel
 void HallSensor::handleB() {
-  int B = digitalRead(pinB);
- 
-  if ( B != B_active ) {
-    pulse_counter += (A_active != B_active) ? 1 : -1;
-    pulse_timestamp = _micros();
-    B_active = B;
-  }
- 
+  B_active = digitalRead(pinB);
+  updateState();
 }
 
 // C channel
 void HallSensor::handleC() {
-  int C = digitalRead(pinB);
- 
-  if ( C != C_active ) {
-    pulse_counter += (A_active != C_active) ? 1 : -1;
-    pulse_timestamp = _micros();
-    C_active = C;
+  C_active = digitalRead(pinC);
+  updateState();
+}
+
+void HallSensor::updateState() {
+  int newState = C_active + (B_active << 1) + (A_active << 2);
+  Direction direction = decodeDirection(state, newState); 
+  state = newState;
+  pulse_counter += direction; 
+  pulse_timestamp = _micros();
+}
+
+// determines whether the hallsensr state transition means that it has moved one step CW (+1), CCW (-1) or state transition is invalid (0)
+// states are 3bits, one for each hall sensor
+Direction HallSensor::decodeDirection(int oldState, int newState)
+{
+  // here are expected state transitions (oldState > newState).
+  // CW state transitions are:  ( 6 > 2 > 3 > 1 > 5 > 4 > 6 )
+  // CCW state transitions are: ( 6 > 4 > 5 > 1 > 3 > 2 > 6 )
+  // invalid state transitions are oldState == newState or if newState or oldState == 0 | 7 as hallsensors can't be all on or all off
+
+  int rawDirection;
+  
+  if (
+      (oldState == 6 && newState == 2) || \
+      (oldState == 2 && newState == 3) || \
+      (oldState == 3 && newState == 1) || \
+      (oldState == 1 && newState == 5) || \
+      (oldState == 5 && newState == 4) || \
+      (oldState == 4 && newState == 6) 
+    ) {
+    rawDirection = Direction::CW;
+  } else if(
+      (oldState == 6 && newState == 4) || \
+      (oldState == 4 && newState == 5) || \
+      (oldState == 5 && newState == 1) || \
+      (oldState == 1 && newState == 3) || \
+      (oldState == 3 && newState == 2) || \
+      (oldState == 2 && newState == 6) 
+  ) {
+    rawDirection = Direction::CCW;
+  } else {
+    rawDirection = Direction::UNKNOWN;
   }
- 
+
+  // setting sensor.reverse in setup() will reverse direction
+  direction = static_cast<Direction>(rawDirection * reverse);
+  return direction; // * goofy;
 }
 
 /*
 	Shaft angle calculation
 */
 float HallSensor::getAngle(){
-  return  _2PI * (pulse_counter) / ((float)cpr);
+  
+  long dN = pulse_counter - prev_pulse_counter;
+
+  if (dN != 0)
+  {
+    
+    // time from last impulse
+    float Th = (pulse_timestamp - prev_timestamp_us) * 1e-6;
+    if (Th <= 0 || Th > 0.5)
+      Th = 1e-3;
+    // save variables for next pass
+    prev_timestamp_us = pulse_timestamp;
+    prev_pulse_counter = pulse_counter;
+    velocity = (float) _2PI * dN / (cpr * Th);
+  }
+  angle = (float) _2PI * pulse_counter /  cpr;
+
+  return angle;
 }
 /*
   Shaft velocity calculation
   function using mixed time and frequency measurement technique
 */
 float HallSensor::getVelocity(){
-  // timestamp
-  long timestamp_us = _micros();
-  // sampling time calculation
-  float Ts = (timestamp_us - prev_timestamp_us) * 1e-6;
-  // quick fix for strange cases (micros overflow)
-  if(Ts <= 0 || Ts > 0.5) Ts = 1e-3; 
-  
-  // time from last impulse
-  float Th = (timestamp_us - pulse_timestamp) * 1e-6;
-  long dN = pulse_counter - prev_pulse_counter;
-
-  // Pulse per second calculation (Eq.3.)
-  // dN - impulses received
-  // Ts - sampling time - time in between function calls
-  // Th - time from last impulse
-  // Th_1 - time form last impulse of the previous call
-  // only increment if some impulses received
-  float dt = Ts + prev_Th - Th;
-  pulse_per_second = (dN != 0 && dt > Ts/2) ? dN / dt : pulse_per_second;
-  
-  // if more than 0.05 passed in between impulses
-  if ( Th > 0.1) pulse_per_second = 0;
-
-  // velocity calculation
-  float velocity = pulse_per_second / ((float)cpr) * (_2PI);
-
-  // save variables for next pass
-  prev_timestamp_us = timestamp_us;
-  // save velocity calculation variables
-  prev_Th = Th;
-  prev_pulse_counter = pulse_counter;
-  return (velocity);
+  // this is calculated during the last call to getAngle();
+  return velocity;
 }
 
 // getter for index pin
@@ -130,10 +144,6 @@ float HallSensor::initRelativeZero(){
 // initialize index to zero
 float HallSensor::initAbsoluteZero(){
   return 0.0;
-}
-// private function used to determine if HallSensor has index
-int HallSensor::hasIndex(){
-  return 0;
 }
 
 // HallSensor initialisation of the hardware pins 
@@ -154,9 +164,6 @@ void HallSensor::init(){
   // counter setup
   pulse_counter = 0;
   pulse_timestamp = _micros();
-  // velocity calculation variables
-  prev_Th = 0;
-  pulse_per_second = 0;
   prev_pulse_counter = 0;
   prev_timestamp_us = _micros();
 

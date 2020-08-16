@@ -5,6 +5,15 @@
 #include "FOCutils.h"
 #include "Sensor.h"
 
+/**
+ *  Direction structure
+ */
+enum Direction{
+    CW      = 1,  //clockwise
+    CCW     = -1, // counter clockwise
+    UNKNOWN = 0   //not yet known or invalid state
+};
+
 class HallSensor: public Sensor{
  public:
     /**
@@ -76,8 +85,22 @@ class HallSensor: public Sensor{
      */
     int needsAbsoluteZeroSearch();
 
+    // set sensor.reverse to -1 to reverse direction (and thus angle) outputed by sensor
+    int reverse = 1;
+
+    // whether last step was CW (+1) or CCW (-1) direction
+    Direction direction;
+
+    // the current 3bit state of the hall sensors
+    int state;
+
+    volatile float angle; // rad/s
+    volatile float velocity; // rad/s
+
   private:
-    int hasIndex(); //!< function returning 1 if HallSensor has index pin and 0 if not.
+    
+    Direction decodeDirection(int oldState, int newState);
+    void updateState();
 
     volatile long pulse_counter;//!< current pulse counter
     volatile long pulse_timestamp;//!< last impulse timestamp in us
@@ -86,8 +109,9 @@ class HallSensor: public Sensor{
     volatile int C_active; //!< current active states of Index channel
 
     // velocity calculation variables
-    float prev_Th, pulse_per_second;
+    // float prev_Th, pulse_per_second;
     volatile long prev_pulse_counter, prev_timestamp_us;
+    
 };
 
 
