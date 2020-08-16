@@ -54,6 +54,7 @@ void HallSensor::updateState() {
   int newState = C_active + (B_active << 1) + (A_active << 2);
   Direction direction = decodeDirection(state, newState); 
   state = newState;
+  
   pulse_counter += direction; 
   pulse_timestamp = _micros();
 }
@@ -91,8 +92,7 @@ Direction HallSensor::decodeDirection(int oldState, int newState)
     rawDirection = Direction::UNKNOWN;
   }
 
-  // setting sensor.reverse in setup() will reverse direction
-  direction = static_cast<Direction>(rawDirection * reverse);
+  direction = static_cast<Direction>(rawDirection * natural_direction);
   return direction; // * goofy;
 }
 
@@ -139,6 +139,10 @@ int HallSensor::hasAbsoluteZero(){
 }
 // initialize counter to zero
 float HallSensor::initRelativeZero(){
+  
+  pulse_counter = 0;
+  pulse_timestamp = _micros();
+  velocity = 0;
   return 0.0;
 }
 // initialize index to zero
@@ -169,7 +173,7 @@ void HallSensor::init(){
 
 }
 
-// function enabling hardware interrupts of the for the callback provided
+// function enabling hardware interrupts for the callback provided
 // if callback is not provided then the interrupt is not enabled
 void HallSensor::enableInterrupts(void (*doA)(), void(*doB)(), void(*doC)()){
   // attach interrupt if functions provided

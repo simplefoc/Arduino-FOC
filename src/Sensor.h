@@ -2,6 +2,15 @@
 #define SENSOR_H
 
 /**
+ *  Direction structure
+ */
+enum Direction{
+    CW      = 1,  //clockwise
+    CCW     = -1, // counter clockwise
+    UNKNOWN = 0   //not yet known or invalid state
+};
+
+/**
  *  Pullup configuration structure
  */
 enum Pullup{
@@ -29,6 +38,9 @@ class Sensor{
          * return the angle [rad] difference
          */
         virtual float initAbsoluteZero();
+
+        // if natural_direction == Direction::CCW then direction will be flipped to CW
+        int natural_direction = Direction::CW;
 
         /** 
          * returns 0 if it has no absolute 0 measurement
