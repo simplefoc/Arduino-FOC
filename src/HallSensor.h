@@ -5,23 +5,6 @@
 #include "FOCutils.h"
 #include "Sensor.h"
 
-
-/**
- *  Pullup configuration structure
- */
-enum Pullup{
-    INTERN, //!< Use internal pullups
-    EXTERN //!< Use external pullups
-};
-
-/**
- *  Quadrature mode configuration structure
- */
-enum Quadrature{
-  ON, //!<  Enable quadrature mode CPR = 4xPPR
-  OFF //!<  Disable quadrature mode / CPR = PPR
-};
-
 class HallSensor: public Sensor{
  public:
     /**
@@ -62,7 +45,6 @@ class HallSensor: public Sensor{
 
     // HallSensor configuration
     Pullup pullup; //!< Configuration parameter internal or external pullups
-    Quadrature quadrature;//!< Configuration parameter enable or disable quadrature mode
     float cpr;//!< HallSensor cpr number
 
     // Abstract functions of the Sensor class implementation

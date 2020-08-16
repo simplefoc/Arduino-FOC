@@ -2,6 +2,14 @@
 #define SENSOR_H
 
 /**
+ *  Pullup configuration structure
+ */
+enum Pullup{
+    INTERN, //!< Use internal pullups
+    EXTERN //!< Use external pullups
+};
+
+/**
  *  Sensor abstract class defintion
  * Each sensor needs to have these functions implemented
  */

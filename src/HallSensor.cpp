@@ -35,72 +35,30 @@ HallSensor::HallSensor(int _encA, int _encB , float _ppr, int _index){
   // extern pullup as default
   pullup = Pullup::EXTERN;
   // enable quadrature HallSensor by default
-  quadrature = Quadrature::ON;
+
 }
 
 //  HallSensor interrupt callback functions
 // A channel
 void HallSensor::handleA() {
   int A = digitalRead(pinA);
-  switch (quadrature){
-    case Quadrature::ON:
-      // CPR = 4xPPR
-      if ( A != A_active ) {
-        pulse_counter += (A_active == B_active) ? 1 : -1;
-        pulse_timestamp = _micros();
-        A_active = A;
-      }
-      break;
-    case Quadrature::OFF:
-      // CPR = PPR
-      if(A && !digitalRead(pinB)){
-        pulse_counter++;
-        pulse_timestamp = _micros();
-      }
-      break;
+
+  if ( A != A_active ) {
+    pulse_counter += (A_active == B_active) ? 1 : -1;
+    pulse_timestamp = _micros();
+    A_active = A;
   }
 }
 // B channel
 void HallSensor::handleB() {
   int B = digitalRead(pinB);
-  switch (quadrature){
-    case Quadrature::ON:
-  //     // CPR = 4xPPR
-      if ( B != B_active ) {
-        pulse_counter += (A_active != B_active) ? 1 : -1;
-        pulse_timestamp = _micros();
-        B_active = B;
-      }
-      break;
-    case Quadrature::OFF:
-      // CPR = PPR
-      if(B && !digitalRead(pinA)){
-        pulse_counter--;
-        pulse_timestamp = _micros();
-      }
-      break;
+ 
+  if ( B != B_active ) {
+    pulse_counter += (A_active != B_active) ? 1 : -1;
+    pulse_timestamp = _micros();
+    B_active = B;
   }
-}
-
-// Index channel
-void HallSensor::handleIndex() {
-  if(hasIndex()){
-    int I = digitalRead(index_pin);
-    if(I && !I_active){
-      // align HallSensor on each index 
-      if(index_pulse_counter){
-        long tmp = pulse_counter;
-        // corrent the counter value
-        pulse_counter = round((float)pulse_counter/(float)cpr)*cpr;
-        // preserve relative speed
-        prev_pulse_counter += pulse_counter - tmp;
-      } else {
-      // initial offset
-        index_pulse_counter = pulse_counter;
-      }
-    }
-    I_active = I;
-  }
+ 
 }
 
 /*
@@ -200,30 +158,15 @@ void HallSensor::init(){
   prev_pulse_counter = 0;
   prev_timestamp_us = _micros();
 
-  // initial cpr = PPR
-  // change it if the mode is quadrature
-  if(quadrature == Quadrature::ON) cpr = 4*cpr;
-
 }
 
 // function enabling hardware interrupts of the for the callback provided
 // if callback is not provided then the interrupt is not enabled
 void HallSensor::enableInterrupts(void (*doA)(), void(*doB)(), void(*doIndex)()){
   // attach interrupt if functions provided
-  switch(quadrature){
-    case Quadrature::ON:
-      // A callback and B callback
-      if(doA != nullptr) attachInterrupt(digitalPinToInterrupt(pinA), doA, CHANGE);
-      if(doB != nullptr) attachInterrupt(digitalPinToInterrupt(pinB), doB, CHANGE);
-      break;
-    case Quadrature::OFF:
-      // A callback and B callback
-      if(doA != nullptr) attachInterrupt(digitalPinToInterrupt(pinA), doA, RISING);
-      if(doB != nullptr) attachInterrupt(digitalPinToInterrupt(pinB), doB, RISING);
-      break;
-  }
-        
-  // if index used initialize the index interrupt
-  if(hasIndex() && doIndex != nullptr) attachInterrupt(digitalPinToInterrupt(index_pin), doIndex, CHANGE);
+
+  // A callback and B callback
+  if(doA != nullptr) attachInterrupt(digitalPinToInterrupt(pinA), doA, CHANGE);
+  if(doB != nullptr) attachInterrupt(digitalPinToInterrupt(pinB), doB, CHANGE);
 }
 

@@ -7,14 +7,6 @@
 
 
 /**
- *  Pullup configuration structure
- */
-enum Pullup{
-    INTERN, //!< Use internal pullups
-    EXTERN //!< Use external pullups
-};
-
-/**
  *  Quadrature mode configuration structure
  */
 enum Quadrature{
