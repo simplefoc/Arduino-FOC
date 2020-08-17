@@ -18,7 +18,7 @@ HallSensor sensor = HallSensor(2, 3, 4, 11);
 // Interrupt routine intialisation
 // channel A and B callbacks
 void doA(){sensor.handleA();}
-void doB(){();}
+void doB(){sensor.handleB();}
 void doC(){sensor.handleC();}
 
 void setup() { 
