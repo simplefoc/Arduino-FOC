@@ -112,9 +112,29 @@ int BLDCMotor::alignSensor() {
   if(monitor_port) monitor_port->println("MOT: Align sensor.");
   // align the electrical phases of the motor and sensor
   // set angle -90 degrees 
-  setPhaseVoltage(voltage_sensor_align, _3PI_2);
-  // let the motor stabilize for 3 sec
-  _delay(3000);
+
+  float start_angle = shaftAngle();
+  for (int i = 0; i <=5; i++ ) {
+    float angle = _3PI_2 + _2PI * i / 6.0;
+    setPhaseVoltage(voltage_sensor_align,  angle);
+    _delay(200);
+  }
+  float mid_angle = shaftAngle();
+  for (int i = 5; i >=0; i-- ) {
+    float angle = _3PI_2 + _2PI * i / 6.0;
+    setPhaseVoltage(voltage_sensor_align,  angle);
+    _delay(200);
+  }
+  if (mid_angle < start_angle) {
+    if(monitor_port) monitor_port->println("MOT: natural_direction==CCW");
+    sensor->natural_direction = Direction::CCW;
+  } else if (mid_angle == start_angle) {
+    if(monitor_port) monitor_port->println("MOT: Sensor failed to notice movement");
+  }
+  _delay(500);
+  
+  // let the motor stabilize for 1 sec
+  _delay(500);
   // set sensor to zero
   sensor->initRelativeZero();
   _delay(500);
@@ -335,10 +355,10 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
           Tc = 0;
       }
 
-      // calculate the phase voltages
-      Ua = Ta*Uq;
-      Ub = Tb*Uq;
-      Uc = Tc*Uq;
+      // calculate the phase voltages and center
+      Ua = Ta*Uq  + (voltage_power_supply - Uq) / 2;
+      Ub = Tb*Uq  + (voltage_power_supply - Uq) / 2;
+      Uc = Tc*Uq  + (voltage_power_supply - Uq) / 2;
       break;
   }
   
