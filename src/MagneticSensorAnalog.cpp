@@ -81,7 +81,6 @@ float MagneticSensorAnalog::initRelativeZero(){
 // set absolute zero angle as zero angle
 // return the angle [rad] difference
 float MagneticSensorAnalog::initAbsoluteZero(){
-  float rotation = -(int)zero_offset;
   
   // don't reset zero offset, making adjustments in sensor
   // zero_offset = 0;
