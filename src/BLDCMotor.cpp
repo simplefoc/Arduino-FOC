@@ -138,7 +138,7 @@ int BLDCMotor::alignSensor() {
   // set sensor to zero
   sensor->initRelativeZero();
   _delay(500);
-  setPhaseVoltage(0,0);
+  setPhaseVoltage(0,angle);
   _delay(200);
 
   // find the index if available

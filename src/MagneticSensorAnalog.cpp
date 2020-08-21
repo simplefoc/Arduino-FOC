@@ -70,8 +70,9 @@ float MagneticSensorAnalog::getVelocity(){
 // set current angle as zero angle 
 // return the angle [rad] difference
 float MagneticSensorAnalog::initRelativeZero(){
+  
   float angle_offset = -getAngle();
-  zero_offset = getRawCount();
+  zero_offset = 0;
 
   // angle tracking variables
   full_rotation_offset = 0;
