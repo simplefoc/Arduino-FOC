@@ -91,6 +91,7 @@ void loop() {
 #include "Encoder.h"
 #include "MagneticSensorSPI.h"
 #include "MagneticSensorI2C.h"
+#include "MagneticSensorAnalog.h"
 #include "HallSensor.h"
 #include "BLDCMotor.h"
 
