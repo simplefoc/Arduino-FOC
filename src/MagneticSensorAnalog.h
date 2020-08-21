@@ -59,7 +59,7 @@ class MagneticSensorAnalog: public Sensor{
 
     int read();
 
-    word zero_offset; //!< user defined zero offset
+    int zero_offset; //!< user defined zero offset
     /**
      * Function getting current angle register value
      * it uses angle_register variable

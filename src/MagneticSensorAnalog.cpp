@@ -44,7 +44,7 @@ float MagneticSensorAnalog::getAngle(){
   // if overflow happened track it as full rotation
   if(abs(delta) > (0.8*cpr) ) full_rotation_offset += delta > 0 ? -_2PI : _2PI; 
 
-  float angle = natural_direction * (full_rotation_offset + ( (float) (raw_count - min_raw_count) / (float)cpr) * _2PI);
+  float angle = natural_direction * (full_rotation_offset + ( (float) (raw_count - zero_offset) / (float)cpr) * _2PI);
 
   // calculate velocity here 
   long now = _micros();
@@ -72,7 +72,7 @@ float MagneticSensorAnalog::getVelocity(){
 float MagneticSensorAnalog::initRelativeZero(){
   
   float angle_offset = -getAngle();
-  zero_offset = 0;
+  zero_offset = getRawCount();
 
   // angle tracking variables
   full_rotation_offset = 0;
@@ -82,13 +82,14 @@ float MagneticSensorAnalog::initRelativeZero(){
 // return the angle [rad] difference
 float MagneticSensorAnalog::initAbsoluteZero(){
   float rotation = -(int)zero_offset;
-  // init absolute zero
-  zero_offset = 0;
+  
+  // don't reset zero offset, making adjustments in sensor
+  // zero_offset = 0;
 
   // angle tracking variables
   full_rotation_offset = 0;
-  // return offset in radians
-  return rotation / (float)cpr * _2PI;
+
+  return 0;
 }
 // returns 0 if it has no absolute 0 measurement
 // 0 - incremental encoder without index
