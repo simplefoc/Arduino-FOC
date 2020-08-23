@@ -9,7 +9,7 @@
 #include <SimpleFOC.h>
 
 // magnetic sensor instance
-MagneticSensorSPI sensor = MagneticSensorSPI(10, 16384, 0x3FFF);
+MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
 // magnetic sensor instance
 //MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
 
