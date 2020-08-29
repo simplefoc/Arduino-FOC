@@ -19,10 +19,12 @@
 // its not important how many pole pairs do you set, the progam will find it alone
 BLDCMotor motor = BLDCMotor(9, 5, 6, 0, 8);
 
-// magnetic sensor instance
-MagneticSensorSPI sensor = MagneticSensorSPI(10, 16384, 0x3FFF);
-// magnetic sensor instance
+// magnetic sensor instance - SPI
+MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
+// magnetic sensor instance - I2C
 //MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
+// magnetic sensor instance - analog output
+// MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
 
 void setup() {
 

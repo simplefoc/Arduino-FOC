@@ -33,7 +33,7 @@ void doA(){sensor.handleA();}
 void doB(){sensor.handleB();}
 void doC(){sensor.handleC();}
 // If no available hadware interrupt pins use the software interrupt
-PciListenerImp listenerIndex(sensor.pinC, doC);
+PciListenerImp listenC(sensor.pinC, doC);
 
 
 void setup() {
@@ -42,7 +42,7 @@ void setup() {
   sensor.init();
   sensor.enableInterrupts(doA, doB); //, doC); 
   // software interrupts
-  PciManager.registerListener(&listenerIndex);
+  PciManager.registerListener(&listenC);
   // link the motor to the sensor
   motor.linkSensor(&sensor);
 

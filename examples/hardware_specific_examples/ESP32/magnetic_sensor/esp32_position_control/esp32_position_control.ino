@@ -15,6 +15,9 @@ MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
 // SCL 22
 //MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
 
+// Analog output Magnetic sensor instance (AS5600)
+// MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
+
 // Motor instance
 BLDCMotor motor = BLDCMotor(25, 26, 27, 7);
 
