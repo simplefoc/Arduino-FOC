@@ -25,9 +25,11 @@ void MagneticSensorSPI::init(){
   
 	//SPI has an internal SPI-device counter, it is possible to call "begin()" from different devices
 	SPI.begin();
+#ifndef ESP_H // if not ESP32 board
 	SPI.setBitOrder(MSBFIRST); // Set the SPI_1 bit order
 	SPI.setDataMode(SPI_MODE1) ;
 	SPI.setClockDivider(SPI_CLOCK_DIV8);
+#endif
 
 	digitalWrite(chip_select_pin, HIGH);
 	// velocity calculation init
@@ -60,7 +62,7 @@ float MagneticSensorSPI::getAngle(){
   angle_data -= (int)zero_offset;
   // return the full angle 
   // (number of full rotations)*2PI + current sensor angle
-  return full_rotation_offset + ( angle_data / (float)cpr) * _2PI;
+  return natural_direction * (full_rotation_offset + ( angle_data / (float)cpr) * _2PI);
 }
 
 // Shaft velocity calculation
@@ -85,7 +87,7 @@ float MagneticSensorSPI::getVelocity(){
 // return the angle [rad] difference
 float MagneticSensorSPI::initRelativeZero(){
   float angle_offset = -getAngle();
-  zero_offset = getRawCount();
+  zero_offset = natural_direction * getRawCount();
 
   // angle tracking variables
   full_rotation_offset = 0;
@@ -164,13 +166,21 @@ word MagneticSensorSPI::read(word angle_register){
 
   //Send the command
   digitalWrite(chip_select_pin, LOW);
+#ifndef ESP_H // if not ESP32 board
   digitalWrite(chip_select_pin, LOW);
+#endif
   SPI.transfer(left_byte);
   SPI.transfer(right_byte);
   digitalWrite(chip_select_pin,HIGH);
+#ifndef ESP_H // if not ESP32 board
   digitalWrite(chip_select_pin,HIGH);
+#endif
   
+#if defined( ESP_H ) // if ESP32 board
+  delayMicroseconds(50);
+#else
   delayMicroseconds(10);
+#endif
   
   //Now read the response
   digitalWrite(chip_select_pin, LOW);

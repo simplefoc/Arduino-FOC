@@ -131,14 +131,13 @@ int BLDCMotor::alignSensor() {
   } else if (mid_angle == start_angle) {
     if(monitor_port) monitor_port->println("MOT: Sensor failed to notice movement");
   }
-  _delay(500);
-  
-  // let the motor stabilize for 1 sec
-  _delay(500);
+
+  // let the motor stabilize for 2 sec
+  _delay(2000);
   // set sensor to zero
   sensor->initRelativeZero();
   _delay(500);
-  setPhaseVoltage(0,angle);
+  setPhaseVoltage(0,0);
   _delay(200);
 
   // find the index if available
@@ -177,7 +176,7 @@ int BLDCMotor::absoluteZeroAlign() {
     // align the sensor with the absolute zero
     float zero_offset = sensor->initAbsoluteZero();
     // remember zero electric angle
-    zero_electric_angle = electricAngle(zero_offset);
+    zero_electric_angle = normalizeAngle(electricAngle(zero_offset));
   }
   // return bool if zero found
   return !sensor->needsAbsoluteZeroSearch() ? 1 : -1;
@@ -213,12 +212,21 @@ float BLDCMotor::electricAngle(float shaftAngle) {
   FOC functions
 */
 // FOC initialization function
-int  BLDCMotor::initFOC() {
-  // sensor and motor alignment
-  _delay(500);
-  int exit_flag = alignSensor();
-  _delay(500);
-  
+int  BLDCMotor::initFOC( float zero_electric_offset, Direction sensor_direction) {
+  int exit_flag = 1;
+  // align motor if necessary
+  // alignment necessary for encoders!
+  if(zero_electric_offset != NOT_SET){
+    // abosolute zero offset provided - no need to align
+    zero_electric_angle = zero_electric_offset;
+    // set the sensor direction - default CW
+    sensor->natural_direction = sensor_direction;
+  }else{
+    // sensor and motor alignment
+    _delay(500);
+    exit_flag = alignSensor();
+    _delay(500);
+    }
   if(monitor_port) monitor_port->println("MOT: Motor ready.");
 
   return exit_flag;
@@ -307,13 +315,13 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
       // find the sector we are in currently
       int sector = floor(angle_el / _PI_3) + 1;
       // calculate the duty cycles
-      float T1 = _SQRT3*_sin(sector*_PI_3 - angle_el);
-      float T2 = _SQRT3*_sin(angle_el - (sector-1.0)*_PI_3);
+      float T1 = _SQRT3*_sin(sector*_PI_3 - angle_el) * Uq/voltage_power_supply;
+      float T2 = _SQRT3*_sin(angle_el - (sector-1.0)*_PI_3) * Uq/voltage_power_supply;
       // two versions possible 
       // centered around voltage_power_supply/2
       float T0 = 1 - T1 - T2;
       // pulled to 0 - better for low power supply voltage
-      //T0 = 0;
+      //float T0 = 0;
 
       // calculate the duty cycles(times)
       float Ta,Tb,Tc; 
@@ -356,9 +364,9 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
       }
 
       // calculate the phase voltages and center
-      Ua = Ta*Uq  + (voltage_power_supply - Uq) / 2;
-      Ub = Tb*Uq  + (voltage_power_supply - Uq) / 2;
-      Uc = Tc*Uq  + (voltage_power_supply - Uq) / 2;
+      Ua = Ta*voltage_power_supply;//  + (voltage_power_supply - Uq) / 2;
+      Ub = Tb*voltage_power_supply;//  + (voltage_power_supply - Uq) / 2;
+      Uc = Tc*voltage_power_supply;//  + (voltage_power_supply - Uq) / 2;
       break;
   }
   
