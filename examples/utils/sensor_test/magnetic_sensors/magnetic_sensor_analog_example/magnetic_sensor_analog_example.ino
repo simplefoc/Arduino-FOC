@@ -8,7 +8,7 @@
  * MagneticSensorAnalog(uint8_t _pinAnalog, int _min, int _max)
  * - pinAnalog      - the pin that is reading the pwm from magnetic sensor
  * - min_raw_count  - the smallest expected reading.  Whilst you might expect it to be 0 it is often ~15.  Getting this wrong results in a small click once per revolution
- * - max_raw_count  - the largest value read.  whilst you might expect it to be 2^10 = 1023 it is often ~ 1020
+ * - max_raw_count  - the largest value read.  whilst you might expect it to be 2^10 = 1023 it is often ~ 1020. Note ESP32 will be closer to 4096 with its 12bit ADC
  */
 MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
 
