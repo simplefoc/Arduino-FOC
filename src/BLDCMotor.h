@@ -20,7 +20,7 @@
 enum ControlType{
   voltage,//!< Torque control using voltage
   velocity,//!< Velocity motion control
-  angle//!< Position/angle motion control
+  angle,//!< Position/angle motion control
 };
 
 /**
@@ -121,7 +121,17 @@ class BLDCMotor
      * This function doesn't need to be run upon each loop execution - depends of the use case
      */
     void move(float target = NOT_SET);
+
+    // set velocity in open loop
+    // - velocity - rad/s
+    // - voltage  - V
+    void velocityOpenloop(float vel, float voltage);
     
+    // set angle in open loop
+    // - angle - rad
+    // - velocity - rad/s
+    // - voltage  - V
+    void angleOpenloop(float angle, float vel, float voltage);
 
     // hardware variables
   	int pwmA; //!< phase A pwm pin number
@@ -283,6 +293,10 @@ class BLDCMotor
     
     // phase voltages 
     float	Ualpha,Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
+
+
+    // open loop variables
+    long open_loop_timestamp;
 
 };
 

@@ -46,6 +46,8 @@ initAbsoluteZero	KEYWORD2
 hasAbsoluteZero	KEYWORD2
 needsAbsoluteZeroSearch	KEYWORD2
 useMonitoring	KEYWORD2
+angleOpenloop	KEYWORD2
+velocityOpenloop	KEYWORD2
 
 voltage_q	KEYWORD2
 shaft_angle_sp	KEYWORD2

@@ -613,3 +613,35 @@ int BLDCMotor::command(String user_command) {
   // return 0 if error and 1 if ok
   return errorFlag;
 }
+
+
+// set velocity in open loop
+// - velocity - rad/s
+// - voltage  - V
+void BLDCMotor::velocityOpenloop(float vel, float voltage){
+  float Ts = (_micros() - open_loop_timestamp) * 1e-6;
+
+  shaft_angle += vel*Ts; 
+
+  setPhaseVoltage(voltage, electricAngle(shaft_angle));
+
+  open_loop_timestamp = _micros();
+}
+
+// set angle in open loop
+// - angle - rad
+// - velocity - rad/s
+// - voltage  - V
+void BLDCMotor::angleOpenloop(float angle, float vel, float voltage){
+  float Ts = (_micros() - open_loop_timestamp) * 1e-6;
+
+  if(abs(angle- shaft_angle) > abs(vel*Ts)){
+    shaft_angle += _sign(angle - shaft_angle) * abs(vel)*Ts; 
+  }else{
+    shaft_angle = angle;
+  }
+
+  setPhaseVoltage(voltage, electricAngle(shaft_angle));
+
+  open_loop_timestamp = _micros();
+}
