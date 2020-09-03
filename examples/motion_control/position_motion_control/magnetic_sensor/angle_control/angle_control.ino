@@ -43,7 +43,7 @@ void setup() {
   motor.PI_velocity.P = 0.2;
   motor.PI_velocity.I = 20;
   // maximal voltage to be set to the motor
-  motor.PI_velocity.voltage_limit = 6;
+  motor.voltage_limit = 6;
   
   // velocity low pass filtering time constant
   // the lower the less filtered
@@ -52,7 +52,7 @@ void setup() {
   // angle P controller 
   motor.P_angle.P = 20;
   // maximal velocity of the position control
-  motor.P_angle.velocity_limit = 20;
+  motor.velocity_limit = 20;
 
   // use monitoring with serial 
   Serial.begin(115200);

@@ -78,7 +78,7 @@ void setup() {
   motor.PI_velocity.P = 0.2;
   motor.PI_velocity.I = 20;
   // default voltage_power_supply
-  motor.PI_velocity.voltage_limit = 12;
+  motor.voltage_limit = 12;
 
   // velocity low pass filtering time constant
   motor.LPF_velocity.Tf = 0.01;
@@ -86,7 +86,7 @@ void setup() {
   // angle loop controller
   motor.P_angle.P = 20;
   // angle loop velocity limit
-  motor.P_angle.velocity_limit = 50;
+  motor.velocity_limit = 50;
 
   // use monitoring with serial for motor init
   // monitoring port
