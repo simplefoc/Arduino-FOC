@@ -24,7 +24,6 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   PI_velocity.P = DEF_PI_VEL_P;
   PI_velocity.I = DEF_PI_VEL_I;
   PI_velocity.timestamp = _micros();
-  PI_velocity.voltage_limit = voltage_power_supply;
   PI_velocity.voltage_ramp = DEF_PI_VEL_U_RAMP;
   PI_velocity.voltage_prev = 0;
   PI_velocity.tracking_error_prev = 0;
@@ -37,8 +36,11 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   // position loop config
   // P controller constant
   P_angle.P = DEF_P_ANGLE_P;
+
   // maximum angular velocity to be used for positioning 
-  P_angle.velocity_limit = DEF_P_ANGLE_VEL_LIM;
+  velocity_limit = DEF_P_ANGLE_VEL_LIM;
+  // maximum voltage to be set to the motor
+  voltage_limit = voltage_power_supply;
 
   // index search velocity
   velocity_index_search = DEF_INDEX_SEARCH_TARGET_VELOCITY;
@@ -56,6 +58,8 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
   
   //monitor_port 
   monitor_port = nullptr;
+  //sensor 
+  sensor = nullptr;
 }
 
 // init hardware pins   
@@ -73,7 +77,7 @@ void BLDCMotor::init() {
   _setPwmFrequency(pwmA, pwmB, pwmC);
 
   // sanity check for the voltage limit configuration
-  if(PI_velocity.voltage_limit > voltage_power_supply) PI_velocity.voltage_limit =  voltage_power_supply;
+  if(voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
 
   _delay(500);
   // enable motor
@@ -187,10 +191,14 @@ int BLDCMotor::absoluteZeroAlign() {
 */
 // shaft angle calculation
 float BLDCMotor::shaftAngle() {
+  // if no sensor linked return 0
+  //if(!sensor) return 0;
   return sensor->getAngle();
 }
 // shaft velocity calculation
 float BLDCMotor::shaftVelocity() {
+  // if no sensor linked return 0
+  //if(!sensor) return 0;
   float Ts = (_micros() - LPF_velocity.timestamp) * 1e-6;
   // quick fix for strange cases (micros overflow)
   if(Ts <= 0 || Ts > 0.5) Ts = 1e-3; 
@@ -268,6 +276,18 @@ void BLDCMotor::move(float new_target) {
       // include velocity loop
       shaft_velocity_sp = target;
       voltage_q = velocityPI(shaft_velocity_sp - shaft_velocity);
+      break;
+    case ControlType::velocity_openloop:
+      // velocity control in open loop
+      // loopFOC should not be called
+      shaft_velocity_sp = target;
+      velocityOpenloop(shaft_velocity_sp);
+      break;
+    case ControlType::angle_openloop:
+      // angle control in open loop
+      // loopFOC should not be called
+      shaft_angle_sp = target;
+      angleOpenloop(shaft_angle_sp);
       break;
   }
 }
@@ -364,9 +384,9 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
       }
 
       // calculate the phase voltages and center
-      Ua = Ta*voltage_power_supply;//  + (voltage_power_supply - Uq) / 2;
-      Ub = Tb*voltage_power_supply;//  + (voltage_power_supply - Uq) / 2;
-      Uc = Tc*voltage_power_supply;//  + (voltage_power_supply - Uq) / 2;
+      Ua = Ta*voltage_power_supply;
+      Ub = Tb*voltage_power_supply;
+      Uc = Tc*voltage_power_supply;
       break;
   }
   
@@ -376,14 +396,13 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
 
 
 
-
 // Set voltage to the pwm pin
 void BLDCMotor::setPwm(float Ua, float Ub, float Uc) {      
   // calculate duty cycle
   // limited in [0,1]
-  float dc_a = (Ua < 0) ? 0 : (Ua >= voltage_power_supply) ? 1 : Ua / voltage_power_supply;  
-  float dc_b = (Ub < 0) ? 0 : (Ub >= voltage_power_supply) ? 1 : Ub / voltage_power_supply;  
-  float dc_c = (Uc < 0) ? 0 : (Uc >= voltage_power_supply) ? 1 : Uc / voltage_power_supply;  
+  float dc_a = constrain(Ua / voltage_power_supply, 0 , 1 );
+  float dc_b = constrain(Ub / voltage_power_supply, 0 , 1 );
+  float dc_c = constrain(Uc / voltage_power_supply, 0 , 1 );
   // hardware specific writing
   _writeDutyCycle(dc_a, dc_b, dc_c, pwmA, pwmB, pwmC );
 }
@@ -419,7 +438,7 @@ float BLDCMotor::controllerPI(float tracking_error, PI_s& cont){
   float voltage = cont.voltage_prev + (tmp + cont.P) * tracking_error + (tmp - cont.P) * cont.tracking_error_prev;
 
   // antiwindup - limit the output voltage_q
-  if (abs(voltage) > cont.voltage_limit) voltage = voltage > 0 ? cont.voltage_limit : -cont.voltage_limit;
+  voltage = constrain(voltage, -voltage_limit, voltage_limit);
   // limit the acceleration by ramping the the voltage
   float d_voltage = voltage - cont.voltage_prev;
   if (abs(d_voltage)/Ts > cont.voltage_ramp) voltage = d_voltage > 0 ? cont.voltage_prev + cont.voltage_ramp*Ts : cont.voltage_prev - cont.voltage_ramp*Ts;
@@ -440,8 +459,49 @@ float BLDCMotor::positionP(float ek) {
   // calculate the target velocity from the position error
   float velocity_target = P_angle.P * ek;
   // constrain velocity target value
-  if (abs(velocity_target) > P_angle.velocity_limit) velocity_target = velocity_target > 0 ? P_angle.velocity_limit : -P_angle.velocity_limit;
+  velocity_target = constrain(velocity_target, -velocity_limit, velocity_limit);
   return velocity_target;
+}
+
+// Function (iterative) generating open loop movement for target velocity
+// - target_velocity - rad/s
+// it uses voltage_limit variable
+void BLDCMotor::velocityOpenloop(float target_velocity){
+  // get current timestamp
+  long now_us = _micros();
+  // calculate the sample time from last call
+  float Ts = (now_us - open_loop_timestamp) * 1e-6;
+
+  // calculate the necessary angle to achieve target velocity
+  shaft_angle += target_velocity*Ts; 
+  // set the maximal allowed voltage (voltage_limit) with the necessary angle
+  setPhaseVoltage(voltage_limit, electricAngle(shaft_angle));
+
+  // save timestamp for next call
+  open_loop_timestamp = now_us;
+}
+
+// Function (iterative) generating open loop movement towards the target angle
+// - target_angle - rad
+// it uses voltage_limit and velocity_limit variables
+void BLDCMotor::angleOpenloop(float target_angle){
+  // get current timestamp
+  long now_us = _micros();
+  // calculate the sample time from last call
+  float Ts = (now_us - open_loop_timestamp) * 1e-6;
+  
+  // calculate the necessary angle to move from current position towards target angle
+  // with maximal velocity (velocity_limit)
+  if(abs( target_angle - shaft_angle ) > abs(velocity_limit*Ts))
+    shaft_angle += _sign(target_angle - shaft_angle) * abs( velocity_limit )*Ts; 
+  else
+    shaft_angle = target_angle;
+  
+  // set the maximal allowed voltage (voltage_limit) with the necessary angle
+  setPhaseVoltage(voltage_limit, electricAngle(shaft_angle));
+
+  // save timestamp for next call
+  open_loop_timestamp = now_us;
 }
 
 /**
@@ -498,7 +558,6 @@ int BLDCMotor::command(String user_command) {
   switch(cmd){
     case 'P':      // velocity P gain change
     case 'I':      // velocity I gain change
-    case 'L':      // velocity voltage limit change
     case 'R':      // velocity voltage ramp change
       if(monitor_port) monitor_port->print(" PI velocity| ");
       break;
@@ -506,9 +565,13 @@ int BLDCMotor::command(String user_command) {
       if(monitor_port) monitor_port->print(" LPF velocity| ");
       break;
     case 'K':      // angle loop gain P change
-    case 'N':      // angle loop gain velocity_limit change
       if(monitor_port) monitor_port->print(" P angle| ");
       break;
+    case 'L':      // velocity voltage limit change
+    case 'N':      // angle loop gain velocity_limit change
+      if(monitor_port) monitor_port->print(" Limits| ");
+      break;
+
   }
 
   // apply the the command
@@ -525,8 +588,8 @@ int BLDCMotor::command(String user_command) {
       break;
     case 'L':      // velocity voltage limit change
       if(monitor_port) monitor_port->print("volt_limit: ");
-      if(!GET)PI_velocity.voltage_limit = value;
-      if(monitor_port) monitor_port->println(PI_velocity.voltage_limit);
+      if(!GET)voltage_limit = value;
+      if(monitor_port) monitor_port->println(voltage_limit);
       break;
     case 'R':      // velocity voltage ramp change
       if(monitor_port) monitor_port->print("volt_ramp: ");
@@ -545,8 +608,8 @@ int BLDCMotor::command(String user_command) {
       break;
     case 'N':      // angle loop gain velocity_limit change
       if(monitor_port) monitor_port->print("vel_limit: ");
-      if(!GET) P_angle.velocity_limit = value;
-      if(monitor_port) monitor_port->println(P_angle.velocity_limit);
+      if(!GET) velocity_limit = value;
+      if(monitor_port) monitor_port->println(velocity_limit);
       break;
     case 'C':
       // change control type
@@ -612,36 +675,4 @@ int BLDCMotor::command(String user_command) {
   }
   // return 0 if error and 1 if ok
   return errorFlag;
-}
-
-
-// set velocity in open loop
-// - velocity - rad/s
-// - voltage  - V
-void BLDCMotor::velocityOpenloop(float vel, float voltage){
-  float Ts = (_micros() - open_loop_timestamp) * 1e-6;
-
-  shaft_angle += vel*Ts; 
-
-  setPhaseVoltage(voltage, electricAngle(shaft_angle));
-
-  open_loop_timestamp = _micros();
-}
-
-// set angle in open loop
-// - angle - rad
-// - velocity - rad/s
-// - voltage  - V
-void BLDCMotor::angleOpenloop(float angle, float vel, float voltage){
-  float Ts = (_micros() - open_loop_timestamp) * 1e-6;
-
-  if(abs(angle- shaft_angle) > abs(vel*Ts)){
-    shaft_angle += _sign(angle - shaft_angle) * abs(vel)*Ts; 
-  }else{
-    shaft_angle = angle;
-  }
-
-  setPhaseVoltage(voltage, electricAngle(shaft_angle));
-
-  open_loop_timestamp = _micros();
 }

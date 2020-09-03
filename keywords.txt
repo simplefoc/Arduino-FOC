@@ -64,8 +64,9 @@ target	KEYWORD2
 
 voltage	KEYWORD2
 velocity	KEYWORD2
-velocity_ultra_slow	KEYWORD2
+velocity_openloop	KEYWORD2
 angle	KEYWORD2
+angle_openloop	KEYWORD2
 
 
 ON	KEYWORD2

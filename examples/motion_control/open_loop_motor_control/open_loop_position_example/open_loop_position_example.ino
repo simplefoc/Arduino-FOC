@@ -10,8 +10,15 @@ void setup() {
   // default 12V
   motor.voltage_power_supply = 12;
 
+  // limiting motor movements
+  motor.voltage_limit = 3;   // rad/s
+  motor.velocity_limit = 20; // rad/s
+  // open loop control config
+  motor.controller = ControlType::angle_openloop;
+
   // init motor hardware
   motor.init();
+  
 
   Serial.begin(115200);
   Serial.println("Motor ready!");
@@ -19,18 +26,11 @@ void setup() {
 }
 
 float target_position = 0; // rad/s
-float target_velocity= 10; // rad/s
-float target_voltage = 3; // V
 
 void loop() {
-  // set angle in open loop
-  // - angle - rad
-  // - velocity - rad/s
-  // - voltage  - V
-  motor.angleOpenloop(target_position, target_velocity, target_voltage);
-
-  // a bit of delay
-  _delay(1);
+  // open  loop angle movements 
+  // using motor.voltage_limit and motor.velocity_limit
+  motor.move(target_position);
 
   // receive the used commands from serial
   serialReceiveUserCommand();

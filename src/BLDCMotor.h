@@ -21,6 +21,8 @@ enum ControlType{
   voltage,//!< Torque control using voltage
   velocity,//!< Velocity motion control
   angle,//!< Position/angle motion control
+  velocity_openloop,
+  angle_openloop
 };
 
 /**
@@ -37,7 +39,6 @@ enum FOCModulationType{
 struct PI_s{
   float P; //!< Proportional gain 
   float I; //!< Integral gain 
-  float voltage_limit; //!< Voltage limit of the controller output
   float voltage_ramp;  //!< Maximum speed of change of the output value 
   long timestamp;  //!< Last execution timestamp
   float voltage_prev;  //!< last controller output value 
@@ -48,7 +49,6 @@ struct PI_s{
 struct P_s{
   float P; //!< Proportional gain 
   long timestamp; //!< Last execution timestamp
-  float velocity_limit; //!< Velocity limit of the controller output
 };
 
 /**
@@ -122,17 +122,6 @@ class BLDCMotor
      */
     void move(float target = NOT_SET);
 
-    // set velocity in open loop
-    // - velocity - rad/s
-    // - voltage  - V
-    void velocityOpenloop(float vel, float voltage);
-    
-    // set angle in open loop
-    // - angle - rad
-    // - velocity - rad/s
-    // - voltage  - V
-    void angleOpenloop(float angle, float vel, float voltage);
-
     // hardware variables
   	int pwmA; //!< phase A pwm pin number
   	int pwmB; //!< phase B pwm pin number
@@ -165,6 +154,10 @@ class BLDCMotor
     float voltage_sensor_align;//!< sensor and motor align voltage parameter
     float velocity_index_search;//!< target velocity for index search 
     int pole_pairs;//!< Motor pole pairs number
+
+    // limiting variables
+    float voltage_limit; //!< Voltage limitting variable - global limit
+    float velocity_limit; //!< Velocity limitting variable - global limit
 
     // configuration structures
     ControlType controller; //!< parameter determining the control loop to be used
@@ -290,6 +283,23 @@ class BLDCMotor
     float velocityPI(float tracking_error);
     /**  Position P controller implementation */
     float positionP(float ek);
+
+    // Open loop motion control    
+    /**
+     * Function (iterative) generating open loop movement for target velocity
+     * it uses voltage_limit variable
+     * 
+     * @param target_velocity - rad/s
+     */
+    void velocityOpenloop(float target_velocity);
+    /**
+     * Function (iterative) generating open loop movement towards the target angle
+     * it uses voltage_limit and velocity_limit variables
+     * 
+     * @param target_angle - rad
+     */
+    void angleOpenloop(float target_angle);
+
     
     // phase voltages 
     float	Ualpha,Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
