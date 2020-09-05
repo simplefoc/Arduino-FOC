@@ -29,7 +29,7 @@ void MagneticSensorI2C::init(){
   
 	//I2C communication begin
 	Wire.begin();
-
+  
 	// velocity calculation init
 	angle_prev = 0;
 	velocity_calc_timestamp = _micros(); 
@@ -66,7 +66,8 @@ float MagneticSensorI2C::getAngle(){
 // Shaft velocity calculation
 float MagneticSensorI2C::getVelocity(){
   // calculate sample time
-  float Ts = (_micros() - velocity_calc_timestamp)*1e-6;
+  unsigned long now_us = _micros();
+  float Ts = (now_us - velocity_calc_timestamp)*1e-6;
   // quick fix for strange cases (micros overflow)
   if(Ts <= 0 || Ts > 0.5) Ts = 1e-3; 
 
@@ -77,7 +78,7 @@ float MagneticSensorI2C::getVelocity(){
   
   // save variables for future pass
   angle_prev = angle_c;
-  velocity_calc_timestamp = _micros();
+  velocity_calc_timestamp = now_us;
   return vel;
 }
 

@@ -68,7 +68,8 @@ float MagneticSensorSPI::getAngle(){
 // Shaft velocity calculation
 float MagneticSensorSPI::getVelocity(){
   // calculate sample time
-  float Ts = (_micros() - velocity_calc_timestamp)*1e-6;
+  unsigned long now_us = _micros();
+  float Ts = (now_us - velocity_calc_timestamp)*1e-6;
   // quick fix for strange cases (micros overflow)
   if(Ts <= 0 || Ts > 0.5) Ts = 1e-3; 
 
@@ -79,7 +80,7 @@ float MagneticSensorSPI::getVelocity(){
   
   // save variables for future pass
   angle_prev = angle_c;
-  velocity_calc_timestamp = _micros();
+  velocity_calc_timestamp = now_us;
   return vel;
 }
 
