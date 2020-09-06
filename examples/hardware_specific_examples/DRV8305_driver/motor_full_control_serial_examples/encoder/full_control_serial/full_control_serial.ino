@@ -64,8 +64,8 @@ void setup() {
   motor.controller = ControlType::voltage;
 
   // contoller configuration based on the controll type 
-  motor.PI_velocity.P = 0.2;
-  motor.PI_velocity.I = 20;
+  motor.PID_velocity.P = 0.2;
+  motor.PID_velocity.I = 20;
   // default voltage_power_supply
   motor.voltage_limit = 12;
 

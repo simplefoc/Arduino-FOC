@@ -80,6 +80,7 @@ I	KEYWORD2
 D	KEYWORD2
 Tf	KEYWORD2
 voltage_limit	KEYWORD2
+output_ramp	KEYWORD2
 velocity_limit	KEYWORD2
 voltage_power_supply	KEYWORD2
 voltage_sensor_align	KEYWORD2
