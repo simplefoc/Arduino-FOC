@@ -38,13 +38,13 @@ void setup() {
   // default parameters in defaults.h
 
   // velocity PI controller parameters
-  motor.PI_velocity.P = 0.2;
-  motor.PI_velocity.I = 20;
+  motor.PID_velocity.P = 0.2;
+  motor.PID_velocity.I = 20;
   // default voltage_power_supply
-  motor.PI_velocity.voltage_limit = 6;
+  motor.voltage_limit = 6;
   // jerk control using voltage voltage ramp
   // default value is 300 volts per sec  ~ 0.3V per millisecond
-  motor.PI_velocity.voltage_ramp = 1000;
+  motor.PID_velocity.output_ramp = 1000;
  
   // velocity low pass filtering time constant
   motor.LPF_velocity.Tf = 0.01;
@@ -52,7 +52,7 @@ void setup() {
   // angle P controller
   motor.P_angle.P = 20;
   //  maximal velocity of the position control
-  motor.P_angle.velocity_limit = 4;
+  motor.velocity_limit = 4;
 
 
   // use monitoring with serial 

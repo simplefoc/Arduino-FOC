@@ -1,35 +1,39 @@
 /**
+ * 
  * Torque control example using voltage control loop.
  * 
  * Most of the low-end BLDC driver boards doesn't have current measurement therefore SimpleFOC offers 
- * you a way to control motor torque by setting the voltage to the motor instead hte current. 
+ * you a way to control motor torque by setting the voltage to the motor instead of the current. 
  * 
  * This makes the BLDC motor effectively a DC motor, and you can use it in a same way.
  */
 #include <SimpleFOC.h>
 
-// magnetic sensor instance - SPI
-MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
-// magnetic sensor instance - I2C
-//MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
-// magnetic sensor instance - analog output
-// MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
+// motor instance
+BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 7);
 
-// Motor instance
-BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
+// hall sensor instance
+HallSensor sensor = HallSensor(2, 3, 4, 11);
 
-void setup() {
+// Interrupt routine intialisation
+// channel A and B callbacks
+void doA(){sensor.handleA();}
+void doB(){sensor.handleB();}
+void doC(){sensor.handleC();}
 
-  // initialise magnetic sensor hardware
+void setup() { 
+  
+  // initialize encoder sensor hardware
   sensor.init();
+  sensor.enableInterrupts(doA, doB, doC); 
   // link the motor to the sensor
   motor.linkSensor(&sensor);
 
   // power supply voltage
   // default 12V
   motor.voltage_power_supply = 12;
-  // aligning voltage 
-  motor.voltage_sensor_align = 5;
+  // aligning voltage
+  motor.voltage_sensor_align = 3;
   
   // choose FOC modulation (optional)
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;

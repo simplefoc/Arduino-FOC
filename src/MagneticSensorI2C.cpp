@@ -11,7 +11,7 @@ MagneticSensorI2C::MagneticSensorI2C(uint8_t _chip_address, int _bit_resolution,
   // angle read register of the magnetic sensor
   angle_register_msb = _angle_register_msb;
   // register maximum value (counts per revolution)
-  cpr = pow(2,_bit_resolution);
+  cpr = pow(2, _bit_resolution);
   
   // depending on the sensor architecture there are different combinations of
   // LSB and MSB register used bits
@@ -29,7 +29,7 @@ void MagneticSensorI2C::init(){
   
 	//I2C communication begin
 	Wire.begin();
-
+  
 	// velocity calculation init
 	angle_prev = 0;
 	velocity_calc_timestamp = _micros(); 
@@ -60,13 +60,14 @@ float MagneticSensorI2C::getAngle(){
   angle_data -= (int)zero_offset;
   // return the full angle 
   // (number of full rotations)*2PI + current sensor angle
-  return full_rotation_offset + ( angle_data / (float)cpr) * _2PI;
+  return natural_direction * (full_rotation_offset + ( angle_data / (float)cpr) * _2PI);
 }
 
 // Shaft velocity calculation
 float MagneticSensorI2C::getVelocity(){
   // calculate sample time
-  float Ts = (_micros() - velocity_calc_timestamp)*1e-6;
+  unsigned long now_us = _micros();
+  float Ts = (now_us - velocity_calc_timestamp)*1e-6;
   // quick fix for strange cases (micros overflow)
   if(Ts <= 0 || Ts > 0.5) Ts = 1e-3; 
 
@@ -77,7 +78,7 @@ float MagneticSensorI2C::getVelocity(){
   
   // save variables for future pass
   angle_prev = angle_c;
-  velocity_calc_timestamp = _micros();
+  velocity_calc_timestamp = now_us;
   return vel;
 }
 
@@ -85,7 +86,7 @@ float MagneticSensorI2C::getVelocity(){
 // return the angle [rad] difference
 float MagneticSensorI2C::initRelativeZero(){
   float angle_offset = -getAngle();
-  zero_offset = getRawCount();
+  zero_offset = natural_direction * getRawCount();
 
   // angle tracking variables
   full_rotation_offset = 0;

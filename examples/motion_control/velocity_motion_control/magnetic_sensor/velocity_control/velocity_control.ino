@@ -16,6 +16,8 @@
 MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
 // magnetic sensor instance
 //MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
+// magnetic sensor instance - analog output
+// MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
 
 // Motor instance
 BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
@@ -38,13 +40,14 @@ void setup() {
   // default parameters in defaults.h
 
   // velocity PI controller parameters
-  motor.PI_velocity.P = 0.2;
-  motor.PI_velocity.I = 20;
+  motor.PID_velocity.P = 0.2;
+  motor.PID_velocity.I = 20;
+  motor.PID_velocity.D = 0;
   // default voltage_power_supply
-  motor.PI_velocity.voltage_limit = 6;
+  motor.voltage_limit = 6;
   // jerk control using voltage voltage ramp
   // default value is 300 volts per sec  ~ 0.3V per millisecond
-  motor.PI_velocity.voltage_ramp = 1000;
+  motor.PID_velocity.output_ramp = 1000;
   
   // velocity low pass filtering
   // default 5ms - try different values to see what is the best. 

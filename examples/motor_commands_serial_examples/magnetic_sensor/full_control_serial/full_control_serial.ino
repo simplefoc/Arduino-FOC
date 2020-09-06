@@ -17,13 +17,14 @@
  *              - to get the current target value enter: V3 
  * 
  * List of commands:
- *  - P: velocity PI controller P gain
- *  - I: velocity PI controller I gain
- *  - L: velocity PI controller voltage limit
- *  - R: velocity PI controller voltage ramp
+ *  - P: velocity PID controller P gain
+ *  - I: velocity PID controller I gain
+ *  - D: velocity PID controller D gain
+ *  - R: velocity PID controller voltage ramp
  *  - F: velocity Low pass filter time constant
  *  - K: angle P controller P gain
  *  - N: angle P controller velocity limit
+ *  - L: system voltage limit
  *  - C: control loop 
  *    - 0: voltage 
  *    - 1: velocity 
@@ -41,6 +42,8 @@
 MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
 // I2C magnetic sensor instance
 //MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
+// magnetic sensor instance - analog output
+// MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
 
 // motor instance
 BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
@@ -62,10 +65,11 @@ void setup() {
   motor.controller = ControlType::voltage;
 
   // contoller configuration based on the control type 
-  motor.PI_velocity.P = 0.2;
-  motor.PI_velocity.I = 20;
+  motor.PID_velocity.P = 0.2;
+  motor.PID_velocity.I = 20;
+  motor.PID_velocity.D = 0;
   // default voltage_power_supply
-  motor.PI_velocity.voltage_limit = 12;
+  motor.voltage_limit = 12;
 
   // velocity low pass filtering time constant
   motor.LPF_velocity.Tf = 0.01;
@@ -73,7 +77,7 @@ void setup() {
   // angle loop controller
   motor.P_angle.P = 20;
   // angle loop velocity limit
-  motor.P_angle.velocity_limit = 50;
+  motor.velocity_limit = 50;
 
   // use monitoring with serial for motor init
   // monitoring port

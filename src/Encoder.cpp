@@ -107,7 +107,7 @@ void Encoder::handleIndex() {
 	Shaft angle calculation
 */
 float Encoder::getAngle(){
-  return  _2PI * (pulse_counter) / ((float)cpr);
+  return  natural_direction * _2PI * (pulse_counter) / ((float)cpr);
 }
 /*
   Shaft velocity calculation
@@ -145,7 +145,7 @@ float Encoder::getVelocity(){
   // save velocity calculation variables
   prev_Th = Th;
   prev_pulse_counter = pulse_counter;
-  return (velocity);
+  return natural_direction * (velocity);
 }
 
 // getter for index pin
