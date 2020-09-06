@@ -34,14 +34,16 @@ enum FOCModulationType{
 };
 
 /**
- *  PI controller structure
+ *  PID controller structure
  */
-struct PI_s{
+struct PID_s{
   float P; //!< Proportional gain 
   float I; //!< Integral gain 
-  float voltage_ramp;  //!< Maximum speed of change of the output value 
+  float D; //!< Derivative gain 
   long timestamp;  //!< Last execution timestamp
-  float voltage_prev;  //!< last controller output value 
+  float integral_prev;  //!< last integral component value
+  float output_prev;  //!< last pid output value
+  float output_ramp;  //!< Maximum speed of change of the output value
   float tracking_error_prev;  //!< last tracking error value
 };
 
@@ -162,7 +164,7 @@ class BLDCMotor
     // configuration structures
     ControlType controller; //!< parameter determining the control loop to be used
     FOCModulationType foc_modulation;//!<  parameter derterniming modulation algorithm
-    PI_s PI_velocity;//!< parameter determining the velocity PI configuration
+    PID_s PID_velocity;//!< parameter determining the velocity PI configuration
     P_s P_angle;	//!< parameter determining the position P configuration 
     LPF_s LPF_velocity;//!<  parameter determining the velocity Lpw pass filter configuration 
 
@@ -270,17 +272,24 @@ class BLDCMotor
     /** determining if the enable pin has been provided  */
     int hasEnable();
     
+    /**
+     * Low pass filter function - iterative
+     * @param input  - singal to be filtered
+     * @param lpf    - LPF_s structure with filter parameters 
+     */
+    float lowPassFilter(float input, LPF_s& lpf);
+    
     // Motion control functions 
     /**
      * Generic PI controller function executing one step of a controller 
-     * receives tracking error and PI_s structure and outputs the control signal
+     * receives tracking error and PID_s structure and outputs the control signal
      * 
      * @param tracking_error Current error in between target value and mesasured value
-     * @param controller PI_s structure containing all the necessary PI controller config and variables
+     * @param controller PID_s structure containing all the necessary PI controller config and variables
      */
-    float controllerPI(float tracking_error, PI_s &controller);
+    float controllerPID(float tracking_error, PID_s &controller);
     /** Velocity PI controller implementation */
-    float velocityPI(float tracking_error);
+    float velocityPID(float tracking_error);
     /**  Position P controller implementation */
     float positionP(float ek);
 

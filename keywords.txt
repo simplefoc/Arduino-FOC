@@ -21,7 +21,7 @@ _round	KEYWORD3
 monitor	KEYWORD3
 command	KEYWORD3
 
-PI_velocity	KEYWORD2
+PID_velocity	KEYWORD2
 LPF_velocity	KEYWORD2
 P_angle	KEYWORD2
 
@@ -77,9 +77,9 @@ UNKNOWN	KEYWORD2
 
 P	KEYWORD2
 I	KEYWORD2
+D	KEYWORD2
 Tf	KEYWORD2
 voltage_limit	KEYWORD2
-voltage_ramp	KEYWORD2
 velocity_limit	KEYWORD2
 voltage_power_supply	KEYWORD2
 voltage_sensor_align	KEYWORD2
