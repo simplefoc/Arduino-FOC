@@ -467,7 +467,13 @@ float BLDCMotor::controllerPID(float tracking_error, PID_s& cont){
 
   // limit the acceleration by ramping the the voltage
   float d_voltage = voltage - cont.output_prev;
-  if (abs(d_voltage)/Ts > cont.output_ramp) voltage = d_voltage > 0 ? cont.output_prev + cont.output_ramp*Ts : cont.output_prev - cont.output_ramp*Ts;
+  if (abs(d_voltage)/Ts > cont.output_ramp) {
+    voltage = cont.output_prev;
+    if (d_voltage > 0)
+      voltage += cont.output_ramp*Ts;
+    else
+      voltage -= cont.output_ramp*Ts;
+  }
 
   // saving for the next pass
   cont.integral_prev = integral;
