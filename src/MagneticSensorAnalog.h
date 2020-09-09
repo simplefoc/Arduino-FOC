@@ -15,7 +15,6 @@ class MagneticSensorAnalog: public Sensor{
     /**
      * MagneticSensorAnalog class constructor
      * @param _pinAnalog  the pin to read the PWM signal
-     * @param _pinAnalog  the pin to read the PWM signal
      */
     MagneticSensorAnalog(uint8_t _pinAnalog, int _min = 0, int _max = 0);
     
