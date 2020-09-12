@@ -51,31 +51,31 @@ class HallSensor: public Sensor{
 
     // Abstract functions of the Sensor class implementation
     /** get current angle (rad) */
-    float getAngle();
+    float getAngle() override;
     /**  get current angular velocity (rad/s) */
-    float getVelocity();
+    float getVelocity() override;
     /** 
      *  set current angle as zero angle 
      * return the angle [rad] difference
      */
-    float initRelativeZero();
+    float initRelativeZero() override;
     /**
      * set index angle as zero angle
      * return the angle [rad] difference
      */
-    float initAbsoluteZero();
+    float initAbsoluteZero() override;
     /**
      *  returns 0 if it has no index 
      * 0 - HallSensor without index
      * 1 - HallSensor with index 
      */
-    int hasAbsoluteZero();
+    int hasAbsoluteZero() override;
     /**
      * returns 0 if it does need search for absolute zero
      * 0 - HallSensor without index 
      * 1 - ecoder with index
      */
-    int needsAbsoluteZeroSearch();
+    int needsAbsoluteZeroSearch() override;
 
     // whether last step was CW (+1) or CCW (-1) direction
     Direction direction;
