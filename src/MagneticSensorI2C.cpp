@@ -22,13 +22,22 @@ MagneticSensorI2C::MagneticSensorI2C(uint8_t _chip_address, int _bit_resolution,
   // extraction masks
   lsb_mask = (uint8_t)( (2 << lsb_used) - 1 );
   msb_mask = (uint8_t)( (2 << _bits_used_msb) - 1 );
+  clock_speed = 400000;
+  sda_pin = SDA;
+  scl_pin = SCL;
+
+}
+
+MagneticSensorI2C MagneticSensorI2C::AS5600() {
+  MagneticSensorI2C* sensor = new MagneticSensorI2C(0x36, 12, 0x0E, 4);
+  return *sensor;
 }
 
 
 void MagneticSensorI2C::init(){
   
 	//I2C communication begin
-	Wire.begin();
+	Wire.begin(sda_pin, scl_pin, clock_speed);
   
 	// velocity calculation init
 	angle_prev = 0;

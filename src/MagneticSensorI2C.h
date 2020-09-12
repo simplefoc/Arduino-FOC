@@ -17,8 +17,9 @@ class MagneticSensorI2C: public Sensor{
      * @param _bits_used_msb number of used bits in msb
      */
     MagneticSensorI2C(uint8_t _chip_address, int _bit_resolution, uint8_t _angle_register_msb, int _msb_bits_used);
-    
 
+    static MagneticSensorI2C AS5600();
+    
     /** sensor initialise pins */
     void init();
 
@@ -41,7 +42,15 @@ class MagneticSensorI2C: public Sensor{
     int hasAbsoluteZero();
     /** returns 0  maning it doesn't need search for absolute zero */
     int needsAbsoluteZeroSearch();
+
+    /* the speed of the i2c clock signal */
+    long clock_speed;
+
+    /* the pin used for i2c data */
+    int sda_pin;
     
+    /* the pin used for i2c clock */
+    int scl_pin;
 
   private:
     float cpr; //!< Maximum range of the magnetic sensor
