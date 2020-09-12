@@ -11,4 +11,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@master
     - name: Compile all examples
-      uses: ArminJo/arduino-test-compile@v2.1.0
+      uses: ArminJo/arduino-test-compile@v1.0.0
+      with:
+        libraries:  PciManager
