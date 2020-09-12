@@ -53,6 +53,15 @@ void _setPwmFrequency(const int pinA, const int pinB, const int pinC) {
   analogWrite(pinC, 0);
   analogWriteFrequency(50000);  // set 50kHz
 
+
+#elif defined(__arm__) && defined(CORE_TEENSY) //if teensy 3x / 4x / LC boards
+  analogWrite(pinA, 0);
+  analogWriteFrequency(pinA, 50000);  // set 50kHz
+  analogWrite(pinB, 0);
+  analogWriteFrequency(pinB, 50000);  // set 50kHz
+  analogWrite(pinC, 0);
+  analogWriteFrequency(pinC, 50000);  // set 50kHz
+
 #elif defined(ESP_H) // if esp32 boards
 
   motor_slots_t m_slot = {};
