@@ -26,23 +26,25 @@ class MagneticSensorSPI: public Sensor{
 
     // implementation of abstract functions of the Sensor class
     /** get current angle (rad) */
-    float getAngle();
+    float getAngle() override;
     /** get current angular velocity (rad/s) **/
-    float getVelocity();
+    float getVelocity() override;
     /**
      *  set current angle as zero angle 
      * return the angle [rad] difference
      */
-    float initRelativeZero();
+    float initRelativeZero() override;
     /**
      *  set absolute zero angle as zero angle
      * return the angle [rad] difference
      */
-    float initAbsoluteZero();
+    float initAbsoluteZero() override;
     /** returns 1 because it is the absolute sensor */
-    int hasAbsoluteZero();
+    int hasAbsoluteZero() override;
     /** returns 0  maning it doesn't need search for absolute zero */
-    int needsAbsoluteZeroSearch();
+
+    int needsAbsoluteZeroSearch() override;
+
     // returns the spi mode (phase/polarity of read/writes) i.e one of SPI_MODE0 | SPI_MODE1 | SPI_MODE2 | SPI_MODE3
     int spi_mode;
     

@@ -25,23 +25,24 @@ class MagneticSensorI2C: public Sensor{
 
     // implementation of abstract functions of the Sensor class
     /** get current angle (rad) */
-    float getAngle();
+    float getAngle() override;
     /** get current angular velocity (rad/s) **/
-    float getVelocity();
+    float getVelocity() override;
     /**
      *  set current angle as zero angle 
      * return the angle [rad] difference
      */
-    float initRelativeZero();
+    float initRelativeZero() override;
     /**
      *  set absolute zero angle as zero angle
      * return the angle [rad] difference
      */
-    float initAbsoluteZero();
+    float initAbsoluteZero() override;
     /** returns 1 because it is the absolute sensor */
-    int hasAbsoluteZero();
+    int hasAbsoluteZero() override;
     /** returns 0  maning it doesn't need search for absolute zero */
-    int needsAbsoluteZeroSearch();
+
+    int needsAbsoluteZeroSearch() override;
 
     /* the speed of the i2c clock signal */
     long clock_speed;

@@ -10,6 +10,11 @@ Therefore this is an attempt to:
 - Demystify FOC algorithm and make a robust but simple Arduino library: [Arduino *SimpleFOClibrary*](https://docs.simplefoc.com/arduino_simplefoc_library_showcase)
 - Develop a modular BLDC driver board: [Arduino *SimpleFOCShield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
 
+
+> **DEV Features**<br>
+> - Teensy support by Christopher Parrott <br>
+> - Pull requests by [@cousinitt](https://github.com/cousinitt) - refactoring and c++11 improvements
+
 <blockquote class="info"><p class="heading"><b>NEWS</b> 📢</p>New version of the Arduino <span class="simple">Simple<span class="foc">FOC</span>library</span> is out! (<a href="https://github.com/askuric/Arduino-FOC/releases">version 1.5.0 <i class="fa fa-tag"></i></a>) <br> <b>New features</b>:<ul><li> Open-loop motor control</li><li> Support Hall sensors</li><li> Support for Analog interface Magnetic sensor</li><li> New alignment procedure <br>- automatic sensor direction detection<br> - possibility to avoid alignment completely</li><li> PI controller updated to PID controller</li><li>...</li></ul>Big thanks to <a href="https://github.com/owennewo">@owennewo</a> for awesome suggestions and pull-requests!</blockquote>
 
 
