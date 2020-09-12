@@ -53,6 +53,14 @@ void _setPwmFrequency(const int pinA, const int pinB, const int pinC) {
   analogWrite(pinC, 0);
   analogWriteFrequency(50000);  // set 50kHz
 
+#elif defined(__arm__) && defined(CORE_TEENSY) //if teensy 3x / 4x / LC boards
+  analogWrite(pinA, 0);
+  analogWriteFrequency(pinA, 50000);  // set 50kHz
+  analogWrite(pinB, 0);
+  analogWriteFrequency(pinB, 50000);  // set 50kHz
+  analogWrite(pinC, 0);
+  analogWriteFrequency(pinC, 50000);  // set 50kHz
+
 #elif defined(ESP_H) // if esp32 boards
 
   motor_slots_t m_slot = {};
@@ -133,7 +141,7 @@ void _writeDutyCycle(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, in
       break;
     }
   }
-#else // Arduino & STM32 devices
+#else // Arduino & STM32 devices & Teensy
   // transform duty cycle from [0,1] to [0,255]
   analogWrite(pinA, 255*dc_a);
   analogWrite(pinB, 255*dc_b);
