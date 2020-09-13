@@ -28,11 +28,24 @@ MagneticSensorI2C::MagneticSensorI2C(uint8_t _chip_address, int _bit_resolution,
 
 }
 
-MagneticSensorI2C MagneticSensorI2C::AS5600() {
-  MagneticSensorI2C* sensor = new MagneticSensorI2C(0x36, 12, 0x0E, 4);
-  return *sensor;
-}
+MagneticSensorI2C::MagneticSensorI2C(MagneticSensorI2CConfig_s config){
+  chip_address = config.chip_address; 
 
+  // angle read register of the magnetic sensor
+  angle_register_msb = config.angle_register;
+  // register maximum value (counts per revolution)
+  cpr = pow(2, config.bit_resolution);
+  
+  int bits_used_msb = config.data_start_bit - 7;
+  lsb_used = config.bit_resolution - bits_used_msb;
+  // extraction masks
+  lsb_mask = (uint8_t)( (2 << lsb_used) - 1 );
+  msb_mask = (uint8_t)( (2 << bits_used_msb) - 1 );
+  clock_speed = 400000;
+  sda_pin = SDA;
+  scl_pin = SCL;
+
+}
 
 void MagneticSensorI2C::init(){
   

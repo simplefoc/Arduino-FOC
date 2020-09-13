@@ -8,6 +8,16 @@
 
 #define DEF_ANGLE_REGISTAR 0x3FFF
 
+struct MagneticSensorSPIConfig_s  {
+  int spi_mode;
+  long clock_speed;
+  int bit_resolution;
+  int angle_register;
+  int data_start_bit;
+  int command_rw_bit;
+  int command_parity_bit;
+};
+
 class MagneticSensorSPI: public Sensor{
  public:
     /**
@@ -17,9 +27,12 @@ class MagneticSensorSPI: public Sensor{
      * @param angle_register  (optional) angle read register - default 0x3FFF
      */
     MagneticSensorSPI(int cs, float bit_resolution, int angle_register = 0);
-
-    static MagneticSensorSPI MA730(int cs);
-    static MagneticSensorSPI AS5147(int cs);
+    /**
+     *  MagneticSensorSPI class constructor
+     * @param config   SPI config
+     * @param cs  SPI chip select pin
+     */
+    MagneticSensorSPI(MagneticSensorSPIConfig_s config, int cs);
 
     /** sensor initialise pins */
     void init();

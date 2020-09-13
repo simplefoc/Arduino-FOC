@@ -5,7 +5,7 @@
 //  _bit_resolution   sensor resolution bit number
 // _angle_register  - (optional) angle read register - default 0x3FFF
 MagneticSensorSPI::MagneticSensorSPI(int cs, float _bit_resolution, int _angle_register){
-  // chip select pin
+  
   chip_select_pin = cs; 
   // angle read register of the magnetic sensor
   angle_register = _angle_register ? _angle_register : DEF_ANGLE_REGISTAR;
@@ -21,24 +21,20 @@ MagneticSensorSPI::MagneticSensorSPI(int cs, float _bit_resolution, int _angle_r
   
 }
 
-MagneticSensorSPI MagneticSensorSPI::MA730(int cs) {
-  MagneticSensorSPI* sensor = new MagneticSensorSPI(cs, 14, 0x0000);
-  sensor->spi_mode = SPI_MODE0;
-  sensor->command_parity_bit = -1;  // parity bit insertion not implemented
-  sensor->command_rw_bit = -1; // rw bit not required for angle
-  sensor->data_start_bit = 15;
-  return *sensor;
+MagneticSensorSPI::MagneticSensorSPI(MagneticSensorSPIConfig_s config, int cs){
+  chip_select_pin = cs; 
+  // angle read register of the magnetic sensor
+  angle_register = config.angle_register ? config.angle_register : DEF_ANGLE_REGISTAR;
+  // register maximum value (counts per revolution)
+  cpr = pow(2, config.bit_resolution);
+  spi_mode = config.spi_mode;
+  clock_speed = config.clock_speed;
+  bit_resolution = config.bit_resolution;
+  
+  command_parity_bit = config.command_parity_bit; // for backwards compatibilty
+  command_rw_bit = config.command_rw_bit; // for backwards compatibilty
+  data_start_bit = config.data_start_bit; // for backwards compatibilty
 }
-
-MagneticSensorSPI MagneticSensorSPI::AS5147(int cs) {
-  MagneticSensorSPI* sensor = new MagneticSensorSPI(cs, 14, 0xCFFF);
-  sensor->spi_mode = SPI_MODE1;
-  sensor->command_parity_bit = 15; 
-  sensor->command_rw_bit = 14;
-  sensor->data_start_bit = 13;
-  return *sensor;
-}
-
 
 void MagneticSensorSPI::init(){
 	// 1MHz clock (AMS should be able to accept up to 10MHz)
@@ -174,10 +170,10 @@ word MagneticSensorSPI::read(word angle_register){
 
   word command = angle_register;
 
-  if (command_rw_bit > -1) {
+  if (command_rw_bit > 0) {
     command = angle_register | (1 << command_rw_bit);
   }
-  if (command_parity_bit > -1) {
+  if (command_parity_bit > 0) {
    	//Add a parity bit on the the MSB
   	command |= ((word)spiCalcEvenParity(command) << command_parity_bit);
   }
