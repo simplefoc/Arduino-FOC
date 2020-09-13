@@ -13,16 +13,20 @@ MagneticSensorSPI::MagneticSensorSPI(int cs, float _bit_resolution, int _angle_r
   cpr = pow(2,_bit_resolution);
   spi_mode = SPI_MODE1;
   clock_speed = 1000000;
+  bit_resolution = _bit_resolution;
   
   command_parity_bit = 15; // for backwards compatibilty
-  command_read_bit = 14; // for backwards compatibilty
+  command_rw_bit = 14; // for backwards compatibilty
+  data_start_bit = 13; // for backwards compatibilty
+  
 }
 
 MagneticSensorSPI MagneticSensorSPI::MA730(int cs) {
-  MagneticSensorSPI* sensor = new MagneticSensorSPI(cs, 14, 0xFFFF);
+  MagneticSensorSPI* sensor = new MagneticSensorSPI(cs, 14, 0x0000);
   sensor->spi_mode = SPI_MODE0;
-  sensor->command_parity_bit = 0;  // parity bit insertion not implemented
-  sensor->command_read_bit = 0;  // read flag bit insertion not implemented
+  sensor->command_parity_bit = -1;  // parity bit insertion not implemented
+  sensor->command_rw_bit = -1; // rw bit not required for angle
+  sensor->data_start_bit = 15;
   return *sensor;
 }
 
@@ -30,7 +34,8 @@ MagneticSensorSPI MagneticSensorSPI::AS5147(int cs) {
   MagneticSensorSPI* sensor = new MagneticSensorSPI(cs, 14, 0xCFFF);
   sensor->spi_mode = SPI_MODE1;
   sensor->command_parity_bit = 15; 
-  sensor->command_read_bit = 14;
+  sensor->command_rw_bit = 14;
+  sensor->data_start_bit = 13;
   return *sensor;
 }
 
@@ -169,10 +174,10 @@ word MagneticSensorSPI::read(word angle_register){
 
   word command = angle_register;
 
-  if (command_read_bit > 0) {
-    command = angle_register | (1 << command_read_bit);
+  if (command_rw_bit > -1) {
+    command = angle_register | (1 << command_rw_bit);
   }
-  if (command_parity_bit > 0) {
+  if (command_parity_bit > -1) {
    	//Add a parity bit on the the MSB
   	command |= ((word)spiCalcEvenParity(command) << command_parity_bit);
   }
@@ -206,9 +211,12 @@ word MagneticSensorSPI::read(word angle_register){
   //SPI - end transaction
   SPI.endTransaction();
 #endif
+  
+  register_value = register_value >> (1 + data_start_bit - bit_resolution);  //this should shift data to the rightmost bits of the word
 
-	// Return the data, stripping the parity and error bits
-	return register_value & ~0xC000;
+  const static word data_mask = ~(0 >> (16 - bit_resolution));
+
+	return register_value & data_mask;  // Return the data, stripping the non data (e.g parity) bits
 }
 
 /**

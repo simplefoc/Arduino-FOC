@@ -82,8 +82,10 @@ class MagneticSensorSPI: public Sensor{
     float angle_prev; //!< angle in previous velocity calculation step
     long velocity_calc_timestamp; //!< last velocity calculation timestamp
     
+    int bit_resolution; //!< the number of bites of angle data
     int command_parity_bit; //!< the bit where parity flag is stored in command
-    int command_read_bit; //!< the bit where read flag is stored in command
+    int command_rw_bit; //!< the bit where read/write flag is stored in command
+    int data_start_bit; //!< the the position of first bit
 
 };
 
