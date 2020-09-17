@@ -94,5 +94,6 @@ void loop() {
 #include "MagneticSensorAnalog.h"
 #include "HallSensor.h"
 #include "BLDCMotor.h"
+#include "Hardware.h"
 
 #endif

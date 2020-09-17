@@ -5,29 +5,49 @@
 //  _bit_resolution   sensor resolution bit number
 // _angle_register  - (optional) angle read register - default 0x3FFF
 MagneticSensorSPI::MagneticSensorSPI(int cs, float _bit_resolution, int _angle_register){
-  // chip select pin
+  
   chip_select_pin = cs; 
   // angle read register of the magnetic sensor
   angle_register = _angle_register ? _angle_register : DEF_ANGLE_REGISTAR;
   // register maximum value (counts per revolution)
   cpr = pow(2,_bit_resolution);
-
+  spi_mode = SPI_MODE1;
+  clock_speed = 1000000;
+  bit_resolution = _bit_resolution;
+  
+  command_parity_bit = 15; // for backwards compatibilty
+  command_rw_bit = 14; // for backwards compatibilty
+  data_start_bit = 13; // for backwards compatibilty
+  
 }
 
+MagneticSensorSPI::MagneticSensorSPI(MagneticSensorSPIConfig_s config, int cs){
+  chip_select_pin = cs; 
+  // angle read register of the magnetic sensor
+  angle_register = config.angle_register ? config.angle_register : DEF_ANGLE_REGISTAR;
+  // register maximum value (counts per revolution)
+  cpr = pow(2, config.bit_resolution);
+  spi_mode = config.spi_mode;
+  clock_speed = config.clock_speed;
+  bit_resolution = config.bit_resolution;
+  
+  command_parity_bit = config.command_parity_bit; // for backwards compatibilty
+  command_rw_bit = config.command_rw_bit; // for backwards compatibilty
+  data_start_bit = config.data_start_bit; // for backwards compatibilty
+}
 
 void MagneticSensorSPI::init(){
 	// 1MHz clock (AMS should be able to accept up to 10MHz)
-	settings = SPISettings(1000000, MSBFIRST, SPI_MODE1);
+	settings = SPISettings(clock_speed, MSBFIRST, spi_mode);
 
 	//setup pins
 	pinMode(chip_select_pin, OUTPUT);
-
   
 	//SPI has an internal SPI-device counter, it is possible to call "begin()" from different devices
 	SPI.begin();
 #ifndef ESP_H // if not ESP32 board
 	SPI.setBitOrder(MSBFIRST); // Set the SPI_1 bit order
-	SPI.setDataMode(SPI_MODE1) ;
+	SPI.setDataMode(spi_mode) ;
 	SPI.setClockDivider(SPI_CLOCK_DIV8);
 #endif
 
@@ -77,7 +97,7 @@ float MagneticSensorSPI::getVelocity(){
   float angle_c = getAngle();
   // velocity calculation
   float vel = (angle_c - angle_prev)/Ts;
-  
+
   // save variables for future pass
   angle_prev = angle_c;
   velocity_calc_timestamp = now_us;
@@ -147,35 +167,28 @@ byte MagneticSensorSPI::spiCalcEvenParity(word value){
   * Returns the value of the register
   */
 word MagneticSensorSPI::read(word angle_register){
-	word command = 0b0100000000000000; // PAR=0 R/W=R
-	command = command | angle_register;
 
-	//Add a parity bit on the the MSB
-	command |= ((word)spiCalcEvenParity(command)<<15);
+  word command = angle_register;
 
-	//Split the command into two bytes
-	byte right_byte = command & 0xFF;
-	byte left_byte = ( command >> 8 ) & 0xFF;
-
+  if (command_rw_bit > 0) {
+    command = angle_register | (1 << command_rw_bit);
+  }
+  if (command_parity_bit > 0) {
+   	//Add a parity bit on the the MSB
+  	command |= ((word)spiCalcEvenParity(command) << command_parity_bit);
+  }
 
 #if !defined(_STM32_DEF_) // if not stm chips
   //SPI - begin transaction
   SPI.beginTransaction(settings);
 #endif
-  //SPI - begin transaction
-  //SPI.beginTransaction(settings);
 
   //Send the command
   digitalWrite(chip_select_pin, LOW);
-#ifndef ESP_H // if not ESP32 board
   digitalWrite(chip_select_pin, LOW);
-#endif
-  SPI.transfer(left_byte);
-  SPI.transfer(right_byte);
+  SPI.transfer16(command);
   digitalWrite(chip_select_pin,HIGH);
-#ifndef ESP_H // if not ESP32 board
   digitalWrite(chip_select_pin,HIGH);
-#endif
   
 #if defined( ESP_H ) // if ESP32 board
   delayMicroseconds(50);
@@ -186,8 +199,7 @@ word MagneticSensorSPI::read(word angle_register){
   //Now read the response
   digitalWrite(chip_select_pin, LOW);
   digitalWrite(chip_select_pin, LOW);
-  left_byte = SPI.transfer(0x00);
-  right_byte = SPI.transfer(0x00);
+  word register_value = SPI.transfer16(0x00);
   digitalWrite(chip_select_pin, HIGH);
   digitalWrite(chip_select_pin,HIGH);
 
@@ -195,9 +207,12 @@ word MagneticSensorSPI::read(word angle_register){
   //SPI - end transaction
   SPI.endTransaction();
 #endif
+  
+  register_value = register_value >> (1 + data_start_bit - bit_resolution);  //this should shift data to the rightmost bits of the word
 
-	// Return the data, stripping the parity and error bits
-	return (( ( left_byte & 0xFF ) << 8 ) | ( right_byte & 0xFF )) & ~0xC000;
+  const static word data_mask = ~(0 >> (16 - bit_resolution));
+
+	return register_value & data_mask;  // Return the data, stripping the non data (e.g parity) bits
 }
 
 /**
