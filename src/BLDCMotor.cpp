@@ -6,6 +6,12 @@
 // - cpr           - counts per rotation number (cpm=ppm*4)
 // - enable pin    - (optional input)
 BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
+  : LPF_velocity(DEF_VEL_FILTER_Tf);
+  , PID_velocity(DEF_PID_VEL_P,
+                 DEF_PID_VEL_I,
+                 DEF_PID_VEL_D,
+                 DEF_PID_VEL_U_RAMP,
+                 DEF_POWER_SUPPLY)
 {
   // Pin initialization
   pwmA = phA;
@@ -18,17 +24,6 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
 
   // Power supply voltage
   voltage_power_supply = DEF_POWER_SUPPLY;
-
-  // Velocity loop config
-  // PI controller constant
-  PID_velocity(DEF_PID_VEL_P,
-               DEF_PID_VEL_I,
-               DEF_PID_VEL_D,
-               DEF_PID_VEL_U_RAMP,
-               voltage_power_supply);
-
-  // velocity low pass filter 
-  ExponentialMovingAverage LPF_velocity(DEF_VEL_FILTER_Tf);
 
   // position loop config
   // P controller constant
