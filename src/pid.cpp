@@ -8,9 +8,10 @@ PIDController::PIDController(float P, float I, float D, float ramp, float limit)
     , limit(limit)  // output supply limit     [volts]
     , integral(0.0)
     , err_prev(0.0)
-    , t_prev(0.0)
     , y_prev(0.0)
-    {}
+{
+    t_prev = _micros()*1e-6;
+}
 
 
 inline void
@@ -35,11 +36,11 @@ PIDController::operator() (float t, float err)
     float y = y_P + integral + y_D;
     constrain(y);
 
-    float rate = (y - y_prev)/dt;
-    if (rate > ramp)
+    float actual_rate = (y - y_prev)/dt;
+    if (actual_rate > ramp)
         y = ramp*dt;
 
-    if (rate < -ramp)
+    if (actual_rate < -ramp)
         y = -ramp*dt;
 
     err_prev = err;

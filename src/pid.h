@@ -12,7 +12,7 @@ public:
     float P;
     float I;
     float D;
-    float ramp;
+    float output_ramp;
     float limit;
 
 protected:
