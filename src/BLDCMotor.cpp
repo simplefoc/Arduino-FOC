@@ -28,7 +28,7 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
                voltage_power_supply);
 
   // velocity low pass filter 
-  ExponentialMovingAverage(DEF_VEL_FILTER_Tf);
+  ExponentialMovingAverage LPF_velocity(DEF_VEL_FILTER_Tf);
 
   // position loop config
   // P controller constant
