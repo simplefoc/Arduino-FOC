@@ -21,14 +21,11 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
 
   // Velocity loop config
   // PI controller constant
-  PID_velocity.P = DEF_PID_VEL_P;
-  PID_velocity.I = DEF_PID_VEL_I;
-  PID_velocity.D = DEF_PID_VEL_D;
-  PID_velocity.output_ramp = DEF_PID_VEL_U_RAMP;
-  PID_velocity.timestamp = _micros();
-  PID_velocity.integral_prev = 0;
-  PID_velocity.output_prev = 0;
-  PID_velocity.tracking_error_prev = 0;
+  PID_velocity(DEF_PID_VEL_P,
+               DEF_PID_VEL_I,
+               DEF_PID_VEL_D,
+               DEF_PID_VEL_U_RAMP,
+               voltage_power_supply);
 
   // velocity low pass filter 
   LPF_velocity.Tf = DEF_VEL_FILTER_Tf;
@@ -172,8 +169,8 @@ int BLDCMotor::absoluteZeroAlign() {
   if(monitor_port && sensor->needsAbsoluteZeroSearch()) monitor_port->println("MOT: Searching...");
   // search the absolute zero with small velocity
   while(sensor->needsAbsoluteZeroSearch() && shaft_angle < _2PI){
-    loopFOC();   
-    voltage_q = velocityPID(velocity_index_search - shaftVelocity());
+    loopFOC();
+    voltage_q = PID_velocity(velocity_index_search - shaftVelocity());
   }
   voltage_q = 0;
   // disable motor
@@ -264,13 +261,13 @@ void BLDCMotor::move(float new_target) {
       // include angle loop
       shaft_angle_sp = target;
       shaft_velocity_sp = positionP( shaft_angle_sp - shaft_angle );
-      voltage_q = velocityPID(shaft_velocity_sp - shaft_velocity);
+      voltage_q = PID_velocity(shaft_velocity_sp - shaft_velocity);
       break;
     case ControlType::velocity:
       // velocity set point
       // include velocity loop
       shaft_velocity_sp = target;
-      voltage_q = velocityPID(shaft_velocity_sp - shaft_velocity);
+      voltage_q = PID_velocity(shaft_velocity_sp - shaft_velocity);
       break;
     case ControlType::velocity_openloop:
       // velocity control in open loop
@@ -438,49 +435,6 @@ float BLDCMotor::lowPassFilter(float input, LPF_s& lpf){
 /**
 	Motor control functions
 */
-// PID controller function
-float BLDCMotor::controllerPID(float tracking_error, PID_s& cont){
-  // calculate the time from the last call
-  unsigned long now_us = _micros();
-  float Ts = (now_us - cont.timestamp) * 1e-6;
-  // quick fix for strange cases (micros overflow)
-  if(Ts <= 0 || Ts > 0.5) Ts = 1e-3; 
-
-  // u(s) = (P + I/s + Ds)e(s)
-  // Discrete implementations
-  // proportional part 
-  // u_p  = P *e(k)
-  float proportional = cont.P * tracking_error;
-  // Tustin transform of the integral part
-  // u_ik = u_ik_1  + I*Ts/2*(ek + ek_1)
-  float integral = cont.integral_prev + cont.I*Ts*0.5*(tracking_error + cont.tracking_error_prev);
-  // antiwindup - limit the output voltage_q
-  integral = constrain(integral, -voltage_limit, voltage_limit);
-  // Discrete derivation
-  // u_dk = D(ek - ek_1)/Ts
-  float derivative = cont.D*(tracking_error - cont.tracking_error_prev)/Ts;
-  // sum all the components
-  float voltage = proportional + integral + derivative;
-
-  // antiwindup - limit the output voltage_q
-  voltage = constrain(voltage, -voltage_limit, voltage_limit);
-
-  // limit the acceleration by ramping the the voltage
-  float d_voltage = voltage - cont.output_prev;
-  if (abs(d_voltage)/Ts > cont.output_ramp) voltage = d_voltage > 0 ? cont.output_prev + cont.output_ramp*Ts : cont.output_prev - cont.output_ramp*Ts;
-
-  // saving for the next pass
-  cont.integral_prev = integral;
-  cont.output_prev = voltage;
-  cont.tracking_error_prev = tracking_error;
-  cont.timestamp = now_us;
-  return voltage;
-}
-// velocity control loop PI controller
-float BLDCMotor::velocityPID(float tracking_error) {
-  return controllerPID(tracking_error, PID_velocity);
-}
-
 // P controller for position control loop
 float BLDCMotor::positionP(float ek) {
   // calculate the target velocity from the position error
@@ -629,7 +583,10 @@ int BLDCMotor::command(String user_command) {
       break;
     case 'L':      // velocity voltage limit change
       if(monitor_port) monitor_port->print("volt_limit: ");
-      if(!GET)voltage_limit = value;
+      if(!GET) {
+          voltage_limit = value;
+          PID_velocity.limit = value;
+      }
       if(monitor_port) monitor_port->println(voltage_limit);
       break;
     case 'F':      // velocity Tf low pass filter change
