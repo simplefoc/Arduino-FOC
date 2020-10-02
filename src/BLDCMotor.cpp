@@ -28,9 +28,7 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
                voltage_power_supply);
 
   // velocity low pass filter 
-  LPF_velocity.Tf = DEF_VEL_FILTER_Tf;
-  LPF_velocity.timestamp = _micros();
-  LPF_velocity.prev = 0;  
+  ExponentialMovingAverage(DEF_VEL_FILTER_Tf);
 
   // position loop config
   // P controller constant
@@ -200,7 +198,7 @@ float BLDCMotor::shaftAngle() {
 float BLDCMotor::shaftVelocity() {
   // if no sensor linked return 0
   if(!sensor) return 0;
-  return lowPassFilter(sensor->getVelocity(), LPF_velocity);
+  return LPF_velocity(sensor->getVelocity());
 }
 // Electrical angle calculation
 float BLDCMotor::electricAngle(float shaftAngle) {
@@ -410,25 +408,6 @@ float BLDCMotor::normalizeAngle(float angle){
 // determining if the enable pin has been provided
 int BLDCMotor::hasEnable(){
   return enable_pin != NOT_SET;
-}
-
-// low pass filter function
-// - input  -singal to be filtered
-// - lpf    -LPF_s structure with filter parameters 
-float BLDCMotor::lowPassFilter(float input, LPF_s& lpf){
-  unsigned long now_us = _micros();
-  float Ts = (now_us - lpf.timestamp) * 1e-6;
-  // quick fix for strange cases (micros overflow)
-  if(Ts <= 0 || Ts > 0.5) Ts = 1e-3; 
-
-  // calculate the filtering 
-  float alpha = lpf.Tf/(lpf.Tf + Ts);
-  float out = alpha*lpf.prev + (1-alpha)*input;
-
-  // save the variables
-  lpf.prev = out;
-  lpf.timestamp = now_us;
-  return out;
 }
 
 

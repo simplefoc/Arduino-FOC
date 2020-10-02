@@ -11,6 +11,7 @@
 #include "Sensor.h"
 #include "defaults.h"
 #include "pid.h"
+#include "lowpass_filter.h"
 
 
 #define NOT_SET -12345.0
@@ -39,17 +40,6 @@ struct P_s{
   float P; //!< Proportional gain 
   long timestamp; //!< Last execution timestamp
 };
-
-/**
- *  Low pass filter structure
- */
-struct LPF_s{
-  float Tf; //!< Low pass filter time constant
-  long timestamp; //!< Last execution timestamp
-  float prev; //!< filtered value in previous execution step 
-};
-
-
 
 
 /**
@@ -153,7 +143,7 @@ class BLDCMotor
     FOCModulationType foc_modulation;//!<  parameter derterniming modulation algorithm
     PIDController PID_velocity;//!< parameter determining the velocity PI configuration
     P_s P_angle;	//!< parameter determining the position P configuration 
-    LPF_s LPF_velocity;//!<  parameter determining the velocity Lpw pass filter configuration 
+    ExponentialMovingAverage LPF_velocity;//!<  parameter determining the velocity Lpw pass filter configuration 
 
     /** 
       * Sensor link:
@@ -258,13 +248,6 @@ class BLDCMotor
     float normalizeAngle(float angle);
     /** determining if the enable pin has been provided  */
     int hasEnable();
-    
-    /**
-     * Low pass filter function - iterative
-     * @param input  - singal to be filtered
-     * @param lpf    - LPF_s structure with filter parameters 
-     */
-    float lowPassFilter(float input, LPF_s& lpf);
     
     // Motion control functions 
     /**  Position P controller implementation */
