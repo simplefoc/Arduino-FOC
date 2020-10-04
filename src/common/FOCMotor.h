@@ -42,7 +42,7 @@ class FOCMotor
     FOCMotor();
 
     /**  Motor hardware init function */
-  	virtual void init()=0;
+  	virtual void init(long pwm_frequency)=0;
     /** Motor disable function */
   	virtual void disable()=0;
     /** Motor enable function */

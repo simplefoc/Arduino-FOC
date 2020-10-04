@@ -12,11 +12,17 @@ Therefore this is an attempt to:
 
 
 > ***SimpleFOClibrary* v1.6.0📢**<br>
-> - Teensy support by Christopher Parrott <br>
-> - Pull requests by [@cousinitt](https://github.com/cousinitt) - refactoring and c++11 improvements
+> - Teensy support by *Christopher Parrott* <br>
+> - Pull requests by [@cousinitt](https://github.com/cousinitt) 
+>   - refactoring and c++11 improvements
+>   - pid + low pass filter refactoring
 > - Extended configurability of the sensor classes [@owennewo](https://github.com/owennewo)
 > - **Stepper motor FOC support 🎨🎉 🎊**
 >   - Very easy to use and results are great, I love it!
+>   - short demo [youtube video](https://youtu.be/w_yIY0eXM5E)
+> - configurable pwm frequency
+>   - stm32,teensy,eps32 - not for  Arduino 
+>   - stm32 added 12bit pwm resolution by *Jürgen Frisch*
 > - Huge refactoring done in the library 😄
 > 
 >

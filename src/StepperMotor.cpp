@@ -21,7 +21,7 @@ StepperMotor::StepperMotor(int ph1A, int ph1B, int ph2A, int ph2B, int pp, int e
 }
 
 // init hardware pins   
-void StepperMotor::init() {
+void StepperMotor::init(long pwm_frequency) {
   if(monitor_port) monitor_port->println("MOT: Init pins.");
   // PWM pins
   pinMode(pwm1A, OUTPUT);
@@ -34,7 +34,7 @@ void StepperMotor::init() {
   if(monitor_port) monitor_port->println("MOT: PWM config.");
   // Increase PWM frequency
   // make silent
-  _setPwmFrequency(pwm1A, pwm1B, pwm2A, pwm2B);
+  _setPwmFrequency(pwm_frequency, pwm1A, pwm1B, pwm2A, pwm2B);
   
   // sanity check for the voltage limit configuration
   if(voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;

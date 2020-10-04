@@ -31,7 +31,7 @@ class BLDCMotor: public FOCMotor
     BLDCMotor(int phA,int phB,int phC,int pp, int en = NOT_SET);
     
     /**  Motor hardware init function */
-  	void init() override;
+  	void init(long pwm_frequency = NOT_SET) override;
     /** Motor disable function */
   	void disable() override;
     /** Motor enable function */

@@ -32,7 +32,7 @@ class StepperMotor: public FOCMotor
     StepperMotor(int ph1A,int ph1B,int ph2A,int ph2B,int pp, int en1 = NOT_SET, int en2 = NOT_SET);
     
     /**  Motor hardware init function */
-  	void init() override;
+  	void init(long pwm_frequency = NOT_SET) override;
     /** Motor disable function */
   	void disable() override;
     /** Motor enable function */

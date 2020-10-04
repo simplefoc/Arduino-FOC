@@ -17,12 +17,13 @@
  * High PWM frequency setting function
  * - hardware specific
  * 
- * @param pinA pinA number to configure
- * @param pinB pinB number to configure
- * @param pinC pinC number to configure
- * @param pinD pinC number to configure
+ * @param pwm_frequency - frequency in hertz - if applicable
+ * @param pinA pinA bldc motor or pin1A stepper motor
+ * @param pinB pinB bldc motor or pin1B stepper motor
+ * @param pinC pinC bldc motor or pin2A stepper motor
+ * @param pinD pin2B stepper motor
  */
-void _setPwmFrequency(int pinA, int pinB, int pinC, int pinD = 0);
+void _setPwmFrequency(const long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD = NOT_SET);
 
 /** 
  * Function setting the duty cycle to the pwm pin (ex. analogWrite())
@@ -35,7 +36,7 @@ void _setPwmFrequency(int pinA, int pinB, int pinC, int pinD = 0);
  * @param pinB  phase B hardware pin number
  * @param pinC  phase C hardware pin number
  */ 
-void _writeDutyCycle(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC );
+void _writeDutyCycle(long pwm_frequency, float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC );
 
 /** 
  * Function setting the duty cycle to the pwm pin (ex. analogWrite())

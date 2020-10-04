@@ -21,7 +21,7 @@ BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
 
 
 // init hardware pins   
-void BLDCMotor::init() {
+void BLDCMotor::init(long pwm_frequency) {
   if(monitor_port) monitor_port->println("MOT: Init pins.");
   // PWM pins
   pinMode(pwmA, OUTPUT);
@@ -32,7 +32,7 @@ void BLDCMotor::init() {
   if(monitor_port) monitor_port->println("MOT: PWM config.");
   // Increase PWM frequency to 32 kHz
   // make silent
-  _setPwmFrequency(pwmA, pwmB, pwmC);
+  _setPwmFrequency(pwm_frequency, pwmA, pwmB, pwmC);
 
   // sanity check for the voltage limit configuration
   if(voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
