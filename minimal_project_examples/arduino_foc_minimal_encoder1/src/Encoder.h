@@ -2,8 +2,8 @@
 #define ENCODER_LIB_H
 
 #include "Arduino.h"
-#include "FOCutils.h"
-#include "Sensor.h"
+#include "common/FOCutils.h"
+#include "common/Sensor.h"
 
 
 /**

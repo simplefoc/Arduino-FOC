@@ -36,14 +36,14 @@
  *    - 3: current target value
  * 
  */
-#include "BLDCMotor.h"
-#include "MagneticSensorI2C.h"
+#include "src/BLDCMotor.h"
+#include "src/MagneticSensorI2C.h"
 
 // I2C magnetic sensor instance
 MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
 
 // motor instance
-BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
+BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 7);
 
 void setup() {
 

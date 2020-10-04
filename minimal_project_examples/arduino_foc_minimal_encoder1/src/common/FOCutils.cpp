@@ -31,27 +31,35 @@ motor_slots_t esp32_motor_slots[4] =  {
 // function setting the high pwm frequency to the supplied pins
 // - hardware speciffic
 // supports Arudino/ATmega328, STM32 and ESP32 
-void _setPwmFrequency(const int pinA, const int pinB, const int pinC) {
+void _setPwmFrequency(const int pinA, const int pinB, const int pinC, const int pinD) {
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__) // if arduino uno and other ATmega328p chips
   //  High PWM frequency
   //  https://sites.google.com/site/qeewiki/books/avr-guide/timers-on-the-atmega328
-  if (pinA == 5 || pinA == 6 || pinB == 5 || pinB == 6 || pinC == 5 || pinC == 6 ) {
+  if (pinA == 5 || pinA == 6 || pinB == 5 || pinB == 6 || pinC == 5 || pinC == 6 || pinD == 5 || pinD == 6 ) {
       TCCR0A = ((TCCR0A & 0b11111100) | 0x01); // configure the pwm phase-corrected mode
       TCCR0B = ((TCCR0B & 0b11110000) | 0x01); // set prescaler to 1
   }
-  if (pinA == 9 || pinA == 10 || pinB == 9 || pinB == 10 || pinC == 9 || pinC == 10 )
+  if (pinA == 9 || pinA == 10 || pinB == 9 || pinB == 10 || pinC == 9 || pinC == 10|| pinD == 9 || pinD == 10 )
       TCCR1B = ((TCCR1B & 0b11111000) | 0x01);     // set prescaler to 1
-  if (pinA == 3 || pinA == 11 || pinB == 3 || pinB == 11 || pinC == 3 || pinC == 11 ) 
+  if (pinA == 3 || pinA == 11 || pinB == 3 || pinB == 11 || pinC == 3 || pinC == 11 || pinD == 3 || pinD == 11 ) 
       TCCR2B = ((TCCR2B & 0b11111000) | 0x01);// set prescaler to 1
   
 #elif defined(_STM32_DEF_) // if stm chips
 
   analogWrite(pinA, 0);
   analogWriteFrequency(50000);  // set 50kHz
+  analogWriteResolution(12); // resolution 12 bit 0 - 4096
   analogWrite(pinB, 0);
   analogWriteFrequency(50000);  // set 50kHz
+  analogWriteResolution(12); // resolution 12 bit 0 - 4096
   analogWrite(pinC, 0);
   analogWriteFrequency(50000);  // set 50kHz
+  analogWriteResolution(12); // resolution 12 bit 0 - 4096
+  if(pinD) {
+    analogWrite(pinD, 0);
+    analogWriteFrequency(50000);  // set 50kHz
+    analogWriteResolution(12); // resolution 12 bit 0 - 4096
+  }
 
 #elif defined(ESP_H) // if esp32 boards
 
@@ -133,11 +141,39 @@ void _writeDutyCycle(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, in
       break;
     }
   }
-#else // Arduino & STM32 devices
+#elif defined(_STM32_DEF_) // STM32 devices
+  // transform duty cycle from [0,1] to [0,4095]
+  analogWrite(pinA, 4095.0*dc_a);
+  analogWrite(pinB, 4095.0*dc_b);
+  analogWrite(pinC, 4095.0*dc_c);
+#else // Arduino 
   // transform duty cycle from [0,1] to [0,255]
   analogWrite(pinA, 255*dc_a);
   analogWrite(pinB, 255*dc_b);
   analogWrite(pinC, 255*dc_c);
+#endif
+}
+
+// function setting the pwm duty cycle to the hardware
+//- hardware speciffic
+//
+// Arduino and STM32 devices use analogWrite()
+// ESP32 uses MCPWM
+void _writeDutyCycle(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, int pin1A, int pin1B, int pin2A, int pin2B){
+#if defined(ESP_H) // if ESP32 boards
+  // not sure how to hande this
+#elif defined(_STM32_DEF_) // STM32 devices
+  // transform duty cycle from [0,1] to [0,4095]
+  analogWrite(pin1A, 4095.0*dc_1a);
+  analogWrite(pin1B, 4095.0*dc_1b);
+  analogWrite(pin2A, 4095.0*dc_2a);
+  analogWrite(pin2B, 4095.0*dc_2b);
+#else // Arduino 
+  // transform duty cycle from [0,1] to [0,255]
+  analogWrite(pin1A, 255*dc_1a);
+  analogWrite(pin1B, 255*dc_1b);
+  analogWrite(pin2A, 255*dc_2a);
+  analogWrite(pin2B, 255*dc_2b);
 #endif
 }
 

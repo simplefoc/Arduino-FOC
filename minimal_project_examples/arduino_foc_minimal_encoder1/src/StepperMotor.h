@@ -1,15 +1,15 @@
 /**
- *  @file BLDCMotor.h
+ *  @file StepperMotor.h
  * 
  */
 
-#ifndef BLDCMotor_h
-#define BLDCMotor_h
+#ifndef StepperMotor_h
+#define StepperMotor_h
 
 #include "Arduino.h"
-#include "FOCutils.h"
-#include "Sensor.h"
-#include "defaults.h"
+#include "common/FOCutils.h"
+#include "common/Sensor.h"
+#include "common/defaults.h"
 
 
 #define NOT_SET -12345.0
@@ -66,21 +66,22 @@ struct LPF_s{
 
 
 /**
- BLDC motor class
+ Stepper Motor class
 */
-class BLDCMotor
+class StepperMotor
 {
   public:
     /**
-      BLDCMotor class constructor
-      @param phA A phase pwm pin
-      @param phB B phase pwm pin
-      @param phC C phase pwm pin
-      @param pp  pole pair number
-      @param cpr counts per rotation number (cpm=ppm*4)
-      @param en enable pin (optional input)
+      StepperMotor class constructor
+      @param ph1A 1A phase pwm pin
+      @param ph1B 1B phase pwm pin
+      @param ph2A 2A phase pwm pin
+      @param ph2B 2B phase pwm pin
+      @param pp  pole pair number - cpr counts per rotation number (cpm=ppm*4)
+      @param en1 enable pin phase 1 (optional input)
+      @param en2 enable pin phase 2 (optional input)
     */
-    BLDCMotor(int phA,int phB,int phC,int phAl,int phBl,int phCl,int pp, int en = NOT_SET);
+    StepperMotor(int ph1A,int ph1B,int ph2A,int ph2B,int pp, int en1 = NOT_SET, int en2 = NOT_SET);
     
     /**  Motor hardware init function */
   	void init();
@@ -125,13 +126,13 @@ class BLDCMotor
     void move(float target = NOT_SET);
 
     // hardware variables
-  	int pwmA; //!< phase A pwm pin number
-  	int pwmB; //!< phase B pwm pin number
-  	int pwmC; //!< phase C pwm pin number
-    int pwmA_L; //!< phase A pwm pin number
-    int pwmB_L; //!< phase B pwm pin number
-    int pwmC_L; //!< phase C pwm pin number
-    int enable_pin; //!< enable pin number
+  	int pwm1A; //!< phase 1A pwm pin number
+  	int pwm1B; //!< phase 1B pwm pin number
+  	int pwm2A; //!< phase 2A pwm pin number
+    int pwm2B; //!< phase 2B pwm pin number
+    int enable_pin1; //!< enable pin number phase 1
+    int enable_pin2; //!< enable pin number phase 2
+
 
   
 
@@ -152,7 +153,6 @@ class BLDCMotor
     float shaft_velocity_sp;//!< current target velocity
     float shaft_angle_sp;//!< current target angle
     float voltage_q;//!< current voltage u_q set
-    float Ua,Ub,Uc;//!< Current phase voltages Ua,Ub and Uc set to motor
 
     // motor configuration parameters
     float voltage_power_supply;//!< Power supply voltage
@@ -267,7 +267,7 @@ class BLDCMotor
      * @param Ub phase B voltage
      * @param Uc phase C voltage
     */
-    void setPwm(float Ua, float Ub, float Uc);
+    void setPwm(float Ualpha, float Ubeta);
         
     // Utility functions 
     /** normalizing radian angle to [0,2PI]  */

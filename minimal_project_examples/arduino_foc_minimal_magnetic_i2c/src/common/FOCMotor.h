@@ -1,18 +1,15 @@
-/**
- *  @file BLDCMotor.h
- * 
- */
-
-#ifndef BLDCMotor_h
-#define BLDCMotor_h
+#ifndef FOCMOTOR_H
+#define FOCMOTOR_H
 
 #include "Arduino.h"
-#include "FOCutils.h"
-#include "Sensor.h"
+#include "hardware_utils.h"
+#include "foc_utils.h"
 #include "defaults.h"
 
+#include "Sensor.h"
+#include "pid.h"
+#include "lowpass_filter.h"
 
-#define NOT_SET -12345.0
 
 /**
  *  Motiron control type
@@ -34,60 +31,22 @@ enum FOCModulationType{
 };
 
 /**
- *  PID controller structure
- */
-struct PID_s{
-  float P; //!< Proportional gain 
-  float I; //!< Integral gain 
-  float D; //!< Derivative gain 
-  long timestamp;  //!< Last execution timestamp
-  float integral_prev;  //!< last integral component value
-  float output_prev;  //!< last pid output value
-  float output_ramp;  //!< Maximum speed of change of the output value
-  float tracking_error_prev;  //!< last tracking error value
-};
-
-// P controller structure
-struct P_s{
-  float P; //!< Proportional gain 
-  long timestamp; //!< Last execution timestamp
-};
-
-/**
- *  Low pass filter structure
- */
-struct LPF_s{
-  float Tf; //!< Low pass filter time constant
-  long timestamp; //!< Last execution timestamp
-  float prev; //!< filtered value in previous execution step 
-};
-
-
-
-
-/**
- BLDC motor class
+ Generic motor class
 */
-class BLDCMotor
+class FOCMotor
 {
   public:
     /**
-      BLDCMotor class constructor
-      @param phA A phase pwm pin
-      @param phB B phase pwm pin
-      @param phC C phase pwm pin
-      @param pp  pole pair number
-      @param cpr counts per rotation number (cpm=ppm*4)
-      @param en enable pin (optional input)
-    */
-    BLDCMotor(int phA,int phB,int phC,int pp, int en = NOT_SET);
-    
+     * Default constructor - setting all variabels to default values
+     */
+    FOCMotor();
+
     /**  Motor hardware init function */
-  	void init();
+  	virtual void init()=0;
     /** Motor disable function */
-  	void disable();
+  	virtual void disable()=0;
     /** Motor enable function */
-    void enable();
+    virtual void enable()=0;
 
     /**
      * Function linking a motor and a sensor 
@@ -106,14 +65,14 @@ class BLDCMotor
      * @param sensor_direction  sensor natural direction - default is CW
      *
      */  
-    int initFOC( float zero_electric_offset = NOT_SET , Direction sensor_direction = Direction::CW); 
+    virtual int initFOC( float zero_electric_offset = NOT_SET , Direction sensor_direction = Direction::CW)=0; 
     /**
      * Function running FOC algorithm in real-time
      * it calculates the gets motor angle and sets the appropriate voltages 
      * to the phase pwm signals
      * - the faster you can run it the better Arduino UNO ~1ms, Bluepill ~ 100us
      */ 
-    void loopFOC();
+    virtual void loopFOC()=0;
     /**
      * Function executing the control loops set by the controller parameter of the BLDCMotor.
      * 
@@ -122,16 +81,7 @@ class BLDCMotor
      * 
      * This function doesn't need to be run upon each loop execution - depends of the use case
      */
-    void move(float target = NOT_SET);
-
-    // hardware variables
-  	int pwmA; //!< phase A pwm pin number
-  	int pwmB; //!< phase B pwm pin number
-  	int pwmC; //!< phase C pwm pin number
-    int enable_pin; //!< enable pin number
-
-  
-
+    virtual void move(float target = NOT_SET)=0;
 
     // State calculation methods 
     /** Shaft angle calculation in radians [rad] */
@@ -150,6 +100,7 @@ class BLDCMotor
     float shaft_angle_sp;//!< current target angle
     float voltage_q;//!< current voltage u_q set
     float Ua,Ub,Uc;//!< Current phase voltages Ua,Ub and Uc set to motor
+    float	Ualpha,Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
 
     // motor configuration parameters
     float voltage_power_supply;//!< Power supply voltage
@@ -161,34 +112,15 @@ class BLDCMotor
     float voltage_limit; //!< Voltage limitting variable - global limit
     float velocity_limit; //!< Velocity limitting variable - global limit
 
+    float zero_electric_angle;//!<absolute zero electric angle - if available
+
     // configuration structures
     ControlType controller; //!< parameter determining the control loop to be used
     FOCModulationType foc_modulation;//!<  parameter derterniming modulation algorithm
-    PID_s PID_velocity;//!< parameter determining the velocity PI configuration
-    P_s P_angle;	//!< parameter determining the position P configuration 
-    LPF_s LPF_velocity;//!<  parameter determining the velocity Lpw pass filter configuration 
+    PIDController PID_velocity{DEF_PID_VEL_P,DEF_PID_VEL_I,DEF_PID_VEL_D,DEF_PID_VEL_U_RAMP,DEF_POWER_SUPPLY};//!< parameter determining the velocity PI configuration
+    PIDController P_angle{DEF_P_ANGLE_P,0,0,1e10,DEF_VEL_LIM};	//!< parameter determining the position P configuration 
+    LowPassFilter LPF_velocity{DEF_VEL_FILTER_Tf};//!<  parameter determining the velocity Lpw pass filter configuration 
 
-    /** 
-      * Sensor link:
-      * - Encoder 
-      * - MagneticSensor
-    */
-    Sensor* sensor; 
-
-    float zero_electric_angle;//!<absolute zero electric angle - if available
-
-    // FOC methods 
-    /**
-    * Method using FOC to set Uq to the motor at the optimal angle
-    * Heart of the FOC algorithm
-    * 
-    * @param Uq Current voltage in q axis to set to the motor
-    * @param angle_el current electrical angle of the motor
-    */
-    void setPhaseVoltage(float Uq, float angle_el);
-
-    // monitoring functions
-    Print* monitor_port; //!< Serial terminal variable if provided
     /**
      * Function providing BLDCMotor class with the 
      * Serial interface and enabling monitoring mode
@@ -196,6 +128,7 @@ class BLDCMotor
      * @param serial Monitoring Serial class reference
      */
     void useMonitoring(Print &serial);
+
     /**
      * Utility function intended to be used with serial plotter to monitor motor variables
      * significantly slowing the execution down!!!!
@@ -247,76 +180,15 @@ class BLDCMotor
      */
     int command(String command);
     
-
-  private:
-    /** Sensor alignment to electrical 0 angle of the motor */
-    int alignSensor();
-    /** Motor and sensor alignment to the sensors absolute 0 angle  */
-    int absoluteZeroAlign();
-    
-    /** Electrical angle calculation  */
-    float electricAngle(float shaftAngle);
-
     /** 
-     * Set phase voltages to the harware 
-     * 
-     * @param Ua phase A voltage
-     * @param Ub phase B voltage
-     * @param Uc phase C voltage
+      * Sensor link:
+      * - Encoder 
+      * - MagneticSensor*
+      * - HallSensor
     */
-    void setPwm(float Ua, float Ub, float Uc);
-        
-    // Utility functions 
-    /** normalizing radian angle to [0,2PI]  */
-    float normalizeAngle(float angle);
-    /** determining if the enable pin has been provided  */
-    int hasEnable();
-    
-    /**
-     * Low pass filter function - iterative
-     * @param input  - singal to be filtered
-     * @param lpf    - LPF_s structure with filter parameters 
-     */
-    float lowPassFilter(float input, LPF_s& lpf);
-    
-    // Motion control functions 
-    /**
-     * Generic PI controller function executing one step of a controller 
-     * receives tracking error and PID_s structure and outputs the control signal
-     * 
-     * @param tracking_error Current error in between target value and mesasured value
-     * @param controller PID_s structure containing all the necessary PI controller config and variables
-     */
-    float controllerPID(float tracking_error, PID_s &controller);
-    /** Velocity PI controller implementation */
-    float velocityPID(float tracking_error);
-    /**  Position P controller implementation */
-    float positionP(float ek);
-
-    // Open loop motion control    
-    /**
-     * Function (iterative) generating open loop movement for target velocity
-     * it uses voltage_limit variable
-     * 
-     * @param target_velocity - rad/s
-     */
-    void velocityOpenloop(float target_velocity);
-    /**
-     * Function (iterative) generating open loop movement towards the target angle
-     * it uses voltage_limit and velocity_limit variables
-     * 
-     * @param target_angle - rad
-     */
-    void angleOpenloop(float target_angle);
-
-    
-    // phase voltages 
-    float	Ualpha,Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
-
-
-    // open loop variables
-    long open_loop_timestamp;
-
+    Sensor* sensor; 
+    // monitoring functions
+    Print* monitor_port; //!< Serial terminal variable if provided
 };
 
 

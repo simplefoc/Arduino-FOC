@@ -5,12 +5,15 @@
 // - pp            - pole pair number
 // - cpr           - counts per rotation number (cpm=ppm*4)
 // - enable pin    - (optional input)
-BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
+BLDCMotor::BLDCMotor(int phA, int phB, int phC,int phAl,int phBl,int phCl, int pp, int en)
 {
   // Pin initialization
   pwmA = phA;
   pwmB = phB;
   pwmC = phC;
+  pwmA_L = phAl;
+  pwmB_L = phBl;
+  pwmC_L = phCl;
   pole_pairs = pp;
 
   // enable_pin pin
@@ -71,12 +74,16 @@ void BLDCMotor::init() {
   pinMode(pwmA, OUTPUT);
   pinMode(pwmB, OUTPUT);
   pinMode(pwmC, OUTPUT);
+  pinMode(pwmA_L, OUTPUT);
+  pinMode(pwmB_L, OUTPUT);
+  pinMode(pwmC_L, OUTPUT);
   if(hasEnable()) pinMode(enable_pin, OUTPUT);
 
   if(monitor_port) monitor_port->println("MOT: PWM config.");
   // Increase PWM frequency to 32 kHz
   // make silent
   _setPwmFrequency(pwmA, pwmB, pwmC);
+  _setPwmFrequencyLow(pwmA_L, pwmB_L, pwmC_L);
 
   // sanity check for the voltage limit configuration
   if(voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
@@ -399,6 +406,7 @@ void BLDCMotor::setPwm(float Ua, float Ub, float Uc) {
   float dc_b = constrain(Ub / voltage_power_supply, 0 , 1 );
   float dc_c = constrain(Uc / voltage_power_supply, 0 , 1 );
   // hardware specific writing
+  _writeDutyCycleLow(dc_a, dc_b, dc_c, pwmA_L, pwmB_L, pwmC_L );
   _writeDutyCycle(dc_a, dc_b, dc_c, pwmA, pwmB, pwmC );
 }
 

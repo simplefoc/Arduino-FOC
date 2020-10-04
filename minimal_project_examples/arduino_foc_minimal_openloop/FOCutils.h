@@ -38,6 +38,7 @@
  * @param pinC pinC number to configure
  */
 void _setPwmFrequency(int pinA, int pinB, int pinC);
+void _setPwmFrequencyLow(int pinA, int pinB, int pinC);
 
 /** 
  * Function implementing delay() function in milliseconds 
@@ -66,6 +67,7 @@ unsigned long _micros();
  * @param pinC  phase C hardware pin number
  */ 
 void _writeDutyCycle(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC );
+void _writeDutyCycleLow(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC );
 
 
 /**

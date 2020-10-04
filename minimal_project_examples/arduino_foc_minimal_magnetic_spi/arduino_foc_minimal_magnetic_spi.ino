@@ -37,13 +37,14 @@
  * 
  */
 #include "BLDCMotor.h"
-#include "MagneticSensorSPI.h"
+#include "MagneticSensorI2C.h"
 
 // SPI magnetic sensor instance
-MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
+//MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
 
+MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
 // motor instance
-BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
+BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 7);
 
 void setup() {
 
@@ -97,6 +98,7 @@ void setup() {
   _delay(1000);
 }
 
+long t = 0;
 
 void loop() {
   // iterative setting FOC phase voltage
@@ -106,7 +108,8 @@ void loop() {
   // velocity, position or voltage
   // if tatget not set in parameter uses motor.target variable
   motor.move();
-  
+  t>1000 ? t = 0 : t++;
+  if(!t) Serial.println(_micros());
   // user communication
   motor.command(serialReceiveUserCommand());
 }

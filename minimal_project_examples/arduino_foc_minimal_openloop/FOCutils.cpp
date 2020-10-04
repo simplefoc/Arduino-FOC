@@ -46,13 +46,33 @@ void _setPwmFrequency(const int pinA, const int pinB, const int pinC) {
   
 #elif defined(_STM32_DEF_) // if stm chips
 
-  analogWrite(pinA, 0);
-  analogWriteFrequency(50000);  // set 50kHz
-  analogWrite(pinB, 0);
-  analogWriteFrequency(50000);  // set 50kHz
-  analogWrite(pinC, 0);
-  analogWriteFrequency(50000);  // set 50kHz
-
+  // Automatically retrieve TIM instance and channel associated to pin
+  TIM_TypeDef *InstanceA = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(pinA), PinMap_PWM);
+  uint32_t channelA = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinA), PinMap_PWM));
+  // Instantiate HardwareTimer object. Thanks to 'new' instantiation, HardwareTimer is not destructed when setup function is finished.
+  HardwareTimer *MyTimA = new HardwareTimer(InstanceA);
+  MyTimA->setMode(channelA, TIMER_OUTPUT_COMPARE_PWM1, pinA);
+  MyTimA->setOverflow(20, MICROSEC_FORMAT); // 50khz  
+  MyTimA->resume();
+  
+  // Automatically retrieve TIM instance and channel associated to pin
+  TIM_TypeDef *InstanceB = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(pinB), PinMap_PWM);
+  uint32_t channelB = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinB), PinMap_PWM));
+  // Instantiate HardwareTimer object. Thanks to 'new' instantiation, HardwareTimer is not destructed when setup function is finished.
+  HardwareTimer *MyTimB = new HardwareTimer(InstanceB);
+  MyTimB->setMode(channelB, TIMER_OUTPUT_COMPARE_PWM1, pinB);
+  MyTimB->setOverflow(20, MICROSEC_FORMAT); // 50khz  
+  MyTimB->resume();
+  
+  // Automatically retrieve TIM instance and channel associated to pin
+  TIM_TypeDef *InstanceC = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(pinC), PinMap_PWM);
+  uint32_t channelC = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinC), PinMap_PWM));
+  // Instantiate HardwareTimer object. Thanks to 'new' instantiation, HardwareTimer is not destructed when setup function is finished.
+  HardwareTimer *MyTimC = new HardwareTimer(InstanceC);
+  MyTimC->setMode(channelC, TIMER_OUTPUT_COMPARE_PWM1, pinC);
+  MyTimC->setOverflow(20, MICROSEC_FORMAT); // 50khz  
+  MyTimC->resume();
+  
 #elif defined(ESP_H) // if esp32 boards
 
   motor_slots_t m_slot = {};
@@ -115,6 +135,37 @@ void _setPwmFrequency(const int pinA, const int pinB, const int pinC) {
 #endif
 }
 
+void _setPwmFrequencyLow(const int pinA, const int pinB, const int pinC) {
+  
+  // Automatically retrieve TIM instance and channel associated to pin
+  TIM_TypeDef *InstanceA = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(pinA), PinMap_PWM);
+  uint32_t channelA = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinA), PinMap_PWM));
+  // Instantiate HardwareTimer object. Thanks to 'new' instantiation, HardwareTimer is not destructed when setup function is finished.
+  HardwareTimer *MyTimA = new HardwareTimer(InstanceA);
+  MyTimA->setMode(channelA, TIMER_OUTPUT_COMPARE_PWM2, pinA);
+  MyTimA->setOverflow(20, MICROSEC_FORMAT); // 50khz  
+  MyTimA->resume();
+
+  // Automatically retrieve TIM instance and channel associated to pin
+  TIM_TypeDef *InstanceB = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(pinB), PinMap_PWM);
+  uint32_t channelB = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinB), PinMap_PWM));
+  // Instantiate HardwareTimer object. Thanks to 'new' instantiation, HardwareTimer is not destructed when setup function is finished.
+  HardwareTimer *MyTimB = new HardwareTimer(InstanceB);
+  MyTimB->setMode(channelB, TIMER_OUTPUT_COMPARE_PWM2, pinB);
+  MyTimB->setOverflow(20, MICROSEC_FORMAT); // 50khz  
+  MyTimB->resume();
+  
+  // Automatically retrieve TIM instance and channel associated to pin
+  TIM_TypeDef *InstanceC = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(pinC), PinMap_PWM);
+  uint32_t channelC = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinC), PinMap_PWM));
+  // Instantiate HardwareTimer object. Thanks to 'new' instantiation, HardwareTimer is not destructed when setup function is finished.
+  HardwareTimer *MyTimC = new HardwareTimer(InstanceC);
+  MyTimC->setMode(channelC, TIMER_OUTPUT_COMPARE_PWM2, pinC);
+  MyTimC->setOverflow(20, MICROSEC_FORMAT); // 50khz  
+  MyTimC->resume();
+
+  
+}
 // function setting the pwm duty cycle to the hardware
 //- hardware speciffic
 //
@@ -133,12 +184,64 @@ void _writeDutyCycle(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, in
       break;
     }
   }
-#else // Arduino & STM32 devices
+  
+#elif  defined(_STM32_DEF_) // if stm chips
+
+  // Automatically retrieve TIM instance and channel associated to pin
+  TIM_TypeDef *Instance = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(pinA), PinMap_PWM);
+  uint32_t channel = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinA), PinMap_PWM));
+  // Instantiate HardwareTimer object. Thanks to 'new' instantiation, HardwareTimer is not destructed when setup function is finished.
+  HardwareTimer *MyTim = new HardwareTimer(Instance);
+  MyTim->setCaptureCompare(channel, dc_a*100.0, PERCENT_COMPARE_FORMAT); // 50%
+
+  // Automatically retrieve TIM instance and channel associated to pin
+  Instance  = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(pinB), PinMap_PWM);
+  channel = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinB), PinMap_PWM));
+  // Instantiate HardwareTimer object. Thanks to 'new' instantiation, HardwareTimer is not destructed when setup function is finished.
+  MyTim = new HardwareTimer(Instance);
+  MyTim->setCaptureCompare(channel, dc_b*100.0, PERCENT_COMPARE_FORMAT); // 50%
+  
+  // Automatically retrieve TIM instance and channel associated to pin
+  Instance = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(pinC), PinMap_PWM);
+  channel = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinC), PinMap_PWM));
+  // Instantiate HardwareTimer object. Thanks to 'new' instantiation, HardwareTimer is not destructed when setup function is finished.
+  MyTim = new HardwareTimer(Instance);  
+  MyTim->setCaptureCompare(channel, dc_c*100.0, PERCENT_COMPARE_FORMAT); // 50% 
+  
+//  MyTimA->setPWM(channelA, pinA, 50000, dc_a*100.0);
+//  MyTimB->setPWM(channelB, pinB, 50000, dc_b*100.0);
+//  MyTimC->setPWM(channelC, pinC, 50000, dc_c*100.0);
+#else // Arduino 
   // transform duty cycle from [0,1] to [0,255]
   analogWrite(pinA, 255*dc_a);
   analogWrite(pinB, 255*dc_b);
   analogWrite(pinC, 255*dc_c);
 #endif
+}
+void _writeDutyCycleLow(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC){
+//  
+//  // Automatically retrieve TIM instance and channel associated to pin
+//  TIM_TypeDef *InstanceA = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(pinA), PinMap_PWM);
+//  uint32_t channelA = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinA), PinMap_PWM));
+//  // Instantiate HardwareTimer object. Thanks to 'new' instantiation, HardwareTimer is not destructed when setup function is finished.
+//  HardwareTimer *MyTimA = new HardwareTimer(InstanceA);
+//
+//  // Automatically retrieve TIM instance and channel associated to pin
+//  TIM_TypeDef *InstanceB = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(pinB), PinMap_PWM);
+//  uint32_t channelB = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinB), PinMap_PWM));
+//  // Instantiate HardwareTimer object. Thanks to 'new' instantiation, HardwareTimer is not destructed when setup function is finished.
+//  HardwareTimer *MyTimB = new HardwareTimer(InstanceB);
+//  
+//  // Automatically retrieve TIM instance and channel associated to pin
+//  TIM_TypeDef *InstanceC = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(pinC), PinMap_PWM);
+//  uint32_t channelC = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinC), PinMap_PWM));
+//  // Instantiate HardwareTimer object. Thanks to 'new' instantiation, HardwareTimer is not destructed when setup function is finished.
+//  HardwareTimer *MyTimC = new HardwareTimer(InstanceC);
+//
+//  
+//  MyTimA->setCaptureCompare(channelA, dc_a*100.0, PERCENT_COMPARE_FORMAT); // 50%
+//  MyTimB->setCaptureCompare(channelB, dc_b*100.0, PERCENT_COMPARE_FORMAT); // 50%
+//  MyTimC->setCaptureCompare(channelC, dc_c*100.0, PERCENT_COMPARE_FORMAT); // 50%
 }
 
 
