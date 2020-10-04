@@ -40,6 +40,10 @@ void StepperMotor::init(long pwm_frequency) {
   if(voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
   // constrain voltage for sensor alignment
   if(voltage_sensor_align > voltage_limit) voltage_sensor_align = voltage_limit;
+  
+  // update the controller limits
+  PID_velocity.limit = voltage_limit;
+  P_angle.limit = velocity_limit;
 
   _delay(500);
   // enable motor
