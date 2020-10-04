@@ -6,9 +6,20 @@
 #include "common/foc_utils.h"
 #include "common/hardware_utils.h"
 #include "common/Sensor.h"
-#include "common/sensor_utils.h"
 
 #define DEF_ANGLE_REGISTAR 0x3FFF
+
+struct MagneticSensorSPIConfig_s  {
+  int spi_mode;
+  long clock_speed;
+  int bit_resolution;
+  int angle_register;
+  int data_start_bit;
+  int command_rw_bit;
+  int command_parity_bit;
+};
+// typical configuration structures
+extern MagneticSensorSPIConfig_s AS5147_SPI, MA730_SPI;
 
 class MagneticSensorSPI: public Sensor{
  public:

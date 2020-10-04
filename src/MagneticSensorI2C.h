@@ -6,8 +6,16 @@
 #include "common/foc_utils.h"
 #include "common/hardware_utils.h"
 #include "common/Sensor.h"
-#include "common/sensor_utils.h"
 
+struct MagneticSensorI2CConfig_s  {
+  int chip_address;
+  long clock_speed;
+  int bit_resolution;
+  int angle_register;
+  int data_start_bit; 
+};
+// some predefined structures
+extern MagneticSensorI2CConfig_s AS5600_I2C,AS5048_I2C;
 
 class MagneticSensorI2C: public Sensor{
  public:

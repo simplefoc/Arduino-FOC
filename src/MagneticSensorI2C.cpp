@@ -1,5 +1,24 @@
 #include "MagneticSensorI2C.h"
 
+/** Typical configuration for the 12bit AMS AS5600 magnetic sensor over I2C interface */
+MagneticSensorI2CConfig_s AS5600_I2C = {
+  .chip_address = 0x36,
+  .clock_speed = 1000000,
+  .bit_resolution = 12,
+  .angle_register = 0x0E,
+  .data_start_bit = 11
+};
+
+/** Typical configuration for the 12bit AMS AS5048 magnetic sensor over I2C interface */
+MagneticSensorI2CConfig_s AS5048_I2C = {
+  .chip_address = 0x40,  // highly configurable.  if A1 and A2 are held low, this is probable value
+  .clock_speed = 1000000,
+  .bit_resolution = 14,
+  .angle_register = 0xFE,
+  .data_start_bit = 15
+};
+
+
 // MagneticSensorI2C(uint8_t _chip_address, float _cpr, uint8_t _angle_register_msb)
 //  @param _chip_address  I2C chip address
 //  @param _bit_resolution  bit resolution of the sensor  

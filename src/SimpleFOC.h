@@ -87,7 +87,7 @@ void loop() {
 #define SIMPLEFOC_H
 
 #include "BLDCMotor.h"
-#include "SepperMotor.h"
+#include "StepperMotor.h"
 #include "Encoder.h"
 #include "MagneticSensorSPI.h"
 #include "MagneticSensorI2C.h"

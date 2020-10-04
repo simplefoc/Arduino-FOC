@@ -1,5 +1,28 @@
 #include "MagneticSensorSPI.h"
 
+/** Typical configuration for the 14bit AMS AS5147 magnetic sensor over SPI interface */
+MagneticSensorSPIConfig_s AS5147_SPI = {
+  .spi_mode = SPI_MODE1,
+  .clock_speed = 1000000,
+  .bit_resolution = 14,
+  .angle_register = 0xCFFF,
+  .data_start_bit = 13, 
+  .command_rw_bit = 14,
+  .command_parity_bit = 15
+};
+
+/** Typical configuration for the 14bit MonolithicPower MA730 magnetic sensor over SPI interface */
+MagneticSensorSPIConfig_s MA730_SPI = {
+  .spi_mode = SPI_MODE0,
+  .clock_speed = 1000000,
+  .bit_resolution = 14,
+  .angle_register = 0x0000,
+  .data_start_bit = 15, 
+  .command_rw_bit = 0,  // not required
+  .command_parity_bit = 0 // parity not implemented
+};
+
+
 // MagneticSensorSPI(int cs, float _bit_resolution, int _angle_register)
 //  cs              - SPI chip select pin 
 //  _bit_resolution   sensor resolution bit number

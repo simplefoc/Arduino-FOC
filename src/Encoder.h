@@ -5,7 +5,6 @@
 #include "common/foc_utils.h"
 #include "common/hardware_utils.h"
 #include "common/Sensor.h"
-#include "common/sensor_utils.h"
 
 
 /**
