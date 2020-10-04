@@ -3,16 +3,11 @@
 
 #include "Arduino.h"
 #include <Wire.h>
-#include "FOCutils.h"
-#include "Sensor.h"
+#include "common/foc_utils.h"
+#include "common/hardware_utils.h"
+#include "common/Sensor.h"
+#include "common/sensor_utils.h"
 
-struct MagneticSensorI2CConfig_s  {
-  int chip_address;
-  long clock_speed;
-  int bit_resolution;
-  int angle_register;
-  int data_start_bit; 
-};
 
 class MagneticSensorI2C: public Sensor{
  public:

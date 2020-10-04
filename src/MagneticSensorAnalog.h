@@ -2,9 +2,10 @@
 #define MAGNETICSENSORANALOG_LIB_H
 
 #include "Arduino.h"
-#include <Wire.h>
-#include "FOCutils.h"
-#include "Sensor.h"
+#include "common/foc_utils.h"
+#include "common/hardware_utils.h"
+#include "common/Sensor.h"
+#include "common/sensor_utils.h"
 
 /**
  * This sensor has been tested with AS5600 running in 'analog mode'.  This is where output pin of AS6000 is connected to an analog pin on your microcontroller.

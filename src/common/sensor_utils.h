@@ -1,8 +1,23 @@
 #ifndef HARDWARE_H
 #define HARDWARE_H
 
+struct MagneticSensorSPIConfig_s  {
+  int spi_mode;
+  long clock_speed;
+  int bit_resolution;
+  int angle_register;
+  int data_start_bit;
+  int command_rw_bit;
+  int command_parity_bit;
+};
 
-#include "MagneticSensorSPI.h"
+struct MagneticSensorI2CConfig_s  {
+  int chip_address;
+  long clock_speed;
+  int bit_resolution;
+  int angle_register;
+  int data_start_bit; 
+};
 
 /** Typical configuration for the 14bit AMS AS5147 magnetic sensor over SPI interface */
 MagneticSensorSPIConfig_s AS5147_SPI = {
