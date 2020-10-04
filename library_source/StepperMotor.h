@@ -1,10 +1,10 @@
 /**
- *  @file BLDCMotor.h
+ *  @file StepperMotor.h
  * 
  */
 
-#ifndef BLDCMotor_h
-#define BLDCMotor_h
+#ifndef StepperMotor_h
+#define StepperMotor_h
 
 #include "Arduino.h"
 #include "common/FOCMotor.h"
@@ -14,21 +14,22 @@
 #include "common/defaults.h"
 
 /**
- BLDC motor class
+ Stepper Motor class
 */
-class BLDCMotor: public FOCMotor
+class StepperMotor: public FOCMotor
 {
   public:
     /**
-      BLDCMotor class constructor
-      @param phA A phase pwm pin
-      @param phB B phase pwm pin
-      @param phC C phase pwm pin
-      @param pp  pole pair number
-      @param cpr counts per rotation number (cpm=ppm*4)
-      @param en enable pin (optional input)
+      StepperMotor class constructor
+      @param ph1A 1A phase pwm pin
+      @param ph1B 1B phase pwm pin
+      @param ph2A 2A phase pwm pin
+      @param ph2B 2B phase pwm pin
+      @param pp  pole pair number - cpr counts per rotation number (cpm=ppm*4)
+      @param en1 enable pin phase 1 (optional input)
+      @param en2 enable pin phase 2 (optional input)
     */
-    BLDCMotor(int phA,int phB,int phC,int pp, int en = NOT_SET);
+    StepperMotor(int ph1A,int ph1B,int ph2A,int ph2B,int pp, int en1 = NOT_SET, int en2 = NOT_SET);
     
     /**  Motor hardware init function */
   	void init();
@@ -40,6 +41,12 @@ class BLDCMotor: public FOCMotor
     /**
      * Function initializing FOC algorithm
      * and aligning sensor's and motors' zero position 
+     * 
+     * - If zero_electric_offset parameter is set the alignment procedure is skipped
+     * 
+     * @param zero_electric_offset value of the sensors absolute position electrical offset in respect to motor's electrical 0 position.
+     * @param sensor_direction  sensor natural direction - default is CW
+     *
      */  
     int initFOC( float zero_electric_offset = NOT_SET , Direction sensor_direction = Direction::CW); 
     /**
@@ -49,7 +56,6 @@ class BLDCMotor: public FOCMotor
      * - the faster you can run it the better Arduino UNO ~1ms, Bluepill ~ 100us
      */ 
     void loopFOC();
-
     /**
      * Function executing the control loops set by the controller parameter of the BLDCMotor.
      * 
@@ -61,13 +67,15 @@ class BLDCMotor: public FOCMotor
     void move(float target = NOT_SET);
 
     // hardware variables
-  	int pwmA; //!< phase A pwm pin number
-  	int pwmB; //!< phase B pwm pin number
-  	int pwmC; //!< phase C pwm pin number
-    int enable_pin; //!< enable pin number
-
+  	int pwm1A; //!< phase 1A pwm pin number
+  	int pwm1B; //!< phase 1B pwm pin number
+  	int pwm2A; //!< phase 2A pwm pin number
+    int pwm2B; //!< phase 2B pwm pin number
+    int enable_pin1; //!< enable pin number phase 1
+    int enable_pin2; //!< enable pin number phase 2
 
   private:
+  
     // FOC methods 
     /**
     * Method using FOC to set Uq to the motor at the optimal angle
@@ -77,6 +85,7 @@ class BLDCMotor: public FOCMotor
     * @param angle_el current electrical angle of the motor
     */
     void setPhaseVoltage(float Uq, float angle_el);
+
     /** Sensor alignment to electrical 0 angle of the motor */
     int alignSensor();
     /** Motor and sensor alignment to the sensors absolute 0 angle  */
@@ -88,7 +97,7 @@ class BLDCMotor: public FOCMotor
      * @param Ub phase B voltage
      * @param Uc phase C voltage
     */
-    void setPwm(float Ua, float Ub, float Uc);
+    void setPwm(float Ualpha, float Ubeta);
         
     // Open loop motion control    
     /**

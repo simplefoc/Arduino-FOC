@@ -3,8 +3,9 @@
 
 #include "Arduino.h"
 #include <Wire.h>
-#include "FOCutils.h"
-#include "Sensor.h"
+#include "common/foc_utils.h"
+#include "common/hardware_utils.h"
+#include "common/Sensor.h"
 
 
 class MagneticSensorI2C: public Sensor{

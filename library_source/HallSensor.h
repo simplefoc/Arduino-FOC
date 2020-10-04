@@ -2,8 +2,9 @@
 #define HALL_SENSOR_LIB_H
 
 #include "Arduino.h"
-#include "FOCutils.h"
-#include "Sensor.h"
+#include "common/foc_utils.h"
+#include "common/hardware_utils.h"
+#include "common/Sensor.h"
 
 
 class HallSensor: public Sensor{
@@ -12,7 +13,7 @@ class HallSensor: public Sensor{
     HallSensor class constructor
     @param encA  HallSensor B pin
     @param encB  HallSensor B pin
-    @param encC  HallSensor B pin
+    @param encC  HallSensor C pin
     @param pp  pole pairs  (e.g hoverboard motor has 15pp and small gimbals often have 7pp)
     @param index index pin number (optional input)
     */
