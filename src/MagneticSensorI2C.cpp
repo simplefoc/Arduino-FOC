@@ -49,8 +49,20 @@ MagneticSensorI2C::MagneticSensorI2C(MagneticSensorI2CConfig_s config){
 
 void MagneticSensorI2C::init(){
   
+#if defined(_STM32_DEF_) // if stm chips
+  // I2C communication begin
+  Wire.begin();
+  Wire.setClock(clock_speed);
+  Wire.setSCL(scl_pin);
+  Wire.setSDA(sda_pin);
+#elif defined(ESP_H) // if esp32
 	//I2C communication begin
 	Wire.begin(sda_pin, scl_pin, clock_speed);
+#else
+  // I2C communication begin
+  Wire.begin();
+  Wire.setClock(clock_speed);
+#endif
   
 	// velocity calculation init
 	angle_prev = 0;
