@@ -38,8 +38,10 @@
  */
 #include <SimpleFOC.h>
 
-// motor instance
-BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 7);
+// BLDC motor instance
+BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
+// Stepper motor instance
+//StepperMotor motor = StepperMotor(9, 5, 10, 6, 50, 8);
 
 // encoder instance
 Encoder encoder = Encoder(2, 3, 8192);

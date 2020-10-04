@@ -2,6 +2,7 @@
 #include <SimpleFOC.h>
 
 BLDCMotor motor = BLDCMotor(9, 10, 11, 7);
+//StepperMotor motor = StepperMotor(9, 5, 10, 6, 50, 8);
 MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
 
 
@@ -15,8 +16,7 @@ MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
  */
 void testAlignmentAndCogging(int direction) {
 
-  motor.setPhaseVoltage(motor.voltage_sensor_align, 0);
-  
+  motor.move(0);
   _delay(200);
 
   float initialAngle = sensor.getAngle();
@@ -34,7 +34,7 @@ void testAlignmentAndCogging(int direction) {
 
     float electricAngle = (float) direction * i * motor.pole_pairs * shaft_rotation / sample_count;
     // move and wait
-    motor.setPhaseVoltage(motor.voltage_sensor_align, electricAngle * PI / 180);
+    motor.move(electricAngle * PI / 180);
     _delay(5);
 
     // measure 
@@ -81,7 +81,9 @@ void setup() {
   motor.voltage_power_supply = 9;
   motor.voltage_sensor_align = 3;
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
-  motor.controller = ControlType::velocity;
+ 
+  motor.controller = ControlType::angle_openloop;
+  motor.voltage_limit=motor.voltage_sensor_align;
 
   sensor.init();
   motor.linkSensor(&sensor);
@@ -92,7 +94,7 @@ void setup() {
 
   testAlignmentAndCogging(1);
 
-  motor.setPhaseVoltage(0, 0);
+  motor.move(0);
   Serial.println("Press any key to test in CCW direction");
   while (!Serial.available()) { }
 
@@ -100,7 +102,8 @@ void setup() {
 
   Serial.println("Complete");
 
-  motor.setPhaseVoltage(0, 0);
+  motor.voltage_limit = 0;
+  motor.move(0);
   while (true) ; //do nothing;
 
 }

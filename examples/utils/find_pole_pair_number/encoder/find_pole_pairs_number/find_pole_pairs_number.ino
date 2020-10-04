@@ -15,11 +15,14 @@
  */
 #include <SimpleFOC.h>
 
-//  BLDCMotor( int phA, int phB, int phC, int pp, int en)
-// its not important how many pole pairs do you set, the progam will find it by itself
-BLDCMotor motor = BLDCMotor(9, 10, 11, 0, 8);
+//  BLDCMotor( phA, phB, phC, pp, (en optional))
+// its important to put pole pairs number as 1!!!
+BLDCMotor motor = BLDCMotor(9, 5, 6, 1, 8);
+//  StepperMotor(ph1A,ph1B,ph2A,ph2B,pp,( en1, en2 optional))
+//StepperMotor motor = StepperMotor(9, 5, 10, 6, 1, 8);
+
 //  Encoder(int encA, int encB , int cpr, int index)
-Encoder encoder = Encoder(2, 3, 8192);
+Encoder encoder = Encoder(2, 3, 2048);
 // interrupt routine intialisation
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
@@ -36,9 +39,6 @@ void setup() {
   // power supply voltage
   motor.voltage_power_supply = 12;
 
-  // set FOC loop to be used
-  motor.controller = ControlType::voltage;
-
   // initialize motor
   motor.init();
 
@@ -54,7 +54,9 @@ void setup() {
   float pp_search_angle = 6*M_PI; // search electrical angle to turn
   
   // move motor to the electrical angle 0
-  motor.setPhaseVoltage(pp_search_voltage,0);
+  motor.controller = ControlType::angle_openloop;
+  motor.voltage_limit=pp_search_voltage;
+  motor.move(0);
   _delay(1000);
   // read the encoder angle 
   float angle_begin = encoder.getAngle();
@@ -64,14 +66,14 @@ void setup() {
   float motor_angle = 0;
   while(motor_angle <= pp_search_angle){
     motor_angle += 0.01;
-    motor.setPhaseVoltage(pp_search_voltage, motor_angle);
+    motor.move(motor_angle);
   }
   _delay(1000);
   // read the encoder value for 180
   float angle_end = encoder.getAngle();
   _delay(50);
   // turn off the motor
-  motor.setPhaseVoltage(0,0);
+  motor.move(0);
   _delay(1000);
 
   // calculate the pole pair number
@@ -102,6 +104,8 @@ void setup() {
   }
 
   
+  // set FOC loop to be used
+  motor.controller = ControlType::voltage;
   // set the pole pair number to the motor
   motor.pole_pairs = pp;
   //align encoder and start FOC

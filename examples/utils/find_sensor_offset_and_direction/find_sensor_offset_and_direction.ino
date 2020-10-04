@@ -19,8 +19,10 @@
 // magnetic sensor instance - analog output
 MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
 
-// Motor instance
-BLDCMotor motor = BLDCMotor(3, 10, 6, 11, 7);
+// BLDC motor instance
+BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
+// Stepper motor instance
+//StepperMotor motor = StepperMotor(9, 5, 10, 6, 50, 8);
 
 void setup() {
 

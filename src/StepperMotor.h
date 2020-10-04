@@ -32,11 +32,11 @@ class StepperMotor: public FOCMotor
     StepperMotor(int ph1A,int ph1B,int ph2A,int ph2B,int pp, int en1 = NOT_SET, int en2 = NOT_SET);
     
     /**  Motor hardware init function */
-  	void init();
+  	void init() override;
     /** Motor disable function */
-  	void disable();
+  	void disable() override;
     /** Motor enable function */
-    void enable();
+    void enable() override;
 
     /**
      * Function initializing FOC algorithm
@@ -48,14 +48,14 @@ class StepperMotor: public FOCMotor
      * @param sensor_direction  sensor natural direction - default is CW
      *
      */  
-    int initFOC( float zero_electric_offset = NOT_SET , Direction sensor_direction = Direction::CW); 
+    int initFOC( float zero_electric_offset = NOT_SET , Direction sensor_direction = Direction::CW) override;
     /**
      * Function running FOC algorithm in real-time
      * it calculates the gets motor angle and sets the appropriate voltages 
      * to the phase pwm signals
      * - the faster you can run it the better Arduino UNO ~1ms, Bluepill ~ 100us
      */ 
-    void loopFOC();
+    void loopFOC() override;
     /**
      * Function executing the control loops set by the controller parameter of the BLDCMotor.
      * 
@@ -64,7 +64,7 @@ class StepperMotor: public FOCMotor
      * 
      * This function doesn't need to be run upon each loop execution - depends of the use case
      */
-    void move(float target = NOT_SET);
+    void move(float target = NOT_SET) override;
 
     // hardware variables
   	int pwm1A; //!< phase 1A pwm pin number

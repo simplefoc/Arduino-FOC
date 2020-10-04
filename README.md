@@ -11,11 +11,18 @@ Therefore this is an attempt to:
 - Develop a modular BLDC driver board: [Arduino *SimpleFOCShield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
 
 
-> **DEV Features**<br>
+> ***SimpleFOClibrary* v1.6.0📢**<br>
 > - Teensy support by Christopher Parrott <br>
 > - Pull requests by [@cousinitt](https://github.com/cousinitt) - refactoring and c++11 improvements
+> - Extended configurability of the sensor classes [@owennewo](https://github.com/owennewo)
+> - **Stepper motor FOC support 🎨🎉 🎊**
+>   - Very easy to use and results are great, I love it!
+> - Huge refactoring done in the library 😄
+> 
+>
+> ***The release is practically complete and the new library release will be created as soon as the docs are updated!📚***
 
-<blockquote class="info"><p class="heading"><b>NEWS</b> 📢</p>New version of the Arduino <span class="simple">Simple<span class="foc">FOC</span>library</span> is out! (<a href="https://github.com/askuric/Arduino-FOC/releases">version 1.5.0 <i class="fa fa-tag"></i></a>) <br> <b>New features</b>:<ul><li> Open-loop motor control</li><li> Support Hall sensors</li><li> Support for Analog interface Magnetic sensor</li><li> New alignment procedure <br>- automatic sensor direction detection<br> - possibility to avoid alignment completely</li><li> PI controller updated to PID controller</li><li>...</li></ul>Big thanks to <a href="https://github.com/owennewo">@owennewo</a> for awesome suggestions and pull-requests!</blockquote>
+<blockquote class="info"><p class="heading"><b>OLD NEWS (01.09.2020)</b></p>New version of the Arduino <span class="simple">Simple<span class="foc">FOC</span>library</span> is out! (<a href="https://github.com/askuric/Arduino-FOC/releases">version 1.5.0 <i class="fa fa-tag"></i></a>) <br> <b>New features</b>:<ul><li> Open-loop motor control</li><li> Support Hall sensors</li><li> Support for Analog interface Magnetic sensor</li><li> New alignment procedure <br>- automatic sensor direction detection<br> - possibility to avoid alignment completely</li><li> PI controller updated to PID controller</li><li>...</li></ul>Big thanks to <a href="https://github.com/owennewo">@owennewo</a> for awesome suggestions and pull-requests!</blockquote>
 
 
 

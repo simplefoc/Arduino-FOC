@@ -15,9 +15,11 @@
  */
 #include <SimpleFOC.h>
 
-// Motor instance
-// its not important how many pole pairs do you set, the progam will find it alone
-BLDCMotor motor = BLDCMotor(9, 5, 6, 0, 8);
+//  BLDCMotor( phA, phB, phC, pp, (en optional))
+// its important to put pole pairs number as 1!!!
+BLDCMotor motor = BLDCMotor(9, 5, 6, 1, 8);
+//  StepperMotor(ph1A,ph1B,ph2A,ph2B,pp,( en1, en2 optional))
+//StepperMotor motor = StepperMotor(9, 5, 10, 6, 1, 8);
 
 // magnetic sensor instance - SPI
 MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
@@ -35,8 +37,6 @@ void setup() {
 
   // power supply voltage
   motor.voltage_power_supply = 12;
-  // set motion control loop to be used
-  motor.controller = ControlType::voltage;
 
   // initialize motor hardware
   motor.init();
@@ -52,7 +52,9 @@ void setup() {
   float pp_search_angle = 6*M_PI; // search electrical angle to turn
   
   // move motor to the electrical angle 0
-  motor.setPhaseVoltage(pp_search_voltage, 0);
+  motor.controller = ControlType::angle_openloop;
+  motor.voltage_limit=pp_search_voltage;
+  motor.move(0);
   _delay(1000);
   // read the sensor angle 
   float angle_begin = sensor.getAngle();
@@ -63,14 +65,14 @@ void setup() {
   while(motor_angle <= pp_search_angle){
     motor_angle += 0.01;
     sensor.getAngle(); // keep track of the overflow
-    motor.setPhaseVoltage(pp_search_voltage, motor_angle);
+    motor.move(motor_angle);
   }
   _delay(1000);
   // read the sensor value for 180
   float angle_end = sensor.getAngle();
   _delay(50);
   // turn off the motor
-  motor.setPhaseVoltage(0,0);
+  motor.move(0);
   _delay(1000);
 
   // calculate the pole pair number
@@ -101,6 +103,8 @@ void setup() {
   }
 
   
+  // set motion control loop to be used
+  motor.controller = ControlType::voltage;
   // set the pole pair number to the motor
   motor.pole_pairs = pp;
   //align sensor and start FOC

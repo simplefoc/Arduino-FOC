@@ -2,7 +2,11 @@
  #include <SimpleFOC.h>
 
 // motor instance
+//  BLDCMotor( phA, phB, phC, pp, (en optional))
 BLDCMotor motor = BLDCMotor(3, 10, 6, 11, 7);
+//  StepperMotor(ph1A,ph1B,ph2A,ph2B,pp,( en1, en2 optional))
+//StepperMotor motor = StepperMotor(9, 5, 10, 6, 50, 8);
+
 
 void setup() {
   

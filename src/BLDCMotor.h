@@ -31,24 +31,24 @@ class BLDCMotor: public FOCMotor
     BLDCMotor(int phA,int phB,int phC,int pp, int en = NOT_SET);
     
     /**  Motor hardware init function */
-  	void init();
+  	void init() override;
     /** Motor disable function */
-  	void disable();
+  	void disable() override;
     /** Motor enable function */
-    void enable();
+    void enable() override;
 
     /**
      * Function initializing FOC algorithm
      * and aligning sensor's and motors' zero position 
      */  
-    int initFOC( float zero_electric_offset = NOT_SET , Direction sensor_direction = Direction::CW); 
+    int initFOC( float zero_electric_offset = NOT_SET , Direction sensor_direction = Direction::CW) override;
     /**
      * Function running FOC algorithm in real-time
      * it calculates the gets motor angle and sets the appropriate voltages 
      * to the phase pwm signals
      * - the faster you can run it the better Arduino UNO ~1ms, Bluepill ~ 100us
      */ 
-    void loopFOC();
+    void loopFOC() override;
 
     /**
      * Function executing the control loops set by the controller parameter of the BLDCMotor.
@@ -58,7 +58,7 @@ class BLDCMotor: public FOCMotor
      * 
      * This function doesn't need to be run upon each loop execution - depends of the use case
      */
-    void move(float target = NOT_SET);
+    void move(float target = NOT_SET) override;
 
     // hardware variables
   	int pwmA; //!< phase A pwm pin number
