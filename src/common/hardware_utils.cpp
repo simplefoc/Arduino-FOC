@@ -121,7 +121,7 @@ void _setHighFrequency(const long freq, const int pin){
 // function setting the high pwm frequency to the supplied pins
 // - hardware speciffic
 // supports Arudino/ATmega328, STM32 and ESP32 
-void _setPwmFrequency(const long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
+void _setPwmFrequency(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__) // if arduino uno and other ATmega328p chips
    //  High PWM frequency
    // - always max 32kHz

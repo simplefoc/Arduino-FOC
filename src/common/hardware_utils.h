@@ -23,7 +23,7 @@
  * @param pinC pinC bldc motor or pin2A stepper motor
  * @param pinD pin2B stepper motor
  */
-void _setPwmFrequency(const long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD = NOT_SET);
+void _setPwmFrequency(long pwm_frequency, const int pinA, const int pinB, const int pinC, const int pinD = NOT_SET);
 
 /** 
  * Function setting the duty cycle to the pwm pin (ex. analogWrite())
@@ -36,7 +36,7 @@ void _setPwmFrequency(const long pwm_frequency,const int pinA, const int pinB, c
  * @param pinB  phase B hardware pin number
  * @param pinC  phase C hardware pin number
  */ 
-void _writeDutyCycle(long pwm_frequency, float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC );
+void _writeDutyCycle(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC);
 
 /** 
  * Function setting the duty cycle to the pwm pin (ex. analogWrite())
