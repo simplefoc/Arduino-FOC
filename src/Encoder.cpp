@@ -9,7 +9,7 @@
 */
 
 Encoder::Encoder(int _encA, int _encB , float _ppr, int _index){
-  
+
   // Encoder measurement structure init
   // hardware pins
   pinA = _encA;
@@ -87,11 +87,11 @@ void Encoder::handleIndex() {
   if(hasIndex()){
     int I = digitalRead(index_pin);
     if(I && !I_active){
-      // align encoder on each index 
+      // align encoder on each index
       if(index_pulse_counter){
         long tmp = pulse_counter;
         // corrent the counter value
-        pulse_counter = round((float)pulse_counter/(float)cpr)*cpr;
+        pulse_counter = round((double)pulse_counter/(double)cpr)*cpr;
         // preserve relative speed
         prev_pulse_counter += pulse_counter - tmp;
       } else {
@@ -119,8 +119,8 @@ float Encoder::getVelocity(){
   // sampling time calculation
   float Ts = (timestamp_us - prev_timestamp_us) * 1e-6;
   // quick fix for strange cases (micros overflow)
-  if(Ts <= 0 || Ts > 0.5) Ts = 1e-3; 
-  
+  if(Ts <= 0 || Ts > 0.5) Ts = 1e-3;
+
   // time from last impulse
   float Th = (timestamp_us - pulse_timestamp) * 1e-6;
   long dN = pulse_counter - prev_pulse_counter;
@@ -133,7 +133,7 @@ float Encoder::getVelocity(){
   // only increment if some impulses received
   float dt = Ts + prev_Th - Th;
   pulse_per_second = (dN != 0 && dt > Ts/2) ? dN / dt : pulse_per_second;
-  
+
   // if more than 0.05 passed in between impulses
   if ( Th > 0.1) pulse_per_second = 0;
 
@@ -176,10 +176,10 @@ int Encoder::hasIndex(){
 }
 
 
-// encoder initialisation of the hardware pins 
+// encoder initialisation of the hardware pins
 // and calculation variables
 void Encoder::init(){
-  
+
   // Encoder - check if pullup needed for your encoder
   if(pullup == Pullup::INTERN){
     pinMode(pinA, INPUT_PULLUP);
@@ -190,7 +190,7 @@ void Encoder::init(){
     pinMode(pinB, INPUT);
     if(hasIndex()) pinMode(index_pin,INPUT);
   }
-  
+
   // counter setup
   pulse_counter = 0;
   pulse_timestamp = _micros();
@@ -222,8 +222,7 @@ void Encoder::enableInterrupts(void (*doA)(), void(*doB)(), void(*doIndex)()){
       if(doB != nullptr) attachInterrupt(digitalPinToInterrupt(pinB), doB, RISING);
       break;
   }
-        
+
   // if index used initialize the index interrupt
   if(hasIndex() && doIndex != nullptr) attachInterrupt(digitalPinToInterrupt(index_pin), doIndex, CHANGE);
 }
-
