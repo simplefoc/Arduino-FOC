@@ -131,7 +131,7 @@ void _setPwmFrequency(long pwm_frequency,const int pinA, const int pinB, const i
   if(pinD != NOT_SET) _pinHighFrequency(pinD); // stepper motor
 
 #elif defined(_STM32_DEF_) || (defined(__arm__) && defined(CORE_TEENSY)) //if stm32 or  teensy 3x / 4x / LC boards
-  if(pwm_frequency == NOT_SET) pwm_frequency = 500000; // default frequency 50khz
+  if(pwm_frequency == NOT_SET) pwm_frequency = 50000; // default frequency 50khz
   else pwm_frequency = constrain(pwm_frequency, 0, 50000); // constrain to 50kHz max
   _setHighFrequency(pwm_frequency, pinA);
   _setHighFrequency(pwm_frequency, pinB);
@@ -139,7 +139,7 @@ void _setPwmFrequency(long pwm_frequency,const int pinA, const int pinB, const i
   if(pinD != NOT_SET) _setHighFrequency(pwm_frequency, pinD); // stepper motor
 
 #elif defined(ESP_H) // if esp32 boards
-  if(pwm_frequency == NOT_SET) pwm_frequency = 400000; // default frequency 40khz
+  if(pwm_frequency == NOT_SET) pwm_frequency = 40000; // default frequency 40khz
   else pwm_frequency = constrain(pwm_frequency, 0, 50000); // constrain to 50kHz max
 
   if(pinD == NOT_SET){
