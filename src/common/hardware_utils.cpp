@@ -139,8 +139,8 @@ void _setPwmFrequency(long pwm_frequency,const int pinA, const int pinB, const i
   if(pinD != NOT_SET) _setHighFrequency(pwm_frequency, pinD); // stepper motor
 
 #elif defined(ESP_H) // if esp32 boards
-  if(pwm_frequency == NOT_SET) pwm_frequency = 40000; // default frequency 40khz
-  else pwm_frequency = constrain(pwm_frequency, 0, 50000); // constrain to 50kHz max
+  if(pwm_frequency == NOT_SET) pwm_frequency = 40000; // default frequency 20khz
+  else pwm_frequency = constrain(pwm_frequency, 0, 60000); // constrain to 30kHz max
 
   if(pinD == NOT_SET){
     bldc_motor_slots_t m_slot = {};
