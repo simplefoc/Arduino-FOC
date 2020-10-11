@@ -33,6 +33,8 @@ FOCModulationType	KEYWORD2
 Quadrature	KEYWORD1
 Pullup	KEYWORD1
 Direction	KEYWORD1
+MagneticSensorI2CConfig_s	KEYWORD1
+MagneticSensorSPIConfig_s	KEYWORD1
 
 linkSensor	KEYWORD2
 handleA	KEYWORD2
