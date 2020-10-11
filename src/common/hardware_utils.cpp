@@ -113,7 +113,7 @@ void _setHighFrequency(const long freq, const int pin){
 //  configure High PWM frequency
 void _setHighFrequency(const long freq, const int pin){
   analogWrite(pin, 0);
-  analogWriteFrequency(freq); 
+  analogWriteFrequency(pin, freq); 
 }
 #endif
 
