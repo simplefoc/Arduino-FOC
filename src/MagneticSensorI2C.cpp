@@ -3,7 +3,6 @@
 /** Typical configuration for the 12bit AMS AS5600 magnetic sensor over I2C interface */
 MagneticSensorI2CConfig_s AS5600_I2C = {
   .chip_address = 0x36,
-  .clock_speed = 1000000,
   .bit_resolution = 12,
   .angle_register = 0x0E,
   .data_start_bit = 11
@@ -12,7 +11,6 @@ MagneticSensorI2CConfig_s AS5600_I2C = {
 /** Typical configuration for the 12bit AMS AS5048 magnetic sensor over I2C interface */
 MagneticSensorI2CConfig_s AS5048_I2C = {
   .chip_address = 0x40,  // highly configurable.  if A1 and A2 are held low, this is probable value
-  .clock_speed = 1000000,
   .bit_resolution = 14,
   .angle_register = 0xFE,
   .data_start_bit = 15
@@ -41,10 +39,7 @@ MagneticSensorI2C::MagneticSensorI2C(uint8_t _chip_address, int _bit_resolution,
   // extraction masks
   lsb_mask = (uint8_t)( (2 << lsb_used) - 1 );
   msb_mask = (uint8_t)( (2 << _bits_used_msb) - 1 );
-  clock_speed = 400000;
-  sda_pin = SDA;
-  scl_pin = SCL;
-
+  wire = &Wire;
 }
 
 MagneticSensorI2C::MagneticSensorI2C(MagneticSensorI2CConfig_s config){
@@ -60,29 +55,16 @@ MagneticSensorI2C::MagneticSensorI2C(MagneticSensorI2CConfig_s config){
   // extraction masks
   lsb_mask = (uint8_t)( (2 << lsb_used) - 1 );
   msb_mask = (uint8_t)( (2 << bits_used_msb) - 1 );
-  clock_speed = 400000;
-  sda_pin = SDA;
-  scl_pin = SCL;
-
+  wire = &Wire;
 }
 
-void MagneticSensorI2C::init(){
+void MagneticSensorI2C::init(TwoWire* _wire){
+
+  wire = _wire;
   
-#if defined(_STM32_DEF_) // if stm chips
   // I2C communication begin
-  Wire.begin();
-  Wire.setClock(clock_speed);
-  Wire.setSCL(scl_pin);
-  Wire.setSDA(sda_pin);
-#elif defined(ESP_H) // if esp32
-	//I2C communication begin
-	Wire.begin(sda_pin, scl_pin, clock_speed);
-#else
-  // I2C communication begin
-  Wire.begin();
-  Wire.setClock(clock_speed);
-#endif
-  
+  wire->begin();
+
 	// velocity calculation init
 	angle_prev = 0;
 	velocity_calc_timestamp = _micros(); 
@@ -187,14 +169,14 @@ int MagneticSensorI2C::read(uint8_t angle_reg_msb) {
 	byte readArray[2];
 	uint16_t readValue = 0;
   // notify the device that is aboout to be read
-	Wire.beginTransmission(chip_address);
-	Wire.write(angle_reg_msb);
-  Wire.endTransmission(false);
+	wire->beginTransmission(chip_address);
+	wire->write(angle_reg_msb);
+  wire->endTransmission(false);
   
   // read the data msb and lsb
-	Wire.requestFrom(chip_address, (uint8_t)2);
+	wire->requestFrom(chip_address, (uint8_t)2);
 	for (byte i=0; i < 2; i++) {
-		readArray[i] = Wire.read();
+		readArray[i] = wire->read();
 	}
 
   // depending on the sensor architecture there are different combinations of 
