@@ -187,3 +187,46 @@ int MagneticSensorI2C::read(uint8_t angle_reg_msb) {
 	readValue += ( ( readArray[0] & msb_mask ) << lsb_used );
 	return readValue;
 }
+
+/*
+* Checks whether other devices have locked the bus. Can clear SDA locks.
+* This should be called before sensor.init() on devices that suffer i2c slaves locking sda 
+* e.g some stm32 boards with AS5600 chips
+* Takes the sda_pin and scl_pin
+* Returns 0 for OK, 1 for other master and 2 for unfixable sda locked LOW
+*/
+int MagneticSensorI2C::checkBus(byte sda_pin, byte scl_pin) {
+
+  pinMode(scl_pin, INPUT_PULLUP);
+  pinMode(sda_pin, INPUT_PULLUP);
+  delay(250);  
+
+  if (digitalRead(scl_pin) == LOW) {
+    // Someone else has claimed master!");
+    return 1;
+  }
+
+  if(digitalRead(sda_pin) == LOW) {
+    // slave is communicating and awaiting clocks, we are blocked
+    pinMode(scl_pin, OUTPUT);
+    for (byte i = 0; i < 16; i++) {
+      // toggle clock for 2 bytes of data
+      digitalWrite(scl_pin, LOW);
+      delayMicroseconds(20);
+      digitalWrite(scl_pin, HIGH);
+      delayMicroseconds(20);
+    }
+    pinMode(sda_pin, INPUT);
+    delayMicroseconds(20);
+    if (digitalRead(sda_pin) == LOW) { 
+      // SDA still blocked
+      return 2; 
+    } 
+    _delay(1000);
+  }
+  // SDA is clear (HIGH)
+  pinMode(sda_pin, INPUT);
+  pinMode(scl_pin, INPUT);
+  
+  return 0; 
+}

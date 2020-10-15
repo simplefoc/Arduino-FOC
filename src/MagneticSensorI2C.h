@@ -59,6 +59,9 @@ class MagneticSensorI2C: public Sensor{
 
     int needsAbsoluteZeroSearch() override;
 
+    /** experimental function to check and fix SDA locked LOW issues */
+    int checkBus(byte sda_pin = SDA, byte scl_pin = SCL);
+
   private:
     float cpr; //!< Maximum range of the magnetic sensor
     uint16_t lsb_used; //!< Number of bits used in LSB register
