@@ -1,4 +1,4 @@
-#include "BLDCMotor.h"
+#include "src/StepperMotor.h"
 
 // motor instance
 StepperMotor motor = StepperMotor(10, 6, 5, 9, 50, 8);
