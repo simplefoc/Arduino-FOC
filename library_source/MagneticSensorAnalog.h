@@ -15,8 +15,6 @@ class MagneticSensorAnalog: public Sensor{
     /**
      * MagneticSensorAnalog class constructor
      * @param _pinAnalog  the pin to read the PWM signal
-     * @param _min  minimal value of angle reading
-     * @param _max  maximal value of angle reading
      */
     MagneticSensorAnalog(uint8_t _pinAnalog, int _min = 0, int _max = 0);
     
@@ -31,23 +29,23 @@ class MagneticSensorAnalog: public Sensor{
 
     // implementation of abstract functions of the Sensor class
     /** get current angle (rad) */
-    float getAngle();
+    float getAngle() override;
     /** get current angular velocity (rad/s) **/
-    float getVelocity();
+    float getVelocity() override;
     /**
      *  set current angle as zero angle 
      * return the angle [rad] difference
      */
-    float initRelativeZero();
+    float initRelativeZero() override;
     /**
      *  set absolute zero angle as zero angle
      * return the angle [rad] difference
      */
-    float initAbsoluteZero();
+    float initAbsoluteZero() override;
     /** returns 1 because it is the absolute sensor */
-    int hasAbsoluteZero();
+    int hasAbsoluteZero() override;
     /** returns 0  maning it doesn't need search for absolute zero */
-    int needsAbsoluteZeroSearch();
+    int needsAbsoluteZeroSearch() override;
     /** raw count (typically in range of 0-1023), useful for debugging resolution issues */
     int raw_count;
     int min_raw_count;
