@@ -37,12 +37,11 @@
  * 
  */
 #include "src/BLDCMotor.h"
-#include "src/MagneticSensorI2C.h"
+#include "src/MagneticSensorSPI.h"
 
 // SPI magnetic sensor instance
-//MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
+MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
 
-MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
 // motor instance
 BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 7);
 

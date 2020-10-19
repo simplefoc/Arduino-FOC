@@ -42,8 +42,8 @@
 // motor instance
 StepperMotor motor = StepperMotor(10, 6, 5, 9, 50, 8);
 
-// motor instance
-BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 7);
+// I2C magnetic sensor instance
+MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
 
 void setup() {
 
