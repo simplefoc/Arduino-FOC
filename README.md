@@ -70,10 +70,6 @@ Creating your own minimal project version is very simple and is done in four ste
   git clone -b minimal https://github.com/askuric/Arduino-FOC.git
   ```
 
-After this step you will be able to open the example projects directly with Arduino IDE. This code is completely independent and you can run it as any other Arduino Sketch without the need for any libraries. 
-
-> **BEWARE** In some cases this minimal version of the code will produce conflicts with the *Simple FOC* library if it is installed through Arduino library manager. So you might need to uninstall the library to run minimal projects.
-
 ## Step 1. Creating the Arduino project
 
 Open a directory you want to use as your arduino project directory `my_arduino_project` and create `my_arduino_project.ino` file. After this you create `src` folder in this directory and copy the folder named `common` from the `library_source` folder.   Your project directory should now have structure:
