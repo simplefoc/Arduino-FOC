@@ -5,7 +5,7 @@ MagneticSensorSPIConfig_s AS5147_SPI = {
   .spi_mode = SPI_MODE1,
   .clock_speed = 1000000,
   .bit_resolution = 14,
-  .angle_register = 0xCFFF,
+  .angle_register = 0x3FFF,
   .data_start_bit = 13, 
   .command_rw_bit = 14,
   .command_parity_bit = 15
@@ -233,7 +233,7 @@ word MagneticSensorSPI::read(word angle_register){
   
   register_value = register_value >> (1 + data_start_bit - bit_resolution);  //this should shift data to the rightmost bits of the word
 
-  const static word data_mask = ~(0 >> (16 - bit_resolution));
+  const static word data_mask = 0xFFFF >> (16 - bit_resolution);
 
 	return register_value & data_mask;  // Return the data, stripping the non data (e.g parity) bits
 }
