@@ -3,7 +3,6 @@
 
 #include "Arduino.h"
 #include "Sensor.h"
-#include "FOCDriver.h"
 
 #include "../hardware_utils.h"
 #include "../foc_utils.h"
@@ -55,13 +54,6 @@ class FOCMotor
      * @param sensor Sensor class  wrapper for the FOC algorihtm to read the motor angle and velocity
      */
     void linkSensor(Sensor* sensor);
-
-    /**
-     * Function linking a motor and a foc driver 
-     * 
-     * @param driver FOCDriver class implementing all the hardware specific functions necessary PWM setting
-     */
-    void linkDriver(FOCDriver* driver);
 
     /**
      * Function initializing FOC algorithm
@@ -195,12 +187,6 @@ class FOCMotor
       * - HallSensor
     */
     Sensor* sensor; 
-    /** 
-      * FOCDriver link:
-      * - 3PWM 
-      * - 6PWM 
-    */
-    FOCDriver* driver; 
     // monitoring functions
     Print* monitor_port; //!< Serial terminal variable if provided
 };
