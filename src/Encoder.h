@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "common/foc_utils.h"
 #include "common/hardware_utils.h"
-#include "common/Sensor.h"
+#include "common/interfaces/Sensor.h"
 
 
 /**

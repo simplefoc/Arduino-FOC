@@ -179,7 +179,7 @@ void StepperMotor::loopFOC() {
   // shaft angle 
   shaft_angle = shaftAngle();
   // set the phase voltage - FOC heart function :) 
-  setPhaseVoltage(voltage_q, _electricalAngle(shaft_angle,pole_pairs));
+  setPhaseVoltage(voltage_q, _electricalAngle(shaft_angle, pole_pairs));
 }
 
 // Iterative function running outer loop of the FOC algorithm
@@ -241,10 +241,24 @@ void StepperMotor::setPhaseVoltage(float Uq, float angle_el) {
   // only necessary if using _sin and _cos - approximation functions
   angle_el = _normalizeAngle(angle_el + zero_electric_angle);
   // Inverse park transform
-  Ualpha =  -_sin(angle_el) * Uq;  // -sin(angle) * Uq;
-  Ubeta =  _cos(angle_el) * Uq;    //  cos(angle) * Uq;
+  Ualpha =  -(_sin(angle_el)) * Uq;  // -sin(angle) * Uq;
+  Ubeta =  (_cos(angle_el)) * Uq;    //  cos(angle) * Uq;
+  // if (angle_el < _PI_2) {
+  //   Ualpha = 0;
+  //   Ubeta =  Uq;
+  // }else if (angle_el < _PI) {
+  //   Ualpha =- Uq;
+  //   Ubeta =  0;
+  // }else if (angle_el < _3PI_2) {
+  //   Ualpha = 0;
+  //   Ubeta =  -Uq;
+  // }else{
+  //   Ualpha = Uq;
+  //   Ubeta =  0;
+  // }
+
   // set the voltages in hardware
-  setPwm(Ualpha,Ubeta);
+  setPwm(Ualpha, Ubeta);
 }
 
 

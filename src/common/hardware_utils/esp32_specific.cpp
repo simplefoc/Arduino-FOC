@@ -1,6 +1,11 @@
-#include "hardware_utils.h"
+#include "../hardware_utils.h"
 
-#if defined(ESP_H) // if ESP32 board
+#if defined(ESP_H)
+
+#include "driver/mcpwm.h"
+#include "soc/mcpwm_reg.h"
+#include "soc/mcpwm_struct.h"
+
 // empty motor slot 
 #define _EMPTY_SLOT -20
 
@@ -87,58 +92,12 @@ void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm
   mcpwm_num->timer[0].sync.out_sel = 0;
 }
 
-#elif defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__) // if arduino uno and other ATmega328p chips
-// set pwm frequency to 32KHz
-void _pinHighFrequency(const int pin){
-  //  High PWM frequency
-  //  https://sites.google.com/site/qeewiki/books/avr-guide/timers-on-the-atmega328
-   if (pin == 5 || pin == 6  ) {
-      TCCR0A = ((TCCR0A & 0b11111100) | 0x01); // configure the pwm phase-corrected mode
-      TCCR0B = ((TCCR0B & 0b11110000) | 0x01); // set prescaler to 1
-  }
-  if (pin == 9 || pin == 10 )
-      TCCR1B = ((TCCR1B & 0b11111000) | 0x01);     // set prescaler to 1
-  if (pin == 3 || pin == 11) 
-      TCCR2B = ((TCCR2B & 0b11111000) | 0x01);// set prescaler to 1
-  
-}
-#elif defined(_STM32_DEF_) // if stm chips
-//  configure High PWM frequency
-void _setHighFrequency(const long freq, const int pin){
-  analogWrite(pin, 0);
-  analogWriteFrequency(freq); 
-  analogWriteResolution(12); // resolution 12 bit 0 - 4096
-}
-#elif defined(__arm__) && defined(CORE_TEENSY) //if teensy 3x / 4x / LC boards
-//  configure High PWM frequency
-void _setHighFrequency(const long freq, const int pin){
-  analogWrite(pin, 0);
-  analogWriteFrequency(pin, freq); 
-}
-#endif
-
 
 // function setting the high pwm frequency to the supplied pins
 // - hardware speciffic
 // supports Arudino/ATmega328, STM32 and ESP32 
 void _setPwmFrequency(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__) // if arduino uno and other ATmega328p chips
-   //  High PWM frequency
-   // - always max 32kHz
-  _pinHighFrequency(pinA);
-  _pinHighFrequency(pinB);
-  _pinHighFrequency(pinC);
-  if(pinD != NOT_SET) _pinHighFrequency(pinD); // stepper motor
 
-#elif defined(_STM32_DEF_) || (defined(__arm__) && defined(CORE_TEENSY)) //if stm32 or  teensy 3x / 4x / LC boards
-  if(pwm_frequency == NOT_SET) pwm_frequency = 50000; // default frequency 50khz
-  else pwm_frequency = constrain(pwm_frequency, 0, 50000); // constrain to 50kHz max
-  _setHighFrequency(pwm_frequency, pinA);
-  _setHighFrequency(pwm_frequency, pinB);
-  _setHighFrequency(pwm_frequency, pinC);
-  if(pinD != NOT_SET) _setHighFrequency(pwm_frequency, pinD); // stepper motor
-
-#elif defined(ESP_H) // if esp32 boards
   if(pwm_frequency == NOT_SET) pwm_frequency = 40000; // default frequency 20khz - centered pwm has twice lower frequency
   else pwm_frequency = constrain(2*pwm_frequency, 0, 60000); // constrain to 30kHz max - centered pwm has twice lower frequency
 
@@ -184,7 +143,6 @@ void _setPwmFrequency(long pwm_frequency,const int pinA, const int pinB, const i
     // configure the timer
     _configureTimerFrequency(pwm_frequency, m_slot.mcpwm_num,  m_slot.mcpwm_unit);
   }
-#endif
 }
 
 // function setting the pwm duty cycle to the hardware
@@ -193,7 +151,6 @@ void _setPwmFrequency(long pwm_frequency,const int pinA, const int pinB, const i
 // Arduino and STM32 devices use analogWrite()
 // ESP32 uses MCPWM
 void _writeDutyCycle(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC){
-#if defined(ESP_H) // if ESP32 boards
   // determine which motor slot is the motor connected to 
   for(int i = 0; i < 4; i++){
     if(esp32_bldc_motor_slots[i].pinA == pinA){ // if motor slot found
@@ -205,17 +162,6 @@ void _writeDutyCycle(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, in
       break;
     }
   }
-#elif defined(_STM32_DEF_) // STM32 devices
-  // transform duty cycle from [0,1] to [0,4095]
-  analogWrite(pinA, 4095.0*dc_a);
-  analogWrite(pinB, 4095.0*dc_b);
-  analogWrite(pinC, 4095.0*dc_c);
-#else  // Arduino & Teensy
-  // transform duty cycle from [0,1] to [0,255]
-  analogWrite(pinA, 255*dc_a);
-  analogWrite(pinB, 255*dc_b);
-  analogWrite(pinC, 255*dc_c);
-#endif
 }
 
 // function setting the pwm duty cycle to the hardware
@@ -224,7 +170,6 @@ void _writeDutyCycle(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, in
 // Arduino and STM32 devices use analogWrite()
 // ESP32 uses MCPWM
 void _writeDutyCycle(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, int pin1A, int pin1B, int pin2A, int pin2B){
-#if defined(ESP_H) // if ESP32 boards
   // determine which motor slot is the motor connected to 
   for(int i = 0; i < 2; i++){
     if(esp32_stepper_motor_slots[i].pin1A == pin1A){ // if motor slot found
@@ -237,48 +182,23 @@ void _writeDutyCycle(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, int pi
       break;
     }
   }
-#elif defined(_STM32_DEF_) // STM32 devices
-  // transform duty cycle from [0,1] to [0,4095]
-  analogWrite(pin1A, 4095.0*dc_1a);
-  analogWrite(pin1B, 4095.0*dc_1b);
-  analogWrite(pin2A, 4095.0*dc_2a);
-  analogWrite(pin2B, 4095.0*dc_2b);
-#else // Arduino & Teensy
-  // transform duty cycle from [0,1] to [0,255]
-  analogWrite(pin1A, 255*dc_1a);
-  analogWrite(pin1B, 255*dc_1b);
-  analogWrite(pin2A, 255*dc_2a);
-  analogWrite(pin2B, 255*dc_2b);
-#endif
 }
 
 
 // function buffering delay() 
 // arduino uno function doesn't work well with interrupts
 void _delay(unsigned long ms){
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
-  // if arduino uno and other atmega328p chips
-  // use while instad of delay, 
-  // due to wrong measurement based on changed timer0
-  unsigned long t = _micros() + ms*1000;
-  while( _micros() < t ){}; 
-#else
   // regular micros
   delay(ms);
-#endif
 }
 
 
 // function buffering _micros() 
 // arduino function doesn't work well with interrupts
 unsigned long _micros(){
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
-// if arduino uno and other atmega328p chips
-    //return the value based on the prescaler
-    if((TCCR0B & 0b00000111) == 0x01) return (micros()/32);
-    else return (micros());
-#else
   // regular micros
   return micros();
-#endif
 }
+
+
+#endif

@@ -3,9 +3,9 @@
 
 #include "Arduino.h"
 #include <SPI.h>
+#include "common/interfaces/Sensor.h"
 #include "common/foc_utils.h"
 #include "common/hardware_utils.h"
-#include "common/Sensor.h"
 
 #define DEF_ANGLE_REGISTAR 0x3FFF
 

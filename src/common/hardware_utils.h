@@ -1,17 +1,7 @@
 #ifndef HARDWARE_UTILS_H
 #define HARDWARE_UTILS_H
 
-#include "Arduino.h"
 #include "foc_utils.h"
-
-
-#if defined(ESP_H) // if esp32 boards
-
-#include "driver/mcpwm.h"
-#include "soc/mcpwm_reg.h"
-#include "soc/mcpwm_struct.h"
-
-#endif
 
 /** 
  * High PWM frequency setting function
