@@ -8,6 +8,7 @@
 
 #include "Arduino.h"
 #include "common/interfaces/FOCMotor.h"
+#include "common/interfaces/StepperDriver.h"
 #include "common/interfaces/Sensor.h"
 #include "common/foc_utils.h"
 #include "common/hardware_utils.h"
@@ -21,18 +22,27 @@ class StepperMotor: public FOCMotor
   public:
     /**
       StepperMotor class constructor
-      @param ph1A 1A phase pwm pin
-      @param ph1B 1B phase pwm pin
-      @param ph2A 2A phase pwm pin
-      @param ph2B 2B phase pwm pin
       @param pp  pole pair number - cpr counts per rotation number (cpm=ppm*4)
-      @param en1 enable pin phase 1 (optional input)
-      @param en2 enable pin phase 2 (optional input)
     */
-    StepperMotor(int ph1A,int ph1B,int ph2A,int ph2B,int pp, int en1 = NOT_SET, int en2 = NOT_SET);
+    StepperMotor(int pp);
     
+
+
+    /**
+     * Function linking a motor and a foc driver 
+     * 
+     * @param driver StepperDriver class implementing all the hardware specific functions necessary PWM setting
+     */
+    void linkDriver(StepperDriver* driver);
+
+    /** 
+      * StepperDriver link:
+      * - 4PWM  - L298N for example
+    */
+    StepperDriver* driver; 
+
     /**  Motor hardware init function */
-  	void init(long pwm_frequency = NOT_SET) override;
+  	void init() override;
     /** Motor disable function */
   	void disable() override;
     /** Motor enable function */
@@ -65,14 +75,8 @@ class StepperMotor: public FOCMotor
      * This function doesn't need to be run upon each loop execution - depends of the use case
      */
     void move(float target = NOT_SET) override;
-
-    // hardware variables
-  	int pwm1A; //!< phase 1A pwm pin number
-  	int pwm1B; //!< phase 1B pwm pin number
-  	int pwm2A; //!< phase 2A pwm pin number
-    int pwm2B; //!< phase 2B pwm pin number
-    int enable_pin1; //!< enable pin number phase 1
-    int enable_pin2; //!< enable pin number phase 2
+    
+    float	Ualpha,Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
 
   private:
   
@@ -90,14 +94,6 @@ class StepperMotor: public FOCMotor
     int alignSensor();
     /** Motor and sensor alignment to the sensors absolute 0 angle  */
     int absoluteZeroAlign();
-    /** 
-     * Set phase voltages to the harware 
-     * 
-     * @param Ua phase A voltage
-     * @param Ub phase B voltage
-     * @param Uc phase C voltage
-    */
-    void setPwm(float Ualpha, float Ubeta);
         
     // Open loop motion control    
     /**

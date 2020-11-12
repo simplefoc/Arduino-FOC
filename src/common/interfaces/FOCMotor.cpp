@@ -53,9 +53,6 @@ float FOCMotor::shaftVelocity() {
   return LPF_velocity(sensor->getVelocity());
 }
 
-
-
-
 /**
  *  Monitoring functions
  */

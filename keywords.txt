@@ -8,6 +8,10 @@ HallSensors	KEYWORD1
 MagneticSensorSPI	KEYWORD1
 MagneticSensorI2C	KEYWORD1
 MagneticSensorAnalog	KEYWORD1
+BLDCDriver3PWM	KEYWORD1    
+BLDCDriver	KEYWORD1    
+StepperDriver4PWM	KEYWORD1    
+StepperDriver	KEYWORD1    
 
 initFOC	KEYWORD2
 loopFOC	KEYWORD2
@@ -36,6 +40,7 @@ Direction	KEYWORD1
 MagneticSensorI2CConfig_s	KEYWORD1
 MagneticSensorSPIConfig_s	KEYWORD1
 
+linkDriver	KEYWORD2
 linkSensor	KEYWORD2
 handleA	KEYWORD2
 handleB	KEYWORD2
@@ -60,11 +65,11 @@ shaft_velocity_sp	KEYWORD2
 shaft_angle	KEYWORD2
 shaft_velocity	KEYWORD2
 controller	KEYWORD2
-driver	KEYWORD2
 pullup	KEYWORD2
 quadrature	KEYWORD2
 foc_modulation	KEYWORD2
 target	KEYWORD2
+pwm_frequency	KEYWORD2
 
 
 voltage	KEYWORD2

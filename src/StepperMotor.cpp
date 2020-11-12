@@ -5,36 +5,23 @@
 // - ph2A, ph2B    - motor phase 2 pwm pins
 // - pp            - pole pair number
 // - enable pin    - (optional input)
-StepperMotor::StepperMotor(int ph1A, int ph1B, int ph2A, int ph2B, int pp, int en1, int en2)
+StepperMotor::StepperMotor(int pp)
 : FOCMotor()
 {
-  // Pin initialization
-  pwm1A = ph1A;
-  pwm1B = ph1B;
-  pwm2A = ph2A;
-  pwm2B = ph2B;
+  // number od pole pairs
   pole_pairs = pp;
+}
 
-  // enable_pin pin
-  enable_pin1 = en1;
-  enable_pin2 = en2;
+/**
+	Link the driver which controls the motor
+*/
+void StepperMotor::linkDriver(StepperDriver* _driver) {
+  driver = _driver;
 }
 
 // init hardware pins   
-void StepperMotor::init(long pwm_frequency) {
-  if(monitor_port) monitor_port->println("MOT: Init pins.");
-  // PWM pins
-  pinMode(pwm1A, OUTPUT);
-  pinMode(pwm1B, OUTPUT);
-  pinMode(pwm2A, OUTPUT);
-  pinMode(pwm2B, OUTPUT);
-  if ( enable_pin1 != NOT_SET ) pinMode(enable_pin1, OUTPUT);
-  if ( enable_pin2 != NOT_SET ) pinMode(enable_pin2, OUTPUT);
-
-  if(monitor_port) monitor_port->println("MOT: PWM config.");
-  // Increase PWM frequency
-  // make silent
-  _setPwmFrequency(pwm_frequency, pwm1A, pwm1B, pwm2A, pwm2B);
+void StepperMotor::init() {
+  if(monitor_port) monitor_port->println("MOT: Init variables.");
   
   // sanity check for the voltage limit configuration
   if(voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
@@ -57,21 +44,18 @@ void StepperMotor::init(long pwm_frequency) {
 // disable motor driver
 void StepperMotor::disable()
 {
-  // disable the driver - if enable_pin pin available
-  if ( enable_pin1 != NOT_SET ) digitalWrite(enable_pin1, LOW);
-  if ( enable_pin2 != NOT_SET ) digitalWrite(enable_pin2, LOW);
   // set zero to PWM
-  setPwm(0, 0);
+  driver->setPwm(0, 0);
+  // disable driver
+  driver->disable();
 }
 // enable motor driver
 void StepperMotor::enable()
 {
+  // disable enable
+  driver->enable();
   // set zero to PWM
-  setPwm(0, 0);
-  // enable_pin the driver - if enable_pin pin available
-  if ( enable_pin1 != NOT_SET ) digitalWrite(enable_pin1, HIGH);
-  if ( enable_pin2 != NOT_SET ) digitalWrite(enable_pin2, HIGH);
-
+  driver->setPwm(0, 0);
 }
 
 
@@ -258,26 +242,7 @@ void StepperMotor::setPhaseVoltage(float Uq, float angle_el) {
   // }
 
   // set the voltages in hardware
-  setPwm(Ualpha, Ubeta);
-}
-
-
-
-// Set voltage to the pwm pin
-void StepperMotor::setPwm(float Ualpha, float Ubeta) {  
-  float duty_cycle1A(0.0),duty_cycle1B(0.0),duty_cycle2A(0.0),duty_cycle2B(0.0);
-  // hardware specific writing
-  if( Ualpha > 0 )
-    duty_cycle1B = constrain(abs(Ualpha)/voltage_power_supply,0,1);
-  else 
-    duty_cycle1A = constrain(abs(Ualpha)/voltage_power_supply,0,1);
-    
-  if( Ubeta > 0 )
-    duty_cycle2B = constrain(abs(Ubeta)/voltage_power_supply,0,1);
-  else
-    duty_cycle2A = constrain(abs(Ubeta)/voltage_power_supply,0,1);
-  // write to hardware
-  _writeDutyCycle(duty_cycle1A, duty_cycle1B, duty_cycle2A, duty_cycle2B, pwm1A, pwm1B, pwm2A, pwm2B);
+  driver->setPwm(Ualpha, Ubeta);
 }
 
 // Function (iterative) generating open loop movement for target velocity

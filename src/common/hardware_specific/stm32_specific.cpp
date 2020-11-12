@@ -15,8 +15,8 @@ void _setHighFrequency(const long freq, const int pin){
 // - hardware speciffic
 // supports Arudino/ATmega328, STM32 and ESP32 
 void _setPwmFrequency(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
-  if(pwm_frequency == NOT_SET) pwm_frequency = 50000; // default frequency 50khz
-  else pwm_frequency = constrain(pwm_frequency, 0, 50000); // constrain to 50kHz max
+  if( !pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = 50000; // default frequency 50khz
+  else pwm_frequency = _constrain(pwm_frequency, 0, 50000); // constrain to 50kHz max
   _setHighFrequency(pwm_frequency, pinA);
   _setHighFrequency(pwm_frequency, pinB);
   _setHighFrequency(pwm_frequency, pinC);

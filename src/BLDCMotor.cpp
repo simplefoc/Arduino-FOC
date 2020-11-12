@@ -5,37 +5,35 @@
 // - pp            - pole pair number
 // - cpr           - counts per rotation number (cpm=ppm*4)
 // - enable pin    - (optional input)
-BLDCMotor::BLDCMotor(int phA, int phB, int phC, int pp, int en)
+BLDCMotor::BLDCMotor( int phA, int phB, int phC, int pp, int cpr, int en){
+  
+}
+
+// BLDCMotor( int pp)
+// - phA, phB, phC - motor A,B,C phase pwm pins
+// - pp            - pole pair number
+// - cpr           - counts per rotation number (cpm=ppm*4)
+// - enable pin    - (optional input)
+BLDCMotor::BLDCMotor(int pp)
 : FOCMotor()
 {
-  // Pin initialization
-  pwmA = phA;
-  pwmB = phB;
-  pwmC = phC;
+  // save pole pairs number
   pole_pairs = pp;
-
-  // enable_pin pin
-  enable_pin = en;
-
 }
 
 
+/**
+	Link the driver which controls the motor
+*/
+void BLDCMotor::linkDriver(BLDCDriver* _driver) {
+  driver = _driver;
+}
+
 // init hardware pins   
-void BLDCMotor::init(long pwm_frequency) {
-  if(monitor_port) monitor_port->println("MOT: Init pins.");
-  // PWM pins
-  pinMode(pwmA, OUTPUT);
-  pinMode(pwmB, OUTPUT);
-  pinMode(pwmC, OUTPUT);
-  if(enable_pin != NOT_SET) pinMode(enable_pin, OUTPUT);
-
-  if(monitor_port) monitor_port->println("MOT: PWM config.");
-  // Increase PWM frequency to 32 kHz
-  // make silent
-  _setPwmFrequency(pwm_frequency, pwmA, pwmB, pwmC);
-
+void BLDCMotor::init() {
+  if(monitor_port) monitor_port->println("MOT: Initialise variables.");
   // sanity check for the voltage limit configuration
-  if(voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
+  if(voltage_limit > driver->voltage_power_supply) voltage_limit =  driver->voltage_power_supply;
   // constrain voltage for sensor alignment
   if(voltage_sensor_align > voltage_limit) voltage_sensor_align = voltage_limit;
   // update the controller limits
@@ -44,7 +42,7 @@ void BLDCMotor::init(long pwm_frequency) {
 
   _delay(500);
   // enable motor
-  if(monitor_port) monitor_port->println("MOT: Enable.");
+  if(monitor_port) monitor_port->println("MOT: Enable driver.");
   enable();
   _delay(500);
 }
@@ -53,18 +51,18 @@ void BLDCMotor::init(long pwm_frequency) {
 // disable motor driver
 void BLDCMotor::disable()
 {
-  // disable the driver - if enable_pin pin available
-  if (enable_pin != NOT_SET) digitalWrite(enable_pin, LOW);
   // set zero to PWM
-  setPwm(0, 0, 0);
+  driver->setPwm(0, 0, 0);
+  // disable the driver 
+  driver->disable();
 }
 // enable motor driver
 void BLDCMotor::enable()
 {
+  // enable the driver 
+  driver->enable();
   // set zero to PWM
-  setPwm(0, 0, 0);
-  // enable_pin the driver - if enable_pin pin available
-  if (enable_pin != NOT_SET) digitalWrite(enable_pin, HIGH);
+  driver->setPwm(0, 0, 0);
 
 }
 
@@ -240,9 +238,9 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
       Ubeta =  _cos(angle_el) * Uq;    //  cos(angle) * Uq;
 
       // Clarke transform
-      Ua = Ualpha + voltage_power_supply/2;
-      Ub = -0.5 * Ualpha  + _SQRT3_2 * Ubeta + voltage_power_supply/2;
-      Uc = -0.5 * Ualpha - _SQRT3_2 * Ubeta + voltage_power_supply/2;
+      Ua = Ualpha + driver->voltage_power_supply/2;
+      Ub = -0.5 * Ualpha  + _SQRT3_2 * Ubeta + driver->voltage_power_supply/2;
+      Uc = -0.5 * Ualpha - _SQRT3_2 * Ubeta + driver->voltage_power_supply/2;
       break;
 
     case FOCModulationType::SpaceVectorPWM :
@@ -261,10 +259,10 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
       // find the sector we are in currently
       int sector = floor(angle_el / _PI_3) + 1;
       // calculate the duty cycles
-      float T1 = _SQRT3*_sin(sector*_PI_3 - angle_el) * Uq/voltage_power_supply;
-      float T2 = _SQRT3*_sin(angle_el - (sector-1.0)*_PI_3) * Uq/voltage_power_supply;
+      float T1 = _SQRT3*_sin(sector*_PI_3 - angle_el) * Uq/driver->voltage_power_supply;
+      float T2 = _SQRT3*_sin(angle_el - (sector-1.0)*_PI_3) * Uq/driver->voltage_power_supply;
       // two versions possible 
-      // centered around voltage_power_supply/2
+      // centered around driver->voltage_power_supply/2
       float T0 = 1 - T1 - T2;
       // pulled to 0 - better for low power supply voltage
       //float T0 = 0;
@@ -310,27 +308,14 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
       }
 
       // calculate the phase voltages and center
-      Ua = Ta*voltage_power_supply;
-      Ub = Tb*voltage_power_supply;
-      Uc = Tc*voltage_power_supply;
+      Ua = Ta*driver->voltage_power_supply;
+      Ub = Tb*driver->voltage_power_supply;
+      Uc = Tc*driver->voltage_power_supply;
       break;
   }
   
-  // set the voltages in hardware
-  setPwm(Ua, Ub, Uc);
-}
-
-
-
-// Set voltage to the pwm pin
-void BLDCMotor::setPwm(float Ua, float Ub, float Uc) {      
-  // calculate duty cycle
-  // limited in [0,1]
-  float dc_a = constrain(Ua / voltage_power_supply, 0 , 1 );
-  float dc_b = constrain(Ub / voltage_power_supply, 0 , 1 );
-  float dc_c = constrain(Uc / voltage_power_supply, 0 , 1 );
-  // hardware specific writing
-  _writeDutyCycle(dc_a, dc_b, dc_c, pwmA, pwmB, pwmC );
+  // set the voltages in driver
+  driver->setPwm(Ua, Ub, Uc);
 }
 
 

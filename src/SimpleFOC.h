@@ -93,5 +93,7 @@ void loop() {
 #include "MagneticSensorI2C.h"
 #include "MagneticSensorAnalog.h"
 #include "HallSensor.h"
+#include "BLDCDriver3PWM.h"
+#include "StepperDriver4PWM.h"
 
 #endif
