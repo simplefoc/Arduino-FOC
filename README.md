@@ -11,7 +11,25 @@ Therefore this is an attempt to:
 - Develop a modular BLDC driver board: [Arduino *SimpleFOCShield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
 - ***New 📢:** Develop a modular Stepper motor board for FOC control:* <b>Arduino <span class="simple">Stepper<span class="foc">FOC</span>Shield</span></b>
 
-<blockquote class="info"><p> <b>NEW RELEASE 📢:</b> <i>Simple<b>FOC</b>library v1.6.0</i><br></p><ul><li><strong>Stepper motor FOC support 🎨🎉 🎊 <a href="https://docs.simplefoc.com/motors">See in docs!</a></strong><ul><li>No losing steps</li><li>Backdrivable</li><li>Better dynamics than open-loop, Smoother than open-loop</li><li>short demo <a href="https://youtu.be/w_yIY0eXM5E">youtube video</a></li></ul></li><li>Teensy support by <em>Christopher Parrott</em> <br></li><li>Pull requests by <a href="https://github.com/cousinitt">@cousinitt</a><ul><li>refactoring and c++11 improvements</li><li>pid + low pass filter refactoring</li></ul></li><li>Extended configurability of the sensor classes by <a href="https://github.com/owennewo">@owennewo</a> <b><a href="https://docs.simplefoc.com/magnetic_sensor">See in docs!</a></b></li><li>configurable pwm frequency <b><a href="https://docs.simplefoc.com/motor_initialization#step-33-pwm-frequency-configuration-optional">See in docs!</a></b><ul><li>stm32,teensy,eps32 - not for Arduino</li><li>stm32 added 12bit pwm resolution by <em>Jürgen Frisch</em></li></ul></li><li>Huge refactoring done in the library 😄</li></ul></blockquote>
+<blockquote class="info"><p> <b>NEW RELEASE 📢:</b> <i>Simple<b>FOC</b>library v1.7.0</i><br></p><ul>
+<li><strong>6PWM support </strong>
+  <ul>
+    <li>Arduino UNO</li>
+    <li>stm32 boards</li>
+  </ul>
+</li>
+<li>BLDC driver code separated
+  <ul>
+    <li> BLDC: 6pwm and 3pwm</li>
+    <li> Stepper: 4pwm</li>
+    <li> Hardware specific code in separate files</li>
+    <li> PWM config</li>
+  </ul>
+</li>
+<li>Refactoring </li>
+</ul>
+<i>The library version 1.7.0 will be released once when it is properly tested and documented!</i>
+</blockquote>
 
 ## Arduino *SimpleFOCShield*
 
@@ -121,8 +139,10 @@ NOTE: This program uses all the default control parameters.
 ```cpp
 #include <SimpleFOC.h>
 
-//  BLDCMotor( pin_pwmA, pin_pwmB, pin_pwmC, pole_pairs, enable (optional))
-BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
+//  BLDCMotor( pole_pairs )
+BLDCMotor motor = BLDCMotor(11);
+//  BLDCDriver( pin_pwmA, pin_pwmB, pin_pwmC, enable (optional) )
+BLDCDriver3PWM motor = BLDCDriver3PWM(9, 10, 11, 8);
 //  Encoder(pin_A, pin_B, CPR)
 Encoder encoder = Encoder(2, 3, 2048);
 // channel A and B callbacks
@@ -138,10 +158,12 @@ void setup() {
   // link the motor to the sensor
   motor.linkSensor(&encoder);
   
-  // use monitoring with the BLDCMotor
-  Serial.begin(115200);
-  // monitoring port
-  motor.useMonitoring(Serial);
+  // power supply voltage [V]
+  driver.voltage_power_supply = 12;
+  // initialise driver hardware
+  driver.init();
+  // link driver
+  motor.linkDriver(&driver);
 
   // set control loop type to be used
   motor.controller = ControlType::velocity;
@@ -159,9 +181,6 @@ void loop() {
   // velocity control loop function
   // setting the target velocity or 2rad/s
   motor.move(2);
-
-  // monitoring function outputting motor variables to the serial terminal 
-  motor.monitor();
 }
 ```
 You can find more details in the [SimpleFOC documentation](https://docs.simplefoc.com/).
