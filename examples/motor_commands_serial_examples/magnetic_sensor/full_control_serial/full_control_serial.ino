@@ -63,7 +63,7 @@ void setup() {
   // driver config
   // power supply voltage [V]
   driver.voltage_power_supply = 12;
-  driver.init()
+  driver.init();
   // link driver
   motor.linkDriver(&driver);
 

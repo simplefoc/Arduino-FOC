@@ -82,7 +82,7 @@ void setup() {
 
   // driver config
   driver.voltage_power_supply = 12;
-  driver.init()
+  driver.init();
   motor.linkDriver(&driver);
 
   motor.voltage_sensor_align = 3;
