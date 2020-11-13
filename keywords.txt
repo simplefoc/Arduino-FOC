@@ -9,6 +9,7 @@ MagneticSensorSPI	KEYWORD1
 MagneticSensorI2C	KEYWORD1
 MagneticSensorAnalog	KEYWORD1
 BLDCDriver3PWM	KEYWORD1    
+BLDCDriver6PWM	KEYWORD1    
 BLDCDriver	KEYWORD1    
 StepperDriver4PWM	KEYWORD1    
 StepperDriver	KEYWORD1    
@@ -25,6 +26,7 @@ _setPwmFrequency	KEYWORD3
 _writeDutyCycle	KEYWORD3
 _round	KEYWORD3
 _sign	KEYWORD3
+_constrain	KEYWORD3
 monitor	KEYWORD3
 command	KEYWORD3
 
@@ -70,6 +72,7 @@ quadrature	KEYWORD2
 foc_modulation	KEYWORD2
 target	KEYWORD2
 pwm_frequency	KEYWORD2
+dead_zone	KEYWORD2
 
 
 voltage	KEYWORD2

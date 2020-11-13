@@ -38,7 +38,7 @@ void StepperDriver4PWM::disable()
 }
 
 // init hardware pins   
-void StepperDriver4PWM::init() {
+int StepperDriver4PWM::init() {
 
   // PWM pins
   pinMode(pwm1A, OUTPUT);
@@ -48,13 +48,13 @@ void StepperDriver4PWM::init() {
   if(enable_pin1 != NOT_SET) pinMode(enable_pin1, OUTPUT);
   if(enable_pin2 != NOT_SET) pinMode(enable_pin2, OUTPUT);
 
-
   // sanity check for the voltage limit configuration
   if(voltage_limit == NOT_SET || voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
 
   // Set the pwm frequency to the pins
   // hardware specific function - depending on driver and mcu
-  _setPwmFrequency(pwm_frequency, pwm1A, pwm2A, pwm1B, pwm2B);
+  _configure4PWM(pwm_frequency, pwm1A, pwm2A, pwm1B, pwm2B);
+  return 0;
 }
 
 
@@ -75,5 +75,5 @@ void StepperDriver4PWM::setPwm(float Ualpha, float Ubeta) {
   else
     duty_cycle2A = _constrain(abs(Ubeta)/voltage_power_supply,0,1);
   // write to hardware
-  _writeDutyCycle(duty_cycle1A, duty_cycle1B, duty_cycle2A, duty_cycle2B, pwm1A, pwm1B, pwm2A, pwm2B);
+  _writeDutyCycle4PWM(duty_cycle1A, duty_cycle1B, duty_cycle2A, duty_cycle2B, pwm1A, pwm1B, pwm2A, pwm2B);
 }

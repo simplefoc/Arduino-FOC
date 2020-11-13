@@ -7,8 +7,12 @@
  */
 #include <SimpleFOC.h>
 
-// motor instance
-BLDCMotor motor = BLDCMotor(PB6, PB7, PB8, 11, PB5);
+// Motor instance
+BLDCMotor motor = BLDCMotor(11);
+// BLDCDriver3PWM(IN1, IN2, IN3, enable(optional))
+BLDCDriver3PWM driver = BLDCDriver3PWM(PB6, PB7, PB8, PB5);
+// BLDCDriver6PWM(IN1_H, IN1_L, IN2_H, IN2_L, IN3_H, IN3_L, enable(optional))
+//BLDCDriver6PWM driver = BLDCDriver6PWM(PA8, PB13, PA9, PB14, PA10, PB15, PB12);
 
 // encoder instance
 Encoder encoder = Encoder(PA8, PA9, 8192, PA10);
@@ -24,12 +28,16 @@ void setup() {
   // initialize encoder sensor hardware
   encoder.init();
   encoder.enableInterrupts(doA, doB, doI); 
-
   // link the motor to the sensor
   motor.linkSensor(&encoder);
 
+  // driver config
   // power supply voltage [V]
-  motor.voltage_power_supply = 12;
+  driver.voltage_power_supply = 12;
+  driver.init();
+  // link the motor and the driver
+  motor.linkDriver(&driver);
+
   // aligning voltage [V]
   motor.voltage_sensor_align = 3;
   // index search velocity [rad/s]

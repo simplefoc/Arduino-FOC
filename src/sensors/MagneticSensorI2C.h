@@ -3,9 +3,9 @@
 
 #include "Arduino.h"
 #include <Wire.h>
-#include "common/interfaces/Sensor.h"
-#include "common/foc_utils.h"
-#include "common/hardware_utils.h"
+#include "../common/base_classes/Sensor.h"
+#include "../common/foc_utils.h"
+#include "../common/time_utils.h"
 
 struct MagneticSensorI2CConfig_s  {
   int chip_address;

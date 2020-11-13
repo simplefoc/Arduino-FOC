@@ -1,13 +1,13 @@
 #include "BLDCMotor.h"
 
-// BLDCMotor( int phA, int phB, int phC, int pp, int cpr, int en)
-// - phA, phB, phC - motor A,B,C phase pwm pins
-// - pp            - pole pair number
-// - cpr           - counts per rotation number (cpm=ppm*4)
-// - enable pin    - (optional input)
-BLDCMotor::BLDCMotor( int phA, int phB, int phC, int pp, int cpr, int en){
-  
-}
+// // BLDCMotor( int phA, int phB, int phC, int pp, int cpr, int en)
+// // - phA, phB, phC - motor A,B,C phase pwm pins
+// // - pp            - pole pair number
+// // - cpr           - counts per rotation number (cpm=ppm*4)
+// // - enable pin    - (optional input)
+// BLDCMotor::BLDCMotor( int phA, int phB, int phC, int pp, int cpr, int en){
+//   noop;
+// }
 
 // BLDCMotor( int pp)
 // - phA, phB, phC - motor A,B,C phase pwm pins

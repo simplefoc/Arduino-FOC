@@ -28,10 +28,12 @@
 #include <PciManager.h>
 #include <PciListenerImp.h>
 
-// BLDC motor instance
-BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
-// Stepper motor instance
-//StepperMotor motor = StepperMotor(9, 5, 10, 6, 50, 8);
+// BLDC motor & driver instance
+BLDCMotor motor = BLDCMotor(11);
+BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
+// Stepper motor & driver instance
+//StepperMotor motor = StepperMotor(50);
+//StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
 // encoder instance
 Encoder encoder = Encoder(2, 3, 8192, A0);
@@ -55,8 +57,13 @@ void setup() {
   // link the motor to the sensor
   motor.linkSensor(&encoder);
 
+  // driver config
   // power supply voltage [V]
-  motor.voltage_power_supply = 12;
+  driver.voltage_power_supply = 12;
+  driver.init();
+  // link the motor and the driver
+  motor.linkDriver(&driver);
+  
   // aligning voltage [V]
   motor.voltage_sensor_align = 3;
   // index search velocity [rad/s]

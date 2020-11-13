@@ -20,20 +20,24 @@
 MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
 
 // BLDC motor instance
-BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
+BLDCMotor motor = BLDCMotor(11);
+BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 // Stepper motor instance
-//StepperMotor motor = StepperMotor(9, 5, 10, 6, 50, 8);
+//StepperMotor motor = StepperMotor(50);
+//StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
 void setup() {
+
+  // power supply voltage
+  driver.voltage_power_supply = 12;
+  driver.init()
+  motor.linkDriver(&driver);
 
   // initialise magnetic sensor hardware
   sensor.init();
   // link the motor to the sensor
   motor.linkSensor(&sensor);
 
-  // power supply voltage
-  // default 12V
-  motor.voltage_power_supply = 12;
   // aligning voltage 
   motor.voltage_sensor_align = 7;
   
@@ -42,7 +46,6 @@ void setup() {
 
   // initialize motor
   motor.init();
-  
   // align sensor and start FOC
   motor.initFOC();
 

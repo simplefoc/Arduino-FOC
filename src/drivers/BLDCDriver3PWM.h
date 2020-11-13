@@ -1,10 +1,11 @@
 #ifndef BLDCDriver3PWM_h
 #define BLDCDriver3PWM_h
 
-#include "common/interfaces/BLDCDriver.h"
-#include "common/foc_utils.h"
-#include "common/hardware_utils.h"
-#include "common/defaults.h"
+#include "../common/base_classes/BLDCDriver.h"
+#include "../common/foc_utils.h"
+#include "../common/time_utils.h"
+#include "../common/defaults.h"
+#include "hardware_api.h"
 
 /**
  3 pwm bldc driver class
@@ -22,7 +23,7 @@ class BLDCDriver3PWM: public BLDCDriver
     BLDCDriver3PWM(int phA,int phB,int phC, int en = NOT_SET);
     
     /**  Motor hardware init function */
-  	void init() override;
+  	int init() override;
     /** Motor disable function */
   	void disable() override;
     /** Motor enable function */

@@ -15,16 +15,21 @@
 
 // DRV8302 pins connections
 // don't forget to connect the common ground pin
-#define INH_A 9
-#define INH_B 10
-#define INH_C 11
+#define INH_A 3
+#define INH_B 5
+#define INH_C 9
+#define INL_A 11
+#define INL_B 6
+#define INL_C 10
+
 #define EN_GATE 7
 #define M_PWM A1 
 #define M_OC A2
 #define OC_ADJ A3
 
-// motor instance
-BLDCMotor motor = BLDCMotor(INH_A, INH_B, INH_C, 11, EN_GATE);
+// Motor instance
+BLDCMotor motor = BLDCMotor(11);
+BLDCDriver6PWM driver = BLDCDriver6PWM(INH_A,INH_A, INH_B,INH_B, INH_C,INL_C, EN_GATE);
 
 // encoder instance
 Encoder encoder = Encoder(2, 3, 8192);
@@ -46,19 +51,23 @@ void setup() {
   // M_OC  - enable overcurrent protection
   pinMode(M_OC,OUTPUT);
   digitalWrite(M_OC,LOW);
-  // M_PWM  - enable 3pwm mode
+  // M_PWM  - disable 3pwm mode
   pinMode(M_PWM,OUTPUT);
-  digitalWrite(M_PWM,HIGH);
+  digitalWrite(M_PWM, LOW);
   // OD_ADJ - set the maximum overcurrent limit possible
   // Better option would be to use voltage divisor to set exact value
   pinMode(OC_ADJ,OUTPUT);
   digitalWrite(OC_ADJ,HIGH);
 
+  // driver config
+  // power supply voltage [V]
+  driver.voltage_power_supply = 12;
+  driver.init();
+  // link the motor and the driver
+  motor.linkDriver(&driver);
+
   // choose FOC modulation
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
-
-  // power supply voltage [V]
-  motor.voltage_power_supply = 12;
 
   // set control loop type to be used
   motor.controller = ControlType::voltage;

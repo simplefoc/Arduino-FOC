@@ -1,17 +1,12 @@
-/**
- *  @file BLDCMotor.h
- * 
- */
-
 #ifndef BLDCMotor_h
 #define BLDCMotor_h
 
 #include "Arduino.h"
-#include "common/interfaces/FOCMotor.h"
-#include "common/interfaces/Sensor.h"
-#include "common/interfaces/BLDCDriver.h"
+#include "common/base_classes/FOCMotor.h"
+#include "common/base_classes/Sensor.h"
+#include "common/base_classes/BLDCDriver.h"
 #include "common/foc_utils.h"
-#include "common/hardware_utils.h"
+#include "common/time_utils.h"
 #include "common/defaults.h"
 
 /**
@@ -26,7 +21,6 @@ class BLDCMotor: public FOCMotor
      */ 
     BLDCMotor(int pp);
     
-
     /**
      * Function linking a motor and a foc driver 
      * 

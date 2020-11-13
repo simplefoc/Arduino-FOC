@@ -1,5 +1,5 @@
 /**
- * Comprehensive BLDC motor control example using Hall sensor
+ * Comprehensive BLDC motor control example using encoder and the DRV8302 board
  * 
  * Using serial terminal user can send motor commands and configure the motor and FOC in real-time:
  * - configure PID controller constants
@@ -8,83 +8,72 @@
  * - set target values
  * - check all the configuration values 
  * 
- * To check the config value just enter the command letter.
- * For example: - to read velocity PI controller P gain run: P
- *              - to set velocity PI controller P gain  to 1.2 run: P1.2
+ * check the https://docs.simplefoc.com for full list of motor commands
  * 
- * To change the target value just enter a number in the terminal:
- * For example: - to change the target value to -0.1453 enter: -0.1453
- *              - to get the current target value enter: V3 
- * 
- * List of commands:
- *  - P: velocity PID controller P gain
- *  - I: velocity PID controller I gain
- *  - D: velocity PID controller D gain
- *  - R: velocity PID controller voltage ramp
- *  - F: velocity Low pass filter time constant
- *  - K: angle P controller P gain
- *  - N: angle P controller velocity limit
- *  - L: system voltage limit
- *  - C: control loop 
- *    - 0: voltage 
- *    - 1: velocity 
- *    - 2: angle
- *  - V: get motor variables
- *    - 0: currently set voltage
- *    - 1: current velocity
- *    - 2: current angle
- *    - 3: current target value
- *
  */
 #include <SimpleFOC.h>
-// software interrupt library
-#include <PciManager.h>
-#include <PciListenerImp.h>
 
-// BLDC motor & driver instance
+// DRV8302 pins connections
+// don't forget to connect the common ground pin
+#define INH_A 9
+#define INH_B 10
+#define INH_C 11
+
+#define EN_GATE 7
+#define M_PWM A1 
+#define M_OC A2
+#define OC_ADJ A3
+
+// Motor instance
 BLDCMotor motor = BLDCMotor(11);
-BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
-// Stepper motor & driver instance
-//StepperMotor motor = StepperMotor(50);
-//StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
+BLDCDriver3PWM driver = BLDCDriver3PWM(INH_A, INH_B, INH_C, EN_GATE);
 
-// hall sensor instance
-HallSensor sensor = HallSensor(2, 3, 4, 11);
+// encoder instance
+Encoder encoder = Encoder(2, 3, 8192);
 
 // Interrupt routine intialisation
-// channel A, B and C callbacks
-void doA(){sensor.handleA();}
-void doB(){sensor.handleB();}
-void doC(){sensor.handleC();}
-// If no available hadware interrupt pins use the software interrupt
-PciListenerImp listenC(sensor.pinC, doC);
+// channel A and B callbacks
+void doA(){encoder.handleA();}
+void doB(){encoder.handleB();}
 
 void setup() {
 
   // initialize encoder sensor hardware
-  sensor.init();
-  sensor.enableInterrupts(doA, doB); //, doC); 
-  // software interrupts
-  PciManager.registerListener(&listenC);
+  encoder.init();
+  encoder.enableInterrupts(doA, doB); 
   // link the motor to the sensor
-  motor.linkSensor(&sensor);
+  motor.linkSensor(&encoder);
+
+  // DRV8302 specific code
+  // M_OC  - enable overcurrent protection
+  pinMode(M_OC,OUTPUT);
+  digitalWrite(M_OC,LOW);
+  // M_PWM  - enable 3pwm mode
+  pinMode(M_PWM,OUTPUT);
+  digitalWrite(M_PWM,HIGH);
+  // OD_ADJ - set the maximum overcurrent limit possible
+  // Better option would be to use voltage divisor to set exact value
+  pinMode(OC_ADJ,OUTPUT);
+  digitalWrite(OC_ADJ,HIGH);
+
 
   // driver config
   // power supply voltage [V]
   driver.voltage_power_supply = 12;
-  driver.init()
-  // link driver
+  driver.init();
+  // link the motor and the driver
   motor.linkDriver(&driver);
 
 
   // choose FOC modulation
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
+
   // set control loop type to be used
   motor.controller = ControlType::voltage;
+
   // contoller configuration based on the controll type 
   motor.PID_velocity.P = 0.2;
   motor.PID_velocity.I = 20;
-  motor.PID_velocity.D = 0;
   // default voltage_power_supply
   motor.voltage_limit = 12;
 
@@ -111,8 +100,10 @@ void setup() {
   motor.target = 2;
 
 
-  // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)
-  Serial.println("Motor commands sketch | Initial motion control > torque/voltage : target 2V.");
+  Serial.println("Full control example: ");
+  Serial.println("Run user commands to configure and the motor (find the full command list in docs.simplefoc.com) \n ");
+  Serial.println("Initial motion control loop is voltage loop.");
+  Serial.println("Initial target voltage 2V.");
   
   _delay(1000);
 }

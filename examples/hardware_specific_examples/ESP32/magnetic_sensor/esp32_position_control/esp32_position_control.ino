@@ -19,7 +19,8 @@ MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
 // MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
 
 // Motor instance
-BLDCMotor motor = BLDCMotor(25, 26, 27, 7);
+BLDCMotor motor = BLDCMotor(11);
+BLDCDriver3PWM driver = BLDCDriver3PWM(25, 26, 27, 7);
 
 void setup() {
 
@@ -28,9 +29,12 @@ void setup() {
   // link the motor to the sensor
   motor.linkSensor(&sensor);
 
-  // power supply voltage
-  // default 12V
-  motor.voltage_power_supply = 12;
+  // driver config
+  // power supply voltage [V]
+  driver.voltage_power_supply = 12;
+  driver.init();
+  // link the motor and the driver
+  motor.linkDriver(&driver);
   
   // choose FOC modulation (optional)
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;

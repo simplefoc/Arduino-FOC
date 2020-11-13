@@ -4,8 +4,9 @@
  */
 #include <SimpleFOC.h>
 
-// motor instance
-BLDCMotor motor = BLDCMotor(25, 26, 27, 7);
+// Motor instance
+BLDCMotor motor = BLDCMotor(11);
+BLDCDriver3PWM driver = BLDCDriver3PWM(25, 26, 27, 7);
 
 // encoder instance
 Encoder encoder = Encoder(4, 2, 1024);
@@ -23,9 +24,14 @@ void setup() {
 
   // link the motor to the sensor
   motor.linkSensor(&encoder);
-
+  
+  // driver config
   // power supply voltage [V]
-  motor.voltage_power_supply = 12;
+  driver.voltage_power_supply = 12;
+  driver.init();
+  // link the motor and the driver
+  motor.linkDriver(&driver);
+
   // aligning voltage [V]
   motor.voltage_sensor_align = 3;
   // index search velocity [rad/s]

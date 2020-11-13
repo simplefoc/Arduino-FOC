@@ -9,8 +9,13 @@
  */
 #include <SimpleFOC.h>
 
-// motor instance
-BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 7);
+
+// BLDC motor & driver instance
+BLDCMotor motor = BLDCMotor(11);
+BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
+// Stepper motor & driver instance
+//StepperMotor motor = StepperMotor(50);
+//StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
 // hall sensor instance
 HallSensor sensor = HallSensor(2, 3, 4, 11);
@@ -29,9 +34,13 @@ void setup() {
   // link the motor to the sensor
   motor.linkSensor(&sensor);
 
-  // power supply voltage
-  // default 12V
-  motor.voltage_power_supply = 12;
+  // driver config
+  // power supply voltage [V]
+  driver.voltage_power_supply = 12;
+  driver.init()
+  // link driver
+  motor.linkDriver(&driver);
+
   // aligning voltage
   motor.voltage_sensor_align = 3;
   

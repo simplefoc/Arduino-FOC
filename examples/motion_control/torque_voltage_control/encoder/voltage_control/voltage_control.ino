@@ -9,10 +9,13 @@
  */
 #include <SimpleFOC.h>
 
-// BLDC motor instance
-BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 7);
-// Stepper motor instance
-//StepperMotor motor = StepperMotor(9, 5, 10, 6, 50, 8);
+
+// BLDC motor & driver instance
+BLDCMotor motor = BLDCMotor(11);
+BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
+// Stepper motor & driver instance
+//StepperMotor motor = StepperMotor(50);
+//StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
 // encoder instance
 Encoder encoder = Encoder(2, 3, 8192);
@@ -30,12 +33,16 @@ void setup() {
   // link the motor to the sensor
   motor.linkSensor(&encoder);
 
-  // power supply voltage
-  // default 12V
-  motor.voltage_power_supply = 12;
+  // driver config
+  // power supply voltage [V]
+  driver.voltage_power_supply = 12;
+  driver.init()
+  // link driver
+  motor.linkDriver(&driver);
+
+
   // aligning voltage
   motor.voltage_sensor_align = 5;
-  
   // choose FOC modulation (optional)
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
 

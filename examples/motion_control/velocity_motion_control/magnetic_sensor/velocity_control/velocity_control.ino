@@ -19,10 +19,12 @@ MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
 // magnetic sensor instance - analog output
 // MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
 
-// BLDC motor instance
-BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
-// Stepper motor instance
-//StepperMotor motor = StepperMotor(9, 5, 10, 6, 50, 8);
+// BLDC motor & driver instance
+BLDCMotor motor = BLDCMotor(11);
+BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
+// Stepper motor & driver instance
+//StepperMotor motor = StepperMotor(50);
+//StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
 void setup() {
  
@@ -31,9 +33,12 @@ void setup() {
   // link the motor to the sensor
   motor.linkSensor(&sensor);
 
-  // power supply voltage
-  // default 12V
-  motor.voltage_power_supply = 12;
+  // driver config
+  // power supply voltage [V]
+  driver.voltage_power_supply = 12;
+  driver.init();
+  // link the motor and the driver
+  motor.linkDriver(&driver);
 
   // set motion control loop to be used
   motor.controller = ControlType::velocity;

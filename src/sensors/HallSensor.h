@@ -2,9 +2,9 @@
 #define HALL_SENSOR_LIB_H
 
 #include "Arduino.h"
-#include "common/interfaces/Sensor.h"
-#include "common/foc_utils.h"
-#include "common/hardware_utils.h"
+#include "../common/base_classes/Sensor.h"
+#include "../common/foc_utils.h"
+#include "../common/time_utils.h"
 
 
 class HallSensor: public Sensor{

@@ -1,4 +1,4 @@
-#include "../hardware_utils.h"
+#include "../hardware_api.h"
 
 #if defined(ESP_H)
 
@@ -94,63 +94,71 @@ void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm
 
 
 // function setting the high pwm frequency to the supplied pins
+// - BLDC motor - 3PWM setting
 // - hardware speciffic
 // supports Arudino/ATmega328, STM32 and ESP32 
-void _setPwmFrequency(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
+void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
 
   if(!pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = 40000; // default frequency 20khz - centered pwm has twice lower frequency
   else pwm_frequency = _constrain(2*pwm_frequency, 0, 60000); // constrain to 30kHz max - centered pwm has twice lower frequency
 
-  if(pinD == NOT_SET){
-    bldc_motor_slots_t m_slot = {};
+  bldc_motor_slots_t m_slot = {};
 
-    // determine which motor are we connecting
-    // and set the appropriate configuration parameters 
-    for(int i = 0; i < 4; i++){
-      if(esp32_bldc_motor_slots[i].pinA == _EMPTY_SLOT){ // put the new motor in the first empty slot
-        esp32_bldc_motor_slots[i].pinA = pinA;
-        m_slot = esp32_bldc_motor_slots[i];
-        break;
-      }
+  // determine which motor are we connecting
+  // and set the appropriate configuration parameters 
+  for(int i = 0; i < 4; i++){
+    if(esp32_bldc_motor_slots[i].pinA == _EMPTY_SLOT){ // put the new motor in the first empty slot
+      esp32_bldc_motor_slots[i].pinA = pinA;
+      m_slot = esp32_bldc_motor_slots[i];
+      break;
     }
-          
-    // configure pins
-    mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_a, pinA);
-    mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_b, pinB);
-    mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_c, pinC);
-
-    // configure the timer
-    _configureTimerFrequency(pwm_frequency, m_slot.mcpwm_num,  m_slot.mcpwm_unit);
-
-  }else{
-    stepper_motor_slots_t m_slot = {};
-    // determine which motor are we connecting
-    // and set the appropriate configuration parameters 
-    for(int i = 0; i < 2; i++){
-      if(esp32_stepper_motor_slots[i].pin1A == _EMPTY_SLOT){ // put the new motor in the first empty slot
-        esp32_stepper_motor_slots[i].pin1A = pinA;
-        m_slot = esp32_stepper_motor_slots[i];
-        break;
-      }
-    }
-          
-    // configure pins
-    mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_1a, pinA);
-    mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_1b, pinB);
-    mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_2a, pinC);
-    mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_2b, pinD);
-
-    // configure the timer
-    _configureTimerFrequency(pwm_frequency, m_slot.mcpwm_num,  m_slot.mcpwm_unit);
   }
+        
+  // configure pins
+  mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_a, pinA);
+  mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_b, pinB);
+  mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_c, pinC);
+
+  // configure the timer
+  _configureTimerFrequency(pwm_frequency, m_slot.mcpwm_num,  m_slot.mcpwm_unit);
+
 }
 
+
+// function setting the high pwm frequency to the supplied pins
+// - Stepper motor - 4PWM setting
+// - hardware speciffic
+void _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
+
+  if(!pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = 40000; // default frequency 20khz - centered pwm has twice lower frequency
+  else pwm_frequency = _constrain(2*pwm_frequency, 0, 60000); // constrain to 30kHz max - centered pwm has twice lower frequency
+  stepper_motor_slots_t m_slot = {};
+  // determine which motor are we connecting
+  // and set the appropriate configuration parameters 
+  for(int i = 0; i < 2; i++){
+    if(esp32_stepper_motor_slots[i].pin1A == _EMPTY_SLOT){ // put the new motor in the first empty slot
+      esp32_stepper_motor_slots[i].pin1A = pinA;
+      m_slot = esp32_stepper_motor_slots[i];
+      break;
+    }
+  }
+        
+  // configure pins
+  mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_1a, pinA);
+  mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_1b, pinB);
+  mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_2a, pinC);
+  mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_2b, pinD);
+
+  // configure the timer
+  _configureTimerFrequency(pwm_frequency, m_slot.mcpwm_num,  m_slot.mcpwm_unit);
+}
+
+
 // function setting the pwm duty cycle to the hardware
-//- hardware speciffic
-//
-// Arduino and STM32 devices use analogWrite()
-// ESP32 uses MCPWM
-void _writeDutyCycle(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC){
+// - BLDC motor - 3PWM setting
+// - hardware speciffic
+//  ESP32 uses MCPWM
+void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC){
   // determine which motor slot is the motor connected to 
   for(int i = 0; i < 4; i++){
     if(esp32_bldc_motor_slots[i].pinA == pinA){ // if motor slot found
@@ -165,11 +173,10 @@ void _writeDutyCycle(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, in
 }
 
 // function setting the pwm duty cycle to the hardware
-//- hardware speciffic
-//
-// Arduino and STM32 devices use analogWrite()
-// ESP32 uses MCPWM
-void _writeDutyCycle(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, int pin1A, int pin1B, int pin2A, int pin2B){
+// - Stepper motor - 4PWM setting
+// - hardware speciffic
+//  ESP32 uses MCPWM
+void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, int pin1A, int pin1B, int pin2A, int pin2B){
   // determine which motor slot is the motor connected to 
   for(int i = 0; i < 2; i++){
     if(esp32_stepper_motor_slots[i].pin1A == pin1A){ // if motor slot found
@@ -184,21 +191,17 @@ void _writeDutyCycle(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, int pi
   }
 }
 
-
-// function buffering delay() 
-// arduino uno function doesn't work well with interrupts
-void _delay(unsigned long ms){
-  // regular micros
-  delay(ms);
+// Configuring PWM frequency, resolution and alignment
+// - BLDC driver - 6PWM setting
+// - hardware specific
+int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
+  return -1;
 }
 
-
-// function buffering _micros() 
-// arduino function doesn't work well with interrupts
-unsigned long _micros(){
-  // regular micros
-  return micros();
+// Function setting the duty cycle to the pwm pin (ex. analogWrite())
+// - BLDC driver - 6PWM setting
+// - hardware specific
+void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, int pinA_h, int pinA_l, int pinB_h, int pinB_l, int pinC_h, int pinC_l){
+  return;
 }
-
-
 #endif

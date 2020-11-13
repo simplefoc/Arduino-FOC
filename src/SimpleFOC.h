@@ -88,12 +88,13 @@ void loop() {
 
 #include "BLDCMotor.h"
 #include "StepperMotor.h"
-#include "Encoder.h"
-#include "MagneticSensorSPI.h"
-#include "MagneticSensorI2C.h"
-#include "MagneticSensorAnalog.h"
-#include "HallSensor.h"
-#include "BLDCDriver3PWM.h"
-#include "StepperDriver4PWM.h"
+#include "sensors/Encoder.h"
+#include "sensors/MagneticSensorSPI.h"
+#include "sensors/MagneticSensorI2C.h"
+#include "sensors/MagneticSensorAnalog.h"
+#include "sensors/HallSensor.h"
+#include "drivers/BLDCDriver3PWM.h"
+#include "drivers/BLDCDriver6PWM.h"
+#include "drivers/StepperDriver4PWM.h"
 
 #endif

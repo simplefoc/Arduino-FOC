@@ -5,7 +5,7 @@
 #include "Sensor.h"
 #include "BLDCDriver.h"
 
-#include "../hardware_utils.h"
+#include "../time_utils.h"
 #include "../foc_utils.h"
 #include "../defaults.h"
 #include "../pid.h"

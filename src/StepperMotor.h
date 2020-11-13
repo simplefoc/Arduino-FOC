@@ -7,11 +7,11 @@
 #define StepperMotor_h
 
 #include "Arduino.h"
-#include "common/interfaces/FOCMotor.h"
-#include "common/interfaces/StepperDriver.h"
-#include "common/interfaces/Sensor.h"
+#include "common/base_classes/FOCMotor.h"
+#include "common/base_classes/StepperDriver.h"
+#include "common/base_classes/Sensor.h"
 #include "common/foc_utils.h"
-#include "common/hardware_utils.h"
+#include "common/time_utils.h"
 #include "common/defaults.h"
 
 /**
@@ -25,8 +25,6 @@ class StepperMotor: public FOCMotor
       @param pp  pole pair number - cpr counts per rotation number (cpm=ppm*4)
     */
     StepperMotor(int pp);
-    
-
 
     /**
      * Function linking a motor and a foc driver 

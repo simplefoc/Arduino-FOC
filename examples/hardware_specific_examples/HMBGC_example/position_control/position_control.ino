@@ -17,8 +17,9 @@
 #include <PciListenerImp.h>
 
 
-// motor instance
-BLDCMotor motor = BLDCMotor(9, 10, 11, 11);
+// BLDC motor & driver instance
+BLDCMotor motor = BLDCMotor(11);
+BLDCDriver3PWM driver = BLDCDriver3PWM(9, 10, 11);
 
 // encoder instance
 Encoder encoder = Encoder(A0, A1, 2048);
@@ -41,9 +42,14 @@ void setup() {
   PciManager.registerListener(&listenerB);
   // link the motor to the sensor
   motor.linkSensor(&encoder);
-
+  
+  // driver config
   // power supply voltage [V]
-  motor.voltage_power_supply = 12;
+  driver.voltage_power_supply = 12;
+  driver.init();
+  // link the motor and the driver
+  motor.linkDriver(&driver);
+
   // aligning voltage [V]
   motor.voltage_sensor_align = 3;
   // index search velocity [rad/s]

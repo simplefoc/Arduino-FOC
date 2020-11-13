@@ -1,10 +1,11 @@
 #ifndef STEPPER_DRIVER_4PWM_h
 #define STEPPER_DRIVER_4PWM_h
 
-#include "common/interfaces/StepperDriver.h"
-#include "common/foc_utils.h"
-#include "common/hardware_utils.h"
-#include "common/defaults.h"
+#include "../common/base_classes/StepperDriver.h"
+#include "../common/foc_utils.h"
+#include "../common/time_utils.h"
+#include "../common/defaults.h"
+#include "hardware_api.h"
 
 /**
  4 pwm stepper driver class
@@ -24,7 +25,7 @@ class StepperDriver4PWM: public StepperDriver
     StepperDriver4PWM(int ph1A,int ph1B,int ph2A,int ph2B, int en1 = NOT_SET, int en2 = NOT_SET);
     
     /**  Motor hardware init function */
-  	void init() override;
+  	int init() override;
     /** Motor disable function */
   	void disable() override;
     /** Motor enable function */

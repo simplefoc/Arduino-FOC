@@ -1,11 +1,11 @@
-#ifndef BLDCDRIVER_H
-#define BLDCDRIVER_H
+#ifndef STEPPERDRIVER_H
+#define STEPPERDRIVER_H
 
-class BLDCDriver{
+class StepperDriver{
     public:
         
         /** Initialise hardware */
-        virtual void init();
+        virtual int init();
         /** Enable hardware */
         virtual void enable();
         /** Disable hardware */
@@ -18,11 +18,10 @@ class BLDCDriver{
         /** 
          * Set phase voltages to the harware 
          * 
-         * @param Ua - phase A voltage
-         * @param Ub - phase B voltage
-         * @param Uc - phase C voltage
+         * @param Ua phase A voltage
+         * @param Ub phase B voltage
         */
-        virtual void setPwm(float Ua, float Ub, float Uc);
+        virtual void setPwm(float Ua, float Ub);
 };
 
 #endif

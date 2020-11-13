@@ -21,7 +21,6 @@
 #define _2PI 6.28318530718
 #define _3PI_2 4.71238898038
 
-
 #define NOT_SET -12345.0
 
 /**
