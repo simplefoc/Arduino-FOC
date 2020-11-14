@@ -16,6 +16,7 @@ Therefore this is an attempt to:
   <ul>
     <li>Arduino UNO</li>
     <li>stm32 boards</li>
+    <li>esp32 boards</li>
   </ul>
 </li>
 <li>BLDC driver code separated
