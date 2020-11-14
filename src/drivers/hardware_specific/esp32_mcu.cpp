@@ -323,7 +323,7 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
   mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM2A, pinC_h);
   mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM2B, pinC_l); 
   // configure the timer
-  _configureTimerFrequency6PWM(pwm_frequency, m_slot.mcpwm_num,  m_slot.mcpwm_unit);
+  _configureTimerFrequency6PWM(pwm_frequency, 0,  0);
   // return 
   return 0;
 }
