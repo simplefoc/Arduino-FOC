@@ -5,7 +5,6 @@
 #include "driver/mcpwm.h"
 #include "soc/mcpwm_reg.h"
 #include "soc/mcpwm_struct.h"
-#include "wiring_private.h" // pinPeripheral() function
 
 // empty motor slot 
 #define _EMPTY_SLOT -20
@@ -320,6 +319,12 @@ void _configureTimerFrequency6PWM(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  m
   MCPWM0.timer[0].sync.out_sel = 1;
   delayMicroseconds(1000);
   MCPWM0.timer[0].sync.out_sel = 0;
+  mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, 50);
+  mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B, 50);
+  mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_A, 50);
+  mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_B, 50);
+  mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_A, 50);
+  mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_B, 50);
 }
 
 
