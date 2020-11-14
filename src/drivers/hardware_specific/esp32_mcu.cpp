@@ -5,6 +5,7 @@
 #include "driver/mcpwm.h"
 #include "soc/mcpwm_reg.h"
 #include "soc/mcpwm_struct.h"
+#include "wiring_private.h" // pinPeripheral() function
 
 // empty motor slot 
 #define _EMPTY_SLOT -20
@@ -343,12 +344,12 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, i
       // mcpwm_set_duty(esp32_bldc_6pwm_motor_slots[i].mcpwm_unit, MCPWM_TIMER_1, MCPWM_OPR_B, dc_b*100.0);
       // mcpwm_set_duty(esp32_bldc_6pwm_motor_slots[i].mcpwm_unit, MCPWM_TIMER_2, MCPWM_OPR_A, dc_c*100.0);
       // mcpwm_set_duty(esp32_bldc_6pwm_motor_slots[i].mcpwm_unit, MCPWM_TIMER_2, MCPWM_OPR_B, dc_c*100.0);
-      mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, dc_a*100.0);
-      mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B, dc_a*100.0);
-      mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_A, dc_b*100.0);
-      mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_B, dc_b*100.0);
-      mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_A, dc_c*100.0);
-      mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_B, dc_c*100.0);
+      mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, 50);
+      mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B, 50);
+      mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_A, 50);
+      mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_B, 50);
+      mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_A, 50);
+      mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_B, 50);
   //     break;
   //   }
   // }
