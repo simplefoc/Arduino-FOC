@@ -243,45 +243,50 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, in
 // - hardware specific
 int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
   
-  if(!pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = 40000; // default frequency 20khz - centered pwm has twice lower frequency
-  else pwm_frequency = _constrain(2*pwm_frequency, 0, 60000); // constrain to 30kHz max - centered pwm has twice lower frequency
-  bldc_6pwm_motor_slots_t m_slot = {};
-  // determine which motor are we connecting
-  // and set the appropriate configuration parameters 
-  int slot_num;
-  for(slot_num = 0; slot_num < 2; slot_num++){
-    if(esp32_bldc_6pwm_motor_slots[slot_num].pinAH == _EMPTY_SLOT){ // put the new motor in the first empty slot
-      esp32_bldc_6pwm_motor_slots[slot_num].pinAH = pinA_h;
-      m_slot = esp32_bldc_6pwm_motor_slots[slot_num];
-      break;
-    }
-  }
-  // if no slots available
-  if(!m_slot.mcpwm_unit) return -1;
+  // if(!pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = 40000; // default frequency 20khz - centered pwm has twice lower frequency
+  // else pwm_frequency = _constrain(2*pwm_frequency, 0, 60000); // constrain to 30kHz max - centered pwm has twice lower frequency
+  // bldc_6pwm_motor_slots_t m_slot = {};
+  // // determine which motor are we connecting
+  // // and set the appropriate configuration parameters 
+  // int slot_num;
+  // for(slot_num = 0; slot_num < 2; slot_num++){
+  //   if(esp32_bldc_6pwm_motor_slots[slot_num].pinAH == _EMPTY_SLOT){ // put the new motor in the first empty slot
+  //     esp32_bldc_6pwm_motor_slots[slot_num].pinAH = pinA_h;
+  //     m_slot = esp32_bldc_6pwm_motor_slots[slot_num];
+  //     break;
+  //   }
+  // }
+  // // if no slots available
+  // if(!m_slot.mcpwm_unit) return -1;
 
-  // disable all the slots with the same MCPWM 
-  if( slot_num == 0 ){
-    // slots 0 and 1 of the 3pwm bldc
-    esp32_bldc_3pwm_motor_slots[0].pinA = _TAKEN_SLOT;
-    esp32_bldc_3pwm_motor_slots[1].pinA = _TAKEN_SLOT;
-    // slot 0 of the 6pwm bldc
-    esp32_stepper_motor_slots[0].pin1A = _TAKEN_SLOT;
-  }else{
-    // slots 2 and 3 of the 3pwm bldc
-    esp32_bldc_3pwm_motor_slots[2].pinA = _TAKEN_SLOT;
-    esp32_bldc_3pwm_motor_slots[3].pinA = _TAKEN_SLOT;
-    // slot 1 of the 6pwm bldc
-    esp32_stepper_motor_slots[1].pin1A = _TAKEN_SLOT;
-  } 
+  // // disable all the slots with the same MCPWM 
+  // if( slot_num == 0 ){
+  //   // slots 0 and 1 of the 3pwm bldc
+  //   esp32_bldc_3pwm_motor_slots[0].pinA = _TAKEN_SLOT;
+  //   esp32_bldc_3pwm_motor_slots[1].pinA = _TAKEN_SLOT;
+  //   // slot 0 of the 6pwm bldc
+  //   esp32_stepper_motor_slots[0].pin1A = _TAKEN_SLOT;
+  // }else{
+  //   // slots 2 and 3 of the 3pwm bldc
+  //   esp32_bldc_3pwm_motor_slots[2].pinA = _TAKEN_SLOT;
+  //   esp32_bldc_3pwm_motor_slots[3].pinA = _TAKEN_SLOT;
+  //   // slot 1 of the 6pwm bldc
+  //   esp32_stepper_motor_slots[1].pin1A = _TAKEN_SLOT;
+  // } 
 
-  // configure pins
-  mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_ah, pinA_h);
-  mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_al, pinA_l);
-  mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_bh, pinB_h);
-  mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_bl, pinB_l);
-  mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_ch, pinC_h);
-  mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_cl, pinC_l);
-
+  // // configure pins
+  // mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_ah, pinA_h);
+  // mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_al, pinA_l);
+  // mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_bh, pinB_h);
+  // mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_bl, pinB_l);
+  // mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_ch, pinC_h);
+  // mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_cl, pinC_l);
+  mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, pinA_h);
+  mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0B, pinA_l);
+  mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM1A, pinB_h);
+  mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM1B, pinB_l);
+  mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM2A, pinC_h);
+  mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM2B, pinC_l); 
   // configure the timer
   _configureTimerFrequency6PWM(pwm_frequency, m_slot.mcpwm_num,  m_slot.mcpwm_unit);
   // return 
