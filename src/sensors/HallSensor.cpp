@@ -6,27 +6,15 @@
   - hallA, hallB, hallC    - HallSensor A, B and C pins
   - pp           - pole pairs
 */
-
 HallSensor::HallSensor(int _hallA, int _hallB, int _hallC, int _pp){
   
-  // HallSensor measurement structure init
   // hardware pins
   pinA = _hallA;
   pinB = _hallB;
   pinC = _hallC;
-  // counter setup
-  pulse_counter = 0;
-  pulse_timestamp = 0;
 
-  cpr = _pp * 6; // hall has 6 segments per electrical revolution
-  A_active = 0;
-  B_active = 0;
-  C_active = 0;
-
-  // velocity calculation variables
-
-  prev_pulse_counter = 0;
-  prev_timestamp_us = _micros();
+  // hall has 6 segments per electrical revolution
+  cpr = _pp * 6; 
 
   // extern pullup as default
   pullup = Pullup::EXTERN;
@@ -50,82 +38,61 @@ void HallSensor::handleC() {
   updateState();
 }
 
+/**
+ * Updates the state and sector following an interrupt
+ */ 
 void HallSensor::updateState() {
-  int newState = C_active + (B_active << 1) + (A_active << 2);
-  Direction direction = decodeDirection(state, newState); 
-  state = newState;
-  
-  pulse_counter += direction; 
-  pulse_timestamp = _micros();
+  long new_pulse_timestamp = _micros();
+  hall_state = C_active + (B_active << 1) + (A_active << 2);
+  int8_t new_electric_sector = ELECTRIC_SECTORS[hall_state];
+  if (new_electric_sector - electric_sector > 3) {
+    //underflow
+    direction = static_cast<Direction>(natural_direction * -1);
+    electric_rotations += direction;
+  } else if (new_electric_sector - electric_sector < (-3)) {
+    //overflow
+    direction = static_cast<Direction>(natural_direction);
+    electric_rotations += direction;
+  } else {
+    direction = (new_electric_sector > electric_sector)? static_cast<Direction>(natural_direction) : static_cast<Direction>(natural_direction * (-1));
+  }
+  electric_sector = new_electric_sector;
+  pulse_diff = new_pulse_timestamp - pulse_timestamp;
+  pulse_timestamp = new_pulse_timestamp;
+  total_interrupts++;
+  if (onSectorChange != nullptr) onSectorChange(electric_sector);
 }
 
-// determines whether the hallsensr state transition means that it has moved one step CW (+1), CCW (-1) or state transition is invalid (0)
-// states are 3bits, one for each hall sensor
-Direction HallSensor::decodeDirection(int oldState, int newState)
-{
-  // here are expected state transitions (oldState > newState).
-  // CW state transitions are:  ( 6 > 2 > 3 > 1 > 5 > 4 > 6 )
-  // CCW state transitions are: ( 6 > 4 > 5 > 1 > 3 > 2 > 6 )
-  // invalid state transitions are oldState == newState or if newState or oldState == 0 | 7 as hallsensors can't be all on or all off
-
-  int rawDirection;
-  
-  if (
-      (oldState == 6 && newState == 2) || \
-      (oldState == 2 && newState == 3) || \
-      (oldState == 3 && newState == 1) || \
-      (oldState == 1 && newState == 5) || \
-      (oldState == 5 && newState == 4) || \
-      (oldState == 4 && newState == 6) 
-    ) {
-    rawDirection = Direction::CW;
-  } else if(
-      (oldState == 6 && newState == 4) || \
-      (oldState == 4 && newState == 5) || \
-      (oldState == 5 && newState == 1) || \
-      (oldState == 1 && newState == 3) || \
-      (oldState == 3 && newState == 2) || \
-      (oldState == 2 && newState == 6) 
-  ) {
-    rawDirection = Direction::CCW;
-  } else {
-    rawDirection = Direction::UNKNOWN;
-  }
-
-  direction = static_cast<Direction>(rawDirection * natural_direction);
-  return direction; // * goofy;
+/**
+ * Optionally set a function callback to be fired when sector changes
+ * void onSectorChange(int sector) {
+ *  ... // for debug or call driver directly?
+ * }
+ * sensor.attachSectorCallback(onSectorChange);
+ */ 
+void HallSensor::attachSectorCallback(void (*_onSectorChange)(int sector)) {
+  onSectorChange = _onSectorChange;
 }
 
 /*
 	Shaft angle calculation
 */
-float HallSensor::getAngle(){
-  
-  long dN = pulse_counter - prev_pulse_counter;
-
-  if (dN != 0)
-  {
-    
-    // time from last impulse
-    float Th = (pulse_timestamp - prev_timestamp_us) * 1e-6;
-    if (Th <= 0 || Th > 0.5)
-      Th = 1e-3;
-    // save variables for next pass
-    prev_timestamp_us = pulse_timestamp;
-    prev_pulse_counter = pulse_counter;
-    velocity = (float) _2PI * dN / (cpr * Th);
-  }
-  angle = (float) _2PI * pulse_counter /  cpr;
-
-  return angle;
+float HallSensor::getAngle() {
+  return natural_direction * ((electric_rotations * 6 + electric_sector) / cpr) * _2PI;
 }
+
 /*
   Shaft velocity calculation
   function using mixed time and frequency measurement technique
 */
 float HallSensor::getVelocity(){
-  // this is calculated during the last call to getAngle();
-  return velocity;
+
+  if (pulse_diff == 0 || ((_micros() - pulse_timestamp) > STALE_HALL_DATA_MICROS) ) { // last velocity isn't accurate if too old
+    return 0;
+  } else {
+    return direction * (_2PI / cpr) / (pulse_diff / 1000000.0);
+  }
+
 }
 
 // getter for index pin
@@ -133,21 +100,27 @@ float HallSensor::getVelocity(){
 int HallSensor::needsAbsoluteZeroSearch(){
   return 0;
 }
-// getter for index pin
+
 int HallSensor::hasAbsoluteZero(){
-  return 0;
+  return 1;
 }
-// initialize counter to zero
+
+// set current angle as zero angle 
+// return the angle [rad] difference
 float HallSensor::initRelativeZero(){
-  
-  pulse_counter = 0;
-  pulse_timestamp = _micros();
-  velocity = 0;
-  return 0.0;
+
+  // nothing to do.  The interrupts should have changed sector.
+  electric_rotations = 0;
+  return 0;
+
 }
-// initialize index to zero
+
+// set absolute zero angle as zero angle
+// return the angle [rad] difference
 float HallSensor::initAbsoluteZero(){
-  return 0.0;
+
+  return -getAngle();
+  
 }
 
 // HallSensor initialisation of the hardware pins 
@@ -164,12 +137,14 @@ void HallSensor::init(){
     pinMode(pinB, INPUT);
     pinMode(pinC, INPUT);
   }
+
+    // init hall_state
+  A_active= digitalRead(pinA);
+  B_active = digitalRead(pinB);
+  C_active = digitalRead(pinC);
+  updateState();
   
-  // counter setup
-  pulse_counter = 0;
   pulse_timestamp = _micros();
-  prev_pulse_counter = 0;
-  prev_timestamp_us = _micros();
 
 }
 
