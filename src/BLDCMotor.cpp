@@ -224,6 +224,9 @@ void BLDCMotor::move(float new_target) {
 // regular sin + cos ~300us    (no memory usaage)
 // approx  _sin + _cos ~110us  (400Byte ~ 20% of memory)
 void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
+
+  const bool centered = true;
+
   switch (foc_modulation)
   {
     case FOCModulationType::SinePWM :
@@ -241,6 +244,14 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
       Ua = Ualpha + driver->voltage_power_supply/2;
       Ub = -0.5 * Ualpha  + _SQRT3_2 * Ubeta + driver->voltage_power_supply/2;
       Uc = -0.5 * Ualpha - _SQRT3_2 * Ubeta + driver->voltage_power_supply/2;
+
+      if (!centered) {
+        float Umin = min(Ua, min(Ub, Uc));
+        Ua -=Umin;
+        Ub -=Umin;
+        Uc -=Umin;
+      }
+
       break;
 
     case FOCModulationType::SpaceVectorPWM :
@@ -262,10 +273,10 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
       float T1 = _SQRT3*_sin(sector*_PI_3 - angle_el) * Uq/driver->voltage_power_supply;
       float T2 = _SQRT3*_sin(angle_el - (sector-1.0)*_PI_3) * Uq/driver->voltage_power_supply;
       // two versions possible 
-      // centered around driver->voltage_power_supply/2
-      float T0 = 1 - T1 - T2;
-      // pulled to 0 - better for low power supply voltage
-      //float T0 = 0;
+      float T0 = 0; // pulled to 0 - better for low power supply voltage
+      if (centered) { 
+        T0 = 1 - T1 - T2; //centered around driver->voltage_power_supply/2
+      } 
 
       // calculate the duty cycles(times)
       float Ta,Tb,Tc; 
@@ -312,6 +323,46 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
       Ub = Tb*driver->voltage_power_supply;
       Uc = Tc*driver->voltage_power_supply;
       break;
+
+    case FOCModulationType::Trapezoid_120 :
+      // see https://www.youtube.com/watch?v=InzXA7mWBWE Slide 5
+      static int trap_120_map[6][3] = {
+        {0,1,-1},{-1,1,0},{-1,0,1},{0,-1,1},{1,-1,0},{1,0,-1} // each is 60 degrees with values for 3 phases of 1=positive -1=negative 0=high-z
+      };
+      static int trap_120_state = 0;
+      trap_120_state = 6 * (_normalizeAngle(angle_el + PI/6.0 + zero_electric_angle) / _2PI); // adding PI/6 to align with other modes
+
+      Ua = Uq + trap_120_map[trap_120_state][0] * Uq;
+      Ub = Uq + trap_120_map[trap_120_state][1] * Uq;
+      Uc = Uq + trap_120_map[trap_120_state][2] * Uq;
+
+      if (centered) {
+        Ua += (voltage_power_supply)/2 -Uq;
+        Ub += (voltage_power_supply)/2 -Uq;
+        Uc += (voltage_power_supply)/2 -Uq;
+      }
+    break;
+
+    case FOCModulationType::Trapezoid_150 :
+      // see https://www.youtube.com/watch?v=InzXA7mWBWE Slide 8
+      static int trap_150_map[12][3] = {
+        {0,1,-1},{-1,1,-1},{-1,1,0},{-1,1,1},{-1,0,1},{-1,-1,1},{0,-1,1},{1,-1,1},{1,-1,0},{1,-1,-1},{1,0,-1},{1,1,-1} // each is 30 degrees with values for 3 phases of 1=positive -1=negative 0=high-z
+      };
+      static int trap_150_state = 0;
+      trap_150_state = 12 * (_normalizeAngle(angle_el + PI/6.0 + zero_electric_angle) / _2PI); // adding PI/6 to align with other modes
+      
+      Ua = Uq + trap_150_map[trap_150_state][0] * Uq;
+      Ub = Uq + trap_150_map[trap_150_state][1] * Uq;
+      Uc = Uq + trap_150_map[trap_150_state][2] * Uq;
+
+      //center
+      if (centered) {
+        Ua += (voltage_power_supply)/2 -Uq;
+        Ub += (voltage_power_supply)/2 -Uq;
+        Uc += (voltage_power_supply)/2 -Uq;
+      }
+
+    break;
   }
   
   // set the voltages in driver
