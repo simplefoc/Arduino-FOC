@@ -181,16 +181,16 @@ You can find more details in the [SimpleFOC documentation](https://docs.simplefo
 Here are some of the *Simple**FOC**library* and *Simple**FOC**Shield* application examples. 
 <p align="center">
 <a href="https://youtu.be/Ih-izQyXJCI">
-<img src="https://docs.simplefoc.com/extras/Images/youtube_pendulum.png"  height="250px" >
+<img src="https://docs.simplefoc.com/extras/Images/youtube_pendulum.png"  height="200px" >
 </a>
 <a href="https://youtu.be/xTlv1rPEqv4">
-<img src="https://docs.simplefoc.com/extras/Images/youtube_haptic.png"  height="250px" >
+<img src="https://docs.simplefoc.com/extras/Images/youtube_haptic.png"  height="200px" >
 </a>
 <a href="https://youtu.be/RI4nNMF608I">
-<img src="https://docs.simplefoc.com/extras/Images/youtube_drv8302.png"  height="250px" >
+<img src="https://docs.simplefoc.com/extras/Images/youtube_drv8302.png"  height="200px" >
 </a>
 <a href="https://youtu.be/zcb86TRxTxc">
-<img src="https://docs.simplefoc.com/extras/Images/youtube_stepper.png"  height="250px" >
+<img src="https://docs.simplefoc.com/extras/Images/youtube_stepper.png"  height="200px" >
 </a>
 </p>
 
