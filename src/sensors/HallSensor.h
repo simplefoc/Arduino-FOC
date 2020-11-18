@@ -6,6 +6,12 @@
 #include "../common/foc_utils.h"
 #include "../common/time_utils.h"
 
+#ifndef STALE_HALL_DATA_MICROS
+  #define STALE_HALL_DATA_MICROS 500000
+#endif
+
+// seq 1 > 5 > 4 > 6 > 2 > 3 > 1     000 001 010 011 100 101 110 111
+const int8_t ELECTRIC_SECTORS[8] = { -1,  0,  4,  5,  2,  1,  3 , -1 };
 
 class HallSensor: public Sensor{
  public:
@@ -81,26 +87,32 @@ class HallSensor: public Sensor{
     // whether last step was CW (+1) or CCW (-1) direction
     Direction direction;
 
-    // the current 3bit state of the hall sensors
-    int state;
+    void attachSectorCallback(void (*onSectorChange)(int a) = nullptr);
 
-    volatile float angle; // rad/s
-    volatile float velocity; // rad/s
+    // the current 3bit state of the hall sensors
+    volatile int8_t hall_state;
+    // the current sector of the sensor. Each sector is 60deg electrical
+    volatile int8_t electric_sector;
+    // the number of electric rotations
+    volatile long electric_rotations;
+    // this is sometimes useful to identify interrupt issues (e.g. weak or no pullup resulting in 1000s of interrupts)
+    volatile long total_interrupts; 
 
   private:
     
     Direction decodeDirection(int oldState, int newState);
     void updateState();
 
-    volatile long pulse_counter;//!< current pulse counter
+    int zero_offset;
     volatile long pulse_timestamp;//!< last impulse timestamp in us
     volatile int A_active; //!< current active states of A channel
     volatile int B_active; //!< current active states of B channel
     volatile int C_active; //!< current active states of C channel
 
-    // velocity calculation variables
-    // float prev_Th, pulse_per_second;
-    volatile long prev_pulse_counter, prev_timestamp_us;
+    // function pointer for on sector change call back
+    void (*onSectorChange)(int sector) = nullptr;
+
+    volatile long pulse_diff;
     
 };
 
