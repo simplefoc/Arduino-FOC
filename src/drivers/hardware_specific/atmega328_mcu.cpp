@@ -66,7 +66,7 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, in
 
 
 // function configuring pair of high-low side pwm channels, 32khz frequency and center aligned pwm
-int _configurePair(int pinH, int pinL) {
+int _configureComplementaryPair(int pinH, int pinL) {
   if( (pinH == 5 && pinL == 6 ) || (pinH == 6 && pinL == 5 ) ){
     // configure the pwm phase-corrected mode
     TCCR0A = ((TCCR0A & 0b11111100) | 0x01);
@@ -101,9 +101,9 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
   //  High PWM frequency
   // - always max 32kHz
   int ret_flag = 0;
-  ret_flag += _configurePair(pinA_h, pinA_l);
-  ret_flag += _configurePair(pinB_h, pinB_l);
-  ret_flag += _configurePair(pinC_h, pinC_l);
+  ret_flag += _configureComplementaryPair(pinA_h, pinA_l);
+  ret_flag += _configureComplementaryPair(pinB_h, pinB_l);
+  ret_flag += _configureComplementaryPair(pinC_h, pinC_l);
   return ret_flag; // returns -1 if not well configured
 }
 

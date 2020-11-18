@@ -69,9 +69,9 @@ void BLDCDriver6PWM::setPwm(float Ua, float Ub, float Uc) {
   Uc = _constrain(Uc, -voltage_limit, voltage_limit);    
   // calculate duty cycle
   // limited in [0,1]
-  float dc_a = _constrain(Ua / voltage_power_supply, 0 , 1 );
-  float dc_b = _constrain(Ub / voltage_power_supply, 0 , 1 );
-  float dc_c = _constrain(Uc / voltage_power_supply, 0 , 1 );
+  float dc_a = _constrain(Ua / voltage_power_supply, 0.0 , 1.0 );
+  float dc_b = _constrain(Ub / voltage_power_supply, 0.0 , 1.0 );
+  float dc_c = _constrain(Uc / voltage_power_supply, 0.0 , 1.0 );
   // hardware specific writing
   // hardware specific function - depending on driver and mcu
   _writeDutyCycle6PWM(dc_a, dc_b, dc_c, dead_zone, pwmA_h,pwmA_l, pwmB_h,pwmB_l, pwmC_h,pwmC_l);
