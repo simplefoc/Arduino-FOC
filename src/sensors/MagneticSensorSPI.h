@@ -38,7 +38,7 @@ class MagneticSensorSPI: public Sensor{
     MagneticSensorSPI(MagneticSensorSPIConfig_s config, int cs);
 
     /** sensor initialise pins */
-    void init();
+    void init(SPIClass* _spi = &SPI);
 
     // implementation of abstract functions of the Sensor class
     /** get current angle (rad) */
@@ -103,6 +103,7 @@ class MagneticSensorSPI: public Sensor{
     int command_rw_bit; //!< the bit where read/write flag is stored in command
     int data_start_bit; //!< the the position of first bit
 
+    SPIClass* spi;
 };
 
 
