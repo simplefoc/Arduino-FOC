@@ -5,13 +5,10 @@
  */
 FOCMotor::FOCMotor()
 {
-  // Power supply voltage
-  voltage_power_supply = DEF_POWER_SUPPLY;
-
   // maximum angular velocity to be used for positioning 
   velocity_limit = DEF_VEL_LIM;
   // maximum voltage to be set to the motor
-  voltage_limit = voltage_power_supply;
+  voltage_limit = DEF_POWER_SUPPLY;
 
   // index search velocity
   velocity_index_search = DEF_INDEX_SEARCH_TARGET_VELOCITY;
@@ -26,6 +23,8 @@ FOCMotor::FOCMotor()
 
   // default target value
   target = 0;
+  voltage_d = 0;
+  voltage_q = 0;
   
   //monitor_port 
   monitor_port = nullptr;

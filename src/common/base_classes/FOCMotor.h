@@ -103,9 +103,9 @@ class FOCMotor
     float shaft_velocity_sp;//!< current target velocity
     float shaft_angle_sp;//!< current target angle
     float voltage_q;//!< current voltage u_q set
+    float voltage_d;//!< current voltage u_d set
 
     // motor configuration parameters
-    float voltage_power_supply;//!< Power supply voltage
     float voltage_sensor_align;//!< sensor and motor align voltage parameter
     float velocity_index_search;//!< target velocity for index search 
     int pole_pairs;//!< Motor pole pairs number
