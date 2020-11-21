@@ -33,7 +33,7 @@ void BLDCMotor::linkDriver(BLDCDriver* _driver) {
 void BLDCMotor::init() {
   if(monitor_port) monitor_port->println("MOT: Initialise variables.");
   // sanity check for the voltage limit configuration
-  if(voltage_limit > driver->voltage_power_supply) voltage_limit =  driver->voltage_power_supply;
+  if(voltage_limit > driver->voltage_limit) voltage_limit =  driver->voltage_limit;
   // constrain voltage for sensor alignment
   if(voltage_sensor_align > voltage_limit) voltage_sensor_align = voltage_limit;
   // update the controller limits
@@ -98,13 +98,13 @@ int BLDCMotor::alignSensor() {
   float start_angle = shaftAngle();
   for (int i = 0; i <=5; i++ ) {
     float angle = _3PI_2 + _2PI * i / 6.0;
-    setPhaseVoltage(voltage_sensor_align,  angle);
+    setPhaseVoltage(voltage_sensor_align, 0,  angle);
     _delay(200);
   }
   float mid_angle = shaftAngle();
   for (int i = 5; i >=0; i-- ) {
     float angle = _3PI_2 + _2PI * i / 6.0;
-    setPhaseVoltage(voltage_sensor_align,  angle);
+    setPhaseVoltage(voltage_sensor_align, 0,  angle);
     _delay(200);
   }
   if (mid_angle < start_angle) {
@@ -119,7 +119,7 @@ int BLDCMotor::alignSensor() {
   // set sensor to zero
   sensor->initRelativeZero();
   _delay(500);
-  setPhaseVoltage(0,0);
+  setPhaseVoltage(0, 0, 0);
   _delay(200);
 
   // find the index if available
@@ -151,7 +151,7 @@ int BLDCMotor::absoluteZeroAlign() {
   }
   voltage_q = 0;
   // disable motor
-  setPhaseVoltage(0,0);
+  setPhaseVoltage(0, 0, 0);
 
   // align absolute zero if it has been found
   if(!sensor->needsAbsoluteZeroSearch()){
@@ -170,7 +170,7 @@ void BLDCMotor::loopFOC() {
   // shaft angle 
   shaft_angle = shaftAngle();
   // set the phase voltage - FOC heart function :) 
-  setPhaseVoltage(voltage_q, _electricalAngle(shaft_angle,pole_pairs));
+  setPhaseVoltage(voltage_q, voltage_d, _electricalAngle(shaft_angle,pole_pairs));
 }
 
 // Iterative function running outer loop of the FOC algorithm
@@ -217,16 +217,17 @@ void BLDCMotor::move(float new_target) {
 }
 
 
-// Method using FOC to set Uq to the motor at the optimal angle
+// Method using FOC to set Uq and Ud to the motor at the optimal angle
 // Function implementing Space Vector PWM and Sine PWM algorithms
 // 
 // Function using sine approximation
 // regular sin + cos ~300us    (no memory usaage)
 // approx  _sin + _cos ~110us  (400Byte ~ 20% of memory)
-void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
+void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
 
   const bool centered = true;
   int sector;
+  float _ca,_sa;
 
   switch (foc_modulation)
   {
@@ -243,9 +244,9 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
       Uc = Uq + trap_120_map[sector][2] * Uq;
 
       if (centered) {
-        Ua += (voltage_power_supply)/2 -Uq;
-        Ub += (voltage_power_supply)/2 -Uq;
-        Uc += (voltage_power_supply)/2 -Uq;
+        Ua += (driver->voltage_limit)/2 -Uq;
+        Ub += (driver->voltage_limit)/2 -Uq;
+        Uc += (driver->voltage_limit)/2 -Uq;
       }
     break;
 
@@ -263,9 +264,9 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
 
       //center
       if (centered) {
-        Ua += (voltage_power_supply)/2 -Uq;
-        Ub += (voltage_power_supply)/2 -Uq;
-        Uc += (voltage_power_supply)/2 -Uq;
+        Ua += (driver->voltage_limit)/2 -Uq;
+        Ub += (driver->voltage_limit)/2 -Uq;
+        Uc += (driver->voltage_limit)/2 -Uq;
       }
 
     break;
@@ -277,20 +278,22 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
       // angle normalization in between 0 and 2pi
       // only necessary if using _sin and _cos - approximation functions
       angle_el = _normalizeAngle(angle_el + zero_electric_angle);
+      _ca = _cos(angle_el);
+      _sa = _sin(angle_el);
       // Inverse park transform
-      Ualpha =  -_sin(angle_el) * Uq;  // -sin(angle) * Uq;
-      Ubeta =  _cos(angle_el) * Uq;    //  cos(angle) * Uq;
+      Ualpha =  _ca * Ud - _sa * Uq;  // -sin(angle) * Uq;
+      Ubeta =  _sa * Ud + _ca * Uq;    //  cos(angle) * Uq;
 
       // Clarke transform
-      Ua = Ualpha + driver->voltage_power_supply/2;
-      Ub = -0.5 * Ualpha  + _SQRT3_2 * Ubeta + driver->voltage_power_supply/2;
-      Uc = -0.5 * Ualpha - _SQRT3_2 * Ubeta + driver->voltage_power_supply/2;
+      Ua = Ualpha + driver->voltage_limit/2;
+      Ub = -0.5 * Ualpha  + _SQRT3_2 * Ubeta + driver->voltage_limit/2;
+      Uc = -0.5 * Ualpha - _SQRT3_2 * Ubeta + driver->voltage_limit/2;
 
       if (!centered) {
         float Umin = min(Ua, min(Ub, Uc));
-        Ua -=Umin;
-        Ub -=Umin;
-        Uc -=Umin;
+        Ua -= Umin;
+        Ub -= Umin;
+        Uc -= Umin;
       }
 
       break;
@@ -311,12 +314,12 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
       // find the sector we are in currently
       sector = floor(angle_el / _PI_3) + 1;
       // calculate the duty cycles
-      float T1 = _SQRT3*_sin(sector*_PI_3 - angle_el) * Uq/driver->voltage_power_supply;
-      float T2 = _SQRT3*_sin(angle_el - (sector-1.0)*_PI_3) * Uq/driver->voltage_power_supply;
+      float T1 = _SQRT3*_sin(sector*_PI_3 - angle_el) * Uq/driver->voltage_limit;
+      float T2 = _SQRT3*_sin(angle_el - (sector-1.0)*_PI_3) * Uq/driver->voltage_limit;
       // two versions possible 
       float T0 = 0; // pulled to 0 - better for low power supply voltage
       if (centered) { 
-        T0 = 1 - T1 - T2; //centered around driver->voltage_power_supply/2
+        T0 = 1 - T1 - T2; //centered around driver->voltage_limit/2
       } 
 
       // calculate the duty cycles(times)
@@ -360,9 +363,9 @@ void BLDCMotor::setPhaseVoltage(float Uq, float angle_el) {
       }
 
       // calculate the phase voltages and center
-      Ua = Ta*driver->voltage_power_supply;
-      Ub = Tb*driver->voltage_power_supply;
-      Uc = Tc*driver->voltage_power_supply;
+      Ua = Ta*driver->voltage_limit;
+      Ub = Tb*driver->voltage_limit;
+      Uc = Tc*driver->voltage_limit;
       break;
 
   }
@@ -386,7 +389,7 @@ void BLDCMotor::velocityOpenloop(float target_velocity){
   shaft_angle += target_velocity*Ts; 
 
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
-  setPhaseVoltage(voltage_limit, _electricalAngle(shaft_angle, pole_pairs));
+  setPhaseVoltage(voltage_limit,  0, _electricalAngle(shaft_angle, pole_pairs));
 
   // save timestamp for next call
   open_loop_timestamp = now_us;
@@ -409,7 +412,7 @@ void BLDCMotor::angleOpenloop(float target_angle){
     shaft_angle = target_angle;
   
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
-  setPhaseVoltage(voltage_limit, _electricalAngle(shaft_angle, pole_pairs));
+  setPhaseVoltage(voltage_limit,  0, _electricalAngle(shaft_angle, pole_pairs));
 
   // save timestamp for next call
   open_loop_timestamp = now_us;

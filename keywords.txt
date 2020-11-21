@@ -62,6 +62,7 @@ angleOpenloop	KEYWORD2
 velocityOpenloop	KEYWORD2
 
 voltage_q	KEYWORD2
+voltage_d	KEYWORD2
 shaft_angle_sp	KEYWORD2
 shaft_velocity_sp	KEYWORD2
 shaft_angle	KEYWORD2

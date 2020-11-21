@@ -84,9 +84,10 @@ class StepperMotor: public FOCMotor
     * Heart of the FOC algorithm
     * 
     * @param Uq Current voltage in q axis to set to the motor
+    * @param Ud Current voltage in d axis to set to the motor
     * @param angle_el current electrical angle of the motor
     */
-    void setPhaseVoltage(float Uq, float angle_el);
+    void setPhaseVoltage(float Uq, float Ud , float angle_el);
 
     /** Sensor alignment to electrical 0 angle of the motor */
     int alignSensor();

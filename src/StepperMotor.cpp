@@ -24,7 +24,7 @@ void StepperMotor::init() {
   if(monitor_port) monitor_port->println("MOT: Init variables.");
   
   // sanity check for the voltage limit configuration
-  if(voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
+  if(voltage_limit > driver->voltage_limit) voltage_limit =  driver->voltage_limit;
   // constrain voltage for sensor alignment
   if(voltage_sensor_align > voltage_limit) voltage_sensor_align = voltage_limit;
   
@@ -91,13 +91,13 @@ int StepperMotor::alignSensor() {
   float start_angle = shaftAngle();
   for (int i = 0; i <=5; i++ ) {
     float angle = _3PI_2 + _2PI * i / 6.0;
-    setPhaseVoltage(voltage_sensor_align,  angle);
+    setPhaseVoltage(voltage_sensor_align, 0, angle);
     _delay(200);
   }
   float mid_angle = shaftAngle();
   for (int i = 5; i >=0; i-- ) {
     float angle = _3PI_2 + _2PI * i / 6.0;
-    setPhaseVoltage(voltage_sensor_align,  angle);
+    setPhaseVoltage(voltage_sensor_align, 0,  angle);
     _delay(200);
   }
   if (mid_angle < start_angle) {
@@ -112,7 +112,7 @@ int StepperMotor::alignSensor() {
   // set sensor to zero
   sensor->initRelativeZero();
   _delay(500);
-  setPhaseVoltage(0,0);
+  setPhaseVoltage(0, 0, 0);
   _delay(200);
 
   // find the index if available
@@ -143,8 +143,9 @@ int StepperMotor::absoluteZeroAlign() {
     voltage_q = PID_velocity(velocity_index_search - shaftVelocity());
   }
   voltage_q = 0;
+  voltage_d = 0;
   // disable motor
-  setPhaseVoltage(0,0);
+  setPhaseVoltage(0, 0, 0);
 
   // align absolute zero if it has been found
   if(!sensor->needsAbsoluteZeroSearch()){
@@ -163,7 +164,7 @@ void StepperMotor::loopFOC() {
   // shaft angle 
   shaft_angle = shaftAngle();
   // set the phase voltage - FOC heart function :) 
-  setPhaseVoltage(voltage_q, _electricalAngle(shaft_angle, pole_pairs));
+  setPhaseVoltage(voltage_q, voltage_d, _electricalAngle(shaft_angle, pole_pairs));
 }
 
 // Iterative function running outer loop of the FOC algorithm
@@ -210,36 +211,25 @@ void StepperMotor::move(float new_target) {
 }
 
 
-// Method using FOC to set Uq to the motor at the optimal angle
-// Function implementingSine PWM algorithms
+// Method using FOC to set Uq and Ud to the motor at the optimal angle
+// Function implementing Sine PWM algorithms
 // - space vector not implemented yet
 // 
 // Function using sine approximation
 // regular sin + cos ~300us    (no memory usaage)
 // approx  _sin + _cos ~110us  (400Byte ~ 20% of memory)
-void StepperMotor::setPhaseVoltage(float Uq, float angle_el) {
+void StepperMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
   // Sinusoidal PWM modulation 
   // Inverse Park transformation
 
   // angle normalization in between 0 and 2pi
   // only necessary if using _sin and _cos - approximation functions
-  angle_el = _normalizeAngle(angle_el + zero_electric_angle);
+  angle_el = _normalizeAngle(angle_el + zero_electric_angle); 
+  float _ca = _cos(angle_el);
+  float _sa = _sin(angle_el);
   // Inverse park transform
-  Ualpha =  -(_sin(angle_el)) * Uq;  // -sin(angle) * Uq;
-  Ubeta =  (_cos(angle_el)) * Uq;    //  cos(angle) * Uq;
-  // if (angle_el < _PI_2) {
-  //   Ualpha = 0;
-  //   Ubeta =  Uq;
-  // }else if (angle_el < _PI) {
-  //   Ualpha =- Uq;
-  //   Ubeta =  0;
-  // }else if (angle_el < _3PI_2) {
-  //   Ualpha = 0;
-  //   Ubeta =  -Uq;
-  // }else{
-  //   Ualpha = Uq;
-  //   Ubeta =  0;
-  // }
+  Ualpha =  _ca * Ud - _sa * Uq;  // -sin(angle) * Uq;
+  Ubeta =  _sa * Ud + _ca * Uq;    //  cos(angle) * Uq;
 
   // set the voltages in hardware
   driver->setPwm(Ualpha, Ubeta);
@@ -258,7 +248,7 @@ void StepperMotor::velocityOpenloop(float target_velocity){
   shaft_angle += target_velocity*Ts; 
 
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
-  setPhaseVoltage(voltage_limit, _electricalAngle(shaft_angle,pole_pairs));
+  setPhaseVoltage(voltage_limit, 0, _electricalAngle(shaft_angle,pole_pairs));
 
   // save timestamp for next call
   open_loop_timestamp = now_us;
@@ -281,7 +271,7 @@ void StepperMotor::angleOpenloop(float target_angle){
     shaft_angle = target_angle;
   
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
-  setPhaseVoltage(voltage_limit, _electricalAngle(shaft_angle,pole_pairs));
+  setPhaseVoltage(voltage_limit,  0, _electricalAngle(shaft_angle,pole_pairs));
 
   // save timestamp for next call
   open_loop_timestamp = now_us;
