@@ -19,7 +19,7 @@ Therefore this is an attempt to:
     <li>esp32 boards</li>
   </ul>
 </li>
-<li>BLDC driver code separated
+<li>BLDC driver code separated 
   <ul>
     <li> BLDC: 6pwm and 3pwm</li>
     <li> Stepper: 4pwm</li>
@@ -28,6 +28,12 @@ Therefore this is an attempt to:
   </ul>
 </li>
 <li>I2C and SPI sensors multiple busses support by <a href="https://github.com/owennewo">@owennewo</a>
+</li>
+<li>Initial implementation of Block commutation by <a href="https://github.com/owennewo">@owennewo</a>
+  <ul>
+    <li> FOCModulationType::Trapezoid_120</li>
+    <li> FOCModulationType::Trapezoid_150 </li>
+  </ul>
 </li>
 <li>Added support for separate setting of <i>U<sub>d</sub></i> and <i>U<sub>q</sub></i> setting. 
   <ul>

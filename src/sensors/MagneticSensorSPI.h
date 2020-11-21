@@ -7,7 +7,7 @@
 #include "../common/foc_utils.h"
 #include "../common/time_utils.h"
 
-#define DEF_ANGLE_REGISTAR 0x3FFF
+#define DEF_ANGLE_REGISTER 0x3FFF
 
 struct MagneticSensorSPIConfig_s  {
   int spi_mode;
