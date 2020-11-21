@@ -7,17 +7,9 @@
 MagneticSensorI2C sensor0 = MagneticSensorI2C(AS5600_I2C);
 MagneticSensorI2C sensor1 = MagneticSensorI2C(AS5600_I2C);
 
-#if defined(_STM32_DEF_) // if stm chips
-  // example of stm32 defining 2nd bus
-  TwoWire Wire1(PB11, PB10);
+// example of stm32 defining 2nd bus
+TwoWire Wire1(PB11, PB10);
 
-#elif defined(ESP_H) // if esp32
-  // esp32 defines a Wire1 but doesn't define pins! 
-  // nothing to do here for esp32! (See below)
-#else
-  // Wire constructors vary - you'll have to check what works for your chip
-  TwoWire Wire1(SDA1, SCL1);
-#endif
 
 void setup() {
 
@@ -26,12 +18,6 @@ void setup() {
 
   Wire.setClock(400000);
   Wire1.setClock(400000);
-
-  #if defined(ESP_H) // if esp32
-    // Normally SimpeFOC will call begin for i2c but with esp32 begin() is the only way to set pins!
-    // It seems safe to call begin multiple times
-    Wire1.begin(19,23,400000);
-  #endif
 
   sensor0.init();
   sensor1.init(&Wire1);
