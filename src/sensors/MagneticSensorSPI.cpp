@@ -31,7 +31,7 @@ MagneticSensorSPI::MagneticSensorSPI(int cs, float _bit_resolution, int _angle_r
   
   chip_select_pin = cs; 
   // angle read register of the magnetic sensor
-  angle_register = _angle_register ? _angle_register : DEF_ANGLE_REGISTAR;
+  angle_register = _angle_register ? _angle_register : DEF_ANGLE_REGISTER;
   // register maximum value (counts per revolution)
   cpr = pow(2,_bit_resolution);
   spi_mode = SPI_MODE1;
@@ -47,7 +47,7 @@ MagneticSensorSPI::MagneticSensorSPI(int cs, float _bit_resolution, int _angle_r
 MagneticSensorSPI::MagneticSensorSPI(MagneticSensorSPIConfig_s config, int cs){
   chip_select_pin = cs; 
   // angle read register of the magnetic sensor
-  angle_register = config.angle_register ? config.angle_register : DEF_ANGLE_REGISTAR;
+  angle_register = config.angle_register ? config.angle_register : DEF_ANGLE_REGISTER;
   // register maximum value (counts per revolution)
   cpr = pow(2, config.bit_resolution);
   spi_mode = config.spi_mode;
