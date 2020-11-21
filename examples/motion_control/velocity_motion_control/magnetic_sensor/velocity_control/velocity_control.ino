@@ -12,11 +12,10 @@
  */
 #include <SimpleFOC.h>
 
-// magnetic sensor instance
-MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
-// magnetic sensor instance
-//MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
-// magnetic sensor instance - analog output
+// magnetic sensor instance - SPI
+MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, 10);
+// magnetic sensor instance - MagneticSensorI2C
+//MagneticSensorI2C sensor = MagneticSensorI2C(AS5600_I2C);
 // MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
 
 // BLDC motor & driver instance

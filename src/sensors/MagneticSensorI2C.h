@@ -9,7 +9,6 @@
 
 struct MagneticSensorI2CConfig_s  {
   int chip_address;
-  long clock_speed;
   int bit_resolution;
   int angle_register;
   int data_start_bit; 
@@ -37,7 +36,7 @@ class MagneticSensorI2C: public Sensor{
     static MagneticSensorI2C AS5600();
     
     /** sensor initialise pins */
-    void init();
+    void init(TwoWire* _wire = &Wire);
 
     // implementation of abstract functions of the Sensor class
     /** get current angle (rad) */
@@ -60,14 +59,8 @@ class MagneticSensorI2C: public Sensor{
 
     int needsAbsoluteZeroSearch() override;
 
-    /* the speed of the i2c clock signal */
-    long clock_speed;
-
-    /* the pin used for i2c data */
-    int sda_pin;
-    
-    /* the pin used for i2c clock */
-    int scl_pin;
+    /** experimental function to check and fix SDA locked LOW issues */
+    int checkBus(byte sda_pin = SDA, byte scl_pin = SCL);
 
   private:
     float cpr; //!< Maximum range of the magnetic sensor
@@ -97,6 +90,10 @@ class MagneticSensorI2C: public Sensor{
     // velocity calculation variables
     float angle_prev; //!< angle in previous velocity calculation step
     long velocity_calc_timestamp; //!< last velocity calculation timestamp
+
+    /* the two wire instance for this sensor */
+    TwoWire* wire;
+
 
 };
 

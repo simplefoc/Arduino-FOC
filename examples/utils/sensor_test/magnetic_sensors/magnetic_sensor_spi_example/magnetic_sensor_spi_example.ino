@@ -1,10 +1,12 @@
 #include <SimpleFOC.h>
 
-// MagneticSensorSPI(int cs, float _cpr, int _angle_register)
-//  cs              - SPI chip select pin 
-//  bit_resolution  - sensor resolution
-//  angle_register   - (optional) angle read register - default 0x3FFF
-MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
+// MagneticSensorSPI(MagneticSensorSPIConfig_s config, int cs)
+//  config  - SPI config
+//  cs      - SPI chip select pin 
+// magnetic sensor instance - SPI
+MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, 10);
+// alternative constructor (chipselsect, bit_resolution, angle_read_register, )
+// MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
 
 void setup() {
   // monitoring port
