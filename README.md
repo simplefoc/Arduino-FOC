@@ -11,7 +11,7 @@ Therefore this is an attempt to:
 - Develop a modular BLDC driver board: [Arduino *SimpleFOCShield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
 - ***New 📢:** Develop a modular Stepper motor board for FOC control:* <b>Arduino <span class="simple">Stepper<span class="foc">FOC</span>Shield</span></b>
 
-<blockquote class="info"><p> <b>NEW RELEASE 📢:</b> <i>Simple<b>FOC</b>library v1.7.0</i><br></p><ul>
+<blockquote class="info"><p> <b>NEW RELEASE 📢:</b> <i>Simple<b>FOC</b>library v2.0</i><br></p><ul>
 <li><strong>6PWM support </strong>
   <ul>
     <li>Arduino UNO (atmega328)</li>
@@ -27,9 +27,16 @@ Therefore this is an attempt to:
     <li> PWM config</li>
   </ul>
 </li>
-<li>Refactoring </li>
+<li>I2C and SPI sensors multiple busses support by <a href="https://github.com/owennewo">@owennewo</a>
+</li>
+<li>Added support for separate setting of <i>U<sub>d</sub></i> and <i>U<sub>q</sub></i> setting. 
+  <ul>
+    <li> Preparations for current control</li>
+    <li> Working only for SinePWM modulation at the moment </li>
+  </ul></li>
+<li>A lot of refactoring </li>
 </ul>
-<i>The library version 1.7.0 will be released once when it is properly tested and documented!</i>
+<i>The library version v2.0 will be released once when it is properly tested and documented!</i>
 </blockquote>
 
 ## Arduino *SimpleFOCShield*

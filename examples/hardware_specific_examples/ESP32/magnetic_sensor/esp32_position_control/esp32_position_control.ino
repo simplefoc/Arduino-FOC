@@ -7,13 +7,15 @@
 // MISO 12
 // MOSI 9
 // SCK 14
-MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
+// magnetic sensor instance - SPI
+MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, 10);
 
 // I2C Magnetic sensor instance (AS5600 example)
 // make sure to use the pull-ups!!
 // SDA 21
 // SCL 22
-//MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
+// magnetic sensor instance - I2C
+//MagneticSensorI2C sensor = MagneticSensorI2C(AS5600_I2C);
 
 // Analog output Magnetic sensor instance (AS5600)
 // MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
