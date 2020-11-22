@@ -42,7 +42,6 @@ Therefore this is an attempt to:
   </ul></li>
 <li>A lot of refactoring </li>
 </ul>
-<i>The library version v2.0 will be released once when it is properly tested and documented!</i>
 </blockquote>
 
 ## Arduino *SimpleFOCShield*
