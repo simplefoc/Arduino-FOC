@@ -15,6 +15,7 @@ void setup() {
   driver.voltage_power_supply = 12;
   // Max DC voltage allowed - default voltage_power_supply
   driver.voltage_limit = 12;
+
   // driver init
   driver.init();
 

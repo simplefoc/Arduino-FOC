@@ -2,7 +2,7 @@
 #include <SimpleFOC.h>
 
 // BLDC driver instance
-BLDCDriver3PWM driver = BLDCDriver6PWM(5, 6, 9,10, 3, 11, 8);
+BLDCDriver6PWM driver = BLDCDriver6PWM(5, 6, 9,10, 3, 11, 8);
 
 void setup() {
   
