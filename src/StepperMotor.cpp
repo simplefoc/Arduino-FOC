@@ -5,39 +5,26 @@
 // - ph2A, ph2B    - motor phase 2 pwm pins
 // - pp            - pole pair number
 // - enable pin    - (optional input)
-StepperMotor::StepperMotor(int ph1A, int ph1B, int ph2A, int ph2B, int pp, int en1, int en2)
+StepperMotor::StepperMotor(int pp)
 : FOCMotor()
 {
-  // Pin initialization
-  pwm1A = ph1A;
-  pwm1B = ph1B;
-  pwm2A = ph2A;
-  pwm2B = ph2B;
+  // number od pole pairs
   pole_pairs = pp;
+}
 
-  // enable_pin pin
-  enable_pin1 = en1;
-  enable_pin2 = en2;
+/**
+	Link the driver which controls the motor
+*/
+void StepperMotor::linkDriver(StepperDriver* _driver) {
+  driver = _driver;
 }
 
 // init hardware pins   
-void StepperMotor::init(long pwm_frequency) {
-  if(monitor_port) monitor_port->println("MOT: Init pins.");
-  // PWM pins
-  pinMode(pwm1A, OUTPUT);
-  pinMode(pwm1B, OUTPUT);
-  pinMode(pwm2A, OUTPUT);
-  pinMode(pwm2B, OUTPUT);
-  if ( enable_pin1 != NOT_SET ) pinMode(enable_pin1, OUTPUT);
-  if ( enable_pin2 != NOT_SET ) pinMode(enable_pin2, OUTPUT);
-
-  if(monitor_port) monitor_port->println("MOT: PWM config.");
-  // Increase PWM frequency
-  // make silent
-  _setPwmFrequency(pwm_frequency, pwm1A, pwm1B, pwm2A, pwm2B);
+void StepperMotor::init() {
+  if(monitor_port) monitor_port->println("MOT: Init variables.");
   
   // sanity check for the voltage limit configuration
-  if(voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
+  if(voltage_limit > driver->voltage_limit) voltage_limit =  driver->voltage_limit;
   // constrain voltage for sensor alignment
   if(voltage_sensor_align > voltage_limit) voltage_sensor_align = voltage_limit;
   
@@ -57,21 +44,18 @@ void StepperMotor::init(long pwm_frequency) {
 // disable motor driver
 void StepperMotor::disable()
 {
-  // disable the driver - if enable_pin pin available
-  if ( enable_pin1 != NOT_SET ) digitalWrite(enable_pin1, LOW);
-  if ( enable_pin2 != NOT_SET ) digitalWrite(enable_pin2, LOW);
   // set zero to PWM
-  setPwm(0, 0);
+  driver->setPwm(0, 0);
+  // disable driver
+  driver->disable();
 }
 // enable motor driver
 void StepperMotor::enable()
 {
+  // disable enable
+  driver->enable();
   // set zero to PWM
-  setPwm(0, 0);
-  // enable_pin the driver - if enable_pin pin available
-  if ( enable_pin1 != NOT_SET ) digitalWrite(enable_pin1, HIGH);
-  if ( enable_pin2 != NOT_SET ) digitalWrite(enable_pin2, HIGH);
-
+  driver->setPwm(0, 0);
 }
 
 
@@ -107,13 +91,13 @@ int StepperMotor::alignSensor() {
   float start_angle = shaftAngle();
   for (int i = 0; i <=5; i++ ) {
     float angle = _3PI_2 + _2PI * i / 6.0;
-    setPhaseVoltage(voltage_sensor_align,  angle);
+    setPhaseVoltage(voltage_sensor_align, 0, angle);
     _delay(200);
   }
   float mid_angle = shaftAngle();
   for (int i = 5; i >=0; i-- ) {
     float angle = _3PI_2 + _2PI * i / 6.0;
-    setPhaseVoltage(voltage_sensor_align,  angle);
+    setPhaseVoltage(voltage_sensor_align, 0,  angle);
     _delay(200);
   }
   if (mid_angle < start_angle) {
@@ -128,7 +112,7 @@ int StepperMotor::alignSensor() {
   // set sensor to zero
   sensor->initRelativeZero();
   _delay(500);
-  setPhaseVoltage(0,0);
+  setPhaseVoltage(0, 0, 0);
   _delay(200);
 
   // find the index if available
@@ -159,8 +143,9 @@ int StepperMotor::absoluteZeroAlign() {
     voltage_q = PID_velocity(velocity_index_search - shaftVelocity());
   }
   voltage_q = 0;
+  voltage_d = 0;
   // disable motor
-  setPhaseVoltage(0,0);
+  setPhaseVoltage(0, 0, 0);
 
   // align absolute zero if it has been found
   if(!sensor->needsAbsoluteZeroSearch()){
@@ -179,7 +164,7 @@ void StepperMotor::loopFOC() {
   // shaft angle 
   shaft_angle = shaftAngle();
   // set the phase voltage - FOC heart function :) 
-  setPhaseVoltage(voltage_q, _electricalAngle(shaft_angle,pole_pairs));
+  setPhaseVoltage(voltage_q, voltage_d, _electricalAngle(shaft_angle, pole_pairs));
 }
 
 // Iterative function running outer loop of the FOC algorithm
@@ -226,44 +211,28 @@ void StepperMotor::move(float new_target) {
 }
 
 
-// Method using FOC to set Uq to the motor at the optimal angle
-// Function implementingSine PWM algorithms
+// Method using FOC to set Uq and Ud to the motor at the optimal angle
+// Function implementing Sine PWM algorithms
 // - space vector not implemented yet
 // 
 // Function using sine approximation
 // regular sin + cos ~300us    (no memory usaage)
 // approx  _sin + _cos ~110us  (400Byte ~ 20% of memory)
-void StepperMotor::setPhaseVoltage(float Uq, float angle_el) {
+void StepperMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
   // Sinusoidal PWM modulation 
   // Inverse Park transformation
 
   // angle normalization in between 0 and 2pi
   // only necessary if using _sin and _cos - approximation functions
-  angle_el = _normalizeAngle(angle_el + zero_electric_angle);
+  angle_el = _normalizeAngle(angle_el + zero_electric_angle); 
+  float _ca = _cos(angle_el);
+  float _sa = _sin(angle_el);
   // Inverse park transform
-  Ualpha =  -_sin(angle_el) * Uq;  // -sin(angle) * Uq;
-  Ubeta =  _cos(angle_el) * Uq;    //  cos(angle) * Uq;
+  Ualpha =  _ca * Ud - _sa * Uq;  // -sin(angle) * Uq;
+  Ubeta =  _sa * Ud + _ca * Uq;    //  cos(angle) * Uq;
+
   // set the voltages in hardware
-  setPwm(Ualpha,Ubeta);
-}
-
-
-
-// Set voltage to the pwm pin
-void StepperMotor::setPwm(float Ualpha, float Ubeta) {  
-  float duty_cycle1A(0.0),duty_cycle1B(0.0),duty_cycle2A(0.0),duty_cycle2B(0.0);
-  // hardware specific writing
-  if( Ualpha > 0 )
-    duty_cycle1B = constrain(abs(Ualpha)/voltage_power_supply,0,1);
-  else 
-    duty_cycle1A = constrain(abs(Ualpha)/voltage_power_supply,0,1);
-    
-  if( Ubeta > 0 )
-    duty_cycle2B = constrain(abs(Ubeta)/voltage_power_supply,0,1);
-  else
-    duty_cycle2A = constrain(abs(Ubeta)/voltage_power_supply,0,1);
-  // write to hardware
-  _writeDutyCycle(duty_cycle1A, duty_cycle1B, duty_cycle2A, duty_cycle2B, pwm1A, pwm1B, pwm2A, pwm2B);
+  driver->setPwm(Ualpha, Ubeta);
 }
 
 // Function (iterative) generating open loop movement for target velocity
@@ -279,7 +248,7 @@ void StepperMotor::velocityOpenloop(float target_velocity){
   shaft_angle += target_velocity*Ts; 
 
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
-  setPhaseVoltage(voltage_limit, _electricalAngle(shaft_angle,pole_pairs));
+  setPhaseVoltage(voltage_limit, 0, _electricalAngle(shaft_angle,pole_pairs));
 
   // save timestamp for next call
   open_loop_timestamp = now_us;
@@ -302,7 +271,7 @@ void StepperMotor::angleOpenloop(float target_angle){
     shaft_angle = target_angle;
   
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
-  setPhaseVoltage(voltage_limit, _electricalAngle(shaft_angle,pole_pairs));
+  setPhaseVoltage(voltage_limit,  0, _electricalAngle(shaft_angle,pole_pairs));
 
   // save timestamp for next call
   open_loop_timestamp = now_us;

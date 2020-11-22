@@ -1,16 +1,12 @@
-/**
- *  @file BLDCMotor.h
- * 
- */
-
 #ifndef BLDCMotor_h
 #define BLDCMotor_h
 
 #include "Arduino.h"
-#include "common/FOCMotor.h"
+#include "common/base_classes/FOCMotor.h"
+#include "common/base_classes/Sensor.h"
+#include "common/base_classes/BLDCDriver.h"
 #include "common/foc_utils.h"
-#include "common/hardware_utils.h"
-#include "common/Sensor.h"
+#include "common/time_utils.h"
 #include "common/defaults.h"
 
 /**
@@ -20,18 +16,27 @@ class BLDCMotor: public FOCMotor
 {
   public:
     /**
-      BLDCMotor class constructor
-      @param phA A phase pwm pin
-      @param phB B phase pwm pin
-      @param phC C phase pwm pin
-      @param pp  pole pair number
-      @param cpr counts per rotation number (cpm=ppm*4)
-      @param en enable pin (optional input)
+     BLDCMotor class constructor
+     @param pp pole pairs number
+     */ 
+    BLDCMotor(int pp);
+    
+    /**
+     * Function linking a motor and a foc driver 
+     * 
+     * @param driver BLDCDriver class implementing all the hardware specific functions necessary PWM setting
+     */
+    void linkDriver(BLDCDriver* driver);
+
+    /** 
+      * BLDCDriver link:
+      * - 3PWM 
+      * - 6PWM 
     */
-    BLDCMotor(int phA,int phB,int phC,int pp, int en = NOT_SET);
+    BLDCDriver* driver; 
     
     /**  Motor hardware init function */
-  	void init(long pwm_frequency = NOT_SET) override;
+  	void init() override;
     /** Motor disable function */
   	void disable() override;
     /** Motor enable function */
@@ -59,12 +64,9 @@ class BLDCMotor: public FOCMotor
      * This function doesn't need to be run upon each loop execution - depends of the use case
      */
     void move(float target = NOT_SET) override;
-
-    // hardware variables
-  	int pwmA; //!< phase A pwm pin number
-  	int pwmB; //!< phase B pwm pin number
-  	int pwmC; //!< phase C pwm pin number
-    int enable_pin; //!< enable pin number
+    
+    float Ua,Ub,Uc;//!< Current phase voltages Ua,Ub and Uc set to motor
+    float	Ualpha,Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
 
 
   private:
@@ -74,21 +76,15 @@ class BLDCMotor: public FOCMotor
     * Heart of the FOC algorithm
     * 
     * @param Uq Current voltage in q axis to set to the motor
+    * @param Ud Current voltage in d axis to set to the motor
     * @param angle_el current electrical angle of the motor
     */
-    void setPhaseVoltage(float Uq, float angle_el);
+    void setPhaseVoltage(float Uq, float Ud, float angle_el);
     /** Sensor alignment to electrical 0 angle of the motor */
     int alignSensor();
     /** Motor and sensor alignment to the sensors absolute 0 angle  */
     int absoluteZeroAlign();
-    /** 
-     * Set phase voltages to the harware 
-     * 
-     * @param Ua phase A voltage
-     * @param Ub phase B voltage
-     * @param Uc phase C voltage
-    */
-    void setPwm(float Ua, float Ub, float Uc);
+
         
     // Open loop motion control    
     /**

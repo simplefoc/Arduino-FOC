@@ -1,8 +1,10 @@
 #include <Arduino.h>
 #include <SimpleFOC.h>
 
-BLDCMotor motor = BLDCMotor(9, 10, 11, 7);
-//StepperMotor motor = StepperMotor(9, 5, 10, 6, 50, 8);
+BLDCMotor motor = BLDCMotor(11);
+BLDCDriver3PWM driver = BLDCDriver3PWM(9, 10, 11, 8);
+//StepperMotor motor = StepperMotor(50);
+//StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
 
 
@@ -78,7 +80,11 @@ void setup() {
   Serial.begin(115200);
   while (!Serial) ;
 
-  motor.voltage_power_supply = 9;
+  // driver config
+  driver.voltage_power_supply = 12;
+  driver.init();
+  motor.linkDriver(&driver);
+
   motor.voltage_sensor_align = 3;
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
  

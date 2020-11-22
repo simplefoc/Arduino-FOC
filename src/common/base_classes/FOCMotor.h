@@ -2,13 +2,14 @@
 #define FOCMOTOR_H
 
 #include "Arduino.h"
-#include "hardware_utils.h"
-#include "foc_utils.h"
-#include "defaults.h"
-
 #include "Sensor.h"
-#include "pid.h"
-#include "lowpass_filter.h"
+#include "BLDCDriver.h"
+
+#include "../time_utils.h"
+#include "../foc_utils.h"
+#include "../defaults.h"
+#include "../pid.h"
+#include "../lowpass_filter.h"
 
 
 /**
@@ -27,7 +28,9 @@ enum ControlType{
  */
 enum FOCModulationType{
   SinePWM, //!< Sinusoidal PWM modulation
-  SpaceVectorPWM //!< Space vector modulation method
+  SpaceVectorPWM, //!< Space vector modulation method
+  Trapezoid_120,
+  Trapezoid_150
 };
 
 /**
@@ -42,7 +45,7 @@ class FOCMotor
     FOCMotor();
 
     /**  Motor hardware init function */
-  	virtual void init(long pwm_frequency)=0;
+  	virtual void init()=0;
     /** Motor disable function */
   	virtual void disable()=0;
     /** Motor enable function */
@@ -54,6 +57,7 @@ class FOCMotor
      * @param sensor Sensor class  wrapper for the FOC algorihtm to read the motor angle and velocity
      */
     void linkSensor(Sensor* sensor);
+
 
     /**
      * Function initializing FOC algorithm
@@ -99,11 +103,9 @@ class FOCMotor
     float shaft_velocity_sp;//!< current target velocity
     float shaft_angle_sp;//!< current target angle
     float voltage_q;//!< current voltage u_q set
-    float Ua,Ub,Uc;//!< Current phase voltages Ua,Ub and Uc set to motor
-    float	Ualpha,Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
+    float voltage_d;//!< current voltage u_d set
 
     // motor configuration parameters
-    float voltage_power_supply;//!< Power supply voltage
     float voltage_sensor_align;//!< sensor and motor align voltage parameter
     float velocity_index_search;//!< target velocity for index search 
     int pole_pairs;//!< Motor pole pairs number

@@ -25,12 +25,12 @@ float PIDController::operator() (float error){
     // Discrete implementations
     // proportional part 
     // u_p  = P *e(k)
-    float proportional = P * error_prev;
+    float proportional = P * error;
     // Tustin transform of the integral part
     // u_ik = u_ik_1  + I*Ts/2*(ek + ek_1)
     float integral = integral_prev + I*Ts*0.5*(error + error_prev);
     // antiwindup - limit the output voltage_q
-    integral = constrain(integral, -limit, limit);
+    integral = _constrain(integral, -limit, limit);
     // Discrete derivation
     // u_dk = D(ek - ek_1)/Ts
     float derivative = D*(error - error_prev)/Ts;
@@ -38,7 +38,7 @@ float PIDController::operator() (float error){
     // sum all the components
     float output = proportional + integral + derivative;
     // antiwindup - limit the output variable
-    output = constrain(output, -limit, limit);
+    output = _constrain(output, -limit, limit);
 
     // limit the acceleration by ramping the output
     float output_rate = (output - output_prev)/Ts;

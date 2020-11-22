@@ -23,8 +23,9 @@
 #include <PciListenerImp.h>
 
 
-// motor instance
-BLDCMotor motor = BLDCMotor(9, 10, 11, 11);
+// BLDC motor & driver instance
+BLDCMotor motor = BLDCMotor(11);
+BLDCDriver3PWM driver = BLDCDriver3PWM(9, 10, 11);
 
 // encoder instance
 Encoder encoder = Encoder(A0, A1, 8192);
@@ -48,9 +49,12 @@ void setup() {
   // link the motor to the sensor
   motor.linkSensor(&encoder);
 
-  // power supply voltage
-  // default 12V
-  motor.voltage_power_supply = 12;
+  // driver config
+  // power supply voltage [V]
+  driver.voltage_power_supply = 12;
+  driver.init();
+  // link the motor and the driver
+  motor.linkDriver(&driver);
   
   // choose FOC modulation (optional)
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;

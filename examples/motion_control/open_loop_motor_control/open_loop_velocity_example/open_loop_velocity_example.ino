@@ -1,18 +1,22 @@
 // Open loop motor control example 
- #include <SimpleFOC.h>
+#include <SimpleFOC.h>
 
-// motor instance
-//  BLDCMotor( phA, phB, phC, pp, (en optional))
-BLDCMotor motor = BLDCMotor(3, 10, 6, 11, 7);
-//  StepperMotor(ph1A,ph1B,ph2A,ph2B,pp,( en1, en2 optional))
-//StepperMotor motor = StepperMotor(9, 5, 10, 6, 50, 8);
 
+// BLDC motor & driver instance
+BLDCMotor motor = BLDCMotor(11);
+BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
+// Stepper motor & driver instance
+//StepperMotor motor = StepperMotor(50);
+//StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
 void setup() {
   
-  // power supply voltage
-  // default 12V
-  motor.voltage_power_supply = 12;
+  // driver config
+  // power supply voltage [V]
+  driver.voltage_power_supply = 12;
+  driver.init();
+  // link the motor and the driver
+  motor.linkDriver(&driver);
 
   // limiting motor movements
   motor.voltage_limit = 3;   // rad/s

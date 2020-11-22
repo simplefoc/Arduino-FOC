@@ -20,21 +20,33 @@
  *  - Plug & play: Arduino SimpleFOC shield
  * 
  * @section dependencies Supported Hardware
- *
- * This library supports any arduino device and it is especially optimized for Arduino UNO boards and 
- * other Atmega328 boards. But it supports Arrduinio MEGA boards and similar.
- * 
- * From the version 1.3.0 it will support the STM32 boards such as Bluepill and Nucelo devices.<br>
- * The programming is done the same way as for the Arduino UNO but stm32 devices require STM32Duino package. <br>
- * You can download it directly from library manager.  
+ *  - Motors 
+ *    - BLDC motors
+ *    - Stepper motors
+ * - Drivers 
+ *    - BLDC drivers
+ *    - Gimbal drivers
+ *    - Stepper drivers
+ * - Position sensors 
+ *    - Encoders
+ *    - Magnetic sensors
+ *    - Hall sensors
+ *    - Open-loop control
+ * - Microcontrollers 
+ *    - Arduino
+ *    - STM32
+ *    - ESP32
+ *    - Teensy
  * 
  * @section example_code Example code
  * @code
 #include <SimpleFOC.h>
 
-//  initialize the motor
-BLDCMotor motor = BLDCMotor(9, 10, 11, 11, 8);
-//  initialize the encoder
+//  BLDCMotor( pole_pairs )
+BLDCMotor motor = BLDCMotor(11);
+//  BLDCDriver( pin_pwmA, pin_pwmB, pin_pwmC, enable (optional) )
+BLDCDriver3PWM motor = BLDCDriver3PWM(9, 10, 11, 8);
+//  Encoder(pin_A, pin_B, CPR)
 Encoder encoder = Encoder(2, 3, 2048);
 // channel A and B callbacks
 void doA(){encoder.handleA();}
@@ -46,20 +58,21 @@ void setup() {
   encoder.init();
   // hardware interrupt enable
   encoder.enableInterrupts(doA, doB);
+  // link the motor to the sensor
+  motor.linkSensor(&encoder);
+  
+  // power supply voltage [V]
+  driver.voltage_power_supply = 12;
+  // initialise driver hardware
+  driver.init();
+  // link driver
+  motor.linkDriver(&driver);
 
   // set control loop type to be used
   motor.controller = ControlType::velocity;
-  
-  // use monitoring with the BLDCMotor
-  Serial.begin(115200);
-  // monitoring port
-  motor.useMonitoring(Serial);
-
-  // link the motor to the sensor
-  motor.linkSensor(&encoder);
-
   // initialize motor
   motor.init();
+  
   // align encoder and start FOC
   motor.initFOC();
 }
@@ -71,9 +84,6 @@ void loop() {
   // velocity control loop function
   // setting the target velocity or 2rad/s
   motor.move(2);
-
-  // monitoring function outputting motor variables to the serial terminal 
-  motor.monitor();
 }
  * @endcode 
  *
@@ -88,10 +98,13 @@ void loop() {
 
 #include "BLDCMotor.h"
 #include "StepperMotor.h"
-#include "Encoder.h"
-#include "MagneticSensorSPI.h"
-#include "MagneticSensorI2C.h"
-#include "MagneticSensorAnalog.h"
-#include "HallSensor.h"
+#include "sensors/Encoder.h"
+#include "sensors/MagneticSensorSPI.h"
+#include "sensors/MagneticSensorI2C.h"
+#include "sensors/MagneticSensorAnalog.h"
+#include "sensors/HallSensor.h"
+#include "drivers/BLDCDriver3PWM.h"
+#include "drivers/BLDCDriver6PWM.h"
+#include "drivers/StepperDriver4PWM.h"
 
 #endif

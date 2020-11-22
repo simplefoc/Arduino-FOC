@@ -7,19 +7,22 @@
 // MISO 12
 // MOSI 9
 // SCK 14
-MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
+// magnetic sensor instance - SPI
+MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, 10);
 
 // I2C Magnetic sensor instance (AS5600 example)
 // make sure to use the pull-ups!!
 // SDA 21
 // SCL 22
-//MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
+// magnetic sensor instance - I2C
+//MagneticSensorI2C sensor = MagneticSensorI2C(AS5600_I2C);
 
 // Analog output Magnetic sensor instance (AS5600)
 // MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
 
 // Motor instance
-BLDCMotor motor = BLDCMotor(25, 26, 27, 7);
+BLDCMotor motor = BLDCMotor(11);
+BLDCDriver3PWM driver = BLDCDriver3PWM(25, 26, 27, 7);
 
 void setup() {
 
@@ -28,9 +31,12 @@ void setup() {
   // link the motor to the sensor
   motor.linkSensor(&sensor);
 
-  // power supply voltage
-  // default 12V
-  motor.voltage_power_supply = 12;
+  // driver config
+  // power supply voltage [V]
+  driver.voltage_power_supply = 12;
+  driver.init();
+  // link the motor and the driver
+  motor.linkDriver(&driver);
   
   // choose FOC modulation (optional)
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;

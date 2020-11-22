@@ -38,17 +38,20 @@
  */
 #include <SimpleFOC.h>
 
-// SPI magnetic sensor instance
-// MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
-// I2C magnetic sensor instance
-MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
+// magnetic sensor instance - SPI
+MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, 10);
+// magnetic sensor instance - MagneticSensorI2C
+//MagneticSensorI2C sensor = MagneticSensorI2C(AS5600_I2C);
 // magnetic sensor instance - analog output
 // MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
 
-// BLDC motor instance
-BLDCMotor motor = BLDCMotor(9, 5, 6, 11, 8);
-// Stepper motor instance
-//StepperMotor motor = StepperMotor(9, 5, 10, 6, 50, 8);
+
+// BLDC motor & driver instance
+BLDCMotor motor = BLDCMotor(11);
+BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
+// Stepper motor & driver instance
+//StepperMotor motor = StepperMotor(50);
+//StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
 void setup() {
 
@@ -57,11 +60,15 @@ void setup() {
   // link the motor to the sensor
   motor.linkSensor(&sensor);
 
+  // driver config
+  // power supply voltage [V]
+  driver.voltage_power_supply = 12;
+  driver.init();
+  // link driver
+  motor.linkDriver(&driver);
+
   // choose FOC modulation
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
-
-  // power supply voltage [V]
-  motor.voltage_power_supply = 12;
 
   // set control loop type to be used
   motor.controller = ControlType::voltage;

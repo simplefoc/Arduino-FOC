@@ -15,11 +15,14 @@
  */
 #include <SimpleFOC.h>
 
-//  BLDCMotor( phA, phB, phC, pp, (en optional))
+// BLDC motor instance
 // its important to put pole pairs number as 1!!!
-BLDCMotor motor = BLDCMotor(9, 5, 6, 1, 8);
-//  StepperMotor(ph1A,ph1B,ph2A,ph2B,pp,( en1, en2 optional))
-//StepperMotor motor = StepperMotor(9, 5, 10, 6, 1, 8);
+BLDCMotor motor = BLDCMotor(1);
+BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
+// Stepper motor instance
+// its important to put pole pairs number as 1!!!
+//StepperMotor motor = StepperMotor(1);
+//StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
 //  Encoder(int encA, int encB , int cpr, int index)
 Encoder encoder = Encoder(2, 3, 2048);
@@ -37,12 +40,14 @@ void setup() {
   motor.linkSensor(&encoder);
 
   // power supply voltage
-  motor.voltage_power_supply = 12;
+  // default 12V
+  driver.voltage_power_supply = 12;
+  driver.init();
+  motor.linkDriver(&driver);
+
 
   // initialize motor
   motor.init();
-
-
   // monitoring port
   Serial.begin(115200);
 

@@ -31,7 +31,7 @@ MagneticSensorSPI::MagneticSensorSPI(int cs, float _bit_resolution, int _angle_r
   
   chip_select_pin = cs; 
   // angle read register of the magnetic sensor
-  angle_register = _angle_register ? _angle_register : DEF_ANGLE_REGISTAR;
+  angle_register = _angle_register ? _angle_register : DEF_ANGLE_REGISTER;
   // register maximum value (counts per revolution)
   cpr = pow(2,_bit_resolution);
   spi_mode = SPI_MODE1;
@@ -47,7 +47,7 @@ MagneticSensorSPI::MagneticSensorSPI(int cs, float _bit_resolution, int _angle_r
 MagneticSensorSPI::MagneticSensorSPI(MagneticSensorSPIConfig_s config, int cs){
   chip_select_pin = cs; 
   // angle read register of the magnetic sensor
-  angle_register = config.angle_register ? config.angle_register : DEF_ANGLE_REGISTAR;
+  angle_register = config.angle_register ? config.angle_register : DEF_ANGLE_REGISTER;
   // register maximum value (counts per revolution)
   cpr = pow(2, config.bit_resolution);
   spi_mode = config.spi_mode;
@@ -59,7 +59,10 @@ MagneticSensorSPI::MagneticSensorSPI(MagneticSensorSPIConfig_s config, int cs){
   data_start_bit = config.data_start_bit; // for backwards compatibilty
 }
 
-void MagneticSensorSPI::init(){
+void MagneticSensorSPI::init(SPIClass* _spi){
+
+  spi = _spi;
+
 	// 1MHz clock (AMS should be able to accept up to 10MHz)
 	settings = SPISettings(clock_speed, MSBFIRST, spi_mode);
 
@@ -67,11 +70,11 @@ void MagneticSensorSPI::init(){
 	pinMode(chip_select_pin, OUTPUT);
   
 	//SPI has an internal SPI-device counter, it is possible to call "begin()" from different devices
-	SPI.begin();
+	spi->begin();
 #ifndef ESP_H // if not ESP32 board
-	SPI.setBitOrder(MSBFIRST); // Set the SPI_1 bit order
-	SPI.setDataMode(spi_mode) ;
-	SPI.setClockDivider(SPI_CLOCK_DIV8);
+	spi->setBitOrder(MSBFIRST); // Set the SPI_1 bit order
+	spi->setDataMode(spi_mode) ;
+	spi->setClockDivider(SPI_CLOCK_DIV8);
 #endif
 
 	digitalWrite(chip_select_pin, HIGH);
@@ -203,13 +206,13 @@ word MagneticSensorSPI::read(word angle_register){
 
 #if !defined(_STM32_DEF_) // if not stm chips
   //SPI - begin transaction
-  SPI.beginTransaction(settings);
+  spi->beginTransaction(settings);
 #endif
 
   //Send the command
   digitalWrite(chip_select_pin, LOW);
   digitalWrite(chip_select_pin, LOW);
-  SPI.transfer16(command);
+  spi->transfer16(command);
   digitalWrite(chip_select_pin,HIGH);
   digitalWrite(chip_select_pin,HIGH);
   
@@ -222,13 +225,13 @@ word MagneticSensorSPI::read(word angle_register){
   //Now read the response
   digitalWrite(chip_select_pin, LOW);
   digitalWrite(chip_select_pin, LOW);
-  word register_value = SPI.transfer16(0x00);
+  word register_value = spi->transfer16(0x00);
   digitalWrite(chip_select_pin, HIGH);
   digitalWrite(chip_select_pin,HIGH);
 
 #if !defined(_STM32_DEF_) // if not stm chips
   //SPI - end transaction
-  SPI.endTransaction();
+  spi->endTransaction();
 #endif
   
   register_value = register_value >> (1 + data_start_bit - bit_resolution);  //this should shift data to the rightmost bits of the word
@@ -243,5 +246,5 @@ word MagneticSensorSPI::read(word angle_register){
  * SPI has an internal SPI-device counter, for each init()-call the close() function must be called exactly 1 time
  */
 void MagneticSensorSPI::close(){
-	SPI.end();
+	spi->end();
 }
