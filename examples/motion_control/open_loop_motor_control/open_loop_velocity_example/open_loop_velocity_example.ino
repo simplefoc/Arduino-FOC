@@ -1,5 +1,5 @@
 // Open loop motor control example 
- #include <SimpleFOC.h>
+#include <SimpleFOC.h>
 
 
 // BLDC motor & driver instance
