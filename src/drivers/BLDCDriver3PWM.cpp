@@ -56,14 +56,14 @@ int BLDCDriver3PWM::init() {
 // Set voltage to the pwm pin
 void BLDCDriver3PWM::setPwm(float Ua, float Ub, float Uc) {  
   // limit the voltage in driver
-  Ua = _constrain(Ua, -voltage_limit, voltage_limit);
-  Ub = _constrain(Ub, -voltage_limit, voltage_limit);
-  Uc = _constrain(Uc, -voltage_limit, voltage_limit);    
+  Ua = _constrain(Ua, 0.0, voltage_limit);
+  Ub = _constrain(Ub, 0.0, voltage_limit);
+  Uc = _constrain(Uc, 0.0, voltage_limit);    
   // calculate duty cycle
   // limited in [0,1]
-  float dc_a = _constrain(Ua / voltage_power_supply, 0 , 1 );
-  float dc_b = _constrain(Ub / voltage_power_supply, 0 , 1 );
-  float dc_c = _constrain(Uc / voltage_power_supply, 0 , 1 );
+  float dc_a = _constrain(Ua / voltage_power_supply, 0.0 , 1.0 );
+  float dc_b = _constrain(Ub / voltage_power_supply, 0.0 , 1.0 );
+  float dc_c = _constrain(Uc / voltage_power_supply, 0.0 , 1.0 );
   // hardware specific writing
   // hardware specific function - depending on driver and mcu
   _writeDutyCycle3PWM(dc_a, dc_b, dc_c, pwmA, pwmB, pwmC);

@@ -10,6 +10,17 @@
 #define _EMPTY_SLOT -20
 #define _TAKEN_SLOT -21
 
+// ABI bus frequency - would be better to take it from somewhere
+// but I did nto find a good exposed variable
+#define _MCPWM_FREQ 160e6
+
+// preferred pwm resolution default
+#define _PWM_RES_DEF 2048
+// min resolution
+#define _PWM_RES_MIN 1500
+// max resolution
+#define _PWM_RES_MAX 3000
+
 // structure containing motor slot configuration
 // this library supports up to 4 motors
 typedef struct {
@@ -73,22 +84,60 @@ bldc_6pwm_motor_slots_t esp32_bldc_6pwm_motor_slots[2] =  {
 void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm_unit_t mcpwm_unit, float dead_zone = NOT_SET){
 
   mcpwm_config_t pwm_config;
-  pwm_config.frequency = pwm_frequency;  //frequency
   pwm_config.counter_mode = MCPWM_UP_DOWN_COUNTER; // Up-down counter (triangle wave)
   pwm_config.duty_mode = MCPWM_DUTY_MODE_0; // Active HIGH
   mcpwm_init(mcpwm_unit, MCPWM_TIMER_0, &pwm_config);    //Configure PWM0A & PWM0B with above settings
   mcpwm_init(mcpwm_unit, MCPWM_TIMER_1, &pwm_config);    //Configure PWM0A & PWM0B with above settings
   mcpwm_init(mcpwm_unit, MCPWM_TIMER_2, &pwm_config);    //Configure PWM0A & PWM0B with above settings
-
+  
   if (dead_zone != NOT_SET){
-    // dead zone is configured in dead_time x 100 nanoseconds 
-    float dead_time = (float)(1e7 / pwm_frequency) * dead_zone;  
-    mcpwm_deadtime_enable(mcpwm_unit, MCPWM_TIMER_0, MCPWM_ACTIVE_HIGH_COMPLIMENT_MODE, dead_time, dead_time); 
-    mcpwm_deadtime_enable(mcpwm_unit, MCPWM_TIMER_1, MCPWM_ACTIVE_HIGH_COMPLIMENT_MODE, dead_time, dead_time);     
-    mcpwm_deadtime_enable(mcpwm_unit, MCPWM_TIMER_2, MCPWM_ACTIVE_HIGH_COMPLIMENT_MODE, dead_time, dead_time);
+    // dead zone is configured  
+    float dead_time = (float)(_MCPWM_FREQ / (pwm_frequency)) * dead_zone;  
+    mcpwm_deadtime_enable(mcpwm_unit, MCPWM_TIMER_0, MCPWM_ACTIVE_HIGH_COMPLIMENT_MODE, dead_time/2, dead_time/2); 
+    mcpwm_deadtime_enable(mcpwm_unit, MCPWM_TIMER_1, MCPWM_ACTIVE_HIGH_COMPLIMENT_MODE, dead_time/2, dead_time/2);     
+    mcpwm_deadtime_enable(mcpwm_unit, MCPWM_TIMER_2, MCPWM_ACTIVE_HIGH_COMPLIMENT_MODE, dead_time/2, dead_time/2);
   }
-
   _delay(100);
+
+  mcpwm_stop(mcpwm_unit, MCPWM_TIMER_0);
+  mcpwm_stop(mcpwm_unit, MCPWM_TIMER_1);
+  mcpwm_stop(mcpwm_unit, MCPWM_TIMER_2);
+
+  // manual configuration due to the lack of config flexibility in mcpwm_init()
+  mcpwm_num->clk_cfg.prescale = 0;
+  // calculate prescaler and period
+  // step 1: calculate the prescaler using the default pwm resolution
+  // prescaler = bus_freq / (pwm_freq * default_pwm_res) - 1
+  int prescaler = ceil(_MCPWM_FREQ / _PWM_RES_DEF / 2.0 / pwm_frequency) - 1;
+  // constrain prescaler
+  prescaler = _constrain(prescaler, 0, 128); 
+  // now calculate the real resolution timer period necessary (pwm resolution)
+  // pwm_res = bus_freq / (pwm_freq * (prescaler + 1))
+  int resolution_corrected = _MCPWM_FREQ / 2.0 / pwm_frequency / (prescaler + 1);
+  // if pwm resolution too low lower the prescaler
+  if(resolution_corrected < _PWM_RES_MIN && prescaler > 0 ) 
+    resolution_corrected = _MCPWM_FREQ / 2.0 / pwm_frequency / (--prescaler + 1); 
+  resolution_corrected = _constrain(resolution_corrected, _PWM_RES_MIN, _PWM_RES_MAX);
+
+  // set prescaler
+  mcpwm_num->timer[0].period.prescale = prescaler;
+  mcpwm_num->timer[1].period.prescale = prescaler;
+  mcpwm_num->timer[2].period.prescale = prescaler;    
+  _delay(1);
+  //set period
+  mcpwm_num->timer[0].period.period = resolution_corrected;
+  mcpwm_num->timer[1].period.period = resolution_corrected;
+  mcpwm_num->timer[2].period.period = resolution_corrected;
+  _delay(1);
+  mcpwm_num->timer[0].period.upmethod = 0;
+  mcpwm_num->timer[1].period.upmethod = 0;
+  mcpwm_num->timer[2].period.upmethod = 0;
+  _delay(1); 
+  //restart the timers
+  mcpwm_start(mcpwm_unit, MCPWM_TIMER_0);
+  mcpwm_start(mcpwm_unit, MCPWM_TIMER_1);
+  mcpwm_start(mcpwm_unit, MCPWM_TIMER_2);
+  _delay(1); 
 
   mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_0, MCPWM_SELECT_SYNC_INT0, 0);
   mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_1, MCPWM_SELECT_SYNC_INT0, 0);
@@ -106,8 +155,8 @@ void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm
 // supports Arudino/ATmega328, STM32 and ESP32 
 void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
 
-  if(!pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = 40000; // default frequency 20khz - centered pwm has twice lower frequency
-  else pwm_frequency = _constrain(2*pwm_frequency, 0, 100000); // constrain to 50kHz max - centered pwm has twice lower frequency
+  if(!pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = 20000; // default frequency 20khz - centered pwm has twice lower frequency
+  else pwm_frequency = _constrain(pwm_frequency, 0, 40000); // constrain to 40kHz max - centered pwm has twice lower frequency
 
   bldc_3pwm_motor_slots_t m_slot = {};
 
@@ -149,8 +198,8 @@ void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int
 // - hardware speciffic
 void _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
 
-  if(!pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = 40000; // default frequency 20khz - centered pwm has twice lower frequency
-  else pwm_frequency = _constrain(2*pwm_frequency, 0, 100000); // constrain to 50kHz max - centered pwm has twice lower frequency
+  if(!pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = 20000; // default frequency 20khz - centered pwm has twice lower frequency
+  else pwm_frequency = _constrain(pwm_frequency, 0, 40000); // constrain to 50kHz max - centered pwm has twice lower frequency
   stepper_motor_slots_t m_slot = {};
   // determine which motor are we connecting
   // and set the appropriate configuration parameters 
@@ -229,8 +278,8 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, in
 // - hardware specific
 int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
   
-  if(!pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = 40000; // default frequency 20khz - centered pwm has twice lower frequency
-  else pwm_frequency = _constrain(2*pwm_frequency, 0, 60000); // constrain to 30kHz max - centered pwm has twice lower frequency
+  if(!pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = 20000; // default frequency 20khz - centered pwm has twice lower frequency
+  else pwm_frequency = _constrain(pwm_frequency, 0, 40000); // constrain to 40kHz max - centered pwm has twice lower frequency
   bldc_6pwm_motor_slots_t m_slot = {};
   // determine which motor are we connecting
   // and set the appropriate configuration parameters 
