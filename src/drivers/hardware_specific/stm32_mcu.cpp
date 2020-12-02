@@ -185,6 +185,19 @@ int _interfaceType(const int pinA_h, const int pinA_l,  const int pinB_h, const 
 
 
 // function setting the high pwm frequency to the supplied pins
+// - Stepper motor - 2PWM setting
+// - hardware speciffic
+void _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
+  if( !pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = _PWM_FREQUENCY; // default frequency 50khz
+  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY); // constrain to 50kHz max
+  HardwareTimer* HT1 = _initPinPWM(pwm_frequency, pinA);
+  HardwareTimer* HT2 = _initPinPWM(pwm_frequency, pinB);
+  // allign the timers
+  _alignPWMTimers(HT1, HT2, HT2);
+}
+
+
+// function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
 // - hardware speciffic
 void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
@@ -212,6 +225,15 @@ void _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int
 }
 
 // function setting the pwm duty cycle to the hardware
+// - Stepper motor - 2PWM setting
+//- hardware speciffic
+void _writeDutyCycle2PWM(float dc_a,  float dc_b, int pinA, int pinB){
+  // transform duty cycle from [0,1] to [0,4095]
+  _setPwm(pinA, _PWM_RANGE*dc_a, _PWM_RESOLUTION);
+  _setPwm(pinB, _PWM_RANGE*dc_b, _PWM_RESOLUTION);
+}
+
+// function setting the pwm duty cycle to the hardware
 // - BLDC motor - 3PWM setting
 //- hardware speciffic
 void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC){
@@ -220,6 +242,7 @@ void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, int pinA, int pinB
   _setPwm(pinB, _PWM_RANGE*dc_b, _PWM_RESOLUTION);
   _setPwm(pinC, _PWM_RANGE*dc_c, _PWM_RESOLUTION);
 }
+
 
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 4PWM setting

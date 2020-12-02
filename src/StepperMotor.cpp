@@ -246,7 +246,7 @@ void StepperMotor::velocityOpenloop(float target_velocity){
 
   // calculate the necessary angle to achieve target velocity
   shaft_angle += target_velocity*Ts; 
-
+    
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
   setPhaseVoltage(voltage_limit, 0, _electricalAngle(shaft_angle,pole_pairs));
 

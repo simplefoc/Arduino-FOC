@@ -12,6 +12,7 @@ BLDCDriver3PWM	KEYWORD1
 BLDCDriver6PWM	KEYWORD1    
 BLDCDriver	KEYWORD1    
 StepperDriver4PWM	KEYWORD1    
+StepperDriver2PWM	KEYWORD1    
 StepperDriver	KEYWORD1    
 
 initFOC	KEYWORD2
