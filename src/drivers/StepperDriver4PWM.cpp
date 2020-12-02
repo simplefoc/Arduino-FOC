@@ -39,6 +39,8 @@ void StepperDriver4PWM::disable()
 
 // init hardware pins   
 int StepperDriver4PWM::init() {
+  // a bit of separation
+  _delay(1000);
 
   // PWM pins
   pinMode(pwm1A, OUTPUT);

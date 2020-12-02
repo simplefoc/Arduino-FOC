@@ -35,6 +35,8 @@ void BLDCDriver3PWM::disable()
 
 // init hardware pins   
 int BLDCDriver3PWM::init() {
+  // a bit of separation
+  _delay(1000);
 
   // PWM pins
   pinMode(pwmA, OUTPUT);
