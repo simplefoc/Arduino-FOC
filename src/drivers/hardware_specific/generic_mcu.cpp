@@ -2,8 +2,7 @@
 
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)  // if mcu is not atmega328
 
-
-#if defined(__AVR_ATmega2560__) // if mcu is not atmega2560
+#elif #if defined(__AVR_ATmega2560__) // if mcu is not atmega2560
 
 #elif defined(__arm__) && defined(CORE_TEENSY)  // or teensy
 
