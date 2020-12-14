@@ -11,7 +11,14 @@ Therefore this is an attempt to:
 - Develop a modular BLDC driver board: [Arduino *SimpleFOCShield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
 - ***New 📢:** Develop a modular Stepper motor board for FOC control:* <b>Arduino <span class="simple">Stepper<span class="foc">FOC</span>Shield</span></b>
 
-<blockquote class="info"><p> <b>NEW RELEASE 📢:</b> <i>Simple<b>FOC</b>library v2.0</i><br></p><ul><li><strong>6PWM support </strong> <b><a href="https://docs.simplefoc.com/drivers_config">See in docs!</a></b><ul><li>Arduino UNO (atmega328)</li><li>stm32 boards</li><li>esp32 boards</li></ul></li><li>BLDC driver code separated <b><a href="https://docs.simplefoc.com/code">See in docs!</a></b><ul><li> BLDC: 6pwm and 3pwm</li><li> Stepper: 4pwm</li><li> Hardware specific code in separate files</li><li> PWM config</li></ul></li><li>I2C and SPI sensors multiple busses support by <a href="https://github.com/owennewo">@owennewo</a> <b><a href="https://docs.simplefoc.com/magnetic_sensor">See in docs!</a></b></li><li>Hall sensor refactoring <a href="https://github.com/owennewo">@owennewo</a></li><li>A lot of refactoring</li></ul>Experimental features<ul><li>Initial implementation of Block commutation by <a href="https://github.com/owennewo">@owennewo</a><ul><li> FOCModulationType::Trapezoid_120</li><li> FOCModulationType::Trapezoid_150</li></ul></li><li>Added support for separate setting of <i>U<sub>d</sub></i> and <i>U<sub>q</sub></i> setting.<ul><li> Preparations for current control</li><li> Working only for SinePWM modulation at the moment</li></ul></li></ul></blockquote>
+> <b>NEW RELEASE 📢:</b> <i>Simple<b>FOC</b>library v2.0.1
+> - ESP32 bugfix
+>   - frequency setting 
+>   - pwm resolution
+> - 2PWM stepper class added `StepperMotor2PWM`
+> - some refactoring of examples
+
+<blockquote class="info"><p>  <i>Simple<b>FOC</b>library v2.0</i><br></p><ul><li><strong>6PWM support </strong> <b><a href="https://docs.simplefoc.com/drivers_config">See in docs!</a></b><ul><li>Arduino UNO (atmega328)</li><li>stm32 boards</li><li>esp32 boards</li></ul></li><li>BLDC driver code separated <b><a href="https://docs.simplefoc.com/code">See in docs!</a></b><ul><li> BLDC: 6pwm and 3pwm</li><li> Stepper: 4pwm</li><li> Hardware specific code in separate files</li><li> PWM config</li></ul></li><li>I2C and SPI sensors multiple busses support by <a href="https://github.com/owennewo">@owennewo</a> <b><a href="https://docs.simplefoc.com/magnetic_sensor">See in docs!</a></b></li><li>Hall sensor refactoring <a href="https://github.com/owennewo">@owennewo</a></li><li>A lot of refactoring</li></ul>Experimental features<ul><li>Initial implementation of Block commutation by <a href="https://github.com/owennewo">@owennewo</a><ul><li> FOCModulationType::Trapezoid_120</li><li> FOCModulationType::Trapezoid_150</li></ul></li><li>Added support for separate setting of <i>U<sub>d</sub></i> and <i>U<sub>q</sub></i> setting.<ul><li> Preparations for current control</li><li> Working only for SinePWM modulation at the moment</li></ul></li></ul></blockquote>
 
 ## Arduino *SimpleFOCShield*
 

@@ -13,7 +13,9 @@ BLDCDriver6PWM	KEYWORD1
 BLDCDriver	KEYWORD1    
 StepperDriver4PWM	KEYWORD1    
 StepperDriver2PWM	KEYWORD1    
-StepperDriver	KEYWORD1    
+StepperDriver	KEYWORD1   
+PIDController	KEYWORD1    
+LowPassFilter	KEYWORD1    
 
 initFOC	KEYWORD2
 loopFOC	KEYWORD2
@@ -96,6 +98,7 @@ D	KEYWORD2
 Tf	KEYWORD2
 voltage_limit	KEYWORD2
 output_ramp	KEYWORD2
+limit	KEYWORD2
 velocity_limit	KEYWORD2
 voltage_power_supply	KEYWORD2
 voltage_sensor_align	KEYWORD2
