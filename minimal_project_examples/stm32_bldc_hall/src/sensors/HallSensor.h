@@ -6,10 +6,6 @@
 #include "../common/foc_utils.h"
 #include "../common/time_utils.h"
 
-#ifndef STALE_HALL_DATA_MICROS
-  #define STALE_HALL_DATA_MICROS 500000
-#endif
-
 // seq 1 > 5 > 4 > 6 > 2 > 3 > 1     000 001 010 011 100 101 110 111
 const int8_t ELECTRIC_SECTORS[8] = { -1,  0,  4,  5,  2,  1,  3 , -1 };
 

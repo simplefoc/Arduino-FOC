@@ -45,6 +45,7 @@ void HallSensor::updateState() {
   long new_pulse_timestamp = _micros();
   hall_state = C_active + (B_active << 1) + (A_active << 2);
   int8_t new_electric_sector = ELECTRIC_SECTORS[hall_state];
+  static Direction old_direction;
   if (new_electric_sector - electric_sector > 3) {
     //underflow
     direction = static_cast<Direction>(natural_direction * -1);
@@ -57,9 +58,16 @@ void HallSensor::updateState() {
     direction = (new_electric_sector > electric_sector)? static_cast<Direction>(natural_direction) : static_cast<Direction>(natural_direction * (-1));
   }
   electric_sector = new_electric_sector;
-  pulse_diff = new_pulse_timestamp - pulse_timestamp;
+  if (direction == old_direction) {
+    // not oscilating or just changed direction
+    pulse_diff = new_pulse_timestamp - pulse_timestamp;
+  } else {
+    pulse_diff = 0;
+  }
+  
   pulse_timestamp = new_pulse_timestamp;
   total_interrupts++;
+  old_direction = direction;
   if (onSectorChange != nullptr) onSectorChange(electric_sector);
 }
 
@@ -86,8 +94,7 @@ float HallSensor::getAngle() {
   function using mixed time and frequency measurement technique
 */
 float HallSensor::getVelocity(){
-
-  if (pulse_diff == 0 || ((_micros() - pulse_timestamp) > STALE_HALL_DATA_MICROS) ) { // last velocity isn't accurate if too old
+  if (pulse_diff == 0 || ((_micros() - pulse_timestamp) > pulse_diff) ) { // last velocity isn't accurate if too old
     return 0;
   } else {
     return direction * (_2PI / cpr) / (pulse_diff / 1000000.0);

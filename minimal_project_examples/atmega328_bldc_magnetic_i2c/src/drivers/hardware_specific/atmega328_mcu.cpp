@@ -17,6 +17,18 @@ void _pinHighFrequency(const int pin){
   
 }
 
+
+// function setting the high pwm frequency to the supplied pins
+// - Stepper motor - 2PWM setting
+// - hardware speciffic
+// supports Arudino/ATmega328
+void _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
+   //  High PWM frequency
+   // - always max 32kHz
+  _pinHighFrequency(pinA);
+  _pinHighFrequency(pinB);
+}
+
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
 // - hardware speciffic
@@ -29,6 +41,14 @@ void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int
   _pinHighFrequency(pinC);
 }
 
+// function setting the pwm duty cycle to the hardware 
+// - Stepper motor - 2PWM setting
+// - hardware speciffic
+void _writeDutyCycle2PWM(float dc_a,  float dc_b, int pinA, int pinB){
+  // transform duty cycle from [0,1] to [0,255]
+  analogWrite(pinA, 255.0*dc_a);
+  analogWrite(pinB, 255.0*dc_b);
+}
 
 // function setting the pwm duty cycle to the hardware 
 // - BLDC motor - 3PWM setting

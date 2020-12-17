@@ -2,6 +2,8 @@
 
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)  // if mcu is not atmega328
 
+#elif defined(__AVR_ATmega2560__) // if mcu is not atmega2560
+
 #elif defined(__arm__) && defined(CORE_TEENSY)  // or teensy
 
 #elif defined(ESP_H)  // or esp32
@@ -9,6 +11,14 @@
 #elif defined(_STM32_DEF_) // or stm32
 
 #else
+
+// function setting the high pwm frequency to the supplied pins
+// - Stepper motor - 2PWM setting
+// - hardware speciffic
+// in generic case dont do anything
+void _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
+  return;
+}
 
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
@@ -34,6 +44,15 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
   return -1;
 }
 
+
+// function setting the pwm duty cycle to the hardware 
+// - Stepper motor - 2PWM setting
+// - hardware speciffic
+void _writeDutyCycle2PWM(float dc_a,  float dc_b, int pinA, int pinB){
+  // transform duty cycle from [0,1] to [0,255]
+  analogWrite(pinA, 255.0*dc_a);
+  analogWrite(pinB, 255.0*dc_b);
+}
 
 // function setting the pwm duty cycle to the hardware 
 // - BLDC motor - 3PWM setting
