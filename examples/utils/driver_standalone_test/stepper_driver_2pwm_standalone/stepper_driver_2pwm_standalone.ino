@@ -3,8 +3,8 @@
 
 
 // Stepper driver instance
-// StepperDriver4PWM(ph1A, ph1B, ph2A, ph2B, (en1, en2 optional))
-StepperDriver4PWM driver = StepperDriver4PWM(5, 6, 9,10, 7, 8);
+// StepperDriver2PWM(pwm1, in1a, in1b, pwm2, in2a, in2b, (en1, en2 optional))
+StepperDriver2PWM driver = StepperDriver2PWM(3, 4, 5, 10 , 9 , 8 , 11, 12);
 
 void setup() {
   

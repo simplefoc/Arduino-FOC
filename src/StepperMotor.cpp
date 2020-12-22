@@ -105,6 +105,8 @@ int StepperMotor::alignSensor() {
     sensor->natural_direction = Direction::CCW;
   } else if (mid_angle == start_angle) {
     if(monitor_port) monitor_port->println("MOT: Sensor failed to notice movement");
+  } else{
+    if(monitor_port) monitor_port->println("MOT: natural_direction==CW");
   }
 
   // let the motor stabilize for 2 sec
@@ -246,7 +248,7 @@ void StepperMotor::velocityOpenloop(float target_velocity){
 
   // calculate the necessary angle to achieve target velocity
   shaft_angle += target_velocity*Ts; 
-
+    
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
   setPhaseVoltage(voltage_limit, 0, _electricalAngle(shaft_angle,pole_pairs));
 

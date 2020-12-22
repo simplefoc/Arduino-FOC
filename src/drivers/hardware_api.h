@@ -6,6 +6,17 @@
 
 /** 
  * Configuring PWM frequency, resolution and alignment
+ * - Stepper driver - 2PWM setting
+ * - hardware specific
+ * 
+ * @param pwm_frequency - frequency in hertz - if applicable
+ * @param pinA pinA bldc driver
+ * @param pinB pinB bldc driver
+ */
+void _configure2PWM(long pwm_frequency, const int pinA, const int pinB);
+
+/** 
+ * Configuring PWM frequency, resolution and alignment
  * - BLDC driver - 3PWM setting
  * - hardware specific
  * 
@@ -46,6 +57,18 @@ void _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const 
  * @return 0 if config good, -1 if failed
  */
 int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l);
+
+/** 
+ * Function setting the duty cycle to the pwm pin (ex. analogWrite())
+ * - Stepper driver - 2PWM setting
+ * - hardware specific
+ * 
+ * @param dc_a  duty cycle phase A [0, 1]
+ * @param dc_b  duty cycle phase B [0, 1]
+ * @param pinA  phase A hardware pin number
+ * @param pinB  phase B hardware pin number
+ */ 
+void _writeDutyCycle2PWM(float dc_a,  float dc_b, int pinA, int pinB);
 
 /** 
  * Function setting the duty cycle to the pwm pin (ex. analogWrite())

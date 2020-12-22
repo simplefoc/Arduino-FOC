@@ -112,6 +112,8 @@ int BLDCMotor::alignSensor() {
     sensor->natural_direction = Direction::CCW;
   } else if (mid_angle == start_angle) {
     if(monitor_port) monitor_port->println("MOT: Sensor failed to notice movement");
+  } else{
+    if(monitor_port) monitor_port->println("MOT: natural_direction==CW");
   }
 
   // let the motor stabilize for 2 sec
