@@ -15,6 +15,7 @@ Therefore this is an attempt to:
 > <b>NEW RELEASE 📢:</b> <i>Simple<b>FOC</b>library v2.0.2
 > - Arduino MEGA 2560 support
 > - OSC example project
+> - floating point bug - open loop velocity
 
 > <i>Simple<b>FOC</b>library v2.0.1
 > - ESP32 bugfix
