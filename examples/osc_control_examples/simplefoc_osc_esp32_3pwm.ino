@@ -86,6 +86,10 @@ void setup() {
 	Serial.println("Initializing motor.");
 
 	sensor.init();
+
+	//  If using a I2C based sensor, increase the I2C bus speed if your board and sensor both support it
+	//Wire.setClock(400000L); // ATMega 328P, eg Arduino Nano etc...
+
 	motor.linkSensor(&sensor);
 	driver.voltage_power_supply = 9;
 	driver.init();

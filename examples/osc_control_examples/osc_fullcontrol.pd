@@ -1,0 +1,384 @@
+#N struct text float x float y text t;
+#N canvas 1842 146 1519 1052 12;
+#X obj 501 697 cnv 15 193 209 empty empty Tuning\ M1 20 12 0 14 #e0e0e0
+#404040 0;
+#X obj 787 477 mrpeach/unpackOSC;
+#X obj 132 586 print oscin;
+#X obj 787 504 print oscout;
+#X obj 723 449 spigot;
+#X obj 774 452 tgl 15 1 empty empty Debug 17 7 0 10 #fcfcfc #000000
+#000000 1 1;
+#X msg 591 503 disconnect;
+#X obj 132 558 spigot;
+#X obj 114 562 tgl 15 1 empty empty Debug -34 6 0 10 #fcfcfc #000000
+#000000 0 1;
+#X obj 132 531 mrpeach/unpackOSC;
+#X obj 673 477 mrpeach/udpsend;
+#X obj 132 496 mrpeach/udpreceive 8000;
+#X obj 673 422 mrpeach/packOSC;
+#X obj 1043 150 hsl 249 25 -5000 5000 0 0 empty empty Set\ Point\ M1
+-2 -8 0 10 #fcfcfc #000000 #000000 0 1;
+#X obj 1044 197 hsl 247 25 -15 15 0 0 empty empty Set\ Point\ M2 -2
+-8 0 10 #fcfcfc #000000 #000000 12300 1;
+#X obj 120 153 bng 53 250 50 0 empty empty STOP 14 26 0 10 #fc1204
+#000000 #ffffff;
+#X obj 200 102 * 0.10472;
+#X obj 202 169 hsl 235 30 -520 520 0 0 empty empty Set\ point\ (Velocity)
+-2 -8 0 10 #fcfcfc #000000 #000000 11500 1;
+#X obj 673 449 spigot;
+#X obj 653 452 tgl 15 1 empty empty Enable\ send -71 6 0 10 #fcfcfc
+#000000 #000000 1 1;
+#X msg 484 478 connect 192.168.1.43 8000;
+#X obj 673 395 speedlim 100;
+#X obj 231 573 mrpeach/routeOSC /M1 /M2;
+#X obj 231 610 mrpeach/routeOSC /0 /1 /2 /3 /P /I /D /R /F /K /N /L
+/C;
+#X obj 326 844 hsl 101 29 0 6.3 0 0 empty empty rad -2 -8 0 10 #fcfcfc
+#000000 #000000 0 1;
+#X obj 326 812 % 6.28319;
+#X obj 326 704 nbx 7 27 -1e+37 1e+37 0 0 empty empty V -5 0 0 18 #fcfcfc
+#000000 #000000 0.137548 256 3;
+#X obj 113 804 nbx 7 27 -1e+37 1e+37 0 0 empty empty Set\ point 0 -15
+0 18 #fcfcfc #000000 #000000 0 256 3;
+#X obj 326 776 nbx 7 27 -1e+37 1e+37 0 0 empty empty Position -80 0
+0 18 #fcfcfc #000000 #000000 -348.637 256 3;
+#X obj 326 740 nbx 7 27 -1e+37 1e+37 0 0 empty empty Velocity -80 0
+0 18 #fcfcfc #000000 #000000 0.0649328 256 3;
+#X obj 538 747 nbx 5 14 -1e+37 1e+37 0 0 empty empty P\ gain 0 -8 0
+10 #fcfcfc #000000 #000000 0.2 256 3;
+#X obj 537 776 nbx 5 14 -1e+37 1e+37 0 0 empty empty I\ gain 0 -8 0
+10 #fcfcfc #000000 #000000 20 256 3;
+#X obj 538 808 nbx 5 14 -1e+37 1e+37 0 0 empty empty D\ gain 0 -8 0
+10 #fcfcfc #000000 #000000 0.0001 256 3;
+#X obj 539 838 nbx 5 14 -1e+37 1e+37 0 0 empty empty V\ Ramp 0 -8 0
+10 #fcfcfc #000000 #000000 1000 256 3;
+#X obj 539 868 nbx 5 14 -1e+37 1e+37 0 0 empty empty LP\ time 0 -8
+0 10 #fcfcfc #000000 #000000 0.01 256 3;
+#X obj 605 747 nbx 5 14 -1e+37 1e+37 0 0 empty empty angP\ gain 0 -8
+0 10 #fcfcfc #000000 #000000 20 256 3;
+#X obj 608 779 nbx 5 14 -1e+37 1e+37 0 0 empty empty angP\ lim 0 -8
+0 10 #fcfcfc #000000 #000000 20 256 3;
+#X obj 609 836 nbx 5 14 -1e+37 1e+37 0 0 empty empty V\ limit 0 -8
+0 10 #fcfcfc #000000 #000000 8 256 3;
+#X obj 122 278 hradio 53 0 1 3 motorselect empty empty 0 -8 0 10 #fcfcfc
+#000000 #000000 0;
+#X scalar text 172 305 \; \;;
+#X obj 122 372 select 0 1 2;
+#X msg 122 399 prefix /M?;
+#X msg 149 423 prefix /M1;
+#X msg 178 445 prefix /M2;
+#X obj 789 422 mrpeach/packOSC;
+#X obj 789 395 speedlim 100;
+#X msg 592 531 typetags \$1;
+#X obj 571 535 tgl 15 1 empty empty OSC\ type\ tags -80 7 0 10 #ffffff
+#000000 #000000 1 1;
+#X text 63 286 Choose Motor, f 7;
+#X text 137 339 All, f 4;
+#X text 191 339 M1, f 4;
+#X text 247 339 M2, f 4;
+#X text 152 77 RPM;
+#X obj 1008 148 bng 29 250 50 0 empty empty STOP 2 13 0 10 #fc1204
+#000000 #ffffff;
+#X obj 1009 195 bng 29 250 50 0 empty empty STOP 2 13 0 10 #fc1204
+#000000 #ffffff;
+#X obj 74 696 hradio 53 0 1 3 empty empty empty 0 -8 0 10 #fcfcfc #000000
+#000000 1;
+#X text 8 711 Control;
+#X text 67 752 Voltage;
+#X text 124 753 Velocity;
+#X text 189 754 Position;
+#X obj 312 101 /;
+#X obj 312 129 * 6.28319;
+#X text 424 75 cm, f 4;
+#X text 393 51 Wheel diameter;
+#X obj 394 100 * 0.0314159;
+#X msg 348 636 set \$1;
+#X msg 376 637 set \$1;
+#X msg 407 636 set \$1;
+#X msg 435 636 set \$1;
+#X msg 466 636 set \$1;
+#X msg 495 636 set \$1;
+#X msg 524 637 set \$1;
+#X msg 554 637 set \$1;
+#X msg 583 637 set \$1;
+#X obj 75 898 s osctargetedout;
+#X obj 75 866 prepend /M1/C;
+#X obj 773 304 r osctargetedout;
+#X obj 593 912 prepend /M1/K;
+#X obj 602 925 prepend /M1/N;
+#X obj 609 936 prepend /M1/L;
+#X obj 564 976 s osctargetedout;
+#X obj 1271 697 cnv 15 193 209 empty empty Tuning\ M2 20 12 0 14 #e0e0e0
+#404040 0;
+#X obj 1001 610 mrpeach/routeOSC /0 /1 /2 /3 /P /I /D /R /F /K /N /L
+/C;
+#X obj 1096 844 hsl 101 29 0 6.3 0 0 empty empty rad -2 -8 0 10 #fcfcfc
+#000000 #000000 0 1;
+#X obj 1096 812 % 6.28319;
+#X obj 1096 704 nbx 7 27 -1e+37 1e+37 0 0 empty empty V -5 0 0 18 #fcfcfc
+#000000 #000000 -0.13018 256 3;
+#X obj 883 804 nbx 7 27 -1e+37 1e+37 0 0 setpointin2 empty Set\ point
+0 -15 0 18 #fcfcfc #000000 #000000 0 256 3;
+#X obj 1096 776 nbx 7 27 -1e+37 1e+37 0 0 empty empty Position -80
+0 0 18 #fcfcfc #000000 #000000 -346.273 256 3;
+#X obj 1096 740 nbx 7 27 -1e+37 1e+37 0 0 empty empty Velocity -80
+0 0 18 #fcfcfc #000000 #000000 0.0657255 256 3;
+#X obj 1308 747 nbx 5 14 -1e+37 1e+37 0 0 empty empty P\ gain 0 -8
+0 10 #fcfcfc #000000 #000000 0.2 256 3;
+#X obj 1308 778 nbx 5 14 -1e+37 1e+37 0 0 empty empty I\ gain 0 -8
+0 10 #fcfcfc #000000 #000000 20 256 3;
+#X obj 1308 808 nbx 5 14 -1e+37 1e+37 0 0 empty empty D\ gain 0 -8
+0 10 #fcfcfc #000000 #000000 0.001 256 3;
+#X obj 1309 838 nbx 5 14 -1e+37 1e+37 0 0 empty empty V\ Ramp 0 -8
+0 10 #fcfcfc #000000 #000000 1000 256 3;
+#X obj 1309 868 nbx 5 14 -1e+37 1e+37 0 0 empty empty LP\ time 0 -8
+0 10 #fcfcfc #000000 #000000 0.01 256 3;
+#X obj 1375 747 nbx 5 14 -1e+37 1e+37 0 0 empty empty angP\ gain 0
+-8 0 10 #fcfcfc #000000 #000000 20 256 3;
+#X obj 1378 779 nbx 5 14 -1e+37 1e+37 0 0 empty empty angP\ lim 0 -8
+0 10 #fcfcfc #000000 #000000 20 256 3;
+#X obj 1379 836 nbx 5 14 -1e+37 1e+37 0 0 empty empty V\ limit 0 -8
+0 10 #fcfcfc #000000 #000000 8 256 3;
+#X obj 844 696 hradio 53 0 1 3 empty empty empty 0 -8 0 10 #fcfcfc
+#000000 #000000 1;
+#X text 778 711 Control;
+#X text 837 752 Voltage;
+#X text 894 753 Velocity;
+#X text 959 754 Position;
+#X msg 1118 636 set \$1;
+#X msg 1146 637 set \$1;
+#X msg 1177 636 set \$1;
+#X msg 1205 636 set \$1;
+#X msg 1236 636 set \$1;
+#X msg 1265 636 set \$1;
+#X msg 1294 637 set \$1;
+#X msg 1324 637 set \$1;
+#X msg 1353 637 set \$1;
+#X obj 845 898 s osctargetedout;
+#X obj 1325 976 s osctargetedout;
+#X obj 1379 936 prepend /M2/L;
+#X obj 1372 925 prepend /M2/N;
+#X obj 1364 912 prepend /M2/K;
+#X obj 1296 947 prepend /M2/F;
+#X obj 1291 940 prepend /M2/R;
+#X obj 1287 933 prepend /M2/D;
+#X obj 1281 925 prepend /M2/I;
+#X obj 1276 917 prepend /M2/P;
+#X obj 526 947 prepend /M1/F;
+#X obj 521 940 prepend /M1/R;
+#X obj 517 933 prepend /M1/D;
+#X obj 511 925 prepend /M1/I;
+#X obj 506 917 prepend /M1/P;
+#X obj 393 78 nbx 2 14 0 50 0 1 empty empty empty 0 -8 0 10 #fcfcfc
+#000000 #000000 6 256 2;
+#X obj 299 71 nbx 5 24 -20 20 0 0 empty empty empty 0 -8 0 10 #fcfcfc
+#000000 #000000 -0.266666 256 2;
+#X obj 179 74 nbx 7 23 -5000 5000 0 0 empty empty empty 0 -8 0 10 #fcfcfc
+#000000 #000000 -84.8824 256 2;
+#X obj 577 169 hsl 104 30 -3.1415 3.1415 0 0 empty empty Set\ point\ (Position)
+-2 -8 0 10 #fcfcfc #000000 #000000 10300 1;
+#X obj 708 68 vsl 31 122 0 12 0 0 empty empty Set\ point\ (Voltage)
+0 -9 0 10 #fcfcfc #000000 #000000 0 1;
+#X obj 246 13 / 0.10472;
+#X msg 318 13 set \$1;
+#X obj 457 11 *;
+#X obj 384 11 / 6.28319;
+#X obj 547 96 /;
+#X obj 547 125 * 6.28319;
+#X obj 547 66 nbx 5 24 -100 100 0 0 empty empty empty 0 -8 0 10 #fcfcfc
+#000000 #000000 0.0599999 256 2;
+#X text 534 68 m;
+#X obj 20 6 r setpointin;
+#X obj 17 36 r setpointin2;
+#X obj 120 6 spigot;
+#X obj 120 42 spigot;
+#X obj 16 63 r motorselect;
+#X obj 1339 99 r setpointin;
+#X obj 1345 150 r setpointin2;
+#X msg 493 11 set \$1;
+#X obj 22 103 > 1;
+#X obj 59 103 <= 1;
+#X msg 1110 529 /M?/params;
+#X obj 1110 502 loadbang;
+#X msg 1339 126 set \$1;
+#X msg 1343 174 set \$1;
+#X obj 639 9 *;
+#X obj 566 9 / 6.28319;
+#X msg 675 9 set \$1;
+#X obj 483 448 loadbang;
+#X text 284 74 m/s;
+#X obj 845 866 prepend /M2/C;
+#X msg 163 226 sendtyped /M?/t f 0;
+#X obj 458 224 prepend sendtyped /t f;
+#X msg 991 301 sendtyped /M2/t f 0;
+#X msg 983 274 sendtyped /M1/t f 0;
+#X obj 1051 286 prepend sendtyped /M1/t f;
+#X obj 1047 322 prepend sendtyped /M2/t f;
+#X obj 475 171 nbx 7 21 -1e+37 1e+37 0 0 empty empty rad 0 -8 0 10
+#fcfcfc #000000 #000000 2 256 2;
+#X connect 1 0 3 0;
+#X connect 4 0 1 0;
+#X connect 5 0 4 1;
+#X connect 6 0 10 0;
+#X connect 7 0 2 0;
+#X connect 8 0 7 1;
+#X connect 9 0 7 0;
+#X connect 9 0 22 0;
+#X connect 11 0 9 0;
+#X connect 12 0 18 0;
+#X connect 12 0 4 0;
+#X connect 13 0 163 0;
+#X connect 14 0 164 0;
+#X connect 15 0 159 0;
+#X connect 16 0 17 0;
+#X connect 17 0 131 0;
+#X connect 17 0 134 0;
+#X connect 17 0 160 0;
+#X connect 18 0 10 0;
+#X connect 19 0 18 1;
+#X connect 20 0 10 0;
+#X connect 21 0 12 0;
+#X connect 22 0 23 0;
+#X connect 22 1 82 0;
+#X connect 23 0 26 0;
+#X connect 23 1 29 0;
+#X connect 23 2 28 0;
+#X connect 23 3 27 0;
+#X connect 23 4 65 0;
+#X connect 23 5 66 0;
+#X connect 23 6 67 0;
+#X connect 23 7 68 0;
+#X connect 23 8 69 0;
+#X connect 23 9 70 0;
+#X connect 23 10 71 0;
+#X connect 23 11 72 0;
+#X connect 23 12 73 0;
+#X connect 25 0 24 0;
+#X connect 28 0 25 0;
+#X connect 30 0 125 0;
+#X connect 31 0 124 0;
+#X connect 32 0 123 0;
+#X connect 33 0 122 0;
+#X connect 34 0 121 0;
+#X connect 35 0 77 0;
+#X connect 36 0 78 0;
+#X connect 37 0 79 0;
+#X connect 38 0 40 0;
+#X connect 40 0 41 0;
+#X connect 40 1 42 0;
+#X connect 40 2 43 0;
+#X connect 41 0 12 0;
+#X connect 42 0 12 0;
+#X connect 43 0 12 0;
+#X connect 44 0 18 0;
+#X connect 44 0 4 0;
+#X connect 45 0 44 0;
+#X connect 46 0 12 0;
+#X connect 47 0 46 0;
+#X connect 53 0 162 0;
+#X connect 54 0 161 0;
+#X connect 55 0 75 0;
+#X connect 60 0 61 0;
+#X connect 61 0 17 0;
+#X connect 64 0 60 1;
+#X connect 64 0 133 1;
+#X connect 64 0 135 1;
+#X connect 64 0 153 1;
+#X connect 65 0 30 0;
+#X connect 66 0 31 0;
+#X connect 67 0 32 0;
+#X connect 68 0 33 0;
+#X connect 69 0 34 0;
+#X connect 70 0 35 0;
+#X connect 71 0 36 0;
+#X connect 72 0 37 0;
+#X connect 73 0 55 0;
+#X connect 75 0 74 0;
+#X connect 76 0 45 0;
+#X connect 77 0 80 0;
+#X connect 78 0 80 0;
+#X connect 79 0 80 0;
+#X connect 82 0 85 0;
+#X connect 82 1 88 0;
+#X connect 82 2 87 0;
+#X connect 82 3 86 0;
+#X connect 82 4 102 0;
+#X connect 82 5 103 0;
+#X connect 82 6 104 0;
+#X connect 82 7 105 0;
+#X connect 82 8 106 0;
+#X connect 82 9 107 0;
+#X connect 82 10 108 0;
+#X connect 82 11 109 0;
+#X connect 82 12 110 0;
+#X connect 84 0 83 0;
+#X connect 87 0 84 0;
+#X connect 89 0 120 0;
+#X connect 90 0 119 0;
+#X connect 91 0 118 0;
+#X connect 92 0 117 0;
+#X connect 93 0 116 0;
+#X connect 94 0 115 0;
+#X connect 95 0 114 0;
+#X connect 96 0 113 0;
+#X connect 97 0 158 0;
+#X connect 102 0 89 0;
+#X connect 103 0 90 0;
+#X connect 104 0 91 0;
+#X connect 105 0 92 0;
+#X connect 106 0 93 0;
+#X connect 107 0 94 0;
+#X connect 108 0 95 0;
+#X connect 109 0 96 0;
+#X connect 110 0 97 0;
+#X connect 113 0 112 0;
+#X connect 114 0 112 0;
+#X connect 115 0 112 0;
+#X connect 116 0 112 0;
+#X connect 117 0 112 0;
+#X connect 118 0 112 0;
+#X connect 119 0 112 0;
+#X connect 120 0 112 0;
+#X connect 121 0 80 0;
+#X connect 122 0 80 0;
+#X connect 123 0 80 0;
+#X connect 124 0 80 0;
+#X connect 125 0 80 0;
+#X connect 126 0 64 0;
+#X connect 127 0 60 0;
+#X connect 128 0 16 0;
+#X connect 129 0 165 0;
+#X connect 130 0 160 0;
+#X connect 131 0 132 0;
+#X connect 132 0 128 0;
+#X connect 133 0 146 0;
+#X connect 134 0 133 0;
+#X connect 135 0 136 0;
+#X connect 136 0 165 0;
+#X connect 137 0 135 0;
+#X connect 139 0 141 0;
+#X connect 140 0 142 0;
+#X connect 143 0 147 0;
+#X connect 143 0 148 0;
+#X connect 144 0 151 0;
+#X connect 145 0 152 0;
+#X connect 146 0 127 0;
+#X connect 147 0 142 1;
+#X connect 148 0 141 1;
+#X connect 149 0 44 0;
+#X connect 150 0 149 0;
+#X connect 151 0 13 0;
+#X connect 152 0 14 0;
+#X connect 153 0 155 0;
+#X connect 154 0 153 0;
+#X connect 155 0 137 0;
+#X connect 156 0 20 0;
+#X connect 158 0 111 0;
+#X connect 159 0 44 0;
+#X connect 160 0 21 0;
+#X connect 161 0 44 0;
+#X connect 162 0 44 0;
+#X connect 163 0 45 0;
+#X connect 164 0 45 0;
+#X connect 165 0 160 0;
+#X connect 165 0 154 0;
