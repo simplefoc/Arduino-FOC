@@ -57,6 +57,12 @@ void setup() {
 
   // initialise magnetic sensor hardware
   sensor.init();
+
+//  If using a I2C based sensor, increase the I2C bus speed if your board and sensor both support it
+//  Wire.setClock(400000L); // ATMega 328P, eg Arduino Nano etc...
+
+
+
   // link the motor to the sensor
   motor.linkSensor(&sensor);
 
