@@ -5,26 +5,21 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![arduino-library-badge](https://www.ardu-badge.com/badge/Simple%20FOC.svg?)](https://www.ardu-badge.com/badge/Simple%20FOC.svg)
 
-Proper low-cost and low-power FOC supporting boards are very hard to find today and even may not exist. Even harder to find is a stable and simple FOC algorithm code for BLDC and Stepper motors capable of running on Arduino devices. 
+We live in very exciting times 😃! BLDC motors are entering the hobby community more and more and many great projects have already emerged leveraging their far superior dynamics and power capabilities. BLDC motors have numerous advantages over regular DC motors but they have one big disadvantage, the complexity of control. Even though it has become relatively easy to design and manufacture PCBs and create our own hardware solutions for driving BLDC motors the proper low-cost solutions are yet to come. One of the reasons for this is the apparent complexity of writing the BLDC driving algorithms, Field oriented control (FOC) being an example of one of the most efficient ones.
+The solutions that can be found on-line are almost exclusively very specific for certain hardware configuration and the microcontroller architecture used.
+Additionally, most of the efforts at this moment are still channeled towards the high-power applications of the BLDC motors and proper low-cost and low-power FOC supporting boards are very hard to find today and even may not exist. <br>
 Therefore this is an attempt to: 
-- Demystify FOC algorithm and make a robust but simple Arduino library: [Arduino *SimpleFOClibrary*](https://docs.simplefoc.com/arduino_simplefoc_library_showcase)
-- Develop a modular BLDC driver board: [Arduino *SimpleFOCShield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
-- ***New 📢:** Develop a modular Stepper motor board for FOC control:* <b>Arduino <span class="simple">Stepper<span class="foc">FOC</span>Shield</span></b>
+- 🎯 Demystify FOC algorithm and make a robust but simple Arduino library: [Arduino *SimpleFOClibrary*](https://docs.simplefoc.com/arduino_simplefoc_library_showcase)
+  - <i>Support as many <b>motor + sensor + driver + mcu</b> combinations out there</i>
+- 🎯 Develop a modular low-power BLDC driver board: [Arduino *SimpleFOCShield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
 
-
-> <b>NEW RELEASE 📢:</b> <i>Simple<b>FOC</b>library v2.0.2
+> <b> RELEASE 📢:</b> <i>Simple<b>FOC</b>library v2.0.2
 > - Arduino MEGA 2560 support
 > - OSC example project
 > - floating point bug - open loop velocity
 
-> <i>Simple<b>FOC</b>library v2.0.1
-> - ESP32 bugfix
->   - frequency setting 
->   - pwm resolution
-> - 2PWM stepper class added `StepperMotor2PWM`
-> - some refactoring of examples
 
-## Arduino *SimpleFOCShield*
+## Arduino *SimpleFOCShield* v2.0.2
 
 <p align="">
 <a href="https://youtu.be/G5pbo0C6ujE">
@@ -33,23 +28,25 @@ Therefore this is an attempt to:
 </p>
 
 ### Features
-- **Plug & play**: In combination with Arduino <span class="simple">Simple<span class="foc">FOC</span>library</span> 
-- **Low-cost**: Price of €15 - [Check the pricing](https://www.simplefoc.com/simplefoc_shield_product) 
-- **Max power 100W** - max current 5A, power-supply 12-24V
-   - Designed for Gimbal motors with the internal resistance >10 Ω. 
+- **Plug & play**: In combination with Arduino *Simple**FOC**library* - [github](https://github.com/simplefoc/Arduino-FOC)
+- **Low-cost**: Price of €15 - [Check the pricing](https://www.simplefoc.com/shop) 
+- **In-line current sensing**: Up to 3Amps/5Amps bidirectional
+   - configurable: 3.3Amps - 3.3V adc, 5Amps - 5V adc
+- **Integrated 8V regulator**: 
+   - Enable/disable by soldering pads
+- **Max power 120W** - max current 5A, power-supply 12-24V
+   - Designed for Gimbal motors with the internal resistance >10 Ωs. 
 - **Stackable**: running 2 motors in the same time
-- **Encoder/Hall sensor interface**: Integrated 3.3kΩ pullups (configurable)
+- **Encoder/Hall sensors interface**: Integrated 3.3kΩ pullups (configurable)
 - **I2C interface**: Integrated 4.7kΩ pullups (configurable)
 - **Configurable pinout**: Hardware configuration - soldering connections
 - **Arduino headers**: Arduino UNO, Arduino MEGA, STM32 Nucleo boards...
-- **Open Source**: Fully available fabrication files - [how to make it yourself](https://www.simplefoc.com/arduino_simplefoc_shield_fabrication), 
+- **Open Source**: Fully available fabrication files - [how to make it yourself](https://docs.simplefoc.com/arduino_simplefoc_shield_fabrication)
 
-##### If you are interested in this board, order your version on this link: [Shop](https://www.simplefoc.com/simplefoc_shield_product)
-
-<p align=""><img src="https://docs.simplefoc.com/extras/Images/shield_to_v13.jpg" height="180px">   <img src="https://docs.simplefoc.com/extras/Images/shield_bo_v13.jpg"  height="180px"> <img src="https://docs.simplefoc.com/extras/Images/simple_foc_shield_v13_small.gif"  height="180x"></p>
+<p align=""><img src="https://simplefoc.com/assets/img/v2.jpg" height="180px">   <img src="https://simplefoc.com/assets/img/v1.jpg"  height="180px"> <img src="https://docs.simplefoc.com/extras/Images/simple_foc_shield_v13_small.gif"  height="180x"></p>
 
 
-## Arduino *SimpleFOClibrary*
+## Arduino *SimpleFOClibrary* v2.0.2
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">
