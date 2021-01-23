@@ -43,21 +43,31 @@ void HallSensor::handleC() {
  */ 
 void HallSensor::updateState() {
   long new_pulse_timestamp = _micros();
-  hall_state = C_active + (B_active << 1) + (A_active << 2);
+
+  int8_t new_hall_state = C_active + (B_active << 1) + (A_active << 2);
+  
+  // glitch avoidance #1 - sometimes we get an interrupt but pins haven't changed
+  if (new_hall_state == hall_state) {
+    return;
+  }
+  hall_state = new_hall_state;
+
   int8_t new_electric_sector = ELECTRIC_SECTORS[hall_state];
   static Direction old_direction;
   if (new_electric_sector - electric_sector > 3) {
     //underflow
-    direction = static_cast<Direction>(natural_direction * -1);
+    direction = Direction::CCW;
     electric_rotations += direction;
   } else if (new_electric_sector - electric_sector < (-3)) {
     //overflow
-    direction = static_cast<Direction>(natural_direction);
+    direction = Direction::CW;
     electric_rotations += direction;
   } else {
-    direction = (new_electric_sector > electric_sector)? static_cast<Direction>(natural_direction) : static_cast<Direction>(natural_direction * (-1));
+    direction = (new_electric_sector > electric_sector)? Direction::CW : Direction::CCW;
   }
   electric_sector = new_electric_sector;
+
+  // glitch avoidance #2 changes in direction can cause velocity spikes.  Possible improvements needed in this area
   if (direction == old_direction) {
     // not oscilating or just changed direction
     pulse_diff = new_pulse_timestamp - pulse_timestamp;
@@ -97,7 +107,7 @@ float HallSensor::getVelocity(){
   if (pulse_diff == 0 || ((_micros() - pulse_timestamp) > pulse_diff) ) { // last velocity isn't accurate if too old
     return 0;
   } else {
-    return direction * (_2PI / cpr) / (pulse_diff / 1000000.0);
+    return natural_direction * direction * (_2PI / cpr) / (pulse_diff / 1000000.0);
   }
 
 }

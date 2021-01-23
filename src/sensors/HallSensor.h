@@ -80,7 +80,7 @@ class HallSensor: public Sensor{
      */
     int needsAbsoluteZeroSearch() override;
 
-    // whether last step was CW (+1) or CCW (-1) direction
+    // whether last step was CW (+1) or CCW (-1).  Note - this is a raw direction (i.e. doesn't include natural_direction reversal)
     Direction direction;
 
     void attachSectorCallback(void (*onSectorChange)(int a) = nullptr);
