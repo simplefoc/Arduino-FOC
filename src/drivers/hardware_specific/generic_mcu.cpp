@@ -8,6 +8,8 @@
 
 #elif defined(_STM32_DEF_) // or stm32
 
+#elif defined(ARDUINO_ARCH_SAMD) // or samd
+
 #else
 
 // function setting the high pwm frequency to the supplied pins
