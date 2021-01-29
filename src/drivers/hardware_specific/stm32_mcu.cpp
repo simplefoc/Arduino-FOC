@@ -2,13 +2,13 @@
 #include "../hardware_api.h"
 
 #if defined(_STM32_DEF_)
-
+// default pwm parameters
 #define _PWM_RESOLUTION 12 // 12bit
 #define _PWM_RANGE 4095.0// 2^12 -1 = 4095
 #define _PWM_FREQUENCY 25000 // 25khz
 #define _PWM_FREQUENCY_MAX 50000 // 50khz
 
-
+// 6pwm parameters
 #define _HARDWARE_6PWM 1
 #define _SOFTWARE_6PWM 0
 #define _ERROR_6PWM -1
@@ -118,6 +118,7 @@ void _alignPWMTimers(HardwareTimer *HT1,HardwareTimer *HT2,HardwareTimer *HT3,Ha
   HT4->resume();
 }
 
+// configure hardware 6pwm interface only one timer with inverted channels
 HardwareTimer* _initHardware6PWMInterface(uint32_t PWM_freq, float dead_zone, int pinA_h, int pinA_l, int pinB_h, int pinB_l, int pinC_h, int pinC_l)
 {
   PinName uhPinName = digitalPinToPinName(pinA_h);

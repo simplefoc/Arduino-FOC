@@ -20,8 +20,11 @@
 #define _PI_3 1.0471975512
 #define _2PI 6.28318530718
 #define _3PI_2 4.71238898038
+#define _PI_6 0.52359877559
 
 #define NOT_SET -12345.0
+#define HIGH_IMPEDANCE -1234
+#define HIGH_Z HIGH_IMPEDANCE
 
 /**
  *  Function approximating the sine calculation by using fixed size array

@@ -13,10 +13,11 @@ Therefore this is an attempt to:
   - <i>Support as many <b>motor + sensor + driver + mcu</b> combinations out there</i>
 - 🎯 Develop a modular low-power BLDC driver board: [Arduino *SimpleFOCShield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
 
-> <b> RELEASE 📢:</b> <i>Simple<b>FOC</b>library v2.0.2
-> - Arduino MEGA 2560 support
-> - OSC example project
-> - floating point bug - open loop velocity
+#### <b> NEXT RELEASE 📢:</b> <i>Simple<b>FOC</b>library v2.0.3 
+> #### Implemented features in dev branch
+> - Upgrade of the HallSensor implementation by [@owennewo](https://github.com/owennewo)
+> - Support for Arduino DUE - everything except the 6PWM mode
+> - Support for ATMega328pb
 
 
 ## Arduino *SimpleFOCShield* v2.0.2
