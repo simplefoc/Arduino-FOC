@@ -79,15 +79,36 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction sensor_direction 
     zero_electric_angle = zero_electric_offset;
     // set the sensor direction - default CW
     sensor->natural_direction = sensor_direction;
+    monitor_port->println("MOT: Align skipped"); 
   }else{
     // sensor and motor alignment
     _delay(500);
     exit_flag = alignSensor();
     _delay(500);
-    }
-  if(monitor_port) monitor_port->println("MOT: Motor ready.");
 
+    if(monitor_port){
+      if(exit_flag > 0 ) {
+        monitor_port->println("MOT: Align success!"); 
+        if (sensor->hasAbsoluteZero() && !sensor->needsAbsoluteZeroSearch()) {
+          monitor_port->println("MOT: Skip calibration with:");
+          monitor_port->print("  motor.initFOC("); 
+          monitor_port->print(zero_electric_angle, 4); 
+          monitor_port->print(",");
+          monitor_port->print(sensor->natural_direction == Direction::CW ? "Direction::CW" : "Direction::CCW");
+          monitor_port->println(");");
+        }
+      } else {
+        if (exit_flag< 0) {
+          monitor_port->println("MOT: Align sensor failed, disabling.");
+        } else {
+          monitor_port->println("MOT: Calibration not available!");
+        }
+        disable();
+      }
+    }
+  }
   return exit_flag;
+  
 }
 // Encoder alignment to electrical 0 angle
 int BLDCMotor::alignSensor() {
@@ -107,17 +128,15 @@ int BLDCMotor::alignSensor() {
     setPhaseVoltage(voltage_sensor_align, 0,  angle);
     _delay(200);
   }
-  if (mid_angle < start_angle) {
-    if(monitor_port) monitor_port->println("MOT: natural_direction==CCW");
-    sensor->natural_direction = Direction::CCW;
-  } else if (mid_angle == start_angle) {
-    if(monitor_port) monitor_port->println("MOT: Sensor failed to notice movement");
-  } else{
-    if(monitor_port) monitor_port->println("MOT: natural_direction==CW");
+  if (mid_angle == start_angle) { 
+      if(monitor_port) monitor_port->println("MOT: Sensor failed to notice movement");
+    return -1;
+  } else {
+    sensor->natural_direction = (mid_angle < start_angle)? Direction::CCW : Direction::CW;
   }
 
-  // let the motor stabilize for 2 sec
-  _delay(2000);
+  // let the motor stabilize for 1 sec
+  _delay(1000);
   // set sensor to zero
   sensor->initRelativeZero();
   _delay(500);
@@ -127,11 +146,7 @@ int BLDCMotor::alignSensor() {
   // find the index if available
   int exit_flag = absoluteZeroAlign();
   _delay(500);
-  if(monitor_port){
-    if(exit_flag< 0 ) monitor_port->println("MOT: Error: Not found!");
-    if(exit_flag> 0 ) monitor_port->println("MOT: Success!");
-    else  monitor_port->println("MOT: Not available!");
-  }
+
   return exit_flag;
 }
 
