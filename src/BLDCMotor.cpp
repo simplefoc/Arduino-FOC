@@ -93,16 +93,12 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction sensor_direction 
           monitor_port->println("MOT: Skip calibration with:");
           monitor_port->print("  motor.initFOC("); 
           monitor_port->print(zero_electric_angle, 4); 
-          monitor_port->print(",");
-          monitor_port->print(sensor->natural_direction == Direction::CW ? "Direction::CW" : "Direction::CCW");
+          monitor_port->print(",Direction::");
+          monitor_port->print(sensor->natural_direction == Direction::CW ? "CW" : "CCW");
           monitor_port->println(");");
         }
       } else {
-        if (exit_flag< 0) {
-          monitor_port->println("MOT: Align sensor failed, disabling.");
-        } else {
-          monitor_port->println("MOT: Calibration not available!");
-        }
+        monitor_port->println("MOT: Align failed, disabling.");
         disable();
       }
     }
