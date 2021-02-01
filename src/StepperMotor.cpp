@@ -142,10 +142,10 @@ int StepperMotor::absoluteZeroAlign() {
   // search the absolute zero with small velocity
   while(sensor->needsAbsoluteZeroSearch() && shaft_angle < _2PI){
     loopFOC();   
-    voltage_q = PID_velocity(velocity_index_search - shaftVelocity());
+    voltage.q = PID_velocity(velocity_index_search - shaftVelocity());
   }
-  voltage_q = 0;
-  voltage_d = 0;
+  voltage.q = 0;
+  voltage.d = 0;
   // disable motor
   setPhaseVoltage(0, 0, 0);
 
@@ -166,7 +166,7 @@ void StepperMotor::loopFOC() {
   // shaft angle 
   shaft_angle = shaftAngle();
   // set the phase voltage - FOC heart function :) 
-  setPhaseVoltage(voltage_q, voltage_d, _electricalAngle(shaft_angle, pole_pairs));
+  setPhaseVoltage(voltage.q, voltage.d, _electricalAngle(shaft_angle, pole_pairs));
 }
 
 // Iterative function running outer loop of the FOC algorithm
@@ -182,20 +182,20 @@ void StepperMotor::move(float new_target) {
   // choose control loop
   switch (controller) {
     case ControlType::voltage:
-      voltage_q =  target;
+      voltage.q =  target;
       break;
     case ControlType::angle:
       // angle set point
       // include angle loop
       shaft_angle_sp = target;
       shaft_velocity_sp = P_angle( shaft_angle_sp - shaft_angle );
-      voltage_q = PID_velocity(shaft_velocity_sp - shaft_velocity);
+      voltage.q = PID_velocity(shaft_velocity_sp - shaft_velocity);
       break;
     case ControlType::velocity:
       // velocity set point
       // include velocity loop
       shaft_velocity_sp = target;
-      voltage_q = PID_velocity(shaft_velocity_sp - shaft_velocity);
+      voltage.q = PID_velocity(shaft_velocity_sp - shaft_velocity);
       break;
     case ControlType::velocity_openloop:
       // velocity control in open loop

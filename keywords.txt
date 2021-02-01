@@ -15,7 +15,10 @@ StepperDriver4PWM	KEYWORD1
 StepperDriver2PWM	KEYWORD1    
 StepperDriver	KEYWORD1   
 PIDController	KEYWORD1    
-LowPassFilter	KEYWORD1    
+LowPassFilter	KEYWORD1   
+InlineCurrentSense	KEYWORD1   
+CurrentSense	KEYWORD1   
+
 
 initFOC	KEYWORD2
 loopFOC	KEYWORD2
@@ -44,9 +47,13 @@ Pullup	KEYWORD1
 Direction	KEYWORD1
 MagneticSensorI2CConfig_s	KEYWORD1
 MagneticSensorSPIConfig_s	KEYWORD1
+DQVoltage_s	KEYWORD1
+DQCurrent_s	KEYWORD1
+PhaseCurrent_s	KEYWORD1
 
 linkDriver	KEYWORD2
 linkSensor	KEYWORD2
+linkCurrentSense	KEYWORD2
 handleA	KEYWORD2
 handleB	KEYWORD2
 handleIndex	KEYWORD2
@@ -63,9 +70,13 @@ needsAbsoluteZeroSearch	KEYWORD2
 useMonitoring	KEYWORD2
 angleOpenloop	KEYWORD2
 velocityOpenloop	KEYWORD2
+getCurrents	KEYWORD2
+getFOCCurrents	KEYWORD2
 
 voltage_q	KEYWORD2
 voltage_d	KEYWORD2
+current	KEYWORD2
+current_measured	KEYWORD2
 shaft_angle_sp	KEYWORD2
 shaft_velocity_sp	KEYWORD2
 shaft_angle	KEYWORD2
@@ -84,6 +95,7 @@ velocity	KEYWORD2
 velocity_openloop	KEYWORD2
 angle	KEYWORD2
 angle_openloop	KEYWORD2
+torque	KEYWORD2
 
 
 ON	KEYWORD2
@@ -134,6 +146,9 @@ enable_pin	KEYWORD2
 enable_pin1	KEYWORD2
 enable_pin2	KEYWORD2
 pole_pairs	KEYWORD2
+dc_a	KEYWORD2
+dc_b	KEYWORD2
+dc_c	KEYWORD2
 
 DEF_POWER_SUPPLY	LITERAL1
 DEF_PID_VEL_P	LITERAL1
@@ -150,6 +165,7 @@ _SQRT3_2	LITERAL1
 _SQRT2	LITERAL1
 _120_D2R	LITERAL1
 _PI_2	LITERAL1
+_PI_6	LITERAL1
 _2PI	LITERAL1
 _3PI_2	LITERAL1
 _PI_3	LITERAL1

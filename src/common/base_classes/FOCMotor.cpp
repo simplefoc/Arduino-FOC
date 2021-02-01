@@ -9,6 +9,8 @@ FOCMotor::FOCMotor()
   velocity_limit = DEF_VEL_LIM;
   // maximum voltage to be set to the motor
   voltage_limit = DEF_POWER_SUPPLY;
+  // not set on the begining
+  current_limit = DEF_CURRENT_LIM;
 
   // index search velocity
   velocity_index_search = DEF_INDEX_SEARCH_TARGET_VELOCITY;
@@ -23,22 +25,35 @@ FOCMotor::FOCMotor()
 
   // default target value
   target = 0;
-  voltage_d = 0;
-  voltage_q = 0;
+  voltage.d = 0;
+  voltage.q = 0;
+  // current target values
+  current.d = 0;
+  current.q = 0;
   
   //monitor_port 
   monitor_port = nullptr;
   //sensor 
   sensor = nullptr;
+  //current sensor 
+  current_sense = nullptr;
 }
 
 
 /**
-	Sensor communication methods
+	Sensor linking method
 */
 void FOCMotor::linkSensor(Sensor* _sensor) {
   sensor = _sensor;
 }
+
+/**
+	CurrentSense linking method
+*/
+void FOCMotor::linkCurrentSense(CurrentSense* _current_sense) {
+  current_sense = _current_sense;
+}
+
 // shaft angle calculation
 float FOCMotor::shaftAngle() {
   // if no sensor linked return 0
@@ -67,7 +82,7 @@ void FOCMotor::monitor() {
   switch (controller) {
     case ControlType::velocity_openloop:
     case ControlType::velocity:
-      monitor_port->print(voltage_q);
+      monitor_port->print(voltage.q);
       monitor_port->print("\t");
       monitor_port->print(shaft_velocity_sp);
       monitor_port->print("\t");
@@ -75,14 +90,14 @@ void FOCMotor::monitor() {
       break;
     case ControlType::angle_openloop:
     case ControlType::angle:
-      monitor_port->print(voltage_q);
+      monitor_port->print(voltage.q);
       monitor_port->print("\t");
       monitor_port->print(shaft_angle_sp);
       monitor_port->print("\t");
       monitor_port->println(shaft_angle);
       break;
     case ControlType::voltage:
-      monitor_port->print(voltage_q);
+      monitor_port->print(voltage.q);
       monitor_port->print("\t");
       monitor_port->print(shaft_angle);
       monitor_port->print("\t");
@@ -213,7 +228,7 @@ int FOCMotor::command(String user_command) {
         switch((int)value){
           case 0: // get voltage
             if(monitor_port) monitor_port->print("Uq: ");
-            if(monitor_port) monitor_port->println(voltage_q);
+            if(monitor_port) monitor_port->println(voltage.q);
             break;
           case 1: // get velocity
             if(monitor_port) monitor_port->print("Velocity: ");

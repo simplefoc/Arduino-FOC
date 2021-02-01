@@ -10,7 +10,7 @@ PIDController::PIDController(float P, float I, float D, float ramp, float limit)
     , error_prev(0.0)
     , output_prev(0.0)
 {
-    timestamp_prev = _micros()*1e-6;
+    timestamp_prev = _micros();
 }
 
 // PID controller function
@@ -29,7 +29,7 @@ float PIDController::operator() (float error){
     // Tustin transform of the integral part
     // u_ik = u_ik_1  + I*Ts/2*(ek + ek_1)
     float integral = integral_prev + I*Ts*0.5*(error + error_prev);
-    // antiwindup - limit the output voltage_q
+    // antiwindup - limit the output
     integral = _constrain(integral, -limit, limit);
     // Discrete derivation
     // u_dk = D(ek - ek_1)/Ts

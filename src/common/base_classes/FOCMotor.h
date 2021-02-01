@@ -3,7 +3,7 @@
 
 #include "Arduino.h"
 #include "Sensor.h"
-#include "BLDCDriver.h"
+#include "CurrentSense.h"
 
 #include "../time_utils.h"
 #include "../foc_utils.h"
@@ -17,6 +17,7 @@
  */
 enum ControlType{
   voltage,//!< Torque control using voltage
+  torque,//!< Torque control using current
   velocity,//!< Velocity motion control
   angle,//!< Position/angle motion control
   velocity_openloop,
@@ -57,6 +58,13 @@ class FOCMotor
      * @param sensor Sensor class  wrapper for the FOC algorihtm to read the motor angle and velocity
      */
     void linkSensor(Sensor* sensor);
+
+    /**
+     * Function linking a motor and current sensing 
+     * 
+     * @param current_sense CurrentSense class wrapper for the FOC algorihtm to read the motor current measurements
+     */
+    void linkCurrentSense(CurrentSense* current_sense);
 
 
     /**
@@ -99,19 +107,25 @@ class FOCMotor
     // state variables
     float target; //!< current target value - depends of the controller
   	float shaft_angle;//!< current motor angle
+  	float electrical_angle;//!< current electrical angle
   	float shaft_velocity;//!< current motor velocity 
     float shaft_velocity_sp;//!< current target velocity
     float shaft_angle_sp;//!< current target angle
-    float voltage_q;//!< current voltage u_q set
-    float voltage_d;//!< current voltage u_d set
+    DQVoltage_s voltage;//!< current d and q voltage set to the motor
+    DQCurrent_s current;//!< current d and q current set to the motor
+    DQCurrent_s current_measured;//!< current d and q current measured
 
     // motor configuration parameters
     float voltage_sensor_align;//!< sensor and motor align voltage parameter
     float velocity_index_search;//!< target velocity for index search 
-    int pole_pairs;//!< Motor pole pairs number
+    
+    // motor physical parameters
+    float	phase_resistance; //!< motor phase resistance
+    int pole_pairs;//!< motor pole pairs number
 
     // limiting variables
     float voltage_limit; //!< Voltage limitting variable - global limit
+    float current_limit; //!< Current limitting variable - global limit
     float velocity_limit; //!< Velocity limitting variable - global limit
 
     float zero_electric_angle;//!<absolute zero electric angle - if available
@@ -119,9 +133,13 @@ class FOCMotor
     // configuration structures
     ControlType controller; //!< parameter determining the control loop to be used
     FOCModulationType foc_modulation;//!<  parameter derterniming modulation algorithm
-    PIDController PID_velocity{DEF_PID_VEL_P,DEF_PID_VEL_I,DEF_PID_VEL_D,DEF_PID_VEL_U_RAMP,DEF_POWER_SUPPLY};//!< parameter determining the velocity PI configuration
-    PIDController P_angle{DEF_P_ANGLE_P,0,0,1e10,DEF_VEL_LIM};	//!< parameter determining the position P configuration 
-    LowPassFilter LPF_velocity{DEF_VEL_FILTER_Tf};//!<  parameter determining the velocity Lpw pass filter configuration 
+    PIDController PID_current_q{DEF_PID_CURR_P,DEF_PID_CURR_I,DEF_PID_CURR_D,DEF_PID_CURR_RAMP, DEF_POWER_SUPPLY};//!< parameter determining the q current PID config
+    PIDController PID_current_d{DEF_PID_CURR_P,DEF_PID_CURR_I,DEF_PID_CURR_D,DEF_PID_CURR_RAMP, DEF_POWER_SUPPLY};//!< parameter determining the d current PID config
+    LowPassFilter LPF_current_q{DEF_CURR_FILTER_Tf};//!<  parameter determining the current Low pass filter configuration 
+    LowPassFilter LPF_current_d{DEF_CURR_FILTER_Tf};//!<  parameter determining the current Low pass filter configuration 
+    PIDController PID_velocity{DEF_PID_VEL_P,DEF_PID_VEL_I,DEF_PID_VEL_D,DEF_PID_VEL_RAMP,DEF_PID_VEL_LIMIT};//!< parameter determining the velocity PID configuration
+    PIDController P_angle{DEF_P_ANGLE_P,0,0,1e10,DEF_VEL_LIM};	//!< parameter determining the position PID configuration 
+    LowPassFilter LPF_velocity{DEF_VEL_FILTER_Tf};//!<  parameter determining the velocity Low pass filter configuration 
 
     /**
      * Function providing BLDCMotor class with the 
@@ -189,6 +207,11 @@ class FOCMotor
       * - HallSensor
     */
     Sensor* sensor; 
+    /** 
+      * CurrentSense link
+    */
+    CurrentSense* current_sense; 
+
     // monitoring functions
     Print* monitor_port; //!< Serial terminal variable if provided
 };

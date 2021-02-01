@@ -26,6 +26,26 @@
 #define HIGH_IMPEDANCE -1234
 #define HIGH_Z HIGH_IMPEDANCE
 
+// current 
+struct DQCurrent_s
+{
+    float d;
+    float q;
+};
+struct PhaseCurrent_s
+{
+    float a;
+    float b;
+    float c;
+};
+// voltage structs
+struct DQVoltage_s
+{
+    float d;
+    float q;
+};
+
+
 /**
  *  Function approximating the sine calculation by using fixed size array
  * - execution time ~40us (Arduino UNO)

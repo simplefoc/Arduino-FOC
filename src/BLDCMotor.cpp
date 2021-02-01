@@ -10,15 +10,15 @@
 // }
 
 // BLDCMotor( int pp)
-// - phA, phB, phC - motor A,B,C phase pwm pins
 // - pp            - pole pair number
-// - cpr           - counts per rotation number (cpm=ppm*4)
-// - enable pin    - (optional input)
-BLDCMotor::BLDCMotor(int pp)
+// - R             - motor phase resistance
+BLDCMotor::BLDCMotor(int pp, float _R)
 : FOCMotor()
 {
   // save pole pairs number
   pole_pairs = pp;
+  // save phase resistance number
+  phase_resistance = _R;
 }
 
 
@@ -32,12 +32,28 @@ void BLDCMotor::linkDriver(BLDCDriver* _driver) {
 // init hardware pins
 void BLDCMotor::init() {
   if(monitor_port) monitor_port->println("MOT: Initialise variables.");
+
+  // if no current sensing and the user has set the phase resistance of the motor use current limit to calculate the voltage limit
+  if( !current_sense && phase_resistance != NOT_SET ) {
+    float new_voltage_limit = current_limit / (phase_resistance*1.5); // v_lim = c_lim / (3/2 phase resistance) - worst case
+    // use it if it is less then voltage_limit set by the user
+    voltage_limit = new_voltage_limit < voltage_limit ? new_voltage_limit : voltage_limit;
+  }
   // sanity check for the voltage limit configuration
   if(voltage_limit > driver->voltage_limit) voltage_limit =  driver->voltage_limit;
   // constrain voltage for sensor alignment
   if(voltage_sensor_align > voltage_limit) voltage_sensor_align = voltage_limit;
+
   // update the controller limits
-  PID_velocity.limit = voltage_limit;
+  if(current_sense){
+    // current control loop controls voltage
+    PID_current_q.limit = voltage_limit;
+    PID_current_d.limit = voltage_limit;
+    // velocity control loop controls current
+    PID_velocity.limit = current_limit;
+  }else{
+    PID_velocity.limit = voltage_limit;
+  }
   P_angle.limit = velocity_limit;
 
   _delay(500);
@@ -96,16 +112,16 @@ int BLDCMotor::alignSensor() {
   // set angle -90 degrees
 
   float start_angle = shaftAngle();
-  for (int i = 0; i <=5; i++ ) {
-    float angle = _3PI_2 + _2PI * i / 6.0;
+  for (int i = 0; i <=50; i++ ) {
+    float angle = _3PI_2 + _2PI * i / 51.0;
     setPhaseVoltage(voltage_sensor_align, 0,  angle);
-    _delay(200);
+    _delay(20);
   }
   float mid_angle = shaftAngle();
-  for (int i = 5; i >=0; i-- ) {
-    float angle = _3PI_2 + _2PI * i / 6.0;
+  for (int i = 50; i >=0; i-- ) {
+    float angle = _3PI_2 + _2PI * i / 51.0;
     setPhaseVoltage(voltage_sensor_align, 0,  angle);
-    _delay(200);
+    _delay(20);
   }
   if (mid_angle < start_angle) {
     if(monitor_port) monitor_port->println("MOT: natural_direction==CCW");
@@ -149,9 +165,9 @@ int BLDCMotor::absoluteZeroAlign() {
   // search the absolute zero with small velocity
   while(sensor->needsAbsoluteZeroSearch() && shaft_angle < _2PI){
     loopFOC();
-    voltage_q = PID_velocity(velocity_index_search - shaftVelocity());
+    voltage.q = PID_velocity(velocity_index_search - shaftVelocity());
   }
-  voltage_q = 0;
+  voltage.q = 0;
   // disable motor
   setPhaseVoltage(0, 0, 0);
 
@@ -171,8 +187,23 @@ int BLDCMotor::absoluteZeroAlign() {
 void BLDCMotor::loopFOC() {
   // shaft angle
   shaft_angle = shaftAngle();
+  electrical_angle = _normalizeAngle(_electricalAngle(shaft_angle,pole_pairs));
+  
+  // if current sense linked used true foc architecture
+  // regulate the current in d axis to be equal to 0 
+  if(current_sense && controller != ControlType::voltage){ // 
+    // read dq currents
+    current_measured = current_sense->getFOCCurrents(electrical_angle);
+    // filter values
+    current_measured.q = LPF_current_q(current_measured.q);
+    current_measured.d = LPF_current_d(current_measured.d);
+    // calculate the phase voltages
+    voltage.q = PID_current_q(current.q - current_measured.q); 
+    voltage.d = PID_current_d(-current_measured.d);
+  }
+
   // set the phase voltage - FOC heart function :)
-  setPhaseVoltage(voltage_q, voltage_d, _electricalAngle(shaft_angle,pole_pairs));
+  setPhaseVoltage(voltage.q, voltage.d, electrical_angle);
 }
 
 // Iterative function running outer loop of the FOC algorithm
@@ -187,21 +218,25 @@ void BLDCMotor::move(float new_target) {
   shaft_velocity = shaftVelocity();
   // choose control loop
   switch (controller) {
+    case ControlType::torque:
     case ControlType::voltage:
-      voltage_q =  target;
+      if(current_sense) current.q = target;
+      else voltage.q =  target;
       break;
     case ControlType::angle:
       // angle set point
       // include angle loop
       shaft_angle_sp = target;
       shaft_velocity_sp = P_angle( shaft_angle_sp - shaft_angle );
-      voltage_q = PID_velocity(shaft_velocity_sp - shaft_velocity);
+      if(current_sense) current.q = PID_velocity(shaft_velocity_sp - shaft_velocity);
+      else voltage.q = PID_velocity(shaft_velocity_sp - shaft_velocity);
       break;
     case ControlType::velocity:
       // velocity set point
       // include velocity loop
       shaft_velocity_sp = target;
-      voltage_q = PID_velocity(shaft_velocity_sp - shaft_velocity);
+      if(current_sense) current.q = PID_velocity(shaft_velocity_sp - shaft_velocity);
+      else voltage.q = PID_velocity(shaft_velocity_sp - shaft_velocity);
       break;
     case ControlType::velocity_openloop:
       // velocity control in open loop
@@ -228,6 +263,7 @@ void BLDCMotor::move(float new_target) {
 void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
 
   const bool centered = true;
+  float center;
   int sector;
   float _ca,_sa;
 
@@ -236,40 +272,35 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
     case FOCModulationType::Trapezoid_120 :
       // see https://www.youtube.com/watch?v=InzXA7mWBWE Slide 5
       static int trap_120_map[6][3] = {
-        {0,1,-1},{-1,1,0},{-1,0,1},{0,-1,1},{1,-1,0},{1,0,-1} // each is 60 degrees with values for 3 phases of 1=positive -1=negative 0=high-z
+        {HIGH_IMPEDANCE,1,-1},{-1,1,HIGH_IMPEDANCE},{-1,HIGH_IMPEDANCE,1},{HIGH_IMPEDANCE,-1,1},{1,-1,HIGH_IMPEDANCE},{1,HIGH_IMPEDANCE,-1} // each is 60 degrees with values for 3 phases of 1=positive -1=negative 0=high-z
       };
       // static int trap_120_state = 0;
-      sector = 6 * (_normalizeAngle(angle_el + PI/6.0 + zero_electric_angle) / _2PI); // adding PI/6 to align with other modes
+      sector = 6 * (_normalizeAngle(angle_el + _PI_6 + zero_electric_angle) / _2PI); // adding PI/6 to align with other modes
+      // centering the voltages around either 
+      // centered == true > driver.volage_limit/2 
+      // centered == false > or Adaptable centering, all phases drawn to 0 when Uq=0 
+      center = centered ? (driver->voltage_limit)/2 : Uq;
 
-      Ua = Uq + trap_120_map[sector][0] * Uq;
-      Ub = Uq + trap_120_map[sector][1] * Uq;
-      Uc = Uq + trap_120_map[sector][2] * Uq;
-
-      if (centered) {
-        Ua += (driver->voltage_limit)/2 -Uq;
-        Ub += (driver->voltage_limit)/2 -Uq;
-        Uc += (driver->voltage_limit)/2 -Uq;
-      }
+      Ua = trap_120_map[sector][0]  == HIGH_IMPEDANCE ? HIGH_IMPEDANCE : trap_120_map[sector][0] * Uq + center;
+      Ub = trap_120_map[sector][1]  == HIGH_IMPEDANCE ? HIGH_IMPEDANCE : trap_120_map[sector][1] * Uq + center;
+      Uc = trap_120_map[sector][2]  == HIGH_IMPEDANCE ? HIGH_IMPEDANCE : trap_120_map[sector][2] * Uq + center;
     break;
 
     case FOCModulationType::Trapezoid_150 :
       // see https://www.youtube.com/watch?v=InzXA7mWBWE Slide 8
       static int trap_150_map[12][3] = {
-        {0,1,-1},{-1,1,-1},{-1,1,0},{-1,1,1},{-1,0,1},{-1,-1,1},{0,-1,1},{1,-1,1},{1,-1,0},{1,-1,-1},{1,0,-1},{1,1,-1} // each is 30 degrees with values for 3 phases of 1=positive -1=negative 0=high-z
+        {HIGH_IMPEDANCE,1,-1},{-1,1,-1},{-1,1,HIGH_IMPEDANCE},{-1,1,1},{-1,HIGH_IMPEDANCE,1},{-1,-1,1},{HIGH_IMPEDANCE,-1,1},{1,-1,1},{1,-1,HIGH_IMPEDANCE},{1,-1,-1},{1,HIGH_IMPEDANCE,-1},{1,1,-1} // each is 30 degrees with values for 3 phases of 1=positive -1=negative 0=high-z
       };
       // static int trap_150_state = 0;
-      sector = 12 * (_normalizeAngle(angle_el + PI/6.0 + zero_electric_angle) / _2PI); // adding PI/6 to align with other modes
+      sector = 12 * (_normalizeAngle(angle_el + _PI_6 + zero_electric_angle) / _2PI); // adding PI/6 to align with other modes
+      // centering the voltages around either 
+      // centered == true > driver.volage_limit/2 
+      // centered == false > or Adaptable centering, all phases drawn to 0 when Uq=0 
+      center = centered ? (driver->voltage_limit)/2 : Uq;
 
-      Ua = Uq + trap_150_map[sector][0] * Uq;
-      Ub = Uq + trap_150_map[sector][1] * Uq;
-      Uc = Uq + trap_150_map[sector][2] * Uq;
-
-      //center
-      if (centered) {
-        Ua += (driver->voltage_limit)/2 -Uq;
-        Ub += (driver->voltage_limit)/2 -Uq;
-        Uc += (driver->voltage_limit)/2 -Uq;
-      }
+      Ua = ( trap_150_map[sector][0]  == HIGH_IMPEDANCE ) ? HIGH_IMPEDANCE : trap_150_map[sector][0] * Uq + center;
+      Ub = ( trap_150_map[sector][1]  == HIGH_IMPEDANCE ) ? HIGH_IMPEDANCE : trap_150_map[sector][1] * Uq + center;
+      Uc = ( trap_150_map[sector][2]  == HIGH_IMPEDANCE ) ? HIGH_IMPEDANCE : trap_150_map[sector][2] * Uq + center;
 
     break;
 
