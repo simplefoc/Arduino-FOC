@@ -37,7 +37,11 @@ monitor	KEYWORD3
 command	KEYWORD3
 
 PID_velocity	KEYWORD2
+PID_current_q	KEYWORD2
+PID_current_d	KEYWORD2
 LPF_velocity	KEYWORD2
+LPF_current_q	KEYWORD2
+LPF_current_d	KEYWORD2
 P_angle	KEYWORD2
 
 ControlType	KEYWORD1
@@ -109,6 +113,7 @@ I	KEYWORD2
 D	KEYWORD2
 Tf	KEYWORD2
 voltage_limit	KEYWORD2
+current_limit	KEYWORD2
 output_ramp	KEYWORD2
 limit	KEYWORD2
 velocity_limit	KEYWORD2
