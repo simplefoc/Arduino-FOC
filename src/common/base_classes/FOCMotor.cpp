@@ -56,14 +56,14 @@ void FOCMotor::linkCurrentSense(CurrentSense* _current_sense) {
 
 // shaft angle calculation
 float FOCMotor::shaftAngle() {
-  // if no sensor linked return 0
+  // if no sensor linked return previous value ( for open loop )
   if(!sensor) return shaft_angle;
   return sensor->getAngle();
 }
 // shaft velocity calculation
 float FOCMotor::shaftVelocity() {
-  // if no sensor linked return 0
-  if(!sensor) return 0;
+  // if no sensor linked return previous value ( for open loop )
+  if(!sensor) return shaft_velocity;
   return LPF_velocity(sensor->getVelocity());
 }
 
@@ -80,23 +80,23 @@ void FOCMotor::useMonitoring(Print &print){
 void FOCMotor::monitor() {
   if(!monitor_port) return;
   switch (controller) {
-    case ControlType::velocity_openloop:
-    case ControlType::velocity:
+    case MotionControlType::velocity_openloop:
+    case MotionControlType::velocity:
       monitor_port->print(voltage.q);
       monitor_port->print("\t");
       monitor_port->print(shaft_velocity_sp);
       monitor_port->print("\t");
       monitor_port->println(shaft_velocity);
       break;
-    case ControlType::angle_openloop:
-    case ControlType::angle:
+    case MotionControlType::angle_openloop:
+    case MotionControlType::angle:
       monitor_port->print(voltage.q);
       monitor_port->print("\t");
       monitor_port->print(shaft_angle_sp);
       monitor_port->print("\t");
       monitor_port->println(shaft_angle);
       break;
-    case ControlType::voltage:
+    case MotionControlType::torque:
       monitor_port->print(voltage.q);
       monitor_port->print("\t");
       monitor_port->print(shaft_angle);
@@ -193,13 +193,13 @@ int FOCMotor::command(String user_command) {
       
       if(GET){ // if get command
         switch(controller){
-          case ControlType::voltage:
-            if(monitor_port) monitor_port->println("voltage");
+          case MotionControlType::torque:
+            if(monitor_port) monitor_port->println("torque");
             break;
-          case ControlType::velocity:
+          case MotionControlType::velocity:
             if(monitor_port) monitor_port->println("velocity");
             break;
-          case ControlType::angle:
+          case MotionControlType::angle:
             if(monitor_port) monitor_port->println("angle");
             break;
           default:
@@ -208,16 +208,16 @@ int FOCMotor::command(String user_command) {
       }else{ // if set command
         switch((int)value){
           case 0:
-            if(monitor_port) monitor_port->println("voltage");
-            controller = ControlType::voltage;
+            if(monitor_port) monitor_port->println("torque");
+            controller = MotionControlType::torque;
             break;
           case 1:
             if(monitor_port) monitor_port->println("velocity");
-            controller = ControlType::velocity;
+            controller = MotionControlType::velocity;
             break;
           case 2:
             if(monitor_port) monitor_port->println("angle");
-            controller = ControlType::angle;
+            controller = MotionControlType::angle;
             break;
           default: // not valid command
             errorFlag = 0;

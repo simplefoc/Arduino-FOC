@@ -4,7 +4,10 @@
 #include "../common/foc_utils.h"
 #include "../common/time_utils.h"
 
-/** 
+/**
+ *  function reading an ADC value and returning the read voltage
+ * 
+ * @param pinA - the arduino pin to be read (it has to be ADC pin)
  */
 float _readADCVoltage(const int pinA);
 

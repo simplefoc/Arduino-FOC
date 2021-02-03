@@ -1,15 +1,15 @@
 #include "StepperMotor.h"
 
-// StepperMotor( int phA, int phB, int phC, int pp, int cpr, int en)
-// - ph1A, ph1B    - motor phase 1 pwm pins
-// - ph2A, ph2B    - motor phase 2 pwm pins
+// StepperMotor(int pp)
 // - pp            - pole pair number
-// - enable pin    - (optional input)
 StepperMotor::StepperMotor(int pp)
 : FOCMotor()
 {
   // number od pole pairs
   pole_pairs = pp;
+
+  // currently supported torque control type
+  torque_controller = TorqueControlType::voltage;
 }
 
 /**
@@ -48,6 +48,8 @@ void StepperMotor::disable()
   driver->setPwm(0, 0);
   // disable driver
   driver->disable();
+  // motor status update
+  enabled = 0;
 }
 // enable motor driver
 void StepperMotor::enable()
@@ -56,6 +58,8 @@ void StepperMotor::enable()
   driver->enable();
   // set zero to PWM
   driver->setPwm(0, 0);
+  // motor status update
+  enabled = 1;
 }
 
 
@@ -86,20 +90,25 @@ int  StepperMotor::initFOC( float zero_electric_offset, Direction sensor_directi
 int StepperMotor::alignSensor() {
   if(monitor_port) monitor_port->println("MOT: Align sensor.");
   // align the electrical phases of the motor and sensor
-  // set angle -90 degrees 
-
+  // set angle -90(270 = 3PI/2) degrees 
   float start_angle = shaftAngle();
-  for (int i = 0; i <=5; i++ ) {
-    float angle = _3PI_2 + _2PI * i / 6.0;
-    setPhaseVoltage(voltage_sensor_align, 0, angle);
-    _delay(200);
-  }
-  float mid_angle = shaftAngle();
-  for (int i = 5; i >=0; i-- ) {
-    float angle = _3PI_2 + _2PI * i / 6.0;
+  setPhaseVoltage(voltage_sensor_align, 0,  _3PI_2);
+  // move one electrical revolution forward
+  _delay(500);
+  for (int i = 0; i <=500; i++ ) {
+    float angle = _3PI_2 + _2PI * i / 500.0;
     setPhaseVoltage(voltage_sensor_align, 0,  angle);
-    _delay(200);
+    _delay(2);
   }
+  // take and angle in the middle
+  float mid_angle = shaftAngle();
+  // move one electrical revolution forward
+  for (int i = 500; i >=0; i-- ) {
+    float angle = _3PI_2 + _2PI * i / 500.0 ;
+    setPhaseVoltage(voltage_sensor_align, 0,  angle);
+    _delay(2);
+  }
+  // determin the direction the sensor moved 
   if (mid_angle < start_angle) {
     if(monitor_port) monitor_port->println("MOT: natural_direction==CCW");
     sensor->natural_direction = Direction::CCW;
@@ -109,8 +118,8 @@ int StepperMotor::alignSensor() {
     if(monitor_port) monitor_port->println("MOT: natural_direction==CW");
   }
 
-  // let the motor stabilize for 2 sec
-  _delay(2000);
+  // let the motor stabilize for1 sec
+  _delay(1000);
   // set sensor to zero
   sensor->initRelativeZero();
   _delay(500);
@@ -163,10 +172,13 @@ int StepperMotor::absoluteZeroAlign() {
 // Iterative function looping FOC algorithm, setting Uq on the Motor
 // The faster it can be run the better
 void StepperMotor::loopFOC() {
+  // if disabled do nothing
+  if(!enabled) return; 
   // shaft angle 
   shaft_angle = shaftAngle();
+  electrical_angle = _normalizeAngle(_electricalAngle(shaft_angle, pole_pairs) + zero_electric_angle);
   // set the phase voltage - FOC heart function :) 
-  setPhaseVoltage(voltage.q, voltage.d, _electricalAngle(shaft_angle, pole_pairs));
+  setPhaseVoltage(voltage.q, voltage.d, electrical_angle);
 }
 
 // Iterative function running outer loop of the FOC algorithm
@@ -175,35 +187,40 @@ void StepperMotor::loopFOC() {
 // - needs to be called iteratively it is asynchronous function
 // - if target is not set it uses motor.target value
 void StepperMotor::move(float new_target) {
+  // if disabled do nothing
+  if(!enabled) return; 
   // set internal target variable
   if( new_target != NOT_SET ) target = new_target;
   // get angular velocity
   shaft_velocity = shaftVelocity();
   // choose control loop
   switch (controller) {
-    case ControlType::voltage:
+    case MotionControlType::torque:
       voltage.q =  target;
+      voltage.d = 0;
       break;
-    case ControlType::angle:
+    case MotionControlType::angle:
       // angle set point
       // include angle loop
       shaft_angle_sp = target;
       shaft_velocity_sp = P_angle( shaft_angle_sp - shaft_angle );
       voltage.q = PID_velocity(shaft_velocity_sp - shaft_velocity);
+      voltage.d = 0;
       break;
-    case ControlType::velocity:
+    case MotionControlType::velocity:
       // velocity set point
       // include velocity loop
       shaft_velocity_sp = target;
       voltage.q = PID_velocity(shaft_velocity_sp - shaft_velocity);
+      voltage.d = 0;
       break;
-    case ControlType::velocity_openloop:
+    case MotionControlType::velocity_openloop:
       // velocity control in open loop
       // loopFOC should not be called
       shaft_velocity_sp = target;
       velocityOpenloop(shaft_velocity_sp);
       break;
-    case ControlType::angle_openloop:
+    case MotionControlType::angle_openloop:
       // angle control in open loop
       // loopFOC should not be called
       shaft_angle_sp = target;
@@ -226,7 +243,6 @@ void StepperMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
 
   // angle normalization in between 0 and 2pi
   // only necessary if using _sin and _cos - approximation functions
-  angle_el = _normalizeAngle(angle_el + zero_electric_angle); 
   float _ca = _cos(angle_el);
   float _sa = _sin(angle_el);
   // Inverse park transform

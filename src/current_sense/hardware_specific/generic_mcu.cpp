@@ -23,6 +23,7 @@
   voltage = raw_adc * 5.0/1024.0;
 #endif
 
+// function reading an ADC value and returning the read voltage
 float _readADCVoltage(const int pinA){
   int raw_adc = analogRead(pinA);
   return raw_adc * (float)_ADC_VOLTAGE / (float)_ADC_RESOLUTION;

@@ -15,13 +15,21 @@
 /**
  *  Motiron control type
  */
-enum ControlType{
-  voltage,//!< Torque control using voltage
-  torque,//!< Torque control using current
+enum MotionControlType{
+  torque,//!< Torque control
   velocity,//!< Velocity motion control
   angle,//!< Position/angle motion control
   velocity_openloop,
   angle_openloop
+};
+
+/**
+ *  Motiron control type
+ */
+enum TorqueControlType{
+  voltage, //!< Torque control using voltage
+  current, //!< Torque control using current
+  foc_current //!< torque control using dq currents
 };
 
 /**
@@ -122,16 +130,19 @@ class FOCMotor
     // motor physical parameters
     float	phase_resistance; //!< motor phase resistance
     int pole_pairs;//!< motor pole pairs number
+    float zero_electric_angle;//!< absolute zero electric angle - if available
 
     // limiting variables
     float voltage_limit; //!< Voltage limitting variable - global limit
     float current_limit; //!< Current limitting variable - global limit
     float velocity_limit; //!< Velocity limitting variable - global limit
 
-    float zero_electric_angle;//!<absolute zero electric angle - if available
+    // motor status vairables
+    int enabled = 0;
 
     // configuration structures
-    ControlType controller; //!< parameter determining the control loop to be used
+    TorqueControlType torque_controller; //!< parameter determining the torque control type
+    MotionControlType controller; //!< parameter determining the control loop to be used
     FOCModulationType foc_modulation;//!<  parameter derterniming modulation algorithm
     PIDController PID_current_q{DEF_PID_CURR_P,DEF_PID_CURR_I,DEF_PID_CURR_D,DEF_PID_CURR_RAMP, DEF_POWER_SUPPLY};//!< parameter determining the q current PID config
     PIDController PID_current_d{DEF_PID_CURR_P,DEF_PID_CURR_I,DEF_PID_CURR_D,DEF_PID_CURR_RAMP, DEF_POWER_SUPPLY};//!< parameter determining the d current PID config

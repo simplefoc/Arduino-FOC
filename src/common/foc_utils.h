@@ -7,6 +7,7 @@
 #define _sign(a) ( ( (a) < 0 )  ?  -1   : ( (a) > 0 ) )
 #define _round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
 #define _constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+#define _sqrt(a) (_sqrtAprox(a))
 
 // utility defines
 #define _2_SQRT3 1.15470053838
@@ -23,22 +24,23 @@
 #define _PI_6 0.52359877559
 
 #define NOT_SET -12345.0
-#define HIGH_IMPEDANCE -1234
-#define HIGH_Z HIGH_IMPEDANCE
+#define _HIGH_IMPEDANCE -1234
+#define _HIGH_Z _HIGH_IMPEDANCE
 
-// current 
+// dq current structure 
 struct DQCurrent_s
 {
     float d;
     float q;
 };
+// phase current structure 
 struct PhaseCurrent_s
 {
     float a;
     float b;
     float c;
 };
-// voltage structs
+// dq voltage structs
 struct DQVoltage_s
 {
     float d;
@@ -75,4 +77,7 @@ float _normalizeAngle(float angle);
  * @param pole_pairs - number of pole pairs
  */
 float _electricalAngle(float shaft_angle, int pole_pairs);
+
+
+float _sqrtAprox(float value);
 #endif

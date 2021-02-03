@@ -52,3 +52,16 @@ float _normalizeAngle(float angle){
 float _electricalAngle(float shaft_angle, int pole_pairs) {
   return (shaft_angle * pole_pairs);
 }
+
+// square root approximation function using 
+// https://reprap.org/forum/read.php?147,219210
+// https://en.wikipedia.org/wiki/Fast_inverse_square_root
+float _sqrtAprox(float number) {//low in fat
+  unsigned long i;
+  float x, y;
+  y = number;
+  i = * ( long * ) &y;
+  i = 0x5f375a86 - ( i >> 1 );
+  y = * ( float * ) &i;
+  return number * y;
+}
