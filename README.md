@@ -13,11 +13,18 @@ Therefore this is an attempt to:
   - <i>Support as many <b>motor + sensor + driver + mcu</b> combinations out there</i>
 - 🎯 Develop a modular low-power BLDC driver board: [Arduino *SimpleFOCShield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
 
-##### <b> NEXT RELEASE 📢:</b> <i>Simple<b>FOC</b>library v2.0.3 
+##### <b> NEXT RELEASE 📢:</b> <i>Simple<b>FOC</b>library v2.1
 > #### Implemented features in dev branch
 > - Upgrade of the HallSensor implementation by [@owennewo](https://github.com/owennewo)
 > - Support for Arduino DUE - everything except the 6PWM mode
 > - Support for ATMega328pb
+> - bugfix for the Teensy boards (setting 3pwm )
+> - **Initial current sensing support**
+>   - Inline current sensors 
+> - **Implemented real torque control** 
+>   - using voltage
+>   - using current magnitude (one current)
+>   - using FOC currents ( d-q currents ) - real foc control
 
 
 ## Arduino *SimpleFOCShield* v2.0.2
