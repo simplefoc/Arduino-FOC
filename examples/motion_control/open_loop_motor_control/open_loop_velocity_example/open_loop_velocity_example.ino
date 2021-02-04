@@ -26,7 +26,7 @@ void setup() {
   motor.velocity_limit = 20; // [rad/s]
 
   // open loop control config
-  motor.controller = ControlType::velocity_openloop;
+  motor.controller = MotionControlType::velocity_openloop;
 
   // init motor hardware
   motor.init();

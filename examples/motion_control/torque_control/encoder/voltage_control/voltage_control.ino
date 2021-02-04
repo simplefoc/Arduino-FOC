@@ -1,4 +1,5 @@
 /**
+ * 
  * Torque control example using voltage control loop.
  * 
  * Most of the low-end BLDC driver boards doesn't have current measurement therefore SimpleFOC offers 
@@ -8,12 +9,6 @@
  */
 #include <SimpleFOC.h>
 
-// magnetic sensor instance - SPI
-MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, 10);
-// magnetic sensor instance - I2C
-// MagneticSensorI2C sensor = MagneticSensorI2C(AS5600_I2C);
-// magnetic sensor instance - analog output
-// MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
 
 // BLDC motor & driver instance
 BLDCMotor motor = BLDCMotor(11);
@@ -22,24 +17,37 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 //StepperMotor motor = StepperMotor(50);
 //StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
-void setup() {
+// encoder instance
+Encoder encoder = Encoder(2, 3, 8192);
 
-  // initialise magnetic sensor hardware
-  sensor.init();
+// Interrupt routine intialisation
+// channel A and B callbacks
+void doA(){encoder.handleA();}
+void doB(){encoder.handleB();}
+
+void setup() { 
+  
+  // initialize encoder sensor hardware
+  encoder.init();
+  encoder.enableInterrupts(doA, doB); 
   // link the motor to the sensor
-  motor.linkSensor(&sensor);
+  motor.linkSensor(&encoder);
 
-  // power supply voltage
+  // driver config
+  // power supply voltage [V]
   driver.voltage_power_supply = 12;
   driver.init();
+  // link driver
   motor.linkDriver(&driver);
 
-  // aligning voltage 
+
+  // aligning voltage
   motor.voltage_sensor_align = 5;
   // choose FOC modulation (optional)
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
+
   // set motion control loop to be used
-  motor.controller = ControlType::voltage;
+  motor.controller = MotionControlType::torque;
 
   // use monitoring with serial 
   Serial.begin(115200);

@@ -61,7 +61,7 @@ void setup() {
   motor.voltage_sensor_align = 3;
   
   // set motion control loop to be used
-  motor.controller = ControlType::velocity;
+  motor.controller = MotionControlType::velocity;
 
   // contoller configuration 
   // default parameters in defaults.h

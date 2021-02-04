@@ -69,7 +69,7 @@ void setup() {
   motor.linkDriver(&driver);
 
   // set control loop type to be used
-  motor.controller = ControlType::velocity;
+  motor.controller = MotionControlType::velocity;
   // initialize motor
   motor.init();
   

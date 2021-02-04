@@ -70,7 +70,7 @@ void setup() {
   motor.velocity_index_search = 3;
 
   // set motion control loop to be used
-  motor.controller = ControlType::angle;
+  motor.controller = MotionControlType::angle;
 
   // contoller configuration 
   // default parameters in defaults.h

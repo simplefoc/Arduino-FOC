@@ -69,7 +69,7 @@ void setup() {
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
 
   // set control loop type to be used
-  motor.controller = ControlType::voltage;
+  motor.controller = MotionControlType::torque;
 
   // contoller configuration based on the controll type 
   motor.PID_velocity.P = 0.2;

@@ -1,14 +1,19 @@
 /**
- * 
  * Torque control example using voltage control loop.
  * 
  * Most of the low-end BLDC driver boards doesn't have current measurement therefore SimpleFOC offers 
- * you a way to control motor torque by setting the voltage to the motor instead of the current. 
+ * you a way to control motor torque by setting the voltage to the motor instead hte current. 
  * 
  * This makes the BLDC motor effectively a DC motor, and you can use it in a same way.
  */
 #include <SimpleFOC.h>
 
+// magnetic sensor instance - SPI
+MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, 10);
+// magnetic sensor instance - I2C
+// MagneticSensorI2C sensor = MagneticSensorI2C(AS5600_I2C);
+// magnetic sensor instance - analog output
+// MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
 
 // BLDC motor & driver instance
 BLDCMotor motor = BLDCMotor(11);
@@ -17,38 +22,24 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 //StepperMotor motor = StepperMotor(50);
 //StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
-// hall sensor instance
-HallSensor sensor = HallSensor(2, 3, 4, 11);
+void setup() {
 
-// Interrupt routine intialisation
-// channel A and B callbacks
-void doA(){sensor.handleA();}
-void doB(){sensor.handleB();}
-void doC(){sensor.handleC();}
-
-void setup() { 
-  
-  // initialize encoder sensor hardware
+  // initialise magnetic sensor hardware
   sensor.init();
-  sensor.enableInterrupts(doA, doB, doC); 
   // link the motor to the sensor
   motor.linkSensor(&sensor);
 
-  // driver config
-  // power supply voltage [V]
+  // power supply voltage
   driver.voltage_power_supply = 12;
   driver.init();
-  // link driver
   motor.linkDriver(&driver);
 
-  // aligning voltage
-  motor.voltage_sensor_align = 3;
-  
+  // aligning voltage 
+  motor.voltage_sensor_align = 5;
   // choose FOC modulation (optional)
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
-
   // set motion control loop to be used
-  motor.controller = ControlType::voltage;
+  motor.controller = MotionControlType::torque;
 
   // use monitoring with serial 
   Serial.begin(115200);

@@ -3,7 +3,7 @@
  * Torque control example using voltage control loop.
  * 
  * Most of the low-end BLDC driver boards doesn't have current measurement therefore SimpleFOC offers 
- * you a way to control motor torque by setting the voltage to the motor instead hte current. 
+ * you a way to control motor torque by setting the voltage to the motor instead of the current. 
  * 
  * This makes the BLDC motor effectively a DC motor, and you can use it in a same way.
  */
@@ -17,21 +17,22 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 //StepperMotor motor = StepperMotor(50);
 //StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
-// encoder instance
-Encoder encoder = Encoder(2, 3, 8192);
+// hall sensor instance
+HallSensor sensor = HallSensor(2, 3, 4, 11);
 
 // Interrupt routine intialisation
 // channel A and B callbacks
-void doA(){encoder.handleA();}
-void doB(){encoder.handleB();}
+void doA(){sensor.handleA();}
+void doB(){sensor.handleB();}
+void doC(){sensor.handleC();}
 
 void setup() { 
   
   // initialize encoder sensor hardware
-  encoder.init();
-  encoder.enableInterrupts(doA, doB); 
+  sensor.init();
+  sensor.enableInterrupts(doA, doB, doC); 
   // link the motor to the sensor
-  motor.linkSensor(&encoder);
+  motor.linkSensor(&sensor);
 
   // driver config
   // power supply voltage [V]
@@ -40,14 +41,14 @@ void setup() {
   // link driver
   motor.linkDriver(&driver);
 
-
   // aligning voltage
-  motor.voltage_sensor_align = 5;
+  motor.voltage_sensor_align = 3;
+  
   // choose FOC modulation (optional)
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
 
   // set motion control loop to be used
-  motor.controller = ControlType::voltage;
+  motor.controller = MotionControlType::torque;
 
   // use monitoring with serial 
   Serial.begin(115200);

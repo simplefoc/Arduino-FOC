@@ -60,7 +60,7 @@ void setup() {
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
 
   // set motion control loop to be used
-  motor.controller = ControlType::voltage;
+  motor.controller = MotionControlType::torque;
 
   // use monitoring with serial for motor init
   // comment out if not needed

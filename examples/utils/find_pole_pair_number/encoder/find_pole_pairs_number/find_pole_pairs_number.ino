@@ -59,7 +59,7 @@ void setup() {
   float pp_search_angle = 6*M_PI; // search electrical angle to turn
   
   // move motor to the electrical angle 0
-  motor.controller = ControlType::angle_openloop;
+  motor.controller = MotionControlType::angle_openloop;
   motor.voltage_limit=pp_search_voltage;
   motor.move(0);
   _delay(1000);
@@ -110,7 +110,7 @@ void setup() {
 
   
   // set FOC loop to be used
-  motor.controller = ControlType::voltage;
+  motor.controller = MotionControlType::torque;
   // set the pole pair number to the motor
   motor.pole_pairs = pp;
   //align encoder and start FOC

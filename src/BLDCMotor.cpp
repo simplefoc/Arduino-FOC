@@ -10,6 +10,8 @@ BLDCMotor::BLDCMotor(int pp, float _R)
   pole_pairs = pp;
   // save phase resistance number
   phase_resistance = _R;
+  // torque control type is voltage by default
+  torque_controller = TorqueControlType::voltage;
 }
 
 

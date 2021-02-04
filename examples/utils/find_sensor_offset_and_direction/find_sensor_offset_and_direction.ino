@@ -42,7 +42,7 @@ void setup() {
   motor.voltage_sensor_align = 7;
   
   // set motion control loop to be used
-  motor.controller = ControlType::voltage;
+  motor.controller = MotionControlType::torque;
 
   // initialize motor
   motor.init();

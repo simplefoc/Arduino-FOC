@@ -90,7 +90,7 @@ void setup() {
 	driver.voltage_power_supply = 9;
 	driver.init();
 	motor.linkDriver(&driver);
-	motor.controller = ControlType::velocity;
+	motor.controller = MotionControlType::velocity;
 	motor.PID_velocity.P = 0.2;
 	motor.PID_velocity.I = 20;
 	motor.PID_velocity.D = 0.001;

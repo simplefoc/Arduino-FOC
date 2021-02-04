@@ -8,7 +8,8 @@ StepperMotor::StepperMotor(int pp)
   // number od pole pairs
   pole_pairs = pp;
 
-  // currently supported torque control type
+  // torque control type is voltage by default 
+  // current and foc_current not supported yet
   torque_controller = TorqueControlType::voltage;
 }
 

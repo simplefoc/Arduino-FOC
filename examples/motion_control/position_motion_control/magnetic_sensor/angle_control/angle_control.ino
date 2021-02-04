@@ -41,7 +41,7 @@ void setup() {
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
 
   // set motion control loop to be used
-  motor.controller = ControlType::angle;
+  motor.controller = MotionControlType::angle;
 
   // contoller configuration 
   // default parameters in defaults.h

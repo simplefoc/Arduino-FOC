@@ -88,7 +88,7 @@ void setup() {
   motor.voltage_sensor_align = 3;
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
  
-  motor.controller = ControlType::angle_openloop;
+  motor.controller = MotionControlType::angle_openloop;
   motor.voltage_limit=motor.voltage_sensor_align;
 
   sensor.init();
