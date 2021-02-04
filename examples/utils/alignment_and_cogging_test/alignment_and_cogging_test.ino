@@ -59,18 +59,18 @@ void testAlignmentAndCogging(int direction) {
   }
 
   Serial.println();
-  Serial.println("ALIGNMENT AND COGGING REPORT");
+  Serial.println(F("ALIGNMENT AND COGGING REPORT"));
   Serial.println();
-  Serial.print("Direction: ");
+  Serial.print(F("Direction: "));
   Serial.println(direction);
-  Serial.print("Mean error (alignment): ");
+  Serial.print(F("Mean error (alignment): "));
   Serial.print(mean);
   Serial.println(" deg (electrical)");
-  Serial.print("Standard Deviation (cogging): ");
+  Serial.print(F("Standard Deviation (cogging): "));
   Serial.print(sqrt(stDevSum/sample_count));
-  Serial.println(" deg (electrical)");
+  Serial.println(F(" deg (electrical)"));
   Serial.println();
-  Serial.println("Plotting 3rd column of data (electricAngleError) will likely show sinusoidal cogging pattern with a frequency of 4xpole_pairs per rotation");
+  Serial.println(F("Plotting 3rd column of data (electricAngleError) will likely show sinusoidal cogging pattern with a frequency of 4xpole_pairs per rotation"));
   Serial.println();
 
 }
@@ -101,12 +101,12 @@ void setup() {
   testAlignmentAndCogging(1);
 
   motor.move(0);
-  Serial.println("Press any key to test in CCW direction");
+  Serial.println(F("Press any key to test in CCW direction"));
   while (!Serial.available()) { }
 
   testAlignmentAndCogging(-1);
 
-  Serial.println("Complete");
+  Serial.println(F("Complete"));
 
   motor.voltage_limit = 0;
   motor.move(0);

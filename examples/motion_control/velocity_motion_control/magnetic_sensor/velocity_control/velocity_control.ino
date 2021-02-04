@@ -70,8 +70,8 @@ void setup() {
   // align sensor and start FOC
   motor.initFOC();
 
-  Serial.println("Motor ready.");
-  Serial.println("Set the target velocity using serial terminal:");
+  Serial.println(F("Motor ready."));
+  Serial.println(F("Set the target velocity using serial terminal:"));
   _delay(1000);
 }
 

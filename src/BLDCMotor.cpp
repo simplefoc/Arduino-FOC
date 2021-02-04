@@ -24,7 +24,7 @@ void BLDCMotor::linkDriver(BLDCDriver* _driver) {
 
 // init hardware pins
 void BLDCMotor::init() {
-  if(monitor_port) monitor_port->println("MOT: Initialise variables.");
+  if(monitor_port) monitor_port->println(F("MOT: Initialise variables."));
 
   // if no current sensing and the user has set the phase resistance of the motor use current limit to calculate the voltage limit
   if( !current_sense && phase_resistance != NOT_SET ) {
@@ -51,7 +51,7 @@ void BLDCMotor::init() {
 
   _delay(500);
   // enable motor
-  if(monitor_port) monitor_port->println("MOT: Enable driver.");
+  if(monitor_port) monitor_port->println(F("MOT: Enable driver."));
   enable();
   _delay(500);
 }
@@ -97,13 +97,13 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction sensor_direction 
     exit_flag = alignSensor();
     _delay(500);
     }
-  if(monitor_port) monitor_port->println("MOT: Motor ready.");
+  if(monitor_port) monitor_port->println(F("MOT: Motor ready."));
 
   return exit_flag;
 }
 // Encoder alignment to electrical 0 angle
 int BLDCMotor::alignSensor() {
-  if(monitor_port) monitor_port->println("MOT: Align sensor.");
+  if(monitor_port) monitor_port->println(F("MOT: Align sensor."));
   // align the electrical phases of the motor and sensor
   // set angle -90(270 = 3PI/2) degrees 
   float start_angle = shaftAngle();
@@ -125,12 +125,12 @@ int BLDCMotor::alignSensor() {
   }
   // determin the direction the sensor moved 
   if (mid_angle < start_angle) {
-    if(monitor_port) monitor_port->println("MOT: natural_direction==CCW");
+    if(monitor_port) monitor_port->println(F("MOT: natural_direction==CCW"));
     sensor->natural_direction = Direction::CCW;
   } else if (mid_angle == start_angle) {
-    if(monitor_port) monitor_port->println("MOT: Sensor failed to notice movement");
+    if(monitor_port) monitor_port->println(F("MOT: Sensor failed to notice movement"));
   } else{
-    if(monitor_port) monitor_port->println("MOT: natural_direction==CW");
+    if(monitor_port) monitor_port->println(F("MOT: natural_direction==CW"));
   }
 
   // let the motor stabilize for1 sec
@@ -145,9 +145,9 @@ int BLDCMotor::alignSensor() {
   int exit_flag = absoluteZeroAlign();
   _delay(500);
   if(monitor_port){
-    if(exit_flag< 0 ) monitor_port->println("MOT: Error: Not found!");
-    if(exit_flag> 0 ) monitor_port->println("MOT: Success!");
-    else  monitor_port->println("MOT: Not available!");
+    if(exit_flag< 0 ) monitor_port->println(F("MOT: Error: Not found!"));
+    if(exit_flag> 0 ) monitor_port->println(F("MOT: Success!"));
+    else  monitor_port->println(F("MOT: Not available!"));
   }
   return exit_flag;
 }
@@ -157,12 +157,12 @@ int BLDCMotor::alignSensor() {
 // - to the index
 int BLDCMotor::absoluteZeroAlign() {
 
-  if(monitor_port) monitor_port->println("MOT: Absolute zero align.");
+  if(monitor_port) monitor_port->println(F("MOT: Absolute zero align."));
     // if no absolute zero return
   if(!sensor->hasAbsoluteZero()) return 0;
 
 
-  if(monitor_port && sensor->needsAbsoluteZeroSearch()) monitor_port->println("MOT: Searching...");
+  if(monitor_port && sensor->needsAbsoluteZeroSearch()) monitor_port->println(F("MOT: Searching..."));
   // search the absolute zero with small velocity
   while(sensor->needsAbsoluteZeroSearch() && shaft_angle < _2PI){
     loopFOC();
@@ -219,7 +219,7 @@ void BLDCMotor::loopFOC() {
     
     default:
       // no torque control selected
-      if(monitor_port) monitor_port->println("MOT: no torque control selected!");
+      if(monitor_port) monitor_port->println(F("MOT: no torque control selected!"));
       break;
   }
   

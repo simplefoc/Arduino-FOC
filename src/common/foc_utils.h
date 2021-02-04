@@ -7,7 +7,7 @@
 #define _sign(a) ( ( (a) < 0 )  ?  -1   : ( (a) > 0 ) )
 #define _round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
 #define _constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
-#define _sqrt(a) (_sqrtAprox(a))
+#define _sqrt(a) (_sqrtApprox(a))
 
 // utility defines
 #define _2_SQRT3 1.15470053838
@@ -78,6 +78,11 @@ float _normalizeAngle(float angle);
  */
 float _electricalAngle(float shaft_angle, int pole_pairs);
 
-
-float _sqrtAprox(float value);
+/**
+ * Function approximating square root function
+ *  - using fast inverse square root
+ * 
+ * @param value - number
+ */
+float _sqrtApprox(float value);
 #endif

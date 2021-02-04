@@ -101,10 +101,10 @@ void setup() {
   motor.target = 2;
 
 
-  Serial.println("Full control example: ");
-  Serial.println("Run user commands to configure and the motor (find the full command list in docs.simplefoc.com) \n ");
-  Serial.println("Initial motion control loop is voltage loop.");
-  Serial.println("Initial target voltage 2V.");
+  Serial.println(F("Full control example: "));
+  Serial.println(F("Run user commands to configure and the motor (find the full command list in docs.simplefoc.com) \n "));
+  Serial.println(F("Initial motion control loop is voltage loop."));
+  Serial.println(F("Initial target voltage 2V."));
   
   _delay(1000);
 }

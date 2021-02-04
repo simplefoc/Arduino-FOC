@@ -19,12 +19,17 @@ Therefore this is an attempt to:
 > - Support for Arduino DUE - everything except the 6PWM mode
 > - Support for ATMega328pb
 > - bugfix for the Teensy boards (setting 3pwm )
+> - included F macro for shrinking string memory usage - moved to programming memory
 > - **Initial current sensing support**
 >   - Inline current sensors 
 > - **Implemented real torque control** 
 >   - using voltage
 >   - using current magnitude (one current)
 >   - using FOC currents ( d-q currents ) - real foc control
+> 
+> BEWARE 📢 slight API changes included
+>   - `ControlType` renamed into `MotionControlType`
+>   - `ControlType::voltage` does not exist any more now - `MotionControlType::torque`
 
 
 ## Arduino *SimpleFOCShield* v2.0.2

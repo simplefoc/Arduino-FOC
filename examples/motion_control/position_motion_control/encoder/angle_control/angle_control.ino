@@ -105,8 +105,8 @@ void setup() {
   motor.initFOC();
 
 
-  Serial.println("Motor ready.");
-  Serial.println("Set the target angle using serial terminal:");
+  Serial.println(F("Motor ready."));
+  Serial.println(F("Set the target angle using serial terminal:"));
   _delay(1000);
 }
 

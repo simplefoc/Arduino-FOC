@@ -84,9 +84,9 @@ void setup() {
   // calculate the pole pair number
   int pp = round((pp_search_angle)/(angle_end-angle_begin));
 
-  Serial.print("Estimated PP : ");
+  Serial.print(F("Estimated PP : "));
   Serial.println(pp);
-  Serial.println("PP = Electrical angle / Encoder angle ");
+  Serial.println(F("PP = Electrical angle / Encoder angle "));
   Serial.print(pp_search_angle*180/M_PI);
   Serial.print("/");
   Serial.print((angle_end-angle_begin)*180/M_PI);
@@ -97,15 +97,15 @@ void setup() {
 
   // a bit of monitoring the result
   if(pp <= 0 ){
-    Serial.println("PP number cannot be negative");
-    Serial.println(" - Try changing the search_voltage value or motor/encoder configuration.");
+    Serial.println(F("PP number cannot be negative"));
+    Serial.println(F(" - Try changing the search_voltage value or motor/encoder configuration."));
     return;
   }else if(pp > 30){
-    Serial.println("PP number very high, possible error.");
+    Serial.println(F("PP number very high, possible error."));
   }else{
-    Serial.println("If PP is estimated well your motor should turn now!");
-    Serial.println(" - If it is not moving try to relaunch the program!");
-    Serial.println(" - You can also try to adjust the target voltage using serial terminal!");
+    Serial.println(F("If PP is estimated well your motor should turn now!"));
+    Serial.println(F(" - If it is not moving try to relaunch the program!"));
+    Serial.println(F(" - You can also try to adjust the target voltage using serial terminal!"));
   }
 
   
@@ -117,8 +117,8 @@ void setup() {
   motor.initFOC();
   _delay(1000);
 
-  Serial.println("\n Motor ready.");
-  Serial.println("Set the target voltage using serial terminal:");
+  Serial.println(F("\n Motor ready."));
+  Serial.println(F("Set the target voltage using serial terminal:"));
 }
 
 // uq voltage

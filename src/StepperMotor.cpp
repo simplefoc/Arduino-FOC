@@ -22,7 +22,7 @@ void StepperMotor::linkDriver(StepperDriver* _driver) {
 
 // init hardware pins   
 void StepperMotor::init() {
-  if(monitor_port) monitor_port->println("MOT: Init variables.");
+  if(monitor_port) monitor_port->println(F("MOT: Init variables."));
   
   // sanity check for the voltage limit configuration
   if(voltage_limit > driver->voltage_limit) voltage_limit =  driver->voltage_limit;
@@ -35,7 +35,7 @@ void StepperMotor::init() {
 
   _delay(500);
   // enable motor
-  if(monitor_port) monitor_port->println("MOT: Enable.");
+  if(monitor_port) monitor_port->println(F("MOT: Enable."));
   enable();
   _delay(500);
   
@@ -83,13 +83,13 @@ int  StepperMotor::initFOC( float zero_electric_offset, Direction sensor_directi
     exit_flag = alignSensor();
     _delay(500);
     }
-  if(monitor_port) monitor_port->println("MOT: Motor ready.");
+  if(monitor_port) monitor_port->println(F("MOT: Motor ready."));
 
   return exit_flag;
 }
 // Encoder alignment to electrical 0 angle
 int StepperMotor::alignSensor() {
-  if(monitor_port) monitor_port->println("MOT: Align sensor.");
+  if(monitor_port) monitor_port->println(F("MOT: Align sensor."));
   // align the electrical phases of the motor and sensor
   // set angle -90(270 = 3PI/2) degrees 
   float start_angle = shaftAngle();
@@ -111,12 +111,12 @@ int StepperMotor::alignSensor() {
   }
   // determin the direction the sensor moved 
   if (mid_angle < start_angle) {
-    if(monitor_port) monitor_port->println("MOT: natural_direction==CCW");
+    if(monitor_port) monitor_port->println(F("MOT: natural_direction==CCW"));
     sensor->natural_direction = Direction::CCW;
   } else if (mid_angle == start_angle) {
-    if(monitor_port) monitor_port->println("MOT: Sensor failed to notice movement");
+    if(monitor_port) monitor_port->println(F("MOT: Sensor failed to notice movement"));
   } else{
-    if(monitor_port) monitor_port->println("MOT: natural_direction==CW");
+    if(monitor_port) monitor_port->println(F("MOT: natural_direction==CW"));
   }
 
   // let the motor stabilize for1 sec
@@ -131,9 +131,9 @@ int StepperMotor::alignSensor() {
   int exit_flag = absoluteZeroAlign();
   _delay(500);
   if(monitor_port){
-    if(exit_flag< 0 ) monitor_port->println("MOT: Error: Not found!");
-    if(exit_flag> 0 ) monitor_port->println("MOT: Success!");
-    else  monitor_port->println("MOT: Not available!");
+    if(exit_flag< 0 ) monitor_port->println(F("MOT: Error: Not found!"));
+    if(exit_flag> 0 ) monitor_port->println(F("MOT: Success!"));
+    else  monitor_port->println(F("MOT: Not available!"));
   }
   return exit_flag;
 }
@@ -143,12 +143,12 @@ int StepperMotor::alignSensor() {
 // - to the index
 int StepperMotor::absoluteZeroAlign() {
 
-  if(monitor_port) monitor_port->println("MOT: Absolute zero align.");
+  if(monitor_port) monitor_port->println(F("MOT: Absolute zero align."));
     // if no absolute zero return
   if(!sensor->hasAbsoluteZero()) return 0;
   
 
-  if(monitor_port && sensor->needsAbsoluteZeroSearch()) monitor_port->println("MOT: Searching...");
+  if(monitor_port && sensor->needsAbsoluteZeroSearch()) monitor_port->println(F("MOT: Searching..."));
   // search the absolute zero with small velocity
   while(sensor->needsAbsoluteZeroSearch() && shaft_angle < _2PI){
     loopFOC();   
