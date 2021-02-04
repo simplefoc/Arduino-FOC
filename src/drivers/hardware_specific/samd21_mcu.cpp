@@ -1,8 +1,26 @@
 
+
+#if defined(ARDUINO_ARCH_SAMD)
+
 #include "../hardware_api.h"
 #include "wiring_private.h"
 
-#if defined(ARDUINO_ARCH_SAMD)
+#include "./samd21_wo_associations.h"
+
+
+#ifndef SIMPLEFOC_SAMD_ALLOW_DIFFERENT_TCCS
+#define SIMPLEFOC_SAMD_ALLOW_DIFFERENT_TCCS false
+#endif
+
+#ifndef SIMPLEFOC_SAMD_PWM_RESOLUTION
+#define SIMPLEFOC_SAMD_PWM_RESOLUTION 1000
+#define SIMPLEFOC_SAMD_PWM_TC_RESOLUTION 250
+#endif
+
+#ifndef SIMPLEFOC_SAMD_MAX_TCC_PINCONFIGURATIONS
+#define SIMPLEFOC_SAMD_MAX_TCC_PINCONFIGURATIONS 12
+#endif
+
 
 
 // Wait for synchronization of registers between the clock domains
@@ -13,70 +31,70 @@ static void syncTCC(Tcc* TCCx) {
 
 
 
-
-struct tccChanInfo { int pin; int tccn; int chan; };
-
-// get the TCC channel associated with that pin
-tccChanInfo getTCCChannelNr(int pin, bool alternate) {
-	tccChanInfo result;
-	result.pin = pin;
-	result.tccn = -2;
-	result.chan = -2;
-	PinDescription pinDesc = g_APinDescription[pin];
-	//uint32_t attr = pinDesc.ulPinAttribute;
-	if (!alternate) { // && (attr & PIN_ATTR_PWM) == PIN_ATTR_PWM) {
-		result.tccn = GetTCNumber(pinDesc.ulPWMChannel);
-		result.chan = GetTCChannelNumber(pinDesc.ulPWMChannel);
-	}
-	else { // && (attr & PIN_ATTR_TIMER_ALT) == PIN_ATTR_TIMER_ALT) {
-		result.tccn = GetTCNumber(pinDesc.ulTCChannel);
-		result.chan = GetTCChannelNumber(pinDesc.ulTCChannel);
-	}
-	return result;
-}
-
-
+struct tccConfiguration {
+	uint8_t pin;
+	uint8_t alternate; // 1=true, 0=false
+	union tccChanInfo {
+		struct {
+			int8_t chan;
+			int8_t tccn;
+		};
+		uint16_t chaninfo;
+	} tcc;
+};
 
 
 void printAllPinInfos() {
 	Serial.println();
-	for (int pin=0;pin<PINCOUNT_fn();pin++) {
-		PinDescription pinDesc = g_APinDescription[pin];
+	for (int pin=0;pin<PINS_COUNT;pin++) {
+		const PinDescription& pinDesc = g_APinDescription[pin];
+		wo_association& association = getWOAssociation(pinDesc.ulPort, pinDesc.ulPin);
 		uint32_t attr = pinDesc.ulPinAttribute;
 		Serial.print("Pin ");
+		if (pin<10) Serial.print("0");
 		Serial.print(pin);
 		Serial.print("  PWM=");
 		Serial.print(((attr & PIN_ATTR_PWM) == PIN_ATTR_PWM));
-		Serial.print(" TCC");
-		Serial.print(GetTCNumber(pinDesc.ulPWMChannel));
-		Serial.print("-");
-		Serial.print(GetTCChannelNumber(pinDesc.ulPWMChannel));
+		if (association.tccE>=0) {
+			int tcn = GetTCNumber(association.tccE);
+			if (tcn>=TCC_INST_NUM)
+				Serial.print("  TC");
+			else
+				Serial.print(" TCC");
+			Serial.print(tcn);
+			Serial.print("-");
+			Serial.print(GetTCChannelNumber(association.tccE));
+		}
+		else
+			Serial.print("  None ");
+		Serial.print("  TIM=");
+		Serial.print(((attr & PIN_ATTR_TIMER) == PIN_ATTR_TIMER));
 		Serial.print("  ALT=");
 		Serial.print(((attr & PIN_ATTR_TIMER_ALT) == PIN_ATTR_TIMER_ALT));
-		Serial.print(" TCC");
-		Serial.print(GetTCNumber(pinDesc.ulTCChannel));
-		Serial.print("-");
-		Serial.println(GetTCChannelNumber(pinDesc.ulTCChannel));
+		if (association.tccF>=0) {
+			int tcn = GetTCNumber(association.tccF);
+			if (tcn>=TCC_INST_NUM)
+				Serial.print("  TC");
+			else
+				Serial.print(" TCC");
+			Serial.print(tcn);
+			Serial.print("-");
+			Serial.println(GetTCChannelNumber(association.tccF));
+		}
+		else
+			Serial.println("  None ");
+
 	}
 	Serial.println();
 }
 
-
-
-
-#ifndef SIMPLEFOC_SAMD_ALLOW_DIFFERENT_TCCS
-#define SIMPLEFOC_SAMD_ALLOW_DIFFERENT_TCCS false
-#endif
-
-
-
-void printTCCInfo(tccChanInfo& info, bool alternate) {
+void printTCCConfiguration(tccConfiguration& info) {
 	Serial.print(info.pin);
-	Serial.print(alternate?" alternate TCC":" normal    TCC");
-	if (info.tccn>=0) {
-		Serial.print(info.tccn);
+	Serial.print((info.alternate==1)?" alternate TCC":" normal    TCC");
+	if (info.tcc.tccn>=0) {
+		Serial.print(info.tcc.tccn);
 		Serial.print("-");
-		Serial.println(info.chan);
+		Serial.println(info.tcc.chan);
 	}
 	else
 		Serial.println(" None");
@@ -84,77 +102,29 @@ void printTCCInfo(tccChanInfo& info, bool alternate) {
 
 
 
-bool checkPeripheralPermutation(int pin1, int pin2, int pin3, bool p1, bool p2, bool p3) {
-	tccChanInfo info1 = getTCCChannelNr(pin1, p1);
-	tccChanInfo info2 = getTCCChannelNr(pin2, p2);
-	tccChanInfo info3 = getTCCChannelNr(pin3, p3);
-
-	printTCCInfo(info1, p1);
-	printTCCInfo(info2, p2);
-	printTCCInfo(info3, p3);
-	Serial.println();
-
-	if (info1.tccn!=-2
-		&& info1.tccn==info2.tccn && info1.tccn==info3.tccn && info2.tccn==info3.tccn
-		&& info1.chan!=info2.chan && info1.chan!=info3.chan && info2.chan!=info3.chan
-			)
-		return true;
-
-	// TODO allow more permissive setups for 3-pwm?
-
-	return false;
-}
-
-
-int checkCompatible(int pin1, int pin2, int pin3) {
-	if (checkPeripheralPermutation(pin1, pin2, pin3, false, false, false)) {
-		return 0;
-	}
-	if (checkPeripheralPermutation(pin1, pin2, pin3, false, false, true)) {
-		return 1;
-	}
-	if (checkPeripheralPermutation(pin1, pin2, pin3, false, true, false)) {
-		return 2;
-	}
-	if (checkPeripheralPermutation(pin1, pin2, pin3, false, true, true)) {
-		return 3;
-	}
-	if (checkPeripheralPermutation(pin1, pin2, pin3, true, false, false)) {
-		return 4;
-	}
-	if (checkPeripheralPermutation(pin1, pin2, pin3, true, false, true)) {
-		return 5;
-	}
-	if (checkPeripheralPermutation(pin1, pin2, pin3, true, true, false)) {
-		return 6;
-	}
-	if (checkPeripheralPermutation(pin1, pin2, pin3, true, true, true)) {
-		return 7;
-	}
-	return -1;
-}
 
 
 
-void writeSAMDDutyCycle(int chaninfo, float dc) {
-	Tcc* tcc = (Tcc*)GetTC(chaninfo);
-	int chan = GetTCChannelNumber(chaninfo);
-	// TODO should we set this in a different way to ensure we don't have over/underflows?
-	tcc->CC[chan].reg = tcc->PER.reg * dc;
-	// TODO do we need to wait for sync?
-	uint32_t chanbit = 0x1<<(TCC_SYNCBUSY_CC0_Pos+chan);
-	while ( (tcc->SYNCBUSY.reg & chanbit) > 0 );
-}
 
 
 
+/**
+ * Global state
+ */
+tccConfiguration tccPinConfigurations[SIMPLEFOC_SAMD_MAX_TCC_PINCONFIGURATIONS];
+uint8_t numTccPinConfigurations = 0;
 bool SAMDClockConfigured = false;
-bool tccConfigured[TCC_INST_NUM];
+bool tccConfigured[TCC_INST_NUM+TC_INST_NUM];
 
+/**
+ * Configure Clock 4 - we want all simplefoc PWMs to use the same clock. This ensures that
+ * any compatible pin combination can be used without having to worry about configuring different
+ * clocks.
+ */
 void configureSAMDClock() {
 	if (!SAMDClockConfigured) {
-		SAMDClockConfigured = true;
-		for (int i=0;i<TCC_INST_NUM;i++)
+		SAMDClockConfigured = true;						// mark clock as configured
+		for (int i=0;i<TCC_INST_NUM;i++)				// mark all the TCCs as not yet configured
 			tccConfigured[i] = false;
 		REG_GCLK_GENDIV = GCLK_GENDIV_DIV(1) |          // Divide the 48MHz clock source by divisor N=1: 48MHz/1=48MHz
 						GCLK_GENDIV_ID(4);            	// Select Generic Clock (GCLK) 4
@@ -165,62 +135,362 @@ void configureSAMDClock() {
 						 GCLK_GENCTRL_SRC_DFLL48M |   	// Set the 48MHz clock source
 						 GCLK_GENCTRL_ID(4);          	// Select GCLK4
 		while (GCLK->STATUS.bit.SYNCBUSY);              // Wait for synchronization
+
+		Serial.println("Configured clock...");
+
 	}
 }
 
 
 
-void configureTCC(int pin, uint32_t chaninfo, long pwm_frequency) {
+
+/**
+ * Configure a TCC unit
+ * pwm_frequency is fixed at 24kHz for now. We could go slower, but going
+ * faster won't be possible without sacrificing resolution.
+ */
+void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate=false) {
 	// TODO for the moment we ignore the frequency...
-	int tccn = GetTCNumber(chaninfo);
-	Tcc* tcc = (Tcc*)GetTC(chaninfo);
-	if (!tccConfigured[tccn]) {
+	if (!tccConfigured[tccConfig.tcc.tccn]) {
 		uint32_t GCLK_CLKCTRL_ID_ofthistcc = -1;
-		switch (tccn>>1) {
+		switch (tccConfig.tcc.tccn>>1) {
 		case 0:
-			GCLK_CLKCTRL_ID_ofthistcc = GCLK_CLKCTRL_ID_TCC0_TCC1;
+			GCLK_CLKCTRL_ID_ofthistcc = GCLK_CLKCTRL_ID(GCM_TCC0_TCC1);//GCLK_CLKCTRL_ID_TCC0_TCC1;
 			break;
 		case 1:
-			GCLK_CLKCTRL_ID_ofthistcc = GCLK_CLKCTRL_ID_TCC2_TC3;
+			GCLK_CLKCTRL_ID_ofthistcc = GCLK_CLKCTRL_ID(GCM_TCC2_TC3);//GCLK_CLKCTRL_ID_TCC2_TC3;
 			break;
-		// TODO support SAMDs with more TCCs!
+		case 2:
+			GCLK_CLKCTRL_ID_ofthistcc = GCLK_CLKCTRL_ID(GCM_TC4_TC5);//GCLK_CLKCTRL_ID_TC4_TC5;
+			break;
+		case 3:
+			GCLK_CLKCTRL_ID_ofthistcc = GCLK_CLKCTRL_ID(GCM_TC6_TC7);
+			break;
 		default:
 			return;
 		}
-		tccConfigured[tccn] = true;
 
 		// Feed GCLK4 to TCC
-	    REG_GCLK_CLKCTRL = GCLK_CLKCTRL_CLKEN |         // Enable GCLK4
-	                       GCLK_CLKCTRL_GEN_GCLK4 |     // Select GCLK4
-						   GCLK_CLKCTRL_ID_ofthistcc;   // Feed GCLK4 to tcc
-	    while (GCLK->STATUS.bit.SYNCBUSY);              // Wait for synchronization
+		REG_GCLK_CLKCTRL = (uint16_t)  GCLK_CLKCTRL_CLKEN |         // Enable GCLK4
+									   GCLK_CLKCTRL_GEN_GCLK4 |     // Select GCLK4
+									   GCLK_CLKCTRL_ID_ofthistcc;   // Feed GCLK4 to tcc
+		while (GCLK->STATUS.bit.SYNCBUSY);              // Wait for synchronization
 
-	    tcc->WAVE.reg |= TCC_WAVE_POL(0xF)|TCC_WAVEB_WAVEGENB_DSBOTH;   // Set wave form configuration
-		while ( tcc->SYNCBUSY.bit.WAVE == 1 ); // wait for sync
+		tccConfigured[tccConfig.tcc.tccn] = true;
 
-		tcc->PER.reg = 1024;                 // Set counter Top using the PER register
-		while ( tcc->SYNCBUSY.bit.PER == 1 ); // wait for sync
+		if (tccConfig.tcc.tccn>=TCC_INST_NUM) {
+			Tc* tc = (Tc*)GetTC(tccConfig.tcc.chaninfo);
 
-		// set all channels to 0%
-		for (int i=0;i<4;i++) { // TODO some of the TCCs don't have 4 channels... can one set them anyway?
-			tcc->CC[i].reg = 0;					// start off at 0% duty cycle
-			uint32_t chanbit = 0x1<<(TCC_SYNCBUSY_CC0_Pos+i);
-		    while ( (tcc->SYNCBUSY.reg & chanbit) > 0 );
+			// disable
+			tc->COUNT8.CTRLA.bit.ENABLE = 0;
+			while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
+			// unfortunately we need the 8-bit counter mode to use the PER register...
+			tc->COUNT8.CTRLA.reg |= TC_CTRLA_MODE_COUNT8 | TC_CTRLA_WAVEGEN_NPWM ;
+			while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
+			// meaning prescaler of 8, since TC-Unit has no up/down mode, and has resolution of 250 rather than 1000...
+			tc->COUNT8.CTRLA.bit.PRESCALER = TC_CTRLA_PRESCALER_DIV8_Val ;
+			while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
+			// period is 250, period cannot be higher than 256!
+			tc->COUNT8.PER.reg = SIMPLEFOC_SAMD_PWM_TC_RESOLUTION-1;
+			while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
+			// initial duty cycle is 0
+			tc->COUNT8.CC[tccConfig.tcc.chan].reg = 0;
+			while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
+			// enable
+			tc->COUNT8.CTRLA.bit.ENABLE = 1;
+			while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
+
+			Serial.print("Initialized TC ");
+			Serial.println(tccConfig.tcc.tccn);
 		}
+		else {
+			Tcc* tcc = (Tcc*)GetTC(tccConfig.tcc.chaninfo);
 
-	    // Enable TC
-		tcc->CTRLA.reg |= TCC_CTRLA_ENABLE | TCC_CTRLA_PRESCALER_DIV1; //48Mhz/1=48Mhz/2(up/down)=24MHz/1024=24KHz
-	    while ( tcc->SYNCBUSY.bit.ENABLE == 1 ); // wait for sync
+			uint8_t invenMask = ~(1<<tccConfig.tcc.chan);	// negate (invert) the signal if needed
+			uint8_t invenVal = negate?(1<<tccConfig.tcc.chan):0;
+			tcc->DRVCTRL.vec.INVEN = (tcc->DRVCTRL.vec.INVEN&invenMask)|invenVal;
+			syncTCC(tcc); // wait for sync
+
+			tcc->WAVE.reg |= TCC_WAVE_POL(0xF)|TCC_WAVEB_WAVEGENB_DSBOTH;   // Set wave form configuration
+			while ( tcc->SYNCBUSY.bit.WAVE == 1 ); // wait for sync
+
+			tcc->PER.reg = SIMPLEFOC_SAMD_PWM_RESOLUTION - 1;                 // Set counter Top using the PER register
+			while ( tcc->SYNCBUSY.bit.PER == 1 ); // wait for sync
+
+			// set all channels to 0%
+			uint8_t chanCount = (tccConfig.tcc.tccn==1||tccConfig.tcc.tccn==2)?2:4;
+			for (int i=0;i<chanCount;i++) { // TODO some of the TCCs don't have 4 channels... can one set them anyway?
+				tcc->CC[i].reg = 0;					// start off at 0% duty cycle
+				uint32_t chanbit = 0x1<<(TCC_SYNCBUSY_CC0_Pos+i);
+				while ( (tcc->SYNCBUSY.reg & chanbit) > 0 );
+			}
+
+			// Enable TC
+			tcc->CTRLA.reg |= TCC_CTRLA_ENABLE | TCC_CTRLA_PRESCALER_DIV1; //48Mhz/1=48Mhz/2(up/down)=24MHz/1024=24KHz
+			while ( tcc->SYNCBUSY.bit.ENABLE == 1 ); // wait for sync
+
+			Serial.print("Initialized TCC ");
+			Serial.println(tccConfig.tcc.tccn);
+		}
 	}
 
 
 }
 
-
-void attachTCC(int pin, bool alternate) {
-    pinMode(pin, OUTPUT);
-    pinPeripheral(pin, alternate?EPioType::PIO_TIMER_ALT:EPioType::PIO_TIMER);
+/**
+ * Attach the TCC to the pin
+ */
+bool attachTCC(tccConfiguration& tccConfig) {
+	if (numTccPinConfigurations>=SIMPLEFOC_SAMD_MAX_TCC_PINCONFIGURATIONS)
+		return false;
+    pinMode(tccConfig.pin, OUTPUT);
+    pinPeripheral(tccConfig.pin, (tccConfig.alternate==1)?EPioType::PIO_TIMER_ALT:EPioType::PIO_TIMER);
+    tccPinConfigurations[numTccPinConfigurations++] = tccConfig;
+    return true;
 }
+
+
+/**
+ * Check if the configuration is in use already.
+ */
+bool inUse(tccConfiguration& tccConfig) {
+	for (int i=0;i<numTccPinConfigurations;i++) {
+		if (tccPinConfigurations[i].tcc.chaninfo==tccConfig.tcc.chaninfo)
+			return true;
+	}
+	return false;
+}
+
+tccConfiguration* getTccPinConfiguration(uint8_t pin) {
+	for (int i=0;i<numTccPinConfigurations;i++)
+		if (tccPinConfigurations[i].pin==pin)
+			return &tccPinConfigurations[i];
+	return NULL;
+}
+
+
+
+/**
+ * Get the TCC channel associated with that pin
+ */
+tccConfiguration getTCCChannelNr(int pin, bool alternate) {
+	tccConfiguration result;
+	result.pin = pin;
+	result.alternate = alternate?1:0;
+	result.tcc.tccn = -2;
+	result.tcc.chan = -2;
+	const PinDescription& pinDesc = g_APinDescription[pin];
+	struct wo_association& association = getWOAssociation(pinDesc.ulPort, pinDesc.ulPin);
+	if (association.port==NOT_A_PORT)
+		return result; // could not find the port/pin
+	if (!alternate) { // && (attr & PIN_ATTR_PWM) == PIN_ATTR_PWM) {
+		result.tcc.chaninfo = association.tccE;
+	}
+	else { // && (attr & PIN_ATTR_TIMER_ALT) == PIN_ATTR_TIMER_ALT) {
+		result.tcc.chaninfo = association.tccF;
+	}
+	return result;
+}
+
+
+
+
+
+bool checkPeripheralPermutationSameTCC3(tccConfiguration& pin1, tccConfiguration& pin2, tccConfiguration& pin3) {
+	printTCCConfiguration(pin1);
+	printTCCConfiguration(pin2);
+	printTCCConfiguration(pin3);
+	Serial.println();
+
+	if (inUse(pin3) || inUse(pin2) || inUse(pin3))
+		return false;
+
+	if (pin1.tcc.tccn!=-2
+		&& pin1.tcc.tccn==pin2.tcc.tccn && pin1.tcc.tccn==pin3.tcc.tccn && pin2.tcc.tccn==pin3.tcc.tccn
+		&& pin1.tcc.chan!=pin2.tcc.chan && pin1.tcc.chan!=pin3.tcc.chan && pin2.tcc.chan!=pin3.tcc.chan
+			)
+		return true;
+
+	return false;
+}
+
+bool checkPeripheralPermutationSameTCC6(tccConfiguration& pinAh, tccConfiguration& pinAl, tccConfiguration& pinBh, tccConfiguration& pinBl, tccConfiguration& pinCh, tccConfiguration& pinCl) {
+	printTCCConfiguration(pinAh);
+	printTCCConfiguration(pinAl);
+	printTCCConfiguration(pinBh);
+	printTCCConfiguration(pinBl);
+	printTCCConfiguration(pinCh);
+	printTCCConfiguration(pinCl);
+	Serial.println();
+
+	if (inUse(pinAh) || inUse(pinAl) || inUse(pinBh) || inUse(pinBl) || inUse(pinCh) || inUse(pinCl))
+		return false;
+
+	if (pinAh.tcc.tccn<0 || pinAh.tcc.tccn!=pinAl.tcc.tccn || pinAh.tcc.tccn!=pinBh.tcc.tccn || pinAh.tcc.tccn!=pinBl.tcc.tccn
+		|| pinAh.tcc.tccn!=pinCh.tcc.tccn || pinAh.tcc.tccn!=pinCl.tcc.tccn)
+		return false;
+
+	if (pinAh.tcc.chan==pinBh.tcc.chan || pinAh.tcc.chan==pinBh.tcc.chan || pinAh.tcc.chan==pinBl.tcc.chan || pinAh.tcc.chan==pinCh.tcc.chan || pinAh.tcc.chan==pinCl.tcc.chan)
+		return false;
+	if (pinBh.tcc.chan==pinCh.tcc.chan || pinBh.tcc.chan==pinCl.tcc.chan)
+		return false;
+	if (pinAl.tcc.chan==pinBh.tcc.chan || pinAl.tcc.chan==pinBh.tcc.chan || pinAl.tcc.chan==pinBl.tcc.chan || pinAl.tcc.chan==pinCh.tcc.chan || pinAl.tcc.chan==pinCl.tcc.chan)
+		return false;
+	if (pinBl.tcc.chan==pinCh.tcc.chan || pinBl.tcc.chan==pinCl.tcc.chan)
+		return false;
+	// TODO we have a problem here that the complementary channels actually are using the same channel numbers in the _ETCChannel Enum... :-(
+
+	// TODO we need a better check for complementary channels...
+	if (pinAh.tcc.chan!=pinAl.tcc.chan || pinBh.tcc.chan!=pinBl.tcc.chan || pinCh.tcc.chan!=pinCl.tcc.chan)
+		return false;
+
+	return true;
+}
+
+
+
+
+bool checkPeripheralPermutationCompatible3(tccConfiguration& pin1, tccConfiguration& pin2, tccConfiguration& pin3) {
+	if (pin1.tcc.tccn<0 || pin2.tcc.tccn<0 || pin3.tcc.tccn<0) // must have a timer
+		return false;
+	if (pin1.tcc.tccn==pin2.tcc.tccn && pin1.tcc.chan==pin2.tcc.chan) // can't be on same timer and channel
+		return false;
+	if (pin1.tcc.tccn==pin3.tcc.tccn && pin1.tcc.chan==pin3.tcc.chan)
+		return false;
+	if (pin2.tcc.tccn==pin3.tcc.tccn && pin2.tcc.chan==pin3.tcc.chan)
+		return false;
+	if (inUse(pin3) || inUse(pin2) || inUse(pin3))
+		return false;
+	return true;
+}
+
+
+
+
+
+bool checkPeripheralPermutationCompatible6(tccConfiguration& pinAh, tccConfiguration& pinAl, tccConfiguration& pinBh, tccConfiguration& pinBl, tccConfiguration& pinCh, tccConfiguration& pinCl) {
+	printTCCConfiguration(pinAh);
+	printTCCConfiguration(pinAl);
+	printTCCConfiguration(pinBh);
+	printTCCConfiguration(pinBl);
+	printTCCConfiguration(pinCh);
+	printTCCConfiguration(pinCl);
+	Serial.println();
+
+	// check we're valid PWM pins
+	if (pinAh.tcc.tccn<0 || pinAl.tcc.tccn<0 || pinBh.tcc.tccn<0 || pinBl.tcc.tccn<0 || pinCh.tcc.tccn<0 || pinCl.tcc.tccn<0)
+		return false;
+
+	// check we're not in use
+	if (inUse(pinAh) || inUse(pinAl) || inUse(pinBh) || inUse(pinBl) || inUse(pinCh) || inUse(pinCl))
+		return false;
+
+	// check pins are all different tccs/channels
+	if (pinAh.tcc.chaninfo==pinAl.tcc.chaninfo || pinAh.tcc.chaninfo==pinBh.tcc.chaninfo || pinAh.tcc.chaninfo==pinBl.tcc.chaninfo ||
+			pinAh.tcc.chaninfo==pinCh.tcc.chaninfo || pinAh.tcc.chaninfo==pinCl.tcc.chaninfo)
+		return false;
+	if (pinAl.tcc.chaninfo==pinBh.tcc.chaninfo || pinAl.tcc.chaninfo==pinBl.tcc.chaninfo || pinAl.tcc.chaninfo==pinCh.tcc.chaninfo || pinAl.tcc.chaninfo==pinCl.tcc.chaninfo)
+		return false;
+	if (pinBh.tcc.chaninfo==pinBl.tcc.chaninfo || pinBh.tcc.chaninfo==pinCh.tcc.chaninfo || pinBh.tcc.chaninfo==pinCl.tcc.chaninfo)
+		return false;
+	if (pinBl.tcc.chaninfo==pinCh.tcc.chaninfo || pinBl.tcc.chaninfo==pinCl.tcc.chaninfo)
+		return false;
+
+	// check H/L pins are on same timer
+	if (pinAh.tcc.tccn!=pinAl.tcc.tccn || pinBh.tcc.tccn!=pinBl.tcc.tccn || pinCh.tcc.tccn!=pinCl.tcc.tccn)
+		return false;
+
+	return true;
+}
+
+
+
+
+
+int checkSameTCC3(int pin1, int pin2, int pin3) {
+	for (int i=0;i<8;i++) {
+		tccConfiguration pinA = getTCCChannelNr(pin1, (i>>0&0x01)==0x1);
+		tccConfiguration pinB = getTCCChannelNr(pin2, (i>>1&0x01)==0x1);
+		tccConfiguration pinC = getTCCChannelNr(pin3, (i>>2&0x01)==0x1);
+		if (checkPeripheralPermutationSameTCC3(pinA, pinB, pinC))
+			return i;
+	}
+	return -1;
+}
+
+
+int checkCompatible3(int pin1, int pin2, int pin3) {
+	for (int i=0;i<8;i++) {
+		tccConfiguration pinA = getTCCChannelNr(pin1, (i>>0&0x01)==0x1);
+		tccConfiguration pinB = getTCCChannelNr(pin2, (i>>1&0x01)==0x1);
+		tccConfiguration pinC = getTCCChannelNr(pin3, (i>>2&0x01)==0x1);
+		if (checkPeripheralPermutationCompatible3(pinA, pinB, pinC))
+			return i;
+	}
+	return -1;
+}
+
+
+
+
+int checkHardware6PWM(const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l) {
+	for (int i=0;i<64;i++) {
+		tccConfiguration pinAh = getTCCChannelNr(pinA_h, (i>>0&0x01)==0x1);
+		tccConfiguration pinAl = getTCCChannelNr(pinA_l, (i>>1&0x01)==0x1);
+		tccConfiguration pinBh = getTCCChannelNr(pinB_h, (i>>2&0x01)==0x1);
+		tccConfiguration pinBl = getTCCChannelNr(pinB_l, (i>>3&0x01)==0x1);
+		tccConfiguration pinCh = getTCCChannelNr(pinC_h, (i>>4&0x01)==0x1);
+		tccConfiguration pinCl = getTCCChannelNr(pinC_l, (i>>5&0x01)==0x1);
+		if (checkPeripheralPermutationSameTCC6(pinAh, pinAl, pinBh, pinBl, pinCh, pinCl))
+			return i;
+	}
+	return -1;
+}
+
+
+
+
+int checkSoftware6PWM(const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l) {
+	for (int i=0;i<64;i++) {
+		tccConfiguration pinAh = getTCCChannelNr(pinA_h, (i>>0&0x01)==0x1);
+		tccConfiguration pinAl = getTCCChannelNr(pinA_l, (i>>1&0x01)==0x1);
+		tccConfiguration pinBh = getTCCChannelNr(pinB_h, (i>>2&0x01)==0x1);
+		tccConfiguration pinBl = getTCCChannelNr(pinB_l, (i>>3&0x01)==0x1);
+		tccConfiguration pinCh = getTCCChannelNr(pinC_h, (i>>4&0x01)==0x1);
+		tccConfiguration pinCl = getTCCChannelNr(pinC_l, (i>>5&0x01)==0x1);
+		if (checkPeripheralPermutationCompatible6(pinAh, pinAl, pinBh, pinBl, pinCh, pinCl))
+			return i;
+	}
+	return -1;
+}
+
+
+
+
+
+
+
+void writeSAMDDutyCycle(int chaninfo, float dc) {
+	uint8_t tccn = GetTCNumber(chaninfo);
+	uint8_t chan = GetTCChannelNumber(chaninfo);
+	if (tccn<TCC_INST_NUM) {
+		Tcc* tcc = (Tcc*)GetTC(chaninfo);
+		// TODO should we set this in a different way to ensure we don't have over/underflows?
+		tcc->CC[chan].reg = (uint32_t)((SIMPLEFOC_SAMD_PWM_RESOLUTION-1) * dc);
+		// TODO do we need to wait for sync?
+		uint32_t chanbit = 0x1<<(TCC_SYNCBUSY_CC0_Pos+chan);
+		while ( (tcc->SYNCBUSY.reg & chanbit) > 0 );
+	}
+	else {
+		Tc* tc = (Tc*)GetTC(chaninfo);
+		//tc->COUNT16.CC[chan].reg = (uint32_t)((SIMPLEFOC_SAMD_PWM_RESOLUTION-1) * dc);
+		tc->COUNT8.CC[chan].reg = (uint8_t)((SIMPLEFOC_SAMD_PWM_TC_RESOLUTION-1) * dc);;
+		while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
+	}
+}
+
+
+
 
 
 
@@ -282,36 +552,42 @@ void _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
  * @param pinC pinC bldc driver
  */
 void _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const int pinC) {
-	// basically, we just need 3 pins on different channels from the same timer to ensure sync
-	// so check that the given pins are on the same timer, and not on the same channel...
-	uint32_t chaninfo1 = 0; // TCC0 Channel 0  - more generally:    tccn<<8 | (chan&0xFF)
-	uint32_t chaninfo2 = 1; // TCC0 Channel 1
-	uint32_t chaninfo3 = 2; // TCC0 Channel 2
 	printAllPinInfos();
-	int compatibility = checkCompatible(pinA, pinB, pinC);
-	if (true) { //(compatibility>=0) {
-		// attach pin to timer peripheral
-//		attachTCC(pinA, (compatibility&0x1)==1);
-//		attachTCC(pinB, (compatibility&0x2)==2);
-//		attachTCC(pinC, (compatibility&0x4)==4);
-		attachTCC(6, false);
-		attachTCC(5, false);
-		attachTCC(8, true);
-
-		// set up clock - TODO if we did this right it should be possible to get all TCC units synchronized?
-		// e.g. attach all the timers, start them, and then start the clock...
-		configureSAMDClock();
-
-		// configure the TCC (waveform, top-value, pre-scaler = frequency)
-		configureTCC(6, chaninfo1, pwm_frequency);
-		configureTCC(5, chaninfo2, pwm_frequency);
-		configureTCC(8, chaninfo3, pwm_frequency);
-
-		printAllPinInfos();
+	int compatibility = checkSameTCC3(pinA, pinB, pinC);
+	if (compatibility<0) {
+		compatibility = checkCompatible3(pinA, pinB, pinC);
+		if (compatibility<0) {
+			// no result!
+			Serial.println("Bad combination!");
+			return;
+		}
 	}
-	else
-		Serial.println("Bad combination!");
-	// TODO what to do if not compatible?
+
+	tccConfiguration pin1 = getTCCChannelNr(pinA, (compatibility>>0&0x01)==0x1);
+	tccConfiguration pin2 = getTCCChannelNr(pinB, (compatibility>>1&0x01)==0x1);
+	tccConfiguration pin3 = getTCCChannelNr(pinC, (compatibility>>2&0x01)==0x1);
+
+	Serial.println("Found configuration: ");
+	printTCCConfiguration(pin1);
+	printTCCConfiguration(pin2);
+	printTCCConfiguration(pin3);
+
+	// attach pins to timer peripherals
+	attachTCC(pin1); // in theory this can fail, but there is no way to signal it...
+	attachTCC(pin2);
+	attachTCC(pin3);
+	Serial.println("Attached pins...");
+
+	// set up clock - TODO if we did this right it should be possible to get all TCC units synchronized?
+	// e.g. attach all the timers, start them, and then start the clock...
+	configureSAMDClock();
+
+	// configure the TCC (waveform, top-value, pre-scaler = frequency)
+	configureTCC(pin1, pwm_frequency);
+	configureTCC(pin2, pwm_frequency);
+	configureTCC(pin3, pwm_frequency);
+
+	Serial.println("Configured TCCs...");
 }
 
 
@@ -375,7 +651,56 @@ void _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const 
  */
 int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l) {
 	// we want to use a TCC channel with 1 non-inverted and 1 inverted output for each phase, with dead-time insertion
+	printAllPinInfos();
+	int compatibility = checkHardware6PWM(pinA_h, pinA_l, pinB_h, pinB_l, pinC_h, pinC_l);
+	if (compatibility<0) {
+		compatibility = checkSoftware6PWM(pinA_h, pinA_l, pinB_h, pinB_l, pinC_h, pinC_l);
+		if (compatibility<0) {
+			// no result!
+			Serial.println("Bad combination!");
+			return -1;
+		}
+	}
 
+	tccConfiguration pinAh = getTCCChannelNr(pinA_h, (compatibility>>0&0x01)==0x1);
+	tccConfiguration pinAl = getTCCChannelNr(pinA_l, (compatibility>>1&0x01)==0x1);
+	tccConfiguration pinBh = getTCCChannelNr(pinB_h, (compatibility>>2&0x01)==0x1);
+	tccConfiguration pinBl = getTCCChannelNr(pinB_l, (compatibility>>3&0x01)==0x1);
+	tccConfiguration pinCh = getTCCChannelNr(pinC_h, (compatibility>>4&0x01)==0x1);
+	tccConfiguration pinCl = getTCCChannelNr(pinC_l, (compatibility>>5&0x01)==0x1);
+
+	Serial.println("Found configuration: ");
+	printTCCConfiguration(pinAh);
+	printTCCConfiguration(pinAl);
+	printTCCConfiguration(pinBh);
+	printTCCConfiguration(pinBl);
+	printTCCConfiguration(pinCh);
+	printTCCConfiguration(pinCl);
+
+	// attach pins to timer peripherals
+	bool allAttached = true;
+	allAttached |= attachTCC(pinAh); // in theory this can fail, but there is no way to signal it...
+	allAttached |= attachTCC(pinAl);
+	allAttached |= attachTCC(pinBh);
+	allAttached |= attachTCC(pinBl);
+	allAttached |= attachTCC(pinCh);
+	allAttached |= attachTCC(pinCl);
+	if (!allAttached)
+		return -1;
+	// set up clock - TODO if we did this right it should be possible to get all TCC units synchronized?
+	// e.g. attach all the timers, start them, and then start the clock...
+	configureSAMDClock();
+
+	// TODO configure the HW 6-PWM if it was detected
+	// configure the TCC (waveform, top-value, pre-scaler = frequency)
+	configureTCC(pinAh, pwm_frequency, false);
+	configureTCC(pinAl, pwm_frequency, true);
+	configureTCC(pinBh, pwm_frequency, false);
+	configureTCC(pinBl, pwm_frequency, true);
+	configureTCC(pinCh, pwm_frequency, false);
+	configureTCC(pinCl, pwm_frequency, true);
+
+	return 0;
 }
 
 
@@ -406,30 +731,12 @@ void _writeDutyCycle2PWM(float dc_a,  float dc_b, int pinA, int pinB) {
  * @param pinC  phase C hardware pin number
  */
 void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC) {
-//	int pin = dc_a;
-//	bool alternate;
-//	if ( g_APinDescription[pin].ulPin & 1 )
-//		alternate = ( PORT->Group[g_APinDescription[pin].ulPort].PMUX[g_APinDescription[pin].ulPin >> 1].reg & PORT_PMUX_PMUXO( 0xF ) ) == PORT_PMUX_PMUXO( PIO_TIMER_ALT );
-//	else
-//		alternate = ( PORT->Group[g_APinDescription[pin].ulPort].PMUX[g_APinDescription[pin].ulPin >> 1].reg & PORT_PMUX_PMUXE( 0xF ) ) == PORT_PMUX_PMUXO( PIO_TIMER_ALT );
-//	Tcc* tcc;
-//	int chan;
-//	if (alternate) {
-//		tcc = (Tcc*)GetTC(g_APinDescription[pin].ulTCChannel);
-//		chan = GetTCChannelNumber(g_APinDescription[pin].ulTCChannel);
-//	}
-//	else {
-//		tcc = (Tcc*)GetTC(g_APinDescription[pin].ulPWMChannel);
-//		chan = GetTCChannelNumber(g_APinDescription[pin].ulPWMChannel);
-//	}
-
-
-//	writeSAMDDutyCycle(pinA, dc_a);
-//	writeSAMDDutyCycle(pinB, dc_b);
-//	writeSAMDDutyCycle(pinC, dc_c);
-	writeSAMDDutyCycle(0, dc_a);
-	writeSAMDDutyCycle(1, dc_b);
-	writeSAMDDutyCycle(2, dc_c);
+	tccConfiguration* tccI = getTccPinConfiguration(pinA);
+	writeSAMDDutyCycle(tccI->tcc.chaninfo, dc_a);
+	tccI = getTccPinConfiguration(pinB);
+	writeSAMDDutyCycle(tccI->tcc.chaninfo, dc_b);
+	tccI = getTccPinConfiguration(pinC);
+	writeSAMDDutyCycle(tccI->tcc.chaninfo, dc_c);
 	return;
 }
 
