@@ -31,8 +31,8 @@ Therefore this is an attempt to:
 > - SVPWM full implementation  d+q axis
 >
 > BEWARE 📢 slight API changes included
->   - `MotionControlType` renamed into `MotionControlType`
->   - `MotionControlType::voltage` does not exist any more now - `MotionControlType::torque`
+>   - `ControlType` renamed into `MotionControlType`
+>   - `ControlType::voltage` does not exist any more now - `MotionControlType::torque`
 
 
 ## Arduino *SimpleFOCShield* v2.0.2
