@@ -77,3 +77,9 @@ void BLDCDriver6PWM::setPwm(float Ua, float Ub, float Uc) {
   // hardware specific function - depending on driver and mcu
   _writeDutyCycle6PWM(dc_a, dc_b, dc_c, dead_zone, pwmA_h,pwmA_l, pwmB_h,pwmB_l, pwmC_h,pwmC_l);
 }
+
+
+// Set voltage to the pwm pin
+void BLDCDriver6PWM::setPhaseState(int sa, int sb, int sc) {  
+  // TODO implement disabling
+}

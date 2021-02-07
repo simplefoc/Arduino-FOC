@@ -26,10 +26,13 @@ Therefore this is an attempt to:
 >   - using voltage
 >   - using current magnitude (one current)
 >   - using FOC currents ( d-q currents ) - real foc control
-> 
+> - disable phase support for 3pwm driver
+>    - not yet for 6pwm
+> - SVPWM full implementation  d+q axis
+>
 > BEWARE 📢 slight API changes included
->   - `ControlType` renamed into `MotionControlType`
->   - `ControlType::voltage` does not exist any more now - `MotionControlType::torque`
+>   - `MotionControlType` renamed into `MotionControlType`
+>   - `MotionControlType::voltage` does not exist any more now - `MotionControlType::torque`
 
 
 ## Arduino *SimpleFOCShield* v2.0.2

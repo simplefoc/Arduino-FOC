@@ -63,20 +63,19 @@ int BLDCDriver3PWM::init() {
 }
 
 
+
 // Set voltage to the pwm pin
-void BLDCDriver3PWM::setPwm(float Ua, float Ub, float Uc) {  
+void BLDCDriver3PWM::setPhaseState(int sa, int sb, int sc) {  
   // disable if needed
   if(enableA_pin != NOT_SET &&  enableB_pin != NOT_SET  && enableC_pin != NOT_SET ){
-    digitalWrite(enableA_pin, Ua == _HIGH_IMPEDANCE ? LOW : HIGH);
-    digitalWrite(enableB_pin, Ub == _HIGH_IMPEDANCE ? LOW : HIGH);
-    digitalWrite(enableC_pin, Uc == _HIGH_IMPEDANCE ? LOW : HIGH);
+    digitalWrite(enableA_pin, sa == _HIGH_IMPEDANCE ? LOW : HIGH);
+    digitalWrite(enableB_pin, sb == _HIGH_IMPEDANCE ? LOW : HIGH);
+    digitalWrite(enableC_pin, sc == _HIGH_IMPEDANCE ? LOW : HIGH);
   }
-  
-  // voltage of the high-impedance phase if it is not possible to disable it
-  // will be in exactly in the middle of the other two
-  if (Ua == _HIGH_IMPEDANCE) Ua = (Ub + Uc)/2; 
-  if (Ub == _HIGH_IMPEDANCE) Ub = (Ua + Uc)/2; 
-  if (Uc == _HIGH_IMPEDANCE) Uc = (Ua + Ub)/2; 
+}
+
+// Set voltage to the pwm pin
+void BLDCDriver3PWM::setPwm(float Ua, float Ub, float Uc) {
   
   // limit the voltage in driver
   Ua = _constrain(Ua, 0.0, voltage_limit);

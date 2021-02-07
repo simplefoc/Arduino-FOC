@@ -11,4 +11,13 @@
  */
 float _readADCVoltage(const int pinA);
 
+/**
+ *  function reading an ADC value and returning the read voltage
+ * 
+ * @param pinA - adc pin A
+ * @param pinB - adc pin B
+ * @param pinC - adc pin C
+ */
+void _configureADC(const int pinA,const int pinB,const int pinC = NOT_SET);
+
 #endif

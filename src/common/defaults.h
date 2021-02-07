@@ -12,12 +12,12 @@
 // current sensing PID values
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega328PB__)  || defined(__AVR_ATmega2560__)
 // for 16Mhz controllers like Arduino uno and mega
-#define DEF_PID_CURR_P 1 //!< default PID controller P value
-#define DEF_PID_CURR_I 300 //!<  default PID controller I value
+#define DEF_PID_CURR_P 2 //!< default PID controller P value
+#define DEF_PID_CURR_I 100 //!<  default PID controller I value
 #define DEF_PID_CURR_D 0.0 //!<  default PID controller D value
 #define DEF_PID_CURR_RAMP 1000.0 //!< default PID controller voltage ramp value
 #define DEF_PID_CURR_LIMIT (DEF_POWER_SUPPLY) //!< default PID controller voltage limit
-#define DEF_CURR_FILTER_Tf 0.005 //!< default velocity filter time constant
+#define DEF_CURR_FILTER_Tf 0.01 //!< default velocity filter time constant
 #else 
 // for stm32, due, teensy, esp32 and similar
 #define DEF_PID_CURR_P 5 //!< default PID controller P value

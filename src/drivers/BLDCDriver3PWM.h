@@ -48,6 +48,14 @@ class BLDCDriver3PWM: public BLDCDriver
     */
     void setPwm(float Ua, float Ub, float Uc) override;
 
+    /** 
+     * Set phase voltages to the harware 
+     * 
+     * @param sc - phase A state : active / disabled ( high impedance )
+     * @param sb - phase B state : active / disabled ( high impedance )
+     * @param sa - phase C state : active / disabled ( high impedance )
+    */
+    virtual void setPhaseState(int sa, int sb, int sc) override;
   private:
         
 };

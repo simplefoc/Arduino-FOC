@@ -58,11 +58,15 @@ float _electricalAngle(float shaft_angle, int pole_pairs) {
 // https://reprap.org/forum/read.php?147,219210
 // https://en.wikipedia.org/wiki/Fast_inverse_square_root
 float _sqrtApprox(float number) {//low in fat
-  unsigned long i;
+  long i;
   float x, y;
+  // const float f = 1.5F; // better precision
+
+  x = number * 0.5F;
   y = number;
   i = * ( long * ) &y;
   i = 0x5f375a86 - ( i >> 1 );
-  y = * ( float * ) &i;
+  y = * ( float * ) &i; 
+  // y = y * ( f - ( x * y * y ) ); // better precision
   return number * y;
 }

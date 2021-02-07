@@ -24,8 +24,9 @@
 #define _PI_6 0.52359877559
 
 #define NOT_SET -12345.0
-#define _HIGH_IMPEDANCE -1234
+#define _HIGH_IMPEDANCE 0
 #define _HIGH_Z _HIGH_IMPEDANCE
+#define _ACTIVE 1
 
 // dq current structure 
 struct DQCurrent_s

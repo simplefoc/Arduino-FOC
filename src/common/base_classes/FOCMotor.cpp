@@ -28,8 +28,9 @@ FOCMotor::FOCMotor()
   voltage.d = 0;
   voltage.q = 0;
   // current target values
-  current.d = 0;
+  current_sp = 0;
   current.q = 0;
+  current.d = 0;
   
   //monitor_port 
   monitor_port = nullptr;
@@ -73,7 +74,7 @@ float FOCMotor::shaftVelocity() {
 // function implementing the monitor_port setter
 void FOCMotor::useMonitoring(Print &print){
   monitor_port = &print; //operate on the address of print
-  if(monitor_port ) monitor_port->println("MOT: Monitor enabled!");
+  if(monitor_port ) monitor_port->println(F("MOT: Monitor enabled!"));
 }
 // utility function intended to be used with serial plotter to monitor motor variables
 // significantly slowing the execution down!!!!
@@ -125,17 +126,17 @@ int FOCMotor::command(String user_command) {
     case 'I':      // velocity I gain change
     case 'D':      // velocity D gain change
     case 'R':      // velocity voltage ramp change
-      if(monitor_port) monitor_port->print(" PID velocity| ");
+      if(monitor_port) monitor_port->print(F(" PID velocity| "));
       break;
     case 'F':      // velocity Tf low pass filter change
-      if(monitor_port) monitor_port->print(" LPF velocity| ");
+      if(monitor_port) monitor_port->print(F(" LPF velocity| "));
       break;
     case 'K':      // angle loop gain P change
-      if(monitor_port) monitor_port->print(" P angle| ");
+      if(monitor_port) monitor_port->print(F(" PID angle| "));
       break;
     case 'L':      // velocity voltage limit change
     case 'N':      // angle loop gain velocity_limit change
-      if(monitor_port) monitor_port->print(" Limits| ");
+      if(monitor_port) monitor_port->print(F(" Limits| "));
       break;
   }
 
@@ -202,8 +203,12 @@ int FOCMotor::command(String user_command) {
           case MotionControlType::angle:
             if(monitor_port) monitor_port->println("angle");
             break;
-          default:
-            if(monitor_port) monitor_port->println("open loop");
+          case MotionControlType::velocity_openloop:
+            if(monitor_port) monitor_port->println("velocity openloop");
+            break;
+          case MotionControlType::angle_openloop:
+            if(monitor_port) monitor_port->println("angle openloop");
+            break;
         }
       }else{ // if set command
         switch((int)value){
@@ -219,7 +224,52 @@ int FOCMotor::command(String user_command) {
             if(monitor_port) monitor_port->println("angle");
             controller = MotionControlType::angle;
             break;
+          case 3:
+            if(monitor_port) monitor_port->println("velocity openloop");
+            controller = MotionControlType::velocity_openloop;
+            break;
+          case 4:
+            if(monitor_port) monitor_port->println("angle openloop");
+            controller = MotionControlType::angle_openloop;
+            break;
           default: // not valid command
+            if(monitor_port) monitor_port->println("error");
+            errorFlag = 0;
+        }
+      }
+      break;
+    case 'T':
+      // change control type
+      if(monitor_port) monitor_port->print("Torque: ");
+      
+      if(GET){ // if get command
+        switch(torque_controller){
+          case TorqueControlType::voltage:
+            if(monitor_port) monitor_port->println("voltage");
+            break;
+          case TorqueControlType::current:
+            if(monitor_port) monitor_port->println("current");
+            break;
+          case TorqueControlType::foc_current:
+            if(monitor_port) monitor_port->println("foc current");
+            break;
+        }
+      }else{ // if set command
+        switch((int)value){
+          case 0:
+            if(monitor_port) monitor_port->println("voltage");
+            torque_controller = TorqueControlType::voltage;
+            break;
+          case 1:
+            if(monitor_port) monitor_port->println("current");
+            torque_controller = TorqueControlType::current;
+            break;
+          case 2:
+            if(monitor_port) monitor_port->println("foc current");
+            torque_controller = TorqueControlType::foc_current;
+            break;
+          default: // not valid command
+            if(monitor_port) monitor_port->println("error");
             errorFlag = 0;
         }
       }

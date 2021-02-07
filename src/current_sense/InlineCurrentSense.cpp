@@ -17,6 +17,8 @@ InlineCurrentSense::InlineCurrentSense(float _shunt_resistor, float _gain, int _
 
 // Inline sensor init function
 void InlineCurrentSense::init(){
+    // configure ADC variables
+    _configureADC(pinA,pinB,pinC);
     // calibrate zero offsets
     calibrateOffsets();
 }

@@ -199,22 +199,22 @@ void BLDCMotor::loopFOC() {
       break;
     case TorqueControlType::current:
       // read overall current magnitude
-      current_measured.q = current_sense->getCurrent(electrical_angle);
+      current.q = current_sense->getCurrent(electrical_angle);
       // filter the value values
-      current_measured.q = LPF_current_q(current_measured.q);
+      current.q = LPF_current_q(current.q);
       // calculate the phase voltage
-      voltage.q = PID_current_q(current.q - current_measured.q); 
+      voltage.q = PID_current_q(current_sp - current.q); 
       voltage.d = 0;
       break;
     case TorqueControlType::foc_current:
       // read dq currents
-      current_measured = current_sense->getFOCCurrents(electrical_angle);
+      current = current_sense->getFOCCurrents(electrical_angle);
       // filter values
-      current_measured.q = LPF_current_q(current_measured.q);
-      current_measured.d = LPF_current_d(current_measured.d);
+      current.q = LPF_current_q(current.q);
+      current.d = LPF_current_d(current.d);
       // calculate the phase voltages
-      voltage.q = PID_current_q(current.q - current_measured.q); 
-      voltage.d = PID_current_d(-current_measured.d);
+      voltage.q = PID_current_q(current_sp - current.q); 
+      voltage.d = PID_current_d(-current.d);
       break;
     
     default:
@@ -245,7 +245,7 @@ void BLDCMotor::move(float new_target) {
       if(torque_controller == TorqueControlType::voltage)
         voltage.q =  target; // if voltage torque control
       else 
-        current.q = target; // if current/foc_current torque control
+        current_sp = target; // if current/foc_current torque control
       break;
     case MotionControlType::angle:
       // angle set point
@@ -257,7 +257,7 @@ void BLDCMotor::move(float new_target) {
         voltage.q = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
         voltage.d = 0;
       }else{
-        current.q = PID_velocity(shaft_velocity_sp - shaft_velocity); // if current/foc_current torque control
+        current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if current/foc_current torque control
       }
       break;
     case MotionControlType::velocity:
@@ -268,7 +268,7 @@ void BLDCMotor::move(float new_target) {
         voltage.q = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
         voltage.d = 0;
       }else{
-        current.q = PID_velocity(shaft_velocity_sp - shaft_velocity); // if current/foc_current torque control
+        current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if current/foc_current torque control
       }
       break;
     case MotionControlType::velocity_openloop:
@@ -317,9 +317,23 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
       // centered == false > or Adaptable centering, all phases drawn to 0 when Uq=0 
       center = centered ? (driver->voltage_limit)/2 : Uq;
 
-      Ua = trap_120_map[sector][0]  == _HIGH_IMPEDANCE ? _HIGH_IMPEDANCE : trap_120_map[sector][0] * Uq + center;
-      Ub = trap_120_map[sector][1]  == _HIGH_IMPEDANCE ? _HIGH_IMPEDANCE : trap_120_map[sector][1] * Uq + center;
-      Uc = trap_120_map[sector][2]  == _HIGH_IMPEDANCE ? _HIGH_IMPEDANCE : trap_120_map[sector][2] * Uq + center;
+      if(trap_120_map[sector][0]  == _HIGH_IMPEDANCE){
+        Ua= center;
+        Ub = trap_120_map[sector][1] * Uq + center;
+        Uc = trap_120_map[sector][2] * Uq + center;
+        driver->setPhaseState(_HIGH_IMPEDANCE, _ACTIVE, _ACTIVE); // disable phase if possible
+      }else if(trap_120_map[sector][1]  == _HIGH_IMPEDANCE){
+        Ua = trap_120_map[sector][0] * Uq + center;
+        Ub = center;
+        Uc = trap_120_map[sector][2] * Uq + center;
+        driver->setPhaseState(_ACTIVE, _HIGH_IMPEDANCE, _ACTIVE);// disable phase if possible
+      }else{ 
+        Ua = trap_120_map[sector][0] * Uq + center;
+        Ub = trap_120_map[sector][1] * Uq + center;
+        Uc = center;
+        driver->setPhaseState(_ACTIVE,_ACTIVE, _HIGH_IMPEDANCE);// disable phase if possible
+      }
+
     break;
 
     case FOCModulationType::Trapezoid_150 :
@@ -334,9 +348,22 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
       // centered == false > or Adaptable centering, all phases drawn to 0 when Uq=0 
       center = centered ? (driver->voltage_limit)/2 : Uq;
 
-      Ua = ( trap_150_map[sector][0]  == _HIGH_IMPEDANCE ) ? _HIGH_IMPEDANCE : trap_150_map[sector][0] * Uq + center;
-      Ub = ( trap_150_map[sector][1]  == _HIGH_IMPEDANCE ) ? _HIGH_IMPEDANCE : trap_150_map[sector][1] * Uq + center;
-      Uc = ( trap_150_map[sector][2]  == _HIGH_IMPEDANCE ) ? _HIGH_IMPEDANCE : trap_150_map[sector][2] * Uq + center;
+      if(trap_150_map[sector][0]  == _HIGH_IMPEDANCE){
+        Ua= center;
+        Ub = trap_150_map[sector][1] * Uq + center;
+        Uc = trap_150_map[sector][2] * Uq + center;
+        driver->setPhaseState(_HIGH_IMPEDANCE, _ACTIVE, _ACTIVE); // disable phase if possible
+      }else if(trap_150_map[sector][1]  == _HIGH_IMPEDANCE){
+        Ua = trap_150_map[sector][0] * Uq + center;
+        Ub = center;
+        Uc = trap_150_map[sector][2] * Uq + center;
+        driver->setPhaseState(_ACTIVE, _HIGH_IMPEDANCE, _ACTIVE);// disable phase if possible
+      }else{ 
+        Ua = trap_150_map[sector][0] * Uq + center;
+        Ub = trap_150_map[sector][1] * Uq + center;
+        Uc = center;
+        driver->setPhaseState(_ACTIVE, _ACTIVE, _HIGH_IMPEDANCE);// disable phase if possible
+      }
 
     break;
 
@@ -353,10 +380,12 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
       Ualpha =  _ca * Ud - _sa * Uq;  // -sin(angle) * Uq;
       Ubeta =  _sa * Ud + _ca * Uq;    //  cos(angle) * Uq;
 
+      // center = centered ? (driver->voltage_limit)/2 : Uq;
+      center = driver->voltage_limit/2;
       // Clarke transform
-      Ua = Ualpha + driver->voltage_limit/2;
-      Ub = -0.5 * Ualpha  + _SQRT3_2 * Ubeta + driver->voltage_limit/2;
-      Uc = -0.5 * Ualpha - _SQRT3_2 * Ubeta + driver->voltage_limit/2;
+      Ua = Ualpha + center;
+      Ub = -0.5 * Ualpha  + _SQRT3_2 * Ubeta + center;
+      Uc = -0.5 * Ualpha - _SQRT3_2 * Ubeta + center;
 
       if (!centered) {
         float Umin = min(Ua, min(Ub, Uc));
@@ -371,20 +400,27 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
       // Nice video explaining the SpaceVectorModulation (SVPWM) algorithm
       // https://www.youtube.com/watch?v=QMSWUMEAejg
 
-      // if negative voltages change inverse the phase
-      // angle + 180degrees
-      if(Uq < 0) angle_el += _PI;
-      Uq = abs(Uq);
+      // the algorithm goes
+      // 1) Ualpha, Ubeta
+      // 2) Uout = sqrt(Ualpha^2 + Ubeta^2)
+      // 3) angle_el = atan2(Ubeta, Ualpha)
+      // 
+      // equivalent to 2)  because the magnitude does not change is:
+      // Uout = sqrt(Ud^2 + Uq^2)
+      // equivalent to 3) is
+      // angle_el = angle_el + atan2(Uq,Ud)
 
+      // _sqrt is an approx of sqrt (3-4% error)
+      float Uout = _sqrt(Ud*Ud + Uq*Uq) / driver->voltage_limit;
       // angle normalisation in between 0 and 2pi
       // only necessary if using _sin and _cos - approximation functions
-      angle_el = _normalizeAngle(angle_el + _PI_2);
+      angle_el = _normalizeAngle(angle_el + atan2(Uq, Ud));
 
       // find the sector we are in currently
       sector = floor(angle_el / _PI_3) + 1;
       // calculate the duty cycles
-      float T1 = _SQRT3*_sin(sector*_PI_3 - angle_el) * Uq/driver->voltage_limit;
-      float T2 = _SQRT3*_sin(angle_el - (sector-1.0)*_PI_3) * Uq/driver->voltage_limit;
+      float T1 = _SQRT3*_sin(sector*_PI_3 - angle_el) * Uout;
+      float T2 = _SQRT3*_sin(angle_el - (sector-1.0)*_PI_3) * Uout;
       // two versions possible
       float T0 = 0; // pulled to 0 - better for low power supply voltage
       if (centered) {
