@@ -24,36 +24,26 @@ enum Pullup{
  */
 class Sensor{
     public:
-        /** get current angle (rad) */
-        virtual float getAngle();
-        /** get current angular velocity (rad/s)*/
-        virtual float getVelocity();
-        /**
-         *  set current angle as zero angle 
-         *  return the angle [rad] difference
-         */
-        virtual float initRelativeZero();
-        /**
-         * set absolute zero angle as zero angle
-         * return the angle [rad] difference
-         */
-        virtual float initAbsoluteZero();
 
         // if natural_direction == Direction::CCW then direction will be flipped to CW
         int natural_direction = Direction::CW;
+        float zero_offset = 0; //!< user defined zero offset
 
-        /** 
-         * returns 0 if it has no absolute 0 measurement
-         * 0 - incremental encoder without index
-         * 1 - encoder with index & magnetic sensors
-         */
-        virtual int hasAbsoluteZero();
+        /** get current angle (rad) */
+        virtual float getAngle()=0;
+        /** get current angular velocity (rad/s)*/
+        virtual float getVelocity();
+
         /** 
          * returns 0 if it does need search for absolute zero
          * 0 - magnetic sensor (& encoder with index which is found)
          * 1 - ecoder with index (with index not found yet)
          */
-        virtual int needsAbsoluteZeroSearch();
+        virtual int needsSearch();
+    private:
+        // velocity calculation variables
+        float angle_prev=0; //!< angle in previous velocity calculation step
+        long velocity_calc_timestamp=0; //!< last velocity calculation timestamp
 };
 
 #endif

@@ -49,31 +49,95 @@ PhaseCurrent_s InlineCurrentSense::getPhaseCurrents(){
     return current;
 }
 
-// get current magnitude 
-//   - absolute  - if no electrical_angle provided 
-//   - signed    - if angle provided
-float InlineCurrentSense::getCurrent(float motor_electrical_angle){
-    // read current phase currents
-    PhaseCurrent_s current = getPhaseCurrents();
-    // currnet sign - if motor angle not provided the magnitude is always positive
-    float sign = 1;
+// Function synchronizing and aligning the current sense with motor driver
+// if all pins are connected well none of this is really necessary! - can be avoided
+// returns 0 for failure and 1 for success
+int InlineCurrentSense::driverSync(BLDCDriver *driver, float voltage){
 
-    // calculate clarke transform
-    float i_alpha, i_beta;
-    if(!current.c){
-        // if only two measured currents
-        i_alpha = current.a;  
-        i_beta = _1_SQRT3 * current.a + _2_SQRT3 * current.b;
+    // set phase A active and phases B and C down
+    driver->setPwm(voltage, 0, 0);
+    _delay(1000); 
+    PhaseCurrent_s c = getPhaseCurrents();
+    // read the current 100 times ( arbitrary number )
+    for (int i = 0; i < 100; i++) {
+        PhaseCurrent_s c1 = getPhaseCurrents();
+        c.a = c.a*0.6 + 0.4*c1.a;
+        c.b = c.b*0.6 + 0.4*c1.b;
+        c.c = c.c*0.6 + 0.4*c1.c;
+        _delay(3);
+    }
+    driver->setPwm(0, 0, 0);
+    // align phase A
+    float ab_ratio = fabs(c.a / c.b);
+    float ac_ratio = c.c ? fabs(c.a / c.c) : 0;
+    if( ab_ratio > 1.5 ){ // should be ~2    
+        gain_adjust_a = _sign(c.a);
+    }else if( ab_ratio < 0.7 ){ // should be ~0.5
+        // switch phase A and B
+        int tmp_pinA = pinA;
+        pinA = pinB; 
+        pinB = tmp_pinA;
+        gain_adjust_a = _sign(c.b);
+    }else if(pinC != NOT_SET &&  ac_ratio < 0.7 ){ // should be ~0.5
+        // switch phase A and C
+        int tmp_pinA = pinA;
+        pinA = pinC; 
+        pinC= tmp_pinA;
+        gain_adjust_a = _sign(c.c);
     }else{
-        i_alpha = 2*(current.a - (current.b - current.c))/3.0;    
-        i_beta = _2_SQRT3 *( current.b  - current.c );
+        // error in current sense - phase either not measured or bad connection
+        return 0;
+    }
+    
+    // set phase B active and phases A and C down
+    driver->setPwm(0, voltage, 0);
+    _delay(1000); 
+    c = getPhaseCurrents();
+    // read the current 50 times
+    for (int i = 0; i < 100; i++) {
+        PhaseCurrent_s c1 = getPhaseCurrents();
+        c.a = c.a*0.6 + 0.4*c1.a;
+        c.b = c.b*0.6 + 0.4*c1.b;
+        c.c = c.c*0.6 + 0.4*c1.c;
+        _delay(3);
+    }
+    driver->setPwm(0, 0, 0);
+    float ba_ratio = fabs(c.b/c.a);
+    float bc_ratio = c.c ? fabs(c.b / c.c) : 0;
+     if( ba_ratio > 1.5 ){ // should be ~2
+        gain_adjust_b = _sign(c.b);
+    }else if( ba_ratio < 0.7 ){ // it should be ~0.5
+        // switch phase A and B
+        int tmp_pinB = pinB;
+        pinB = pinA; 
+        pinA = tmp_pinB;
+        gain_adjust_b = _sign(c.a);
+    }else if(pinC != NOT_SET && bc_ratio < 0.7 ){ // should be ~0.5
+        // switch phase A and C
+        int tmp_pinB = pinB;
+        pinB = pinC; 
+        pinC = tmp_pinB;
+        gain_adjust_b = _sign(c.c);
+    }else{
+        // error in current sense - phase either not measured or bad connection
+        return 0;
     }
 
-    // if motor angle provided function returns signed value of the current
-    // determine the sign of the current
-    // sign(atan2(current.q, current.d)) is the same as c.q > 0 ? 1 : -1  
-    if(motor_electrical_angle) 
-        sign = (i_beta * _cos(motor_electrical_angle) - i_alpha*_sin(motor_electrical_angle)) > 0 ? 1 : -1;  
-    // return current magnitude
-    return sign*_sqrt(i_alpha*i_alpha + i_beta*i_beta);
+    // if phase C measured
+    if(pinC != NOT_SET){
+        // set phase B active and phases A and C down
+        driver->setPwm(0, 0, voltage);
+        _delay(200); 
+        c = getPhaseCurrents();
+        // read the adc voltage 500 times ( arbitrary number )
+        for (int i = 0; i < 50; i++) {
+            PhaseCurrent_s c1 = getPhaseCurrents();
+            c.c = (c.c+c1.c)/50.0;
+        }
+        driver->setPwm(0, 0, 0);
+        gain_adjust_c = _sign(c.c);
+    }
+
+    return 1;
 }
+

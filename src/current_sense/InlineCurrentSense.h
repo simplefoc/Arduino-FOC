@@ -23,8 +23,7 @@ class InlineCurrentSense: public CurrentSense{
     // CurrentSense interface implementing functions 
     void init() override;
     PhaseCurrent_s getPhaseCurrents() override;
-    float getCurrent( float angle_el  = 0) override;
-
+    int driverSync(BLDCDriver *driver, float voltage) override;
 
     // ADC measuremnet gain adjustment for each phase
     // if (shunt+amp combination) measures inverse current you can set it to -1 for example

@@ -69,16 +69,14 @@ ISR	KEYWORD2
 getVelocity	KEYWORD2
 setPhaseVoltage	KEYWORD2
 getAngle	KEYWORD2
-initRelativeZero	KEYWORD2
-initAbsoluteZero	KEYWORD2
-hasAbsoluteZero	KEYWORD2
-needsAbsoluteZeroSearch	KEYWORD2
+needsSearch	KEYWORD2
 useMonitoring	KEYWORD2
 angleOpenloop	KEYWORD2
 velocityOpenloop	KEYWORD2
-getCurrents	KEYWORD2
+getPhaseCurrents	KEYWORD2
 getFOCCurrents	KEYWORD2
 getCurrent	KEYWORD2
+setPwm	KEYWORD2
 
 voltage_q	KEYWORD2
 voltage_d	KEYWORD2

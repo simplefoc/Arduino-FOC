@@ -9,7 +9,7 @@ BLDCMotor::BLDCMotor(int pp, float _R)
   // save pole pairs number
   pole_pairs = pp;
   // save phase resistance number
-  phase_resistance = _R;
+  phase_resistance = _R == NOT_SET ? 3.0/2.0 : _R;
   // torque control type is voltage by default
   torque_controller = TorqueControlType::voltage;
 }
@@ -87,6 +87,7 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction sensor_direction 
   // align motor if necessary
   // alignment necessary for encoders!
   if(zero_electric_offset != NOT_SET){
+    if(monitor_port) monitor_port->println(F("MOT: Skip align."));
     // abosolute zero offset provided - no need to align
     zero_electric_angle = zero_electric_offset;
     // set the sensor direction - default CW
@@ -94,16 +95,53 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction sensor_direction 
   }else{
     // sensor and motor alignment
     _delay(500);
-    exit_flag = alignSensor();
-    _delay(500);
-    }
-  if(monitor_port) monitor_port->println(F("MOT: Motor ready."));
+    if(sensor) exit_flag = alignSensor();
+    else if(monitor_port) monitor_port->println(F("MOT: No sensor attached."));
 
+    _delay(500);
+    if(current_sense)  exit_flag = alignCurrentSense();
+    else if(monitor_port) monitor_port->println(F("MOT: No current sense attached."));
+  }
+
+  if(exit_flag){
+    if(monitor_port) monitor_port->println(F("MOT: Motor ready."));
+  }else{
+    if(monitor_port) monitor_port->println(F("MOT: Calibration failed."));
+    disable();
+  }
+ 
   return exit_flag;
 }
+
+// Calibarthe the motor and current sense phases
+int BLDCMotor::alignCurrentSense() {
+  int exit_flag = 1; // success 
+
+  if(monitor_port) monitor_port->println(F("MOT: Align current sense."));
+  // make sure everything is stopped
+  setPhaseVoltage(0, 0, 0);
+  
+  if(!current_sense->driverSync(driver, voltage_sensor_align)){ // align current sense and the driver
+    // error in current sense - phase either not measured or bad connection
+    if(monitor_port) monitor_port->println(F("MOT: Current sense align error!"));
+    exit_flag = 0;
+  }
+  // make sure the motor is disabled
+  setPhaseVoltage(0, 0, 0);
+  _delay(200);
+  
+  return exit_flag;
+}
+
 // Encoder alignment to electrical 0 angle
 int BLDCMotor::alignSensor() {
+  int exit_flag = 1; //success
   if(monitor_port) monitor_port->println(F("MOT: Align sensor."));
+  
+  // check if sensor needs zero search
+  if(sensor->needsSearch()) absoluteZeroSearch();
+  _delay(500);
+
   // align the electrical phases of the motor and sensor
   // set angle -90(270 = 3PI/2) degrees 
   float start_angle = shaftAngle();
@@ -123,64 +161,50 @@ int BLDCMotor::alignSensor() {
     setPhaseVoltage(voltage_sensor_align, 0,  angle);
     _delay(2);
   }
-  // determin the direction the sensor moved 
+  // determine the direction the sensor moved 
   if (mid_angle < start_angle) {
     if(monitor_port) monitor_port->println(F("MOT: natural_direction==CCW"));
     sensor->natural_direction = Direction::CCW;
   } else if (mid_angle == start_angle) {
     if(monitor_port) monitor_port->println(F("MOT: Sensor failed to notice movement"));
+    exit_flag = 0; // failed calibration
   } else{
     if(monitor_port) monitor_port->println(F("MOT: natural_direction==CW"));
   }
 
-  // let the motor stabilize for1 sec
+  // let the motor stabilize for 1 sec
   _delay(1000);
   // set sensor to zero
-  sensor->initRelativeZero();
+  zero_electric_angle = _normalizeAngle(_electricalAngle(shaftAngle(), pole_pairs));
   _delay(500);
   setPhaseVoltage(0, 0, 0);
   _delay(200);
-
-  // find the index if available
-  int exit_flag = absoluteZeroAlign();
-  _delay(500);
-  if(monitor_port){
-    if(exit_flag< 0 ) monitor_port->println(F("MOT: Error: Not found!"));
-    if(exit_flag> 0 ) monitor_port->println(F("MOT: Success!"));
-    else  monitor_port->println(F("MOT: Not available!"));
-  }
+  
   return exit_flag;
 }
 
 
 // Encoder alignment the absolute zero angle
 // - to the index
-int BLDCMotor::absoluteZeroAlign() {
-
-  if(monitor_port) monitor_port->println(F("MOT: Absolute zero align."));
-    // if no absolute zero return
-  if(!sensor->hasAbsoluteZero()) return 0;
-
-
-  if(monitor_port && sensor->needsAbsoluteZeroSearch()) monitor_port->println(F("MOT: Searching..."));
+void BLDCMotor::absoluteZeroSearch() {
+  
+  if(monitor_port) monitor_port->println(F("MOT: Absolute zero search..."));
   // search the absolute zero with small velocity
-  while(sensor->needsAbsoluteZeroSearch() && shaft_angle < _2PI){
-    loopFOC();
-    voltage.q = PID_velocity(velocity_index_search - shaftVelocity());
+  float limit = velocity_limit;
+  velocity_limit = velocity_index_search;
+  shaft_angle = 0;
+  while(sensor->needsSearch() && shaft_angle < _2PI){
+    angleOpenloop(1.5*_2PI);
   }
-  voltage.q = 0;
   // disable motor
   setPhaseVoltage(0, 0, 0);
-
-  // align absolute zero if it has been found
-  if(!sensor->needsAbsoluteZeroSearch()){
-    // align the sensor with the absolute zero
-    float zero_offset = sensor->initAbsoluteZero();
-    // remember zero electric angle
-    zero_electric_angle = _normalizeAngle(_electricalAngle(zero_offset, pole_pairs));
+  // reinit the limits
+  velocity_limit = limit;
+  // check if the zero found
+  if(monitor_port){
+    if(sensor->needsSearch()) monitor_port->println(F("MOT: Error: Not found!"));
+    else monitor_port->println(F("MOT: Success!"));
   }
-  // return bool if zero found
-  return !sensor->needsAbsoluteZeroSearch() ? 1 : -1;
 }
 
 // Iterative function looping FOC algorithm, setting Uq on the Motor
@@ -191,13 +215,14 @@ void BLDCMotor::loopFOC() {
 
   // shaft angle
   shaft_angle = shaftAngle();
-  electrical_angle = _normalizeAngle(_electricalAngle(shaft_angle,pole_pairs) + zero_electric_angle);
+  electrical_angle = _normalizeAngle(_electricalAngle(shaft_angle,pole_pairs) - zero_electric_angle);
 
   switch (torque_controller) {
     case TorqueControlType::voltage:
       // no need to do anything really
       break;
     case TorqueControlType::current:
+      if(!current_sense) return;
       // read overall current magnitude
       current.q = current_sense->getCurrent(electrical_angle);
       // filter the value values
@@ -207,6 +232,7 @@ void BLDCMotor::loopFOC() {
       voltage.d = 0;
       break;
     case TorqueControlType::foc_current:
+      if(!current_sense) return;
       // read dq currents
       current = current_sense->getFOCCurrents(electrical_angle);
       // filter values
@@ -254,7 +280,8 @@ void BLDCMotor::move(float new_target) {
       shaft_velocity_sp = P_angle( shaft_angle_sp - shaft_angle );
       // calculate the torque command
       if(torque_controller == TorqueControlType::voltage){
-        voltage.q = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
+        current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
+        voltage.q = current_sp*1.5*phase_resistance;
         voltage.d = 0;
       }else{
         current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if current/foc_current torque control
@@ -265,7 +292,8 @@ void BLDCMotor::move(float new_target) {
       shaft_velocity_sp = target;
       // calculate the torque command
       if(torque_controller == TorqueControlType::voltage){
-        voltage.q = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
+        current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
+        voltage.q = current_sp*1.5*phase_resistance;
         voltage.d = 0;
       }else{
         current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if current/foc_current torque control

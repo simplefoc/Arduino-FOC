@@ -45,7 +45,7 @@ int BLDCDriver6PWM::init() {
   _delay(1000);
 
   // PWM pins
-  pinMode(pwmA_l, OUTPUT);
+  pinMode(pwmA_h, OUTPUT);
   pinMode(pwmB_h, OUTPUT);
   pinMode(pwmC_h, OUTPUT);
   pinMode(pwmA_l, OUTPUT);

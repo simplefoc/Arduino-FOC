@@ -87,9 +87,15 @@ int  StepperMotor::initFOC( float zero_electric_offset, Direction sensor_directi
 
   return exit_flag;
 }
+
 // Encoder alignment to electrical 0 angle
 int StepperMotor::alignSensor() {
   if(monitor_port) monitor_port->println(F("MOT: Align sensor."));
+  
+  // check if sensor needs zero search
+  if(sensor->needsSearch()) absoluteZeroSearch();
+  _delay(500);
+
   // align the electrical phases of the motor and sensor
   // set angle -90(270 = 3PI/2) degrees 
   float start_angle = shaftAngle();
@@ -109,7 +115,7 @@ int StepperMotor::alignSensor() {
     setPhaseVoltage(voltage_sensor_align, 0,  angle);
     _delay(2);
   }
-  // determin the direction the sensor moved 
+  // determine the direction the sensor moved 
   if (mid_angle < start_angle) {
     if(monitor_port) monitor_port->println(F("MOT: natural_direction==CCW"));
     sensor->natural_direction = Direction::CCW;
@@ -119,55 +125,37 @@ int StepperMotor::alignSensor() {
     if(monitor_port) monitor_port->println(F("MOT: natural_direction==CW"));
   }
 
-  // let the motor stabilize for1 sec
+  // let the motor stabilize for 1 sec
   _delay(1000);
   // set sensor to zero
-  sensor->initRelativeZero();
+  zero_electric_angle = _normalizeAngle(_electricalAngle(shaftAngle(), pole_pairs));
   _delay(500);
   setPhaseVoltage(0, 0, 0);
   _delay(200);
-
-  // find the index if available
-  int exit_flag = absoluteZeroAlign();
-  _delay(500);
-  if(monitor_port){
-    if(exit_flag< 0 ) monitor_port->println(F("MOT: Error: Not found!"));
-    if(exit_flag> 0 ) monitor_port->println(F("MOT: Success!"));
-    else  monitor_port->println(F("MOT: Not available!"));
-  }
-  return exit_flag;
+  
+  return 0;
 }
 
-
-// Encoder alignment the absolute zero angle 
+// Encoder alignment the absolute zero angle
 // - to the index
-int StepperMotor::absoluteZeroAlign() {
-
-  if(monitor_port) monitor_port->println(F("MOT: Absolute zero align."));
-    // if no absolute zero return
-  if(!sensor->hasAbsoluteZero()) return 0;
+void StepperMotor::absoluteZeroSearch() {
   
-
-  if(monitor_port && sensor->needsAbsoluteZeroSearch()) monitor_port->println(F("MOT: Searching..."));
+  if(monitor_port) monitor_port->println(F("MOT: Absolute zero search..."));
   // search the absolute zero with small velocity
-  while(sensor->needsAbsoluteZeroSearch() && shaft_angle < _2PI){
-    loopFOC();   
-    voltage.q = PID_velocity(velocity_index_search - shaftVelocity());
+  float limit = velocity_limit;
+  velocity_limit = velocity_index_search;
+  while(sensor->needsSearch() && shaft_angle < _2PI){
+    angleOpenloop(1.5*_2PI);
   }
-  voltage.q = 0;
-  voltage.d = 0;
   // disable motor
   setPhaseVoltage(0, 0, 0);
-
-  // align absolute zero if it has been found
-  if(!sensor->needsAbsoluteZeroSearch()){
-    // align the sensor with the absolute zero
-    float zero_offset = sensor->initAbsoluteZero();
-    // remember zero electric angle
-    zero_electric_angle = _normalizeAngle(_electricalAngle(zero_offset, pole_pairs));
+  // reinit the limits
+  velocity_limit = limit;
+  // check if the zero found
+  if(monitor_port){
+    if(sensor->needsSearch()) monitor_port->println(F("MOT: Error: Not found!"));
+    else monitor_port->println(F("MOT: Success!"));
   }
-  // return bool if zero found
-  return !sensor->needsAbsoluteZeroSearch() ? 1 : -1;
 }
 
 // Iterative function looping FOC algorithm, setting Uq on the Motor
@@ -177,7 +165,7 @@ void StepperMotor::loopFOC() {
   if(!enabled) return; 
   // shaft angle 
   shaft_angle = shaftAngle();
-  electrical_angle = _normalizeAngle(_electricalAngle(shaft_angle, pole_pairs) + zero_electric_angle);
+  electrical_angle = _normalizeAngle(_electricalAngle(shaft_angle, pole_pairs) - zero_electric_angle);
   // set the phase voltage - FOC heart function :) 
   setPhaseVoltage(voltage.q, voltage.d, electrical_angle);
 }

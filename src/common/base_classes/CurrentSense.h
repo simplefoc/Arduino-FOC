@@ -1,7 +1,7 @@
 #ifndef CURRENTSENSE_H
 #define CURRENTSENSE_H
 
-
+#include "BLDCDriver.h"
 #include "../foc_utils.h"
 
 /**
@@ -15,7 +15,15 @@ class CurrentSense{
      *  Function intialising the CurrentSense class
      *   All the necessary intialisations of adc and sync should be implemented here
      */
-    virtual void init();
+    virtual void init() = 0;
+    
+    /**
+     * Function intended to implement all that is needed to sync and calibrate the current sensing with the driver.
+     * If no such thing is needed it can be left empty (return 1)
+     * @returns -  0 - for failure &  1 - for success 
+     */
+    virtual int driverSync(BLDCDriver *driver, float voltage) = 0;
+
     /**
      *  Function rading the phase currents a, b and c
      *   This function will be used with the foc control throught the function 
@@ -24,7 +32,7 @@ class CurrentSense{
      * 
      *  @return PhaseCurrent_s current values
      */
-    virtual PhaseCurrent_s getPhaseCurrents();
+    virtual PhaseCurrent_s getPhaseCurrents() = 0;
     /**
      * Function reading the magnitude of the current set to the motor
      *  It returns the abosolute or signed magnitude if possible

@@ -83,8 +83,10 @@ class BLDCMotor: public FOCMotor
     void setPhaseVoltage(float Uq, float Ud, float angle_el);
     /** Sensor alignment to electrical 0 angle of the motor */
     int alignSensor();
+    /** Current sense and motor phase alignment */
+    int alignCurrentSense();
     /** Motor and sensor alignment to the sensors absolute 0 angle  */
-    int absoluteZeroAlign();
+    void absoluteZeroSearch();
 
         
     // Open loop motion control    

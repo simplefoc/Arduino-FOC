@@ -92,7 +92,7 @@ class StepperMotor: public FOCMotor
     /** Sensor alignment to electrical 0 angle of the motor */
     int alignSensor();
     /** Motor and sensor alignment to the sensors absolute 0 angle  */
-    int absoluteZeroAlign();
+    void absoluteZeroSearch();
         
     // Open loop motion control    
     /**
