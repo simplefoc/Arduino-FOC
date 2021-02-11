@@ -107,7 +107,6 @@ void loop() {
 #include "drivers/BLDCDriver6PWM.h"
 #include "drivers/StepperDriver4PWM.h"
 #include "drivers/StepperDriver2PWM.h"
-#include "drivers/StepperDriver2PWM2Pin.h"
 #include "current_sense/InlineCurrentSense.h"
 
 #endif
