@@ -54,7 +54,7 @@ void setup() {
   Serial.println("Sensor zero offset is:");
   Serial.println(motor.zero_electric_angle, 4);
   Serial.println("Sensor natural direction is: ");
-  Serial.println(sensor.natural_direction == 1 ? "Direction::CW" : "Direction::CCW");
+  Serial.println(motor.natural_direction == 1 ? "Direction::CW" : "Direction::CCW");
 
   Serial.println("To use these values provide them to the: motor.initFOC(offset, direction)");
   _delay(1000);
