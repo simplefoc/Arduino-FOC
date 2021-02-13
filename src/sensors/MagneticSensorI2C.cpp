@@ -90,8 +90,8 @@ float MagneticSensorI2C::getAngle(){
   // in order to know if overflow happened
   angle_data_prev = angle_data;
   // return the full angle 
-  // (number of full rotations)*2PI + current sensor angle - zero_offset
-  return (natural_direction * (full_rotation_offset + ( angle_data / (float)cpr) * _2PI) - zero_offset);
+  // (number of full rotations)*2PI + current sensor angle 
+  return  (full_rotation_offset + ( angle_data / (float)cpr) * _2PI) ;
 }
 
 // Shaft velocity calculation

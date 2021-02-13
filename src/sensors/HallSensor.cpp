@@ -96,7 +96,7 @@ void HallSensor::attachSectorCallback(void (*_onSectorChange)(int sector)) {
 	Shaft angle calculation
 */
 float HallSensor::getAngle() {
-  return natural_direction * ((electric_rotations * 6 + electric_sector) / cpr) * _2PI - zero_offset;
+  return ((electric_rotations * 6 + electric_sector) / cpr) * _2PI ;
 }
 
 /*
@@ -107,7 +107,7 @@ float HallSensor::getVelocity(){
   if (pulse_diff == 0 || ((_micros() - pulse_timestamp) > pulse_diff) ) { // last velocity isn't accurate if too old
     return 0;
   } else {
-    return natural_direction * direction * (_2PI / cpr) / (pulse_diff / 1000000.0);
+    return direction * (_2PI / cpr) / (pulse_diff / 1000000.0);
   }
 
 }

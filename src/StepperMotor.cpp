@@ -76,7 +76,7 @@ int  StepperMotor::initFOC( float zero_electric_offset, Direction sensor_directi
     // abosolute zero offset provided - no need to align
     zero_electric_angle = zero_electric_offset;
     // set the sensor direction - default CW
-    sensor->natural_direction = sensor_direction;
+    natural_direction = sensor_direction;
   }else{
     // sensor and motor alignment
     _delay(500);
@@ -118,7 +118,7 @@ int StepperMotor::alignSensor() {
   // determine the direction the sensor moved 
   if (mid_angle < start_angle) {
     if(monitor_port) monitor_port->println(F("MOT: natural_direction==CCW"));
-    sensor->natural_direction = Direction::CCW;
+    natural_direction = Direction::CCW;
   } else if (mid_angle == start_angle) {
     if(monitor_port) monitor_port->println(F("MOT: Sensor failed to notice movement"));
   } else{
@@ -253,6 +253,8 @@ void StepperMotor::velocityOpenloop(float target_velocity){
 
   // calculate the necessary angle to achieve target velocity
   shaft_angle = _normalizeAngle(shaft_angle + target_velocity*Ts);
+  // for display purposes
+  shaft_velocity = target_velocity;
     
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
   setPhaseVoltage(voltage_limit, 0, _electricalAngle(shaft_angle,pole_pairs));
@@ -264,22 +266,23 @@ void StepperMotor::velocityOpenloop(float target_velocity){
 // Function (iterative) generating open loop movement towards the target angle
 // - target_angle - rad
 // it uses voltage_limit and velocity_limit variables
-void StepperMotor::angleOpenloop(float target_angle){
+void BLDCMotor::angleOpenloop(float target_angle){
   // get current timestamp
   unsigned long now_us = _micros();
   // calculate the sample time from last call
   float Ts = (now_us - open_loop_timestamp) * 1e-6;
-  
+
   // calculate the necessary angle to move from current position towards target angle
   // with maximal velocity (velocity_limit)
-  if(abs( target_angle - shaft_angle ) > abs(velocity_limit*Ts))
-    shaft_angle += _sign(target_angle - shaft_angle) * abs( velocity_limit )*Ts; 
-  else
+  if(abs( target_angle - shaft_angle ) > abs(velocity_limit*Ts)){
+    shaft_angle += _sign(target_angle - shaft_angle) * abs( velocity_limit )*Ts;
+    shaft_velocity = velocity_limit;
+  }else{
     shaft_angle = target_angle;
-  
+    shaft_velocity = 0;
+  }
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
-  setPhaseVoltage(voltage_limit,  0, _electricalAngle(shaft_angle,pole_pairs));
+  setPhaseVoltage(voltage_limit,  0, _electricalAngle(shaft_angle, pole_pairs));
 
   // save timestamp for next call
   open_loop_timestamp = now_us;
-}

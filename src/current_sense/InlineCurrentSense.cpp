@@ -51,12 +51,18 @@ PhaseCurrent_s InlineCurrentSense::getPhaseCurrents(){
 
 // Function synchronizing and aligning the current sense with motor driver
 // if all pins are connected well none of this is really necessary! - can be avoided
-// returns 0 for failure and 1 for success
+// returns flag
+// 0 - fail
+// 1 - success and nothing changed
+// 2 - success but pins reconfigured
+// 3 - success but gains inverted
+// 4 - success but pins reconfigured and gains inverted
 int InlineCurrentSense::driverSync(BLDCDriver *driver, float voltage){
+    int exit_flag = 1;
 
     // set phase A active and phases B and C down
     driver->setPwm(voltage, 0, 0);
-    _delay(1000); 
+    _delay(200); 
     PhaseCurrent_s c = getPhaseCurrents();
     // read the current 100 times ( arbitrary number )
     for (int i = 0; i < 100; i++) {
@@ -78,12 +84,14 @@ int InlineCurrentSense::driverSync(BLDCDriver *driver, float voltage){
         pinA = pinB; 
         pinB = tmp_pinA;
         gain_adjust_a = _sign(c.b);
+        exit_flag = 2; // signal that pins have been switched
     }else if(pinC != NOT_SET &&  ac_ratio < 0.7 ){ // should be ~0.5
         // switch phase A and C
         int tmp_pinA = pinA;
         pinA = pinC; 
         pinC= tmp_pinA;
         gain_adjust_a = _sign(c.c);
+        exit_flag = 2;// signal that pins have been switched
     }else{
         // error in current sense - phase either not measured or bad connection
         return 0;
@@ -91,7 +99,7 @@ int InlineCurrentSense::driverSync(BLDCDriver *driver, float voltage){
     
     // set phase B active and phases A and C down
     driver->setPwm(0, voltage, 0);
-    _delay(1000); 
+    _delay(200); 
     c = getPhaseCurrents();
     // read the current 50 times
     for (int i = 0; i < 100; i++) {
@@ -112,12 +120,14 @@ int InlineCurrentSense::driverSync(BLDCDriver *driver, float voltage){
         pinB = pinA; 
         pinA = tmp_pinB;
         gain_adjust_b = _sign(c.a);
+        exit_flag = 2; // signal that pins have been switched
     }else if(pinC != NOT_SET && bc_ratio < 0.7 ){ // should be ~0.5
         // switch phase A and C
         int tmp_pinB = pinB;
         pinB = pinC; 
         pinC = tmp_pinB;
         gain_adjust_b = _sign(c.c);
+        exit_flag = 2; // signal that pins have been switched
     }else{
         // error in current sense - phase either not measured or bad connection
         return 0;
@@ -138,6 +148,13 @@ int InlineCurrentSense::driverSync(BLDCDriver *driver, float voltage){
         gain_adjust_c = _sign(c.c);
     }
 
-    return 1;
+    if(gain_adjust_a < 0 || gain_adjust_b < 0 || gain_adjust_c < 0) exit_flag +=2;
+    // exit flag is either
+    // 0 - fail
+    // 1 - success and nothing changed
+    // 2 - success but pins reconfigured
+    // 3 - success but gains inverted
+    // 4 - success but pins reconfigured and gains inverted
+    return exit_flag;
 }
 

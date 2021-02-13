@@ -17,9 +17,6 @@ FOCMotor::FOCMotor()
   // sensor and motor align voltage
   voltage_sensor_align = DEF_VOLTAGE_SENSOR_ALIGN;
 
-  // electric angle of comthe zero angle
-  zero_electric_angle = 0;
-
   // default modulation is SinePWM
   foc_modulation = FOCModulationType::SinePWM;
 
@@ -59,13 +56,17 @@ void FOCMotor::linkCurrentSense(CurrentSense* _current_sense) {
 float FOCMotor::shaftAngle() {
   // if no sensor linked return previous value ( for open loop )
   if(!sensor) return shaft_angle;
-  return sensor->getAngle();
+  return natural_direction*sensor->getAngle() - sensor_offset;
 }
 // shaft velocity calculation
 float FOCMotor::shaftVelocity() {
   // if no sensor linked return previous value ( for open loop )
   if(!sensor) return shaft_velocity;
-  return LPF_velocity(sensor->getVelocity());
+  return natural_direction*LPF_velocity(sensor->getVelocity());
+}
+
+float FOCMotor::electricalAngle(){
+  return _normalizeAngle((shaft_angle + sensor_offset) * pole_pairs - zero_electric_angle);
 }
 
 /**

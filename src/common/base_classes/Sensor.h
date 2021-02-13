@@ -25,10 +25,6 @@ enum Pullup{
 class Sensor{
     public:
 
-        // if natural_direction == Direction::CCW then direction will be flipped to CW
-        int natural_direction = Direction::CW;
-        float zero_offset = 0; //!< user defined zero offset
-
         /** get current angle (rad) */
         virtual float getAngle()=0;
         /** get current angular velocity (rad/s)*/

@@ -43,7 +43,7 @@ float MagneticSensorAnalog::getAngle(){
   // if overflow happened track it as full rotation
   if(abs(delta) > (0.8*cpr) ) full_rotation_offset += delta > 0 ? -_2PI : _2PI; 
   
-  float angle = natural_direction * (full_rotation_offset + ( (float) (raw_count) / (float)cpr) * _2PI) - zero_offset;
+  float angle = full_rotation_offset + ( (float) (raw_count) / (float)cpr) * _2PI;
 
   // calculate velocity here 
   long now = _micros();

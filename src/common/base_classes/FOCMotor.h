@@ -112,6 +112,12 @@ class FOCMotor
      */
     float shaftVelocity();
 
+
+    /** 
+     * Electrical angle calculation  
+     */
+    float electricalAngle();
+
     // state variables
     float target; //!< current target value - depends of the controller
   	float shaft_angle;//!< current motor angle
@@ -130,7 +136,6 @@ class FOCMotor
     // motor physical parameters
     float	phase_resistance; //!< motor phase resistance
     int pole_pairs;//!< motor pole pairs number
-    float zero_electric_angle;//!< absolute zero electric angle - if available
 
     // limiting variables
     float voltage_limit; //!< Voltage limitting variable - global limit
@@ -138,12 +143,18 @@ class FOCMotor
     float velocity_limit; //!< Velocity limitting variable - global limit
 
     // motor status vairables
-    int enabled = 0;
+    int enabled = 0;//!< enabled or disabled motor flag
+    
+    // pwm modulation related variables
+    FOCModulationType foc_modulation;//!<  parameter derterniming modulation algorithm
+    int modulation_centered = 1;//!< flag (1) centered modulation around driver limit /2  or  (0) pulled to 0
+
 
     // configuration structures
     TorqueControlType torque_controller; //!< parameter determining the torque control type
     MotionControlType controller; //!< parameter determining the control loop to be used
-    FOCModulationType foc_modulation;//!<  parameter derterniming modulation algorithm
+
+    // controllers and low pass filters
     PIDController PID_current_q{DEF_PID_CURR_P,DEF_PID_CURR_I,DEF_PID_CURR_D,DEF_PID_CURR_RAMP, DEF_POWER_SUPPLY};//!< parameter determining the q current PID config
     PIDController PID_current_d{DEF_PID_CURR_P,DEF_PID_CURR_I,DEF_PID_CURR_D,DEF_PID_CURR_RAMP, DEF_POWER_SUPPLY};//!< parameter determining the d current PID config
     LowPassFilter LPF_current_q{DEF_CURR_FILTER_Tf};//!<  parameter determining the current Low pass filter configuration 
@@ -151,6 +162,11 @@ class FOCMotor
     PIDController PID_velocity{DEF_PID_VEL_P,DEF_PID_VEL_I,DEF_PID_VEL_D,DEF_PID_VEL_RAMP,DEF_PID_VEL_LIMIT};//!< parameter determining the velocity PID configuration
     PIDController P_angle{DEF_P_ANGLE_P,0,0,1e10,DEF_VEL_LIM};	//!< parameter determining the position PID configuration 
     LowPassFilter LPF_velocity{DEF_VEL_FILTER_Tf};//!<  parameter determining the velocity Low pass filter configuration 
+
+    // sensor related variabels
+    float sensor_offset; //!< user defined sensor zero offset
+    float zero_electric_angle = NOT_SET;//!< absolute zero electric angle - if available
+    int natural_direction = NOT_SET; //!< if natural_direction == Direction::CCW then direction will be flipped to CW
 
     /**
      * Function providing BLDCMotor class with the 
