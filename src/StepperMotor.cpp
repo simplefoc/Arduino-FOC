@@ -266,7 +266,7 @@ void StepperMotor::velocityOpenloop(float target_velocity){
 // Function (iterative) generating open loop movement towards the target angle
 // - target_angle - rad
 // it uses voltage_limit and velocity_limit variables
-void BLDCMotor::angleOpenloop(float target_angle){
+void StepperMotor::angleOpenloop(float target_angle){
   // get current timestamp
   unsigned long now_us = _micros();
   // calculate the sample time from last call
@@ -286,3 +286,4 @@ void BLDCMotor::angleOpenloop(float target_angle){
 
   // save timestamp for next call
   open_loop_timestamp = now_us;
+}

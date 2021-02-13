@@ -15,20 +15,24 @@ Therefore this is an attempt to:
 
 ##### <b> NEXT RELEASE 📢:</b> <i>Simple<b>FOC</b>library v2.1
 > #### Implemented features in dev branch
-> - Upgrade of the HallSensor implementation by [@owennewo](https://github.com/owennewo)
-> - Support for Arduino DUE - everything except the 6PWM mode
-> - Support for ATMega328pb
-> - bugfix for the Teensy boards (setting 3pwm )
-> - included F macro for shrinking string memory usage - moved to programming memory
-> - **Initial current sensing support**
+> - **Initial current sensing support**🎉
 >   - Inline current sensors 
+>   - adaptive zero finding and shunt direction
 > - **Implemented real torque control** 
 >   - using voltage
 >   - using current magnitude (one current)
 >   - using FOC currents ( d-q currents ) - real foc control
+> - SVPWM full implementation  d+q axis
+> - **Simplified sensor implementation**📢
+>    - For new sensor implementation only one function necessary `getAngle()`
+> - Upgrade of the HallSensor implementation by [@owennewo](https://github.com/owennewo)
+> - Support for Arduino DUE - everything except the 6PWM mode
+> - Support for ATMega328pb
+> - bugfix for the Teensy boards ( setting 3pwm )
+> - extended support for 2PWM stepper drivers - by [@zjor](https://github.com/zjor)
+> - included F macro for shrinking string memory usage - moved to programming memory
 > - disable phase support for 3pwm driver
 >    - not yet for 6pwm
-> - SVPWM full implementation  d+q axis
 >
 > BEWARE 📢 slight API changes included
 >   - `ControlType` renamed into `MotionControlType`
