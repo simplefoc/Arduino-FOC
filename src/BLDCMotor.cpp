@@ -209,6 +209,7 @@ void BLDCMotor::absoluteZeroSearch() {
   velocity_limit = velocity_index_search;
   shaft_angle = 0;
   while(sensor->needsSearch() && shaft_angle < _2PI){
+    if(monitor_port) monitor_port->println(shaft_angle);
     angleOpenloop(1.5*_2PI);
   }
   // disable motor
@@ -543,6 +544,8 @@ void BLDCMotor::velocityOpenloop(float target_velocity){
   unsigned long now_us = _micros();
   // calculate the sample time from last call
   float Ts = (now_us - open_loop_timestamp) * 1e-6;
+  // quick fix for strange cases (micros overflow + timestamp not defined)
+  if(Ts <= 0 || Ts > 0.5) Ts = 1e-3; 
 
   // calculate the necessary angle to achieve target velocity
   shaft_angle = _normalizeAngle(shaft_angle + target_velocity*Ts); 
@@ -564,6 +567,8 @@ void BLDCMotor::angleOpenloop(float target_angle){
   unsigned long now_us = _micros();
   // calculate the sample time from last call
   float Ts = (now_us - open_loop_timestamp) * 1e-6;
+  // quick fix for strange cases (micros overflow + timestamp not defined)
+  if(Ts <= 0 || Ts > 0.5) Ts = 1e-3; 
 
   // calculate the necessary angle to move from current position towards target angle
   // with maximal velocity (velocity_limit)
