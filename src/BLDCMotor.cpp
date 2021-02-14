@@ -209,7 +209,6 @@ void BLDCMotor::absoluteZeroSearch() {
   velocity_limit = velocity_index_search;
   shaft_angle = 0;
   while(sensor->needsSearch() && shaft_angle < _2PI){
-    if(monitor_port) monitor_port->println(shaft_angle);
     angleOpenloop(1.5*_2PI);
   }
   // disable motor
