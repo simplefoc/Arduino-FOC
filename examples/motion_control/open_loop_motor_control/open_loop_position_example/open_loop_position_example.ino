@@ -23,7 +23,7 @@ void setup() {
 
   // limiting motor movements
   motor.voltage_limit = 3;   // [V]
-  motor.velocity_limit = 20; // [rad/s]
+  motor.velocity_limit = 5; // [rad/s] cca 50rpm
   // open loop control config
   motor.controller = MotionControlType::angle_openloop;
 

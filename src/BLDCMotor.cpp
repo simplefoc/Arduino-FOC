@@ -99,7 +99,7 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction sensor_direction)
   if(sensor) exit_flag *= alignSensor();
   else if(monitor_port) monitor_port->println(F("MOT: No sensor attached."));
 
-  // alling the current sensor - can be skipped
+  // aligning the current sensor - can be skipped
   // checks if driver phases are the same as current sense phases
   // and checks the direction of measuremnt. 
   _delay(500);
@@ -191,6 +191,10 @@ int BLDCMotor::alignSensor() {
     _delay(700);
     zero_electric_angle = _normalizeAngle(_electricalAngle(natural_direction*sensor->getAngle(), pole_pairs));
     _delay(20);
+    if(monitor_port){
+      monitor_port->print(F("MOT: Zero elec. angle: "));
+      monitor_port->println(zero_electric_angle);
+    }
   }else if(monitor_port) monitor_port->println(F("MOT: Skip offset calib."));
   return exit_flag;
 }
