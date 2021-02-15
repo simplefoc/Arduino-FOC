@@ -21,10 +21,7 @@
 #define SIMPLEFOC_SAMD_MAX_TCC_PINCONFIGURATIONS 12
 #endif
 
-#ifndef SIMPLEFOC_SAMD_DEAD_TIME
-#define SIMPLEFOC_SAMD_DEAD_TIME 50
-#endif
-#define SIMPLEFOC_SAMD_DEAD_TIME_VAL (SIMPLEFOC_SAMD_DEAD_TIME*1.0/SIMPLEFOC_SAMD_PWM_RESOLUTION)
+//#define SIMPLEFOC_SAMD_DEBUG
 
 
 // Wait for synchronization of registers between the clock domains
@@ -48,92 +45,9 @@ struct tccConfiguration {
 	} tcc;
 };
 
-
-
-
-// Read count
-//TCC0->CTRLBSET.reg = TCC_CTRLBSET_CMD_READSYNC;
-//while (TCC0->SYNCBUSY.bit.CTRLB); // or while (TCC0->SYNCBUSY.reg);
-//int count = TCC0->COUNT.reg;
-
-
-
-void printAllPinInfos() {
-	Serial.println();
-	for (int pin=0;pin<PINS_COUNT;pin++) {
-		const PinDescription& pinDesc = g_APinDescription[pin];
-		wo_association& association = getWOAssociation(pinDesc.ulPort, pinDesc.ulPin);
-		uint32_t attr = pinDesc.ulPinAttribute;
-		Serial.print("Pin ");
-		if (pin<10) Serial.print("0");
-		Serial.print(pin);
-#ifdef PIN_ATTR_PWM //SAMD21
-		Serial.print("  PWM=");
-		Serial.print(((attr & PIN_ATTR_PWM) == PIN_ATTR_PWM));
+#ifdef SIMPLEFOC_SAMD_DEBUG
+#include "./samd_debug.h"
 #endif
-#ifdef PIN_ATTR_PWM_E //SAMD51
-		Serial.print("  PWM_E=");
-		Serial.print(((attr & PIN_ATTR_PWM_E) == PIN_ATTR_PWM_E));
-		Serial.print("  PWM_F=");
-		Serial.print(((attr & PIN_ATTR_PWM_F) == PIN_ATTR_PWM_F));
-		Serial.print("  PWM_G=");
-		Serial.print(((attr & PIN_ATTR_PWM_G) == PIN_ATTR_PWM_G));
-#endif
-		if (association.tccE>=0) {
-			int tcn = GetTCNumber(association.tccE);
-			if (tcn>=TCC_INST_NUM)
-				Serial.print("  TC");
-			else
-				Serial.print(" TCC");
-			Serial.print(tcn);
-			Serial.print("-");
-			Serial.print(GetTCChannelNumber(association.tccE));
-			Serial.print("[");
-			Serial.print(GetTCChannelNumber(association.woE));
-			Serial.print("]");
-		}
-		else
-			Serial.print("  None    ");
-		Serial.print("  TIM=");
-		Serial.print(((attr & PIN_ATTR_TIMER) == PIN_ATTR_TIMER));
-		Serial.print("  ALT=");
-		Serial.print(((attr & PIN_ATTR_TIMER_ALT) == PIN_ATTR_TIMER_ALT));
-		if (association.tccF>=0) {
-			int tcn = GetTCNumber(association.tccF);
-			if (tcn>=TCC_INST_NUM)
-				Serial.print("  TC");
-			else
-				Serial.print(" TCC");
-			Serial.print(tcn);
-			Serial.print("-");
-			Serial.print(GetTCChannelNumber(association.tccF));
-			Serial.print("[");
-			Serial.print(GetTCChannelNumber(association.woF));
-			Serial.println("]");
-		}
-		else
-			Serial.println("  None ");
-
-	}
-	Serial.println();
-}
-
-void printTCCConfiguration(tccConfiguration& info) {
-	Serial.print(info.pin);
-	Serial.print((info.alternate==1)?" alternate TCC":" normal    TCC");
-	if (info.tcc.tccn>=0) {
-		Serial.print(info.tcc.tccn);
-		Serial.print("-");
-		Serial.println(info.tcc.chan);
-	}
-	else
-		Serial.println(" None");
-}
-
-
-
-
-
 
 
 
@@ -166,8 +80,9 @@ void configureSAMDClock() {
 						 GCLK_GENCTRL_ID(4);          	// Select GCLK4
 		while (GCLK->STATUS.bit.SYNCBUSY);              // Wait for synchronization
 
+#ifdef SIMPLEFOC_SAMD_DEBUG
 		Serial.println("Configured clock...");
-
+#endif
 	}
 }
 
@@ -179,7 +94,7 @@ void configureSAMDClock() {
  * pwm_frequency is fixed at 24kHz for now. We could go slower, but going
  * faster won't be possible without sacrificing resolution.
  */
-void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate=false, bool hw6pwm=false) {
+void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate=false, float hw6pwm=-1) {
 	// TODO for the moment we ignore the frequency...
 	if (!tccConfigured[tccConfig.tcc.tccn]) {
 		uint32_t GCLK_CLKCTRL_ID_ofthistcc = -1;
@@ -230,8 +145,10 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate=f
 			tc->COUNT8.CTRLA.bit.ENABLE = 1;
 			while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
 
+#ifdef SIMPLEFOC_SAMD_DEBUG
 			Serial.print("Initialized TC ");
 			Serial.println(tccConfig.tcc.tccn);
+#endif
 		}
 		else {
 			Tcc* tcc = (Tcc*)GetTC(tccConfig.tcc.chaninfo);
@@ -244,10 +161,10 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate=f
 			tcc->WAVE.reg |= TCC_WAVE_POL(0xF)|TCC_WAVEB_WAVEGENB_DSBOTH;   // Set wave form configuration
 			while ( tcc->SYNCBUSY.bit.WAVE == 1 ); // wait for sync
 
-			if (hw6pwm) {
+			if (hw6pwm>0.0) {
 				tcc->WEXCTRL.vec.DTIEN |= (1<<tccConfig.tcc.chan);
-				tcc->WEXCTRL.bit.DTLS = SIMPLEFOC_SAMD_DEAD_TIME;
-				tcc->WEXCTRL.bit.DTHS = SIMPLEFOC_SAMD_DEAD_TIME;
+				tcc->WEXCTRL.bit.DTLS = hw6pwm*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1);
+				tcc->WEXCTRL.bit.DTHS = hw6pwm*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1);
 				syncTCC(tcc); // wait for sync
 			}
 
@@ -256,7 +173,7 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate=f
 
 			// set all channels to 0%
 			uint8_t chanCount = (tccConfig.tcc.tccn==1||tccConfig.tcc.tccn==2)?2:4;
-			for (int i=0;i<chanCount;i++) { // TODO some of the TCCs don't have 4 channels... can one set them anyway?
+			for (int i=0;i<chanCount;i++) {
 				tcc->CC[i].reg = 0;					// start off at 0% duty cycle
 				uint32_t chanbit = 0x1<<(TCC_SYNCBUSY_CC0_Pos+i);
 				while ( (tcc->SYNCBUSY.reg & chanbit) > 0 );
@@ -270,6 +187,7 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate=f
 			tcc->CTRLA.reg |= TCC_CTRLA_ENABLE | TCC_CTRLA_PRESCALER_DIV1; //48Mhz/1=48Mhz/2(up/down)=24MHz/1024=24KHz
 			while ( tcc->SYNCBUSY.bit.ENABLE == 1 ); // wait for sync
 
+#ifdef SIMPLEFOC_SAMD_DEBUG
 			Serial.print("    Initialized TCC ");
 			Serial.print(tccConfig.tcc.tccn);
 			Serial.print("-");
@@ -277,6 +195,7 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate=f
 			Serial.print("[");
 			Serial.print(tccConfig.wo);
 			Serial.println("]");
+#endif
 		}
 	}
 	else if (tccConfig.tcc.tccn<TCC_INST_NUM) {
@@ -291,16 +210,17 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate=f
 		tcc->DRVCTRL.vec.INVEN = (tcc->DRVCTRL.vec.INVEN&invenMask)|invenVal;
 		syncTCC(tcc); // wait for sync
 
-		if (hw6pwm) {
+		if (hw6pwm>0.0) {
 			tcc->WEXCTRL.vec.DTIEN |= (1<<tccConfig.tcc.chan);
-			tcc->WEXCTRL.bit.DTLS = SIMPLEFOC_SAMD_DEAD_TIME;
-			tcc->WEXCTRL.bit.DTHS = SIMPLEFOC_SAMD_DEAD_TIME;
+			tcc->WEXCTRL.bit.DTLS = hw6pwm*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1);
+			tcc->WEXCTRL.bit.DTHS = hw6pwm*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1);
 			syncTCC(tcc); // wait for sync
 		}
 
 		tcc->CTRLA.bit.ENABLE = 1;
 		while ( tcc->SYNCBUSY.bit.ENABLE == 1 );
 
+#ifdef SIMPLEFOC_SAMD_DEBUG
 		Serial.print("(Re-)Initialized TCC ");
 		Serial.print(tccConfig.tcc.tccn);
 		Serial.print("-");
@@ -308,6 +228,7 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate=f
 		Serial.print("[");
 		Serial.print(tccConfig.wo);
 		Serial.println("]");
+#endif
 	}
 
 
@@ -386,11 +307,6 @@ tccConfiguration getTCCChannelNr(int pin, bool alternate) {
 
 
 bool checkPeripheralPermutationSameTCC3(tccConfiguration& pin1, tccConfiguration& pin2, tccConfiguration& pin3) {
-	printTCCConfiguration(pin1);
-	printTCCConfiguration(pin2);
-	printTCCConfiguration(pin3);
-	Serial.println();
-
 	if (inUse(pin3) || inUse(pin2) || inUse(pin3))
 		return false;
 
@@ -404,15 +320,6 @@ bool checkPeripheralPermutationSameTCC3(tccConfiguration& pin1, tccConfiguration
 }
 
 bool checkPeripheralPermutationSameTCC6(tccConfiguration& pinAh, tccConfiguration& pinAl, tccConfiguration& pinBh, tccConfiguration& pinBl, tccConfiguration& pinCh, tccConfiguration& pinCl) {
-	printTCCConfiguration(pinAh);
-	printTCCConfiguration(pinAl);
-	printTCCConfiguration(pinBh);
-	printTCCConfiguration(pinBl);
-	printTCCConfiguration(pinCh);
-	printTCCConfiguration(pinCl);
-	Serial.println();
-
-	// TODO consider WOs
 	if (inUse(pinAh) || inUse(pinAl) || inUse(pinBh) || inUse(pinBl) || inUse(pinCh) || inUse(pinCl))
 		return false;
 
@@ -459,14 +366,6 @@ bool checkPeripheralPermutationCompatible3(tccConfiguration& pin1, tccConfigurat
 
 
 bool checkPeripheralPermutationCompatible6(tccConfiguration& pinAh, tccConfiguration& pinAl, tccConfiguration& pinBh, tccConfiguration& pinBl, tccConfiguration& pinCh, tccConfiguration& pinCl) {
-	printTCCConfiguration(pinAh);
-	printTCCConfiguration(pinAl);
-	printTCCConfiguration(pinBh);
-	printTCCConfiguration(pinBl);
-	printTCCConfiguration(pinCh);
-	printTCCConfiguration(pinCl);
-	Serial.println();
-
 	// check we're valid PWM pins
 	if (pinAh.tcc.tccn<0 || pinAl.tcc.tccn<0 || pinBh.tcc.tccn<0 || pinBl.tcc.tccn<0 || pinCh.tcc.tccn<0 || pinCl.tcc.tccn<0)
 		return false;
@@ -607,6 +506,10 @@ void writeSAMDDutyCycle(int chaninfo, float dc) {
  * @param pinB pinB bldc driver
  */
 void _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
+#ifdef SIMPLEFOC_SAMD_DEBUG
+	printAllPinInfos();
+#endif
+
 	return; // I don't know much about stepper motors... maybe someone can fill in these based on the BLDC methods? Someone with a stepper-setup who can test it?
 }
 
@@ -654,13 +557,17 @@ void _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
  * @param pinC pinC bldc driver
  */
 void _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const int pinC) {
+#ifdef SIMPLEFOC_SAMD_DEBUG
 	printAllPinInfos();
+#endif
 	int compatibility = checkSameTCC3(pinA, pinB, pinC);
 	if (compatibility<0) {
 		compatibility = checkCompatible3(pinA, pinB, pinC);
 		if (compatibility<0) {
 			// no result!
+#ifdef SIMPLEFOC_SAMD_DEBUG
 			Serial.println("Bad combination!");
+#endif
 			return;
 		}
 	}
@@ -669,27 +576,33 @@ void _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const in
 	tccConfiguration pin2 = getTCCChannelNr(pinB, (compatibility>>1&0x01)==0x1);
 	tccConfiguration pin3 = getTCCChannelNr(pinC, (compatibility>>2&0x01)==0x1);
 
+#ifdef SIMPLEFOC_SAMD_DEBUG
 	Serial.println("Found configuration: ");
 	printTCCConfiguration(pin1);
 	printTCCConfiguration(pin2);
 	printTCCConfiguration(pin3);
+#endif
 
 	// attach pins to timer peripherals
 	attachTCC(pin1); // in theory this can fail, but there is no way to signal it...
 	attachTCC(pin2);
 	attachTCC(pin3);
+#ifdef SIMPLEFOC_SAMD_DEBUG
 	Serial.println("Attached pins...");
+#endif
 
-	// set up clock - TODO if we did this right it should be possible to get all TCC units synchronized?
-	// e.g. attach all the timers, start them, and then start the clock...
+	// set up clock - Note: if we did this right it should be possible to get all TCC units synchronized?
+	// e.g. attach all the timers, start them, and then start the clock... but this would require API-changes in SimpleFOC...
 	configureSAMDClock();
 
 	// configure the TCC (waveform, top-value, pre-scaler = frequency)
 	configureTCC(pin1, pwm_frequency);
 	configureTCC(pin2, pwm_frequency);
 	configureTCC(pin3, pwm_frequency);
-
+#ifdef SIMPLEFOC_SAMD_DEBUG
 	Serial.println("Configured TCCs...");
+#endif
+
 }
 
 
@@ -711,6 +624,10 @@ void _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const in
  * @param pin2B pin2B stepper driver
  */
 void _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const int pin2A, const int pin2B) {
+#ifdef SIMPLEFOC_SAMD_DEBUG
+	printAllPinInfos();
+#endif
+
 	return; // stepper-code?
 }
 
@@ -753,13 +670,17 @@ void _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const 
  */
 int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l) {
 	// we want to use a TCC channel with 1 non-inverted and 1 inverted output for each phase, with dead-time insertion
+#ifdef SIMPLEFOC_SAMD_DEBUG
 	printAllPinInfos();
+#endif
 	int compatibility = checkHardware6PWM(pinA_h, pinA_l, pinB_h, pinB_l, pinC_h, pinC_l);
 	if (compatibility<0) {
 		compatibility = checkSoftware6PWM(pinA_h, pinA_l, pinB_h, pinB_l, pinC_h, pinC_l);
 		if (compatibility<0) {
 			// no result!
+#ifdef SIMPLEFOC_SAMD_DEBUG
 			Serial.println("Bad combination!");
+#endif
 			return -1;
 		}
 	}
@@ -771,6 +692,7 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
 	tccConfiguration pinCh = getTCCChannelNr(pinC_h, (compatibility>>4&0x01)==0x1);
 	tccConfiguration pinCl = getTCCChannelNr(pinC_l, (compatibility>>5&0x01)==0x1);
 
+#ifdef SIMPLEFOC_SAMD_DEBUG
 	Serial.println("Found configuration: ");
 	printTCCConfiguration(pinAh);
 	printTCCConfiguration(pinAl);
@@ -778,6 +700,7 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
 	printTCCConfiguration(pinBl);
 	printTCCConfiguration(pinCh);
 	printTCCConfiguration(pinCl);
+#endif
 
 	// attach pins to timer peripherals
 	bool allAttached = true;
@@ -789,20 +712,26 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
 	allAttached |= attachTCC(pinCl);
 	if (!allAttached)
 		return -1;
-	// set up clock - TODO if we did this right it should be possible to get all TCC units synchronized?
-	// e.g. attach all the timers, start them, and then start the clock...
+#ifdef SIMPLEFOC_SAMD_DEBUG
+	Serial.println("Attached pins...");
+#endif
+	// set up clock - if we did this right it should be possible to get all TCC units synchronized?
+	// e.g. attach all the timers, start them, and then start the clock... but this would require API changes in SimpleFOC driver API
 	configureSAMDClock();
 
 	// configure the TCC(s)
-	configureTCC(pinAh, pwm_frequency, false, (pinAh.tcc.chaninfo==pinAl.tcc.chaninfo));
+	configureTCC(pinAh, pwm_frequency, false, (pinAh.tcc.chaninfo==pinAl.tcc.chaninfo)?dead_zone:-1);
 	if ((pinAh.tcc.chaninfo!=pinAl.tcc.chaninfo))
-		configureTCC(pinAl, pwm_frequency, true, false);
-	configureTCC(pinBh, pwm_frequency, false, (pinBh.tcc.chaninfo==pinBl.tcc.chaninfo));
+		configureTCC(pinAl, pwm_frequency, true, -1.0);
+	configureTCC(pinBh, pwm_frequency, false, (pinBh.tcc.chaninfo==pinBl.tcc.chaninfo)?dead_zone:-1);
 	if ((pinBh.tcc.chaninfo!=pinBl.tcc.chaninfo))
-		configureTCC(pinBl, pwm_frequency, false, true);
-	configureTCC(pinCh, pwm_frequency, false, (pinCh.tcc.chaninfo==pinCl.tcc.chaninfo));
+		configureTCC(pinBl, pwm_frequency, true, -1.0);
+	configureTCC(pinCh, pwm_frequency, false, (pinCh.tcc.chaninfo==pinCl.tcc.chaninfo)?dead_zone:-1);
 	if ((pinCh.tcc.chaninfo!=pinCl.tcc.chaninfo))
-		configureTCC(pinCl, pwm_frequency, false, true);
+		configureTCC(pinCl, pwm_frequency, true, -1.0);
+#ifdef SIMPLEFOC_SAMD_DEBUG
+	Serial.println("Configured TCCs...");
+#endif
 
 	return 0;
 }
@@ -864,6 +793,14 @@ void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, int pinA, int pinB
  * @param pin2B  phase 2B hardware pin number
  */
 void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, int pin1A, int pin1B, int pin2A, int pin2B){
+	tccConfiguration* tccI = getTccPinConfiguration(pin1A);
+	writeSAMDDutyCycle(tccI->tcc.chaninfo, dc_1a);
+	tccI = getTccPinConfiguration(pin2A);
+	writeSAMDDutyCycle(tccI->tcc.chaninfo, dc_2a);
+	tccI = getTccPinConfiguration(pin1B);
+	writeSAMDDutyCycle(tccI->tcc.chaninfo, dc_1b);
+	tccI = getTccPinConfiguration(pin2B);
+	writeSAMDDutyCycle(tccI->tcc.chaninfo, dc_2b);
 	return;
 }
 
@@ -895,7 +832,7 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, i
 	tccConfiguration* tcc2 = getTccPinConfiguration(pinA_l);
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
 		// low-side on a different pin of same TCC - do dead-time in software...
-		float ls = dc_a+SIMPLEFOC_SAMD_DEAD_TIME_VAL;
+		float ls = dc_a+(dead_zone*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1));
 		if (ls>1.0) ls = 1.0; // no off-time is better than too-short dead-time
 		writeSAMDDutyCycle(tcc1->tcc.chaninfo, dc_a);
 		writeSAMDDutyCycle(tcc2->tcc.chaninfo, ls);
@@ -906,8 +843,8 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, i
 	tcc1 = getTccPinConfiguration(pinB_h);
 	tcc2 = getTccPinConfiguration(pinB_l);
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
-		float ls = dc_b+SIMPLEFOC_SAMD_DEAD_TIME_VAL;
-		if (ls>(1.0-SIMPLEFOC_SAMD_DEAD_TIME_VAL)) ls = 1.0;
+		float ls = dc_b+(dead_zone*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1));
+		if (ls>1.0) ls = 1.0; // no off-time is better than too-short dead-time
 		writeSAMDDutyCycle(tcc1->tcc.chaninfo, dc_b);
 		writeSAMDDutyCycle(tcc2->tcc.chaninfo, ls);
 	}
@@ -917,8 +854,8 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, i
 	tcc1 = getTccPinConfiguration(pinC_h);
 	tcc2 = getTccPinConfiguration(pinC_l);
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
-		float ls = dc_b+SIMPLEFOC_SAMD_DEAD_TIME_VAL;
-		if (ls>(1.0-SIMPLEFOC_SAMD_DEAD_TIME_VAL)) ls = 1.0;
+		float ls = dc_c+(dead_zone*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1));
+		if (ls>1.0) ls = 1.0; // no off-time is better than too-short dead-time
 		writeSAMDDutyCycle(tcc1->tcc.chaninfo, dc_c);
 		writeSAMDDutyCycle(tcc2->tcc.chaninfo, ls);
 	}
