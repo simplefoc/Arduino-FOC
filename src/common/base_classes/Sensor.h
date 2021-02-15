@@ -10,6 +10,7 @@ enum Direction{
     UNKNOWN = 0   //not yet known or invalid state
 };
 
+
 /**
  *  Pullup configuration structure
  */

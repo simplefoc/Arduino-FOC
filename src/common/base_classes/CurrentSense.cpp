@@ -45,7 +45,7 @@ DQCurrent_s CurrentSense::getFOCCurrents(float angle_el){
         i_alpha = current.a;  
         i_beta = _1_SQRT3 * current.a + _2_SQRT3 * current.b;
     }else{
-        i_alpha = 2*(current.a - (current.b - current.c))/3.0;    
+        i_alpha = 0.6666667*(current.a - (current.b - current.c));    
         i_beta = _2_SQRT3 *( current.b  - current.c );
     }
 

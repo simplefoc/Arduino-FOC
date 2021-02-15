@@ -68,7 +68,7 @@ void StepperMotor::enable()
   FOC functions
 */
 // FOC initialization function
-int  StepperMotor::initFOC( float zero_electric_offset, Direction sensor_direction ) {
+int  StepperMotor::initFOC( float zero_electric_offset, Direction _sensor_direction ) {
   int exit_flag = 1;
   // align motor if necessary
   // alignment necessary for encoders!
@@ -76,7 +76,7 @@ int  StepperMotor::initFOC( float zero_electric_offset, Direction sensor_directi
     // abosolute zero offset provided - no need to align
     zero_electric_angle = zero_electric_offset;
     // set the sensor direction - default CW
-    natural_direction = sensor_direction;
+    sensor_direction = _sensor_direction;
   }else{
     // sensor and motor alignment
     _delay(500);
@@ -117,12 +117,12 @@ int StepperMotor::alignSensor() {
   }
   // determine the direction the sensor moved 
   if (mid_angle < start_angle) {
-    if(monitor_port) monitor_port->println(F("MOT: natural_direction==CCW"));
-    natural_direction = Direction::CCW;
+    if(monitor_port) monitor_port->println(F("MOT: sensor_direction==CCW"));
+    sensor_direction = Direction::CCW;
   } else if (mid_angle == start_angle) {
     if(monitor_port) monitor_port->println(F("MOT: Sensor failed to notice movement"));
   } else{
-    if(monitor_port) monitor_port->println(F("MOT: natural_direction==CW"));
+    if(monitor_port) monitor_port->println(F("MOT: sensor_direction==CW"));
   }
 
   // let the motor stabilize for 1 sec

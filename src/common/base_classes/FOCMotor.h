@@ -11,7 +11,6 @@
 #include "../pid.h"
 #include "../lowpass_filter.h"
 
-
 /**
  *  Motiron control type
  */
@@ -166,7 +165,7 @@ class FOCMotor
     // sensor related variabels
     float sensor_offset; //!< user defined sensor zero offset
     float zero_electric_angle = NOT_SET;//!< absolute zero electric angle - if available
-    int natural_direction = NOT_SET; //!< if natural_direction == Direction::CCW then direction will be flipped to CW
+    int sensor_direction = NOT_SET; //!< if sensor_direction == Direction::CCW then direction will be flipped to CW
 
     /**
      * Function providing BLDCMotor class with the 

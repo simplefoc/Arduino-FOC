@@ -13,6 +13,10 @@ InlineCurrentSense::InlineCurrentSense(float _shunt_resistor, float _gain, int _
     shunt_resistor = _shunt_resistor;
     amp_gain  = _gain;
     volts_to_amps_ratio = 1.0 /_shunt_resistor / _gain; // volts to amps
+    // gains for each phase
+    gain_a = volts_to_amps_ratio;
+    gain_b = volts_to_amps_ratio;
+    gain_c = volts_to_amps_ratio;
 }
 
 // Inline sensor init function
@@ -43,13 +47,18 @@ void InlineCurrentSense::calibrateOffsets(){
 // read all three phase currents (if possible 2 or 3)
 PhaseCurrent_s InlineCurrentSense::getPhaseCurrents(){
     PhaseCurrent_s current;
-    current.a = gain_adjust_a*(_readADCVoltage(pinA) - offset_ia)*volts_to_amps_ratio;// amps
-    current.b = gain_adjust_b*(_readADCVoltage(pinB) - offset_ib)*volts_to_amps_ratio;// amps
-    current.c = (pinC == NOT_SET) ? 0 : gain_adjust_c*(_readADCVoltage(pinC) - offset_ic)*volts_to_amps_ratio; // amps
+    current.a = (_readADCVoltage(pinA) - offset_ia)*gain_a;// amps
+    current.b = (_readADCVoltage(pinB) - offset_ib)*gain_b;// amps
+    current.c = (pinC == NOT_SET) ? 0 : (_readADCVoltage(pinC) - offset_ic)*gain_c; // amps
     return current;
 }
+// Function synchronizing current sense with motor driver.
+// for in-line sensig no such thing is necessary
+int InlineCurrentSense::driverSync(BLDCDriver *driver){
+    return 1;
+}
 
-// Function synchronizing and aligning the current sense with motor driver
+// Function aligning the current sense with motor driver
 // if all pins are connected well none of this is really necessary! - can be avoided
 // returns flag
 // 0 - fail
@@ -57,9 +66,10 @@ PhaseCurrent_s InlineCurrentSense::getPhaseCurrents(){
 // 2 - success but pins reconfigured
 // 3 - success but gains inverted
 // 4 - success but pins reconfigured and gains inverted
-int InlineCurrentSense::driverSync(BLDCDriver *driver, float voltage){
+int InlineCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
     int exit_flag = 1;
-
+    if(skip_align) return exit_flag;
+    
     // set phase A active and phases B and C down
     driver->setPwm(voltage, 0, 0);
     _delay(200); 
@@ -77,20 +87,20 @@ int InlineCurrentSense::driverSync(BLDCDriver *driver, float voltage){
     float ab_ratio = fabs(c.a / c.b);
     float ac_ratio = c.c ? fabs(c.a / c.c) : 0;
     if( ab_ratio > 1.5 ){ // should be ~2    
-        gain_adjust_a = _sign(c.a);
+        gain_a *= _sign(c.a);
     }else if( ab_ratio < 0.7 ){ // should be ~0.5
         // switch phase A and B
         int tmp_pinA = pinA;
         pinA = pinB; 
         pinB = tmp_pinA;
-        gain_adjust_a = _sign(c.b);
+        gain_a *= _sign(c.b);
         exit_flag = 2; // signal that pins have been switched
     }else if(pinC != NOT_SET &&  ac_ratio < 0.7 ){ // should be ~0.5
         // switch phase A and C
         int tmp_pinA = pinA;
         pinA = pinC; 
         pinC= tmp_pinA;
-        gain_adjust_a = _sign(c.c);
+        gain_a *= _sign(c.c);
         exit_flag = 2;// signal that pins have been switched
     }else{
         // error in current sense - phase either not measured or bad connection
@@ -113,20 +123,20 @@ int InlineCurrentSense::driverSync(BLDCDriver *driver, float voltage){
     float ba_ratio = fabs(c.b/c.a);
     float bc_ratio = c.c ? fabs(c.b / c.c) : 0;
      if( ba_ratio > 1.5 ){ // should be ~2
-        gain_adjust_b = _sign(c.b);
+        gain_b *= _sign(c.b);
     }else if( ba_ratio < 0.7 ){ // it should be ~0.5
         // switch phase A and B
         int tmp_pinB = pinB;
         pinB = pinA; 
         pinA = tmp_pinB;
-        gain_adjust_b = _sign(c.a);
+        gain_b *= _sign(c.a);
         exit_flag = 2; // signal that pins have been switched
     }else if(pinC != NOT_SET && bc_ratio < 0.7 ){ // should be ~0.5
         // switch phase A and C
         int tmp_pinB = pinB;
         pinB = pinC; 
         pinC = tmp_pinB;
-        gain_adjust_b = _sign(c.c);
+        gain_b *= _sign(c.c);
         exit_flag = 2; // signal that pins have been switched
     }else{
         // error in current sense - phase either not measured or bad connection
@@ -145,10 +155,10 @@ int InlineCurrentSense::driverSync(BLDCDriver *driver, float voltage){
             c.c = (c.c+c1.c)/50.0;
         }
         driver->setPwm(0, 0, 0);
-        gain_adjust_c = _sign(c.c);
+        gain_c *= _sign(c.c);
     }
 
-    if(gain_adjust_a < 0 || gain_adjust_b < 0 || gain_adjust_c < 0) exit_flag +=2;
+    if(gain_a < 0 || gain_b < 0 || gain_c < 0) exit_flag +=2;
     // exit flag is either
     // 0 - fail
     // 1 - success and nothing changed

@@ -77,6 +77,9 @@ getPhaseCurrents	KEYWORD2
 getFOCCurrents	KEYWORD2
 getCurrent	KEYWORD2
 setPwm	KEYWORD2
+driverAlign	KEYWORD2
+driverSync	KEYWORD2
+
 
 voltage_q	KEYWORD2
 voltage_d	KEYWORD2
@@ -95,9 +98,12 @@ foc_modulation	KEYWORD2
 target	KEYWORD2
 pwm_frequency	KEYWORD2
 dead_zone	KEYWORD2
-gain_adjust_a	KEYWORD2
-gain_adjust_b	KEYWORD2
-gain_adjust_c	KEYWORD2
+gain_a	KEYWORD2
+gain_b	KEYWORD2
+gain_c	KEYWORD2
+skip_align	KEYWORD2
+sensor_direction	KEYWORD2
+sensor_offset	KEYWORD2
 
 
 voltage	KEYWORD2

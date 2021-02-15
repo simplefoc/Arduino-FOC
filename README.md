@@ -33,6 +33,11 @@ Therefore this is an attempt to:
 > - included F macro for shrinking string memory usage - moved to programming memory
 > - disable phase support for 3pwm driver
 >    - not yet for 6pwm
+> - rewritten `initFOC()`
+>    - can be skipped and outputs much more info
+>    - align sensor: direction + zero offset + pole pair check
+>    - align current sense
+> - sensor offset supported (`motor.sensor_offset`)
 >
 > BEWARE 📢 slight API changes included
 >   - `ControlType` renamed into `MotionControlType`

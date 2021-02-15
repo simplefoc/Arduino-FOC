@@ -58,7 +58,7 @@ class HallSensor: public Sensor{
     /**  get current angular velocity (rad/s) */
     float getVelocity() override;
 
-    // whether last step was CW (+1) or CCW (-1).  Note - this is a raw direction (i.e. doesn't include natural_direction reversal)
+    // whether last step was CW (+1) or CCW (-1).  
     Direction direction;
 
     void attachSectorCallback(void (*onSectorChange)(int a) = nullptr);

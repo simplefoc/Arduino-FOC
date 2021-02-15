@@ -18,11 +18,11 @@ class CurrentSense{
     virtual void init() = 0;
     
     /**
-     * Function intended to implement all that is needed to sync and calibrate the current sensing with the driver.
+     * Function intended to implement all that is needed to sync and current sensing with the driver.
      * If no such thing is needed it can be left empty (return 1)
      * @returns -  0 - for failure &  1 - for success 
      */
-    virtual int driverSync(BLDCDriver *driver, float voltage) = 0;
+    virtual int driverSync(BLDCDriver *driver) = 0;
 
     /**
      *  Function rading the phase currents a, b and c
@@ -51,6 +51,17 @@ class CurrentSense{
      */
     DQCurrent_s getFOCCurrents(float angle_el);
 
+    // calibration variables
+    bool skip_align = false; //!< variable signaling that the phase current direction should be verified during initFOC()
+    /**
+     * Function intended to verify if:
+     *   - phase current are oriented properly 
+     *   - if their order is the same as driver phases
+     * 
+     * This function corrects the alignment errors if possible ans if no such thing is needed it can be left empty (return 1)
+     * @returns -  0 - for failure &  positive number (with status) - for success 
+     */
+    virtual int driverAlign(BLDCDriver *driver, float voltage) = 0;
 };
 
 #endif

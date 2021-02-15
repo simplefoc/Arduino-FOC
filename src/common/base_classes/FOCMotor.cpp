@@ -56,13 +56,13 @@ void FOCMotor::linkCurrentSense(CurrentSense* _current_sense) {
 float FOCMotor::shaftAngle() {
   // if no sensor linked return previous value ( for open loop )
   if(!sensor) return shaft_angle;
-  return natural_direction*sensor->getAngle() - sensor_offset;
+  return sensor_direction*sensor->getAngle() - sensor_offset;
 }
 // shaft velocity calculation
 float FOCMotor::shaftVelocity() {
   // if no sensor linked return previous value ( for open loop )
   if(!sensor) return shaft_velocity;
-  return natural_direction*LPF_velocity(sensor->getVelocity());
+  return sensor_direction*LPF_velocity(sensor->getVelocity());
 }
 
 float FOCMotor::electricalAngle(){
@@ -77,6 +77,7 @@ void FOCMotor::useMonitoring(Print &print){
   monitor_port = &print; //operate on the address of print
   if(monitor_port ) monitor_port->println(F("MOT: Monitor enabled!"));
 }
+
 // utility function intended to be used with serial plotter to monitor motor variables
 // significantly slowing the execution down!!!!
 void FOCMotor::monitor() {
