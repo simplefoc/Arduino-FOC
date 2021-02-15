@@ -15,7 +15,7 @@ void setup() {
   current_sense.init();
 
   // for SimpleFOCShield v2.01/v2.0.2
-  current_sense.gain_adjust_b = -1;
+  current_sense.gain_b *= -1;
   
   Serial.begin(115200);
   Serial.println("Current sense ready.");
