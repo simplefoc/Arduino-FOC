@@ -200,6 +200,9 @@ int BLDCMotor::alignSensor() {
       monitor_port->print(F("MOT: Zero elec. angle: "));
       monitor_port->println(zero_electric_angle);
     }
+    // stop everything
+    setPhaseVoltage(0, 0, 0);
+    _delay(200);
   }else if(monitor_port) monitor_port->println(F("MOT: Skip offset calib."));
   return exit_flag;
 }
@@ -266,7 +269,6 @@ void BLDCMotor::loopFOC() {
       voltage.q = PID_current_q(current_sp - current.q); 
       voltage.d = PID_current_d(-current.d);
       break;
-    
     default:
       // no torque control selected
       if(monitor_port) monitor_port->println(F("MOT: no torque control selected!"));
