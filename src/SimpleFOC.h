@@ -108,6 +108,6 @@ void loop() {
 #include "drivers/StepperDriver4PWM.h"
 #include "drivers/StepperDriver2PWM.h"
 #include "current_sense/InlineCurrentSense.h"
-#include "communication/Communicator.h"
+#include "communication/Commander.h"
 
 #endif

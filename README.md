@@ -38,6 +38,10 @@ Therefore this is an attempt to:
 >    - align sensor: direction + zero offset + pole pair check
 >    - align current sense
 > - sensor offset supported (`motor.sensor_offset`)
+> - **refactored motor commands interface**
+>   - much more flexible and easy to extend
+>   - very easy to add new commands and function callbacks
+>   - implemented motor+pid+lpf commands of-the-shelf
 >
 > BEWARE 📢 slight API changes included
 >   - `ControlType` renamed into `MotionControlType`

@@ -23,22 +23,3 @@ float LowPassFilter::operator() (float x)
     timestamp_prev = timestamp;
     return y;
 }
-
-String LowPassFilter::communicate(String user_cmd){
-  String ret = "";
-  char cmd = user_cmd.charAt(0);
-  char GET  = user_cmd.charAt(1) == '\n';
-  float value = user_cmd.substring(1).toFloat();
-
-  switch (cmd){
-    case 'F':      // Tf value change
-      ret = ret + "Tf: ";
-      if(!GET) Tf = value;
-      ret = ret + Tf;
-      break;
-    default:
-      ret = ret + F("error");
-      break;
-  }
-  return ret; 
-}
