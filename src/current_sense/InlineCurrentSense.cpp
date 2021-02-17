@@ -36,12 +36,12 @@ void InlineCurrentSense::calibrateOffsets(){
     for (int i = 0; i < 500; i++) {
         offset_ia += _readADCVoltage(pinA);
         offset_ib += _readADCVoltage(pinB);
-        if(pinC != NOT_SET) offset_ic += _readADCVoltage(pinC);
+        if(_isset(pinC)) offset_ic += _readADCVoltage(pinC);
     }
     // calculate the mean offsets
     offset_ia = offset_ia / 500.0;
     offset_ib = offset_ib / 500.0;
-    if(pinC != NOT_SET) offset_ic = offset_ic / 500.0;
+    if(_isset(pinC)) offset_ic = offset_ic / 500.0;
 }
 
 // read all three phase currents (if possible 2 or 3)
@@ -49,7 +49,7 @@ PhaseCurrent_s InlineCurrentSense::getPhaseCurrents(){
     PhaseCurrent_s current;
     current.a = (_readADCVoltage(pinA) - offset_ia)*gain_a;// amps
     current.b = (_readADCVoltage(pinB) - offset_ib)*gain_b;// amps
-    current.c = (pinC == NOT_SET) ? 0 : (_readADCVoltage(pinC) - offset_ic)*gain_c; // amps
+    current.c = (!_isset(pinC)) ? 0 : (_readADCVoltage(pinC) - offset_ic)*gain_c; // amps
     return current;
 }
 // Function synchronizing current sense with motor driver.
@@ -95,7 +95,7 @@ int InlineCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
         pinB = tmp_pinA;
         gain_a *= _sign(c.b);
         exit_flag = 2; // signal that pins have been switched
-    }else if(pinC != NOT_SET &&  ac_ratio < 0.7 ){ // should be ~0.5
+    }else if(_isset(pinC) &&  ac_ratio < 0.7 ){ // should be ~0.5
         // switch phase A and C
         int tmp_pinA = pinA;
         pinA = pinC; 
@@ -131,7 +131,7 @@ int InlineCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
         pinA = tmp_pinB;
         gain_b *= _sign(c.a);
         exit_flag = 2; // signal that pins have been switched
-    }else if(pinC != NOT_SET && bc_ratio < 0.7 ){ // should be ~0.5
+    }else if(_isset(pinC) && bc_ratio < 0.7 ){ // should be ~0.5
         // switch phase A and C
         int tmp_pinB = pinB;
         pinB = pinC; 
@@ -144,7 +144,7 @@ int InlineCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
     }
 
     // if phase C measured
-    if(pinC != NOT_SET){
+    if(_isset(pinC)){
         // set phase B active and phases A and C down
         driver->setPwm(0, 0, voltage);
         _delay(200); 

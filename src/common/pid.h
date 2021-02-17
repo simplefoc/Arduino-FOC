@@ -4,11 +4,12 @@
 
 #include "time_utils.h"
 #include "foc_utils.h"
+#include "base_classes/CommunicationNode.h"
 
 /**
  *  PID controller class
  */
-class PIDController
+class PIDController: public CommunicationNode
 {
 public:
     /**
@@ -29,6 +30,8 @@ public:
     float D; //!< Derivative gain 
     float output_ramp; //!< Maximum speed of change of the output value
     float limit; //!< Maximum output value
+
+    String communicate(String user_command) override;
 
 protected:
     float integral_prev; //!< last integral component value

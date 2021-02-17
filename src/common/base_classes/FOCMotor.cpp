@@ -56,7 +56,7 @@ void FOCMotor::linkCurrentSense(CurrentSense* _current_sense) {
 float FOCMotor::shaftAngle() {
   // if no sensor linked return previous value ( for open loop )
   if(!sensor) return shaft_angle;
-  return sensor_direction*sensor->getAngle() - sensor_offset;
+  return sensor_direction*LPF_angle(sensor->getAngle()) - sensor_offset;
 }
 // shaft velocity calculation
 float FOCMotor::shaftVelocity() {
@@ -109,200 +109,171 @@ void FOCMotor::monitor() {
   }
 }
 
-int FOCMotor::command(String user_command) {
+String FOCMotor::communicate(String user_command) {
   // error flag
-  int errorFlag = 1;
+  String ret = "";
   // if empty string
-  if(user_command.length() < 1) return errorFlag;
+  if(user_command.length() < 1) return ret;
 
   // parse command letter
   char cmd = user_command.charAt(0);
+  char sub_cmd = user_command.charAt(1);
+  int value_index = (sub_cmd >= 'A'  && sub_cmd <= 'Z') ?  2 :  1;
   // check if get command
-  char GET = user_command.charAt(1) == '\n';
+  char GET = user_command.charAt(value_index) == '\n';
   // parse command values
-  float value = user_command.substring(1).toFloat();
+  float  value  = user_command.substring(value_index).toFloat();
 
   // a bit of optimisation of variable memory for Arduino UNO (atmega328)
   switch(cmd){
-    case 'P':      // velocity P gain change
-    case 'I':      // velocity I gain change
-    case 'D':      // velocity D gain change
-    case 'R':      // velocity voltage ramp change
-      if(monitor_port) monitor_port->print(F(" PID velocity| "));
+    case 'Q':      // 
+      ret = ret + F("PID curr q| ");
+      if(sub_cmd == 'F') ret = ret + LPF_current_q.communicate(user_command.substring(1));
+      else ret = ret + PID_current_q.communicate(user_command.substring(1));
       break;
-    case 'F':      // velocity Tf low pass filter change
-      if(monitor_port) monitor_port->print(F(" LPF velocity| "));
+    case 'D':      // 
+      ret = ret + F("PID curr d| ");
+      if(sub_cmd == 'F') ret = ret + LPF_current_d.communicate(user_command.substring(1));
+      else ret = ret + PID_current_d.communicate(user_command.substring(1));
       break;
-    case 'K':      // angle loop gain P change
-      if(monitor_port) monitor_port->print(F(" PID angle| "));
+    case 'V':      // 
+      ret = ret + F("PID vel| ");
+      if(sub_cmd == 'F') ret = ret + LPF_velocity.communicate(user_command.substring(1));
+      else ret = ret + PID_velocity.communicate(user_command.substring(1));
       break;
-    case 'L':      // velocity voltage limit change
-    case 'N':      // angle loop gain velocity_limit change
-      if(monitor_port) monitor_port->print(F(" Limits| "));
+    case 'A':      // 
+      ret = ret + F("PID angle| ");
+      if(sub_cmd == 'F') ret = ret + LPF_angle.communicate(user_command.substring(1));
+      else ret = ret + P_angle.communicate(user_command.substring(1));
       break;
-  }
-
-  // apply the the command
-  switch(cmd){
-    case 'P':      // velocity P gain change
-      if(monitor_port) monitor_port->print("P: ");
-      if(!GET) PID_velocity.P = value;
-      if(monitor_port) monitor_port->println(PID_velocity.P);
-      break;
-    case 'I':      // velocity I gain change
-      if(monitor_port) monitor_port->print("I: ");
-      if(!GET) PID_velocity.I = value;
-      if(monitor_port) monitor_port->println(PID_velocity.I);
-      break;
-    case 'D':      // velocity D gain change
-      if(monitor_port) monitor_port->print("D: ");
-      if(!GET) PID_velocity.D = value;
-      if(monitor_port) monitor_port->println(PID_velocity.D);
-      break;
-    case 'R':      // velocity voltage ramp change
-      if(monitor_port) monitor_port->print("volt_ramp: ");
-      if(!GET) PID_velocity.output_ramp = value;
-      if(monitor_port) monitor_port->println(PID_velocity.output_ramp);
-      break;
-    case 'L':      // velocity voltage limit change
-      if(monitor_port) monitor_port->print("volt_limit: ");
-      if(!GET) {
-        voltage_limit = value;
-        PID_velocity.limit = value;
+    case 'L':      // 
+      ret = ret + F("Limits| ");
+      switch (sub_cmd){
+        case 'U':      // voltage limit change
+          ret = ret + F("voltage: ");
+          if(!GET) {
+            voltage_limit = value;
+            PID_current_d.limit = value;
+            PID_current_q.limit = value;
+            // change velocity pid limit if in voltage mode and no phase resistance set
+            if( !_isset(phase_resistance) && torque_controller==TorqueControlType::voltage) PID_velocity.limit = value;
+          }
+          ret = ret + voltage_limit;
+          break;
+        case 'C':      // current limit
+          ret = ret + F("current: ");
+          if(!GET){
+            current_limit = value;
+            // if phase resistance is set, change the voltage limit as well.
+            if(_isset(phase_resistance)) voltage_limit = value*phase_resistance;
+            // if phase resistance specified or the current control is on set the current limit to the velocity PID
+            if(_isset(phase_resistance) ||  torque_controller != TorqueControlType::voltage ) PID_velocity.limit = value;
+          }
+          ret = ret + current_limit;
+          break;
+        case 'V':      // velocity limit
+          ret = ret + F("velocity: ");
+          if(!GET){
+            velocity_limit = value;
+            P_angle.limit = value;
+          }
+          ret = ret + velocity_limit;
+          break;
+        default:
+          ret = ret + F("error");
+          break;
       }
-      if(monitor_port) monitor_port->println(voltage_limit);
-      break;
-    case 'F':      // velocity Tf low pass filter change
-      if(monitor_port) monitor_port->print("Tf: ");
-      if(!GET) LPF_velocity.Tf = value;
-      if(monitor_port) monitor_port->println(LPF_velocity.Tf);
-      break;
-    case 'K':      // angle loop gain P change
-      if(monitor_port) monitor_port->print(" P: ");
-      if(!GET) P_angle.P = value;
-      if(monitor_port) monitor_port->println(P_angle.P);
-      break;
-    case 'N':      // angle loop gain velocity_limit change
-      if(monitor_port) monitor_port->print("vel_limit: ");
-      if(!GET){
-        velocity_limit = value;
-        P_angle.limit = value;
-      }
-      if(monitor_port) monitor_port->println(velocity_limit);
       break;
     case 'C':
+      ret = ret + F("Control: ");
       // change control type
-      if(monitor_port) monitor_port->print("Control: ");
-      
-      if(GET){ // if get command
-        switch(controller){
-          case MotionControlType::torque:
-            if(monitor_port) monitor_port->println("torque");
-            break;
-          case MotionControlType::velocity:
-            if(monitor_port) monitor_port->println("velocity");
-            break;
-          case MotionControlType::angle:
-            if(monitor_port) monitor_port->println("angle");
-            break;
-          case MotionControlType::velocity_openloop:
-            if(monitor_port) monitor_port->println("velocity openloop");
-            break;
-          case MotionControlType::angle_openloop:
-            if(monitor_port) monitor_port->println("angle openloop");
-            break;
-        }
-      }else{ // if set command
-        switch((int)value){
-          case 0:
-            if(monitor_port) monitor_port->println("torque");
-            controller = MotionControlType::torque;
-            break;
-          case 1:
-            if(monitor_port) monitor_port->println("velocity");
-            controller = MotionControlType::velocity;
-            break;
-          case 2:
-            if(monitor_port) monitor_port->println("angle");
-            controller = MotionControlType::angle;
-            break;
-          case 3:
-            if(monitor_port) monitor_port->println("velocity openloop");
-            controller = MotionControlType::velocity_openloop;
-            break;
-          case 4:
-            if(monitor_port) monitor_port->println("angle openloop");
-            controller = MotionControlType::angle_openloop;
-            break;
-          default: // not valid command
-            if(monitor_port) monitor_port->println("error");
-            errorFlag = 0;
-        }
+      if(!GET && value >= 0 && (int)value < 5)// if set command
+        controller = (MotionControlType)value;
+      switch(controller){
+        case MotionControlType::torque:
+          ret = ret + F("torque");
+          break;
+        case MotionControlType::velocity:
+          ret = ret + F("velocity");
+          break;
+        case MotionControlType::angle:
+          ret = ret + F("angle");
+          break;
+        case MotionControlType::velocity_openloop:
+          ret = ret + F("velocity openloop");
+          break;
+        case MotionControlType::angle_openloop:
+          ret = ret + F("angle openloop");
+          break;
       }
       break;
     case 'T':
       // change control type
-      if(monitor_port) monitor_port->print("Torque: ");
-      
-      if(GET){ // if get command
-        switch(torque_controller){
-          case TorqueControlType::voltage:
-            if(monitor_port) monitor_port->println("voltage");
-            break;
-          case TorqueControlType::current:
-            if(monitor_port) monitor_port->println("current");
-            break;
-          case TorqueControlType::foc_current:
-            if(monitor_port) monitor_port->println("foc current");
-            break;
-        }
-      }else{ // if set command
-        switch((int)value){
-          case 0:
-            if(monitor_port) monitor_port->println("voltage");
-            torque_controller = TorqueControlType::voltage;
-            break;
-          case 1:
-            if(monitor_port) monitor_port->println("current");
-            torque_controller = TorqueControlType::current;
-            break;
-          case 2:
-            if(monitor_port) monitor_port->println("foc current");
-            torque_controller = TorqueControlType::foc_current;
-            break;
-          default: // not valid command
-            if(monitor_port) monitor_port->println("error");
-            errorFlag = 0;
-        }
+      ret = ret + F("Torque: ");
+      if(!GET && value >= 0 && (int)value < 3)// if set command
+        torque_controller = (TorqueControlType)value;
+      switch(torque_controller){
+        case TorqueControlType::voltage:
+          ret = ret + F("voltage");
+          break;
+        case TorqueControlType::current:
+          ret = ret + F("current");
+          break;
+        case TorqueControlType::foc_current:
+          ret = ret + F("foc current");
+          break;
       }
       break;
-    case 'V':     // get current values of the state variables
+    case 'E':
+      // enable/disable
+      ret = ret + F("Status: ");
+      if(!GET) (bool)value ? enable() : disable();
+      ret = ret + enabled;
+      break;
+    case 'S':
+      // Sensor zero offset
+      ret = ret + F("Sensor | ");
+       switch (sub_cmd){
+        case 'M':      // zero offset
+          ret = ret + F("offset: ");
+          if(!GET) sensor_offset = value;
+          ret = ret + sensor_offset;
+          break;
+        case 'E':      // electrical zero offset - not suggested to touch
+          ret = ret + F("el. offset: ");
+          if(!GET) zero_electric_angle = value;
+          ret = ret + zero_electric_angle;
+          break;
+        default:
+          ret = ret + F("error");
+          break;
+       }
+      break;
+    case 'M':     // get current values of the state variables
         switch((int)value){
           case 0: // get voltage
-            if(monitor_port) monitor_port->print("Uq: ");
-            if(monitor_port) monitor_port->println(voltage.q);
+            ret = ret + F("Uq: ");
+            ret = ret + voltage.q;
             break;
           case 1: // get velocity
-            if(monitor_port) monitor_port->print("Velocity: ");
-            if(monitor_port) monitor_port->println(shaft_velocity);
+            ret = ret + F("Velocity: ");
+            ret = ret + shaft_velocity;
             break;
           case 2: // get angle
-            if(monitor_port) monitor_port->print("Angle: ");
-            if(monitor_port) monitor_port->println(shaft_angle);
+            ret = ret + F("Angle: ");
+            ret = ret + shaft_angle;
             break;
           case 3: // get angle
-            if(monitor_port) monitor_port->print("Target: ");
-            if(monitor_port) monitor_port->println(target);
+            ret = ret + F("Target: ");
+            ret = ret + target;
             break;
-          default: // not valid command
-            errorFlag = 0;
         }
       break;
     default:  // target change
-      if(monitor_port) monitor_port->print("Target : ");
+      ret = ret + F("Target: ");
       target = user_command.toFloat();
-      if(monitor_port) monitor_port->println(target);
+      ret = ret + target;
   }
-  // return 0 if error and 1 if ok
-  return errorFlag;
+
+  return ret;
 }

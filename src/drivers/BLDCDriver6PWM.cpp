@@ -24,7 +24,7 @@ BLDCDriver6PWM::BLDCDriver6PWM(int phA_h,int phA_l,int phB_h,int phB_l,int phC_h
 // enable motor driver
 void  BLDCDriver6PWM::enable(){
     // enable_pin the driver - if enable_pin pin available
-    if ( enable_pin != NOT_SET ) digitalWrite(enable_pin, HIGH);
+    if ( _isset(enable_pin) ) digitalWrite(enable_pin, HIGH);
     // set zero to PWM
     setPwm(0, 0, 0);
 }
@@ -35,7 +35,7 @@ void BLDCDriver6PWM::disable()
   // set zero to PWM
   setPwm(0, 0, 0);
   // disable the driver - if enable_pin pin available
-  if ( enable_pin != NOT_SET ) digitalWrite(enable_pin, LOW);
+  if ( _isset(enable_pin) ) digitalWrite(enable_pin, LOW);
 
 }
 
@@ -51,11 +51,11 @@ int BLDCDriver6PWM::init() {
   pinMode(pwmA_l, OUTPUT);
   pinMode(pwmB_l, OUTPUT);
   pinMode(pwmC_l, OUTPUT);
-  if(enable_pin != NOT_SET) pinMode(enable_pin, OUTPUT);
+  if(_isset(enable_pin)) pinMode(enable_pin, OUTPUT);
 
 
   // sanity check for the voltage limit configuration
-  if(voltage_limit == NOT_SET || voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
+  if( _isset(voltage_limit) || voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
 
   // configure 6pwm 
   // hardware specific function - depending on driver and mcu

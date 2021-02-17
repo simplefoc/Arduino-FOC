@@ -72,7 +72,7 @@ int  StepperMotor::initFOC( float zero_electric_offset, Direction _sensor_direct
   int exit_flag = 1;
   // align motor if necessary
   // alignment necessary for encoders!
-  if(zero_electric_offset != NOT_SET){
+  if(!_isset(zero_electric_offset)){
     // abosolute zero offset provided - no need to align
     zero_electric_angle = zero_electric_offset;
     // set the sensor direction - default CW
@@ -179,7 +179,7 @@ void StepperMotor::move(float new_target) {
   // if disabled do nothing
   if(!enabled) return; 
   // set internal target variable
-  if( new_target != NOT_SET ) target = new_target;
+  if(_isset(new_target) ) target = new_target;
   // get angular velocity
   shaft_velocity = shaftVelocity();
   // choose control loop

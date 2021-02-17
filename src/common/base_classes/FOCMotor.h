@@ -4,6 +4,7 @@
 #include "Arduino.h"
 #include "Sensor.h"
 #include "CurrentSense.h"
+#include "CommunicationNode.h"
 
 #include "../time_utils.h"
 #include "../foc_utils.h"
@@ -44,7 +45,7 @@ enum FOCModulationType{
 /**
  Generic motor class
 */
-class FOCMotor
+class FOCMotor: public CommunicationNode
 {
   public:
     /**
@@ -161,6 +162,7 @@ class FOCMotor
     PIDController PID_velocity{DEF_PID_VEL_P,DEF_PID_VEL_I,DEF_PID_VEL_D,DEF_PID_VEL_RAMP,DEF_PID_VEL_LIMIT};//!< parameter determining the velocity PID configuration
     PIDController P_angle{DEF_P_ANGLE_P,0,0,1e10,DEF_VEL_LIM};	//!< parameter determining the position PID configuration 
     LowPassFilter LPF_velocity{DEF_VEL_FILTER_Tf};//!<  parameter determining the velocity Low pass filter configuration 
+    LowPassFilter LPF_angle{0.0};//!<  parameter determining the angle low pass filter configuration 
 
     // sensor related variabels
     float sensor_offset; //!< user defined sensor zero offset
@@ -224,7 +226,7 @@ class FOCMotor
      * 
      * returns 0 for error or 1 for executed command
      */
-    int command(String command);
+    String communicate(String command) override;
     
     /** 
       * Sensor link:

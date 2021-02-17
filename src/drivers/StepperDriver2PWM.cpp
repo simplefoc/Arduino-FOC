@@ -42,8 +42,8 @@ StepperDriver2PWM::StepperDriver2PWM(int _pwm1, int _dir1, int _pwm2, int _dir2,
 // enable motor driver
 void  StepperDriver2PWM::enable(){
     // enable_pin the driver - if enable_pin pin available
-    if ( enable_pin1 != NOT_SET ) digitalWrite(enable_pin1, HIGH);
-    if ( enable_pin2 != NOT_SET ) digitalWrite(enable_pin2, HIGH);
+    if ( _isset(enable_pin1) ) digitalWrite(enable_pin1, HIGH);
+    if ( _isset(enable_pin2) ) digitalWrite(enable_pin2, HIGH);
     // set zero to PWM
     setPwm(0,0);
 }
@@ -54,8 +54,8 @@ void StepperDriver2PWM::disable()
   // set zero to PWM
   setPwm(0, 0);
   // disable the driver - if enable_pin pin available
-  if ( enable_pin1 != NOT_SET ) digitalWrite(enable_pin1, LOW);
-  if ( enable_pin2 != NOT_SET ) digitalWrite(enable_pin2, LOW);
+  if ( _isset(enable_pin1) ) digitalWrite(enable_pin1, LOW);
+  if ( _isset(enable_pin2) ) digitalWrite(enable_pin2, LOW);
 
 }
 
@@ -69,14 +69,14 @@ int StepperDriver2PWM::init() {
   pinMode(pwm2, OUTPUT);
   pinMode(dir1a, OUTPUT);
   pinMode(dir2a, OUTPUT);
-  if(dir1b != NOT_SET ) pinMode(dir1b, OUTPUT);
-  if(dir2b != NOT_SET ) pinMode(dir2b, OUTPUT);
+  if( _isset(dir1b) ) pinMode(dir1b, OUTPUT);
+  if( _isset(dir2b) ) pinMode(dir2b, OUTPUT);
 
-  if(enable_pin1 != NOT_SET) pinMode(enable_pin1, OUTPUT);
-  if(enable_pin2 != NOT_SET) pinMode(enable_pin2, OUTPUT);
+  if( _isset(enable_pin1) ) pinMode(enable_pin1, OUTPUT);
+  if( _isset(enable_pin2) ) pinMode(enable_pin2, OUTPUT);
 
   // sanity check for the voltage limit configuration
-  if(voltage_limit == NOT_SET || voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
+  if( !_isset(voltage_limit)  || voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
 
   // Set the pwm frequency to the pins
   // hardware specific function - depending on driver and mcu
@@ -97,10 +97,10 @@ void StepperDriver2PWM::setPwm(float Ua, float Ub) {
   
   // phase 1 direction
   digitalWrite(dir1a, Ua >= 0 ? LOW : HIGH);
-  if(dir1b != NOT_SET) digitalWrite(dir1b, Ua <= 0 ? LOW : HIGH);
+  if( _isset(dir1b) ) digitalWrite(dir1b, Ua <= 0 ? LOW : HIGH);
   // phase 2 direction
   digitalWrite(dir2a, Ub >= 0 ? LOW : HIGH);
-  if(dir2b != NOT_SET) digitalWrite(dir2b, Ub <= 0 ? LOW : HIGH);
+  if( _isset(dir2b) ) digitalWrite(dir2b, Ub <= 0 ? LOW : HIGH);
   
   // write to hardware
   _writeDutyCycle2PWM(duty_cycle1, duty_cycle2, pwm1, pwm2);

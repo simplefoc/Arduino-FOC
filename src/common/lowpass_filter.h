@@ -4,12 +4,12 @@
 
 #include "time_utils.h"
 #include "foc_utils.h"
-
+#include "base_classes/CommunicationNode.h"
 
 /**
  *  Low pass filter class
  */
-class LowPassFilter
+class LowPassFilter: public CommunicationNode
 {
 public:
     /**
@@ -20,6 +20,8 @@ public:
 
     float operator() (float x);
     float Tf; //!< Low pass filter time constant
+
+    String communicate(String user_command) override;
 
 protected:
     unsigned long timestamp_prev;  //!< Last execution timestamp

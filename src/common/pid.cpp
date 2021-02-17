@@ -46,11 +46,51 @@ float PIDController::operator() (float error){
         output = output_prev + output_ramp*Ts;
     else if (output_rate < -output_ramp)
         output = output_prev - output_ramp*Ts;
-
+        
     // saving for the next pass
     integral_prev = integral;
     output_prev = output;
     error_prev = error;
     timestamp_prev = timestamp_now;
     return output;
+}
+
+
+String PIDController::communicate(String user_cmd){
+  String ret = "";
+  char cmd = user_cmd.charAt(0);
+  char GET  = user_cmd.charAt(1) == '\n';
+  float value = user_cmd.substring(1).toFloat();
+
+  switch (cmd){
+    case 'P':      // P gain change
+      ret = ret + "P: ";
+      if(!GET) P = value;
+      ret = ret + P;
+      break;
+    case 'I':      // I gain change
+      ret = ret + "I: ";
+      if(!GET) I = value;
+      ret = ret + I;
+      break;
+    case 'D':      // D gain change
+      ret = ret + "D: ";
+      if(!GET) D = value;
+      ret = ret + D;
+      break;
+    case 'R':      //  ramp change
+      ret = ret + "ramp: ";
+      if(!GET) output_ramp = value;
+      ret = ret + output_ramp;
+      break;
+    case 'L':      //  limit change
+      ret = ret + "limit: ";
+      if(!GET) limit = value;
+      ret = ret + limit;
+      break;
+    default:
+      ret = ret + F("error");
+      break;
+  }
+  return ret; // not well handled
 }

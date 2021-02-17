@@ -27,7 +27,7 @@ void BLDCMotor::init() {
   if(monitor_port) monitor_port->println(F("MOT: Init"));
 
   // if no current sensing and the user has set the phase resistance of the motor use current limit to calculate the voltage limit
-  if( !current_sense && phase_resistance != NOT_SET ) {
+  if( !current_sense && _isset(phase_resistance)) {
     float new_voltage_limit = current_limit * (phase_resistance*1.5); // v_lim = current_lim / (3/2 phase resistance) - worst case
     // use it if it is less then voltage_limit set by the user
     voltage_limit = new_voltage_limit < voltage_limit ? new_voltage_limit : voltage_limit;
@@ -86,7 +86,7 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction _sensor_direction
   int exit_flag = 1;
   // align motor if necessary
   // alignment necessary for encoders!
-  if(zero_electric_offset != NOT_SET){
+  if(_isset(zero_electric_offset)){
     // abosolute zero offset provided - no need to align
     zero_electric_angle = zero_electric_offset;
     // set the sensor direction - default CW
@@ -143,7 +143,7 @@ int BLDCMotor::alignSensor() {
   if(monitor_port) monitor_port->println(F("MOT: Align sensor."));
   
   // if unknown natural direction
-  if(sensor_direction == NOT_SET){
+  if(!_isset(sensor_direction)){
     // check if sensor needs zero search
     if(sensor->needsSearch()) exit_flag = absoluteZeroSearch();
     // stop init if not found index
@@ -189,7 +189,7 @@ int BLDCMotor::alignSensor() {
   }else if(monitor_port) monitor_port->println(F("MOT: Skip dir calib."));
 
   // zero electric angle not known
-  if(zero_electric_angle == NOT_SET){
+  if(!_isset(zero_electric_angle)){
     // align the electrical phases of the motor and sensor
     // set angle -90(270 = 3PI/2) degrees 
     setPhaseVoltage(voltage_sensor_align, 0,  _3PI_2);
@@ -288,7 +288,7 @@ void BLDCMotor::move(float new_target) {
   // if disabled do nothing
   if(!enabled) return; 
   // set internal target variable
-  if( new_target != NOT_SET ) target = new_target;
+  if(_isset(new_target)) target = new_target;
   // get angular velocity
   shaft_velocity = shaftVelocity();
 
@@ -309,7 +309,7 @@ void BLDCMotor::move(float new_target) {
       // if torque controlled through voltage  
       if(torque_controller == TorqueControlType::voltage){
         // use voltage if phase-resistance not provided
-        if(phase_resistance == NOT_SET)  voltage.q = current_sp;
+        if(!_isset(phase_resistance))  voltage.q = current_sp;
         else  voltage.q = current_sp*1.5*phase_resistance;
         voltage.d = 0;
       }
@@ -322,7 +322,7 @@ void BLDCMotor::move(float new_target) {
       // if torque controlled through voltage control 
       if(torque_controller == TorqueControlType::voltage){
         // use voltage if phase-resistance not provided
-        if(phase_resistance == NOT_SET)  voltage.q = current_sp;
+        if(!_isset(phase_resistance))  voltage.q = current_sp;
         else  voltage.q = current_sp*1.5*phase_resistance;
         voltage.d = 0;
       }

@@ -81,8 +81,6 @@ driverAlign	KEYWORD2
 driverSync	KEYWORD2
 
 
-voltage_q	KEYWORD2
-voltage_d	KEYWORD2
 current	KEYWORD2
 current_measured	KEYWORD2
 shaft_angle_sp	KEYWORD2

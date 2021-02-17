@@ -43,7 +43,7 @@ float _readADCVoltage(const int pinA){
 void _configureADC(const int pinA,const int pinB,const int pinC){
   pinMode(pinA, INPUT);
   pinMode(pinB, INPUT);
-  if( pinC != NOT_SET ) pinMode(pinC, INPUT);
+  if( _isset(pinC) ) pinMode(pinC, INPUT);
 
   #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__) //  if mcu is atmega328 or atmega2560
     // set hight frequency adc - ADPS2,ADPS1,ADPS0 | 001 (16mhz/2) | 010 ( 16mhz/4 ) | 011 (16mhz/8) | 100(16mhz/16) | 101 (16mhz/32) | 110 (16mhz/64) | 111 (16mhz/128 default)  
