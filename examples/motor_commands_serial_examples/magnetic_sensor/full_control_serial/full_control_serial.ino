@@ -53,6 +53,10 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 //StepperMotor motor = StepperMotor(50);
 //StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
+// commander interface
+Commander command = Commander(Serial);
+void onA(String cmd){ command.motor(&motor, cmd); }
+
 void setup() {
 
   // initialise magnetic sensor hardware
@@ -102,6 +106,8 @@ void setup() {
   // set the inital target value
   motor.target = 2;
 
+  // define the motor id
+  command.add('A', onA);
 
   // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)
   Serial.println(F("Motor commands sketch | Initial motion control > torque/voltage : target 2V."));
@@ -120,33 +126,6 @@ void loop() {
   motor.move();
   
   // user communication
-  motor.command(serialReceiveUserCommand());
-}
-
-// utility function enabling serial communication the user
-String serialReceiveUserCommand() {
-  
-  // a string to hold incoming data
-  static String received_chars;
-  
-  String command = "";
-
-  while (Serial.available()) {
-    // get the new byte:
-    char inChar = (char)Serial.read();
-    // add it to the string buffer:
-    received_chars += inChar;
-
-    // end of user input
-    if (inChar == '\n') {
-      
-      // execute the user command
-      command = received_chars;
-
-      // reset the command buffer 
-      received_chars = "";
-    }
-  }
-  return command;
+  command.run();
 }
 

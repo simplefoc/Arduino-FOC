@@ -63,6 +63,8 @@ MagneticSensorI2C sensor = MagneticSensorI2C(0x40, 14, 0xFE, 8);
 BLDCMotor motor = BLDCMotor(11);
 BLDCDriver3PWM driver =  BLDCDriver3PWM(25, 26, 27);
 
+// commander interface
+Commander command = Commander(Serial);
 
 void setup() {
 	Serial.begin(115200);
@@ -126,7 +128,7 @@ void cmdControl(OSCMessage &msg){
 	if (msg.isString(0)) {
 		msg.getString(0,cmdStr,16);
 		String it(cmdStr);
-		motor.command(it);
+		command.motor(&motor,it);
 	}
 }
 

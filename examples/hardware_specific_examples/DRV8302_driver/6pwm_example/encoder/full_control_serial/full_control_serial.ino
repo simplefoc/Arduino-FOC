@@ -39,6 +39,11 @@ Encoder encoder = Encoder(2, 3, 8192);
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 
+
+// commander interface
+Commander command = Commander(Serial);
+void onA(String cmd){ command.motor(&motor, cmd); }
+
 void setup() {
 
   // initialize encoder sensor hardware
@@ -100,6 +105,8 @@ void setup() {
   // set the inital target value
   motor.target = 2;
 
+  // define the motor id
+  command.add('A', onA);
 
   Serial.println(F("Full control example: "));
   Serial.println(F("Run user commands to configure and the motor (find the full command list in docs.simplefoc.com) \n "));
@@ -120,33 +127,5 @@ void loop() {
   motor.move();
 
   // user communication
-  motor.command(serialReceiveUserCommand());
+  command.run();
 }
-
-// utility function enabling serial communication the user
-String serialReceiveUserCommand() {
-  
-  // a string to hold incoming data
-  static String received_chars;
-  
-  String command = "";
-
-  while (Serial.available()) {
-    // get the new byte:
-    char inChar = (char)Serial.read();
-    // add it to the string buffer:
-    received_chars += inChar;
-
-    // end of user input
-    if (inChar == '\n') {
-      
-      // execute the user command
-      command = received_chars;
-
-      // reset the command buffer 
-      received_chars = "";
-    }
-  }
-  return command;
-}
-

@@ -103,9 +103,11 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction _sensor_direction
   // checks if driver phases are the same as current sense phases
   // and checks the direction of measuremnt. 
   _delay(500);
-  if(current_sense) exit_flag *= alignCurrentSense();
-  else if(monitor_port) monitor_port->println(F("MOT: No current sense."));
-
+  if(exit_flag){ 
+    if(current_sense) exit_flag *= alignCurrentSense();
+    else if(monitor_port) monitor_port->println(F("MOT: No current sense."));
+  }
+  
   if(exit_flag){
     if(monitor_port) monitor_port->println(F("MOT: Ready."));
   }else{
