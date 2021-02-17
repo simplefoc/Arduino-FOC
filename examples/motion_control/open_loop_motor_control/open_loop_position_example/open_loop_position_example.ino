@@ -5,7 +5,7 @@
 // BLDC motor & driver instance
 // BLDCMotor motor = BLDCMotor(pole pair number);
 BLDCMotor motor = BLDCMotor(11);
-// BLDCMotor motor = BLDCMotor(pole pair number);
+// BLDCDriver3PWM driver = BLDCDriver3PWM(pwmA, pwmB, pwmC, Enable(optional));
 BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 
 // Stepper motor & driver instance
