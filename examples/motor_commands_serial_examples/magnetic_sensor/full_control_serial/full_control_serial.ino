@@ -55,7 +55,7 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 
 // commander interface
 Commander command = Commander(Serial);
-void onA(String cmd){ command.motor(&motor, cmd); }
+void onA(char* cmd){ command.motor(&motor, cmd); }
 
 void setup() {
 

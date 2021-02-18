@@ -62,7 +62,7 @@ PciListenerImp listenC(sensor.pinC, doC);
 
 // commander interface
 Commander command = Commander(Serial);
-void onA(String cmd){ command.motor(&motor, cmd); }
+void onA(char* cmd){ command.motor(&motor, cmd); }
 
 
 void setup() {

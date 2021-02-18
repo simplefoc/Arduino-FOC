@@ -42,7 +42,7 @@ void doB(){encoder.handleB();}
 
 // commander interface
 Commander command = Commander(Serial);
-void onA(String cmd){ command.motor(&motor, cmd); }
+void onA(char* cmd){ command.motor(&motor, cmd); }
 
 void setup() {
 
