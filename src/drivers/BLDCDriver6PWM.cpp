@@ -55,7 +55,7 @@ int BLDCDriver6PWM::init() {
 
 
   // sanity check for the voltage limit configuration
-  if( _isset(voltage_limit) || voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
+  if( !_isset(voltage_limit) || voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
 
   // configure 6pwm 
   // hardware specific function - depending on driver and mcu
