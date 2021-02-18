@@ -25,7 +25,7 @@
 #define DEF_PID_CURR_D 0.0 //!<  default PID controller D value
 #define DEF_PID_CURR_RAMP 1e11 //!< default PID controller voltage ramp value
 #define DEF_PID_CURR_LIMIT (DEF_POWER_SUPPLY) //!< default PID controller voltage limit
-#define DEF_CURR_FILTER_Tf 0.001 //!< default currnet filter time constant
+#define DEF_CURR_FILTER_Tf 0.002 //!< default currnet filter time constant
 #endif
 // default current limit values
 #define DEF_CURRENT_LIM 0.2 //!< 2Amps current limit by default

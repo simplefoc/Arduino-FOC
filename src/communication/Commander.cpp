@@ -15,59 +15,69 @@ void Commander::run(){
   // a string to hold incoming data
   while (com_port->available()) {
     // get the new byte:
-    char inChar = (char)com_port->read();
-    // add it to the string buffer:
-    received_chars += inChar;
+    received_chars[rec_cnt] = (char)com_port->read();
     // end of user input
-    if (inChar == '\n') {
+    if (received_chars[rec_cnt++] == '\n') {
       // execute the user command
-      char id = received_chars.charAt(0);
-      for(int i=0; i < call_count; i++){
-        if(id == call_ids[i]){
-          call_list[i](received_chars.substring(1));
-          break;
+      char id = received_chars[0];
+      if(id == CMD_SCAN)
+        for(int i=0; i < call_count; i++){
+            com_port->print(call_ids[i]);
+            com_port->print(":");
+            call_list[i](cmd_scan_msg);
         }
-      }
+      else
+        for(int i=0; i < call_count; i++){
+          if(id == call_ids[i]){
+            call_list[i](&received_chars[1]);
+            break;
+          }
+        }
+
       // reset the command buffer 
-      received_chars = "";
+      received_chars[0] = 0;
+      rec_cnt=0;
     }
   }
 }
 
-void Commander::motor(FOCMotor* motor, String user_command) {
+void Commander::motor(FOCMotor* motor, char* user_command) {
   // if empty string
-  if( user_command.length() < 1 ) return;
+  if( user_command[0] == CMD_SCAN ){
+     com_port->println(F("mot"));
+     return;
+  }
 
   // parse command letter
-  char cmd = user_command.charAt(0);
-  char sub_cmd = user_command.charAt(1);
+  char cmd = user_command[0];
+  char sub_cmd = user_command[1];
   int value_index = (sub_cmd >= 'A'  && sub_cmd <= 'Z') ?  2 :  1;
   // check if get command
-  bool GET = user_command.charAt(value_index) == '\n';
+  bool GET = user_command[value_index] == '\n';
   // parse command values
-  float  value  = user_command.substring(value_index).toFloat();
+  float  value  = atof(&user_command[value_index]);
 
   // a bit of optimisation of variable memory for Arduino UNO (atmega328)
   switch(cmd){
     case CMD_C_Q_PID:      // 
       com_port->print(F("PID curr q| "));
-      if(sub_cmd == SCMD_LPF_TF) lpf(&motor->LPF_current_q, user_command.substring(1));
-      else pid(&motor->PID_current_q,user_command.substring(1));
+      if(sub_cmd == SCMD_LPF_TF) lpf(&motor->LPF_current_q, &user_command[1]);
+      else pid(&motor->PID_current_q,&user_command[1]);
       break;
     case CMD_C_D_PID:      // 
       com_port->print(F("PID curr d| "));
-      if(sub_cmd == SCMD_LPF_TF) lpf(&motor->LPF_current_d, user_command.substring(1));
-      else pid(&motor->PID_current_d, user_command.substring(1));
+      if(sub_cmd == SCMD_LPF_TF) lpf(&motor->LPF_current_d, &user_command[1]);
+      else pid(&motor->PID_current_d, &user_command[1]);
       break;
     case CMD_V_PID:      // 
       com_port->print(F("PID vel| "));
-      if(sub_cmd == SCMD_LPF_TF) lpf(&motor->LPF_velocity, user_command.substring(1));
-      else pid(&motor->PID_velocity, user_command.substring(1));
+      if(sub_cmd == SCMD_LPF_TF) lpf(&motor->LPF_velocity, &user_command[1]);
+      else pid(&motor->PID_velocity, &user_command[1]);
       break;
     case CMD_A_PID:      // 
       com_port->print(F("PID angle| "));
-      if(sub_cmd == SCMD_LPF_TF) lpf(&motor->LPF_angle, user_command.substring(1));
-      else pid(&motor->P_angle, user_command.substring(1));
+      if(sub_cmd == SCMD_LPF_TF) lpf(&motor->LPF_angle, &user_command[1]);
+      else pid(&motor->P_angle, &user_command[1]);
       break;
     case CMD_LIMITS:      // 
      com_port->print(F("Limits| "));
@@ -109,26 +119,35 @@ void Commander::motor(FOCMotor* motor, String user_command) {
       break;
     case CMD_MOTION_TYPE:
       com_port->print(F("Motion: "));
-      // change control type
-      if(!GET && value >= 0 && (int)value < 5)// if set command
-        motor->controller = (MotionControlType)value;
-      switch(motor->controller){
-        case MotionControlType::torque:
-          com_port->println(F("torque"));
+      switch(sub_cmd){
+        case SCMD_DOWNSAMPLE:
+            com_port->print(F("downsample: "));
+            if(!GET) motor->motion_downsample = value;
+            com_port->println(motor->motion_downsample);
           break;
-        case MotionControlType::velocity:
-          com_port->println(F("vel"));
-          break;
-        case MotionControlType::angle:
-          com_port->println(F("angle"));
-          break;
-        case MotionControlType::velocity_openloop:
-          com_port->println(F("vel open"));
-          break;
-        case MotionControlType::angle_openloop:
-          com_port->println(F("angle open"));
-          break;
-      }
+        default:
+          // change control type
+          if(!GET && value >= 0 && (int)value < 5)// if set command
+            motor->controller = (MotionControlType)value;
+          switch(motor->controller){
+            case MotionControlType::torque:
+              com_port->println(F("torque"));
+              break;
+            case MotionControlType::velocity:
+              com_port->println(F("vel"));
+              break;
+            case MotionControlType::angle:
+              com_port->println(F("angle"));
+              break;
+            case MotionControlType::velocity_openloop:
+              com_port->println(F("vel open"));
+              break;
+            case MotionControlType::angle_openloop:
+              com_port->println(F("angle open"));
+              break;
+          }
+            break;
+        }
       break;
     case CMD_TORQUE_TYPE:
       // change control type
@@ -185,36 +204,80 @@ void Commander::motor(FOCMotor* motor, String user_command) {
        }
       break;
     case CMD_MONITOR:     // get current values of the state variables
-        switch((uint8_t)value){
-          case 0: // get voltage
-            com_port->print(F("Uq: "));
-            com_port->println(motor->voltage.q);
-            break;
-          case 1: // get velocity
-            com_port->print(F("vel: "));
-            com_port->println(motor->shaft_velocity);
-            break;
-          case 2: // get angle
-            com_port->print(F("Angle: "));
-            com_port->println(motor->shaft_angle);
-            break;
-          case 3: // get angle
-            com_port->print(F("target: "));
-            com_port->println(motor->target);
-            break;
-        }
+      com_port->print(F("Monitor | "));
+      switch (sub_cmd){
+        case SCMD_GET:      // get command
+          switch((uint8_t)value){
+            case 0: // get target
+              com_port->print(F("target: "));
+              com_port->println(motor->target);
+              break;
+            case 1: // get voltage q
+              com_port->print(F("Vq: "));
+              com_port->println(motor->voltage.q);
+              break;
+            case 2: // get voltage d
+              com_port->print(F("Vd: "));
+              com_port->println(motor->voltage.q);
+              break;
+            case 3: // get current q
+              com_port->print(F("Cq: "));
+              com_port->println(motor->voltage.q);
+              break;
+            case 4: // get current d
+              com_port->print(F("Cd: "));
+              com_port->println(motor->voltage.q);
+              break;
+            case 5: // get velocity
+              com_port->print(F("vel: "));
+              com_port->println(motor->shaft_velocity);
+              break;
+            case 6: // get angle
+              com_port->print(F("Angle: "));
+              com_port->println(motor->shaft_angle);
+              break;
+            default:
+              com_port->println(F("err"));
+              break;
+          }
+          break;
+        case SCMD_DOWNSAMPLE:   
+          com_port->print(F("downsample: "));
+          if(!GET) motor->monitor_downsample = value;
+          com_port->println(motor->monitor_downsample);
+          break;
+        case SCMD_CLEAR:    
+          for(int i=0; i<7; i++) motor->monitor_variables[i] = 0; 
+          com_port->println(F("clear"));
+          break;
+        case SCMD_SET:   
+          for(int i=0; i<7; i++){
+            motor->monitor_variables[i] = user_command[value_index+i] - '0';  
+            com_port->print(motor->monitor_variables[i]);
+          }
+          com_port->println();
+          break;
+        default:
+          com_port->println(F("err"));
+          break;
+       }
+        
       break;
     default:  // target change
       com_port->print(F("Target: "));
-      motor->target = user_command.toFloat();
+      motor->target = atof(user_command);
       com_port->println(motor->target);
   }
 }
 
-void Commander::pid(PIDController* pid, String user_cmd){
-  char cmd = user_cmd.charAt(0);
-  bool GET  = user_cmd.charAt(1) == '\n';
-  float value = user_cmd.substring(1).toFloat();
+void Commander::pid(PIDController* pid, char* user_cmd){
+  if( user_cmd[0] == CMD_SCAN ){
+     com_port->println(F("pid"));
+     return;
+  }
+  char cmd = user_cmd[0];
+  bool GET  = user_cmd[1] == '\n';
+  float value = atof(&user_cmd[1]);
 
   switch (cmd){
     case SCMD_PID_P:      // P gain change
@@ -248,10 +311,14 @@ void Commander::pid(PIDController* pid, String user_cmd){
   }
 }
 
-void Commander::lpf(LowPassFilter* lpf, String user_cmd){
-  char cmd = user_cmd.charAt(0);
-  bool GET  = user_cmd.charAt(1) == '\n';
-  float value = user_cmd.substring(1).toFloat();
+void Commander::lpf(LowPassFilter* lpf, char* user_cmd){
+  if( user_cmd[0] == CMD_SCAN ){
+     com_port->println(F("lpf"));
+     return;
+  }
+  char cmd = user_cmd[0];
+  bool GET  = user_cmd[1] == '\n';
+  float value = atof(&user_cmd[1]);
 
   switch (cmd){
     case SCMD_LPF_TF:      // Tf value change
@@ -265,8 +332,12 @@ void Commander::lpf(LowPassFilter* lpf, String user_cmd){
   }
 }
 
-void Commander::scalar(float* value, String user_cmd){
-  bool GET  = user_cmd.charAt(0) == '\n';
-  if(!GET) *value = user_cmd.toFloat();
+void Commander::variable(float* value,  char* user_cmd){
+  if( user_cmd[0] == CMD_SCAN ){
+     com_port->println(F("var"));
+     return;
+  }
+  bool GET  = user_cmd[0] == '\n';
+  if(!GET) *value = atof(user_cmd);
   com_port->println(*value);
 }

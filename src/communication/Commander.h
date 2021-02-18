@@ -8,7 +8,7 @@
 #include "commands.h"
 
 
-typedef void (* CommandCallback)(String);
+typedef void (* CommandCallback)(char*);
 
 class Commander
 {
@@ -68,16 +68,18 @@ class Commander
      * 
      * returns 0 for error or 1 for executed command
      */
-    void motor(FOCMotor* motor, String user_cmd);
-    void lpf(LowPassFilter* lpf, String user_cmd);
-    void pid(PIDController* pid, String user_cmd);
-    void scalar(float* value, String user_cmd);
+    void motor(FOCMotor* motor, char* user_cmd);
+    void lpf(LowPassFilter* lpf, char* user_cmd);
+    void pid(PIDController* pid, char* user_cmd);
+    void variable(float* value, char* user_cmd);
 
   private:
     CommandCallback call_list[20];
     char call_ids[20]; //!< Dictionary of nodes
     int call_count = 0;
-    String received_chars = "";
+    char received_chars[20] = {0};
+    int rec_cnt = 0;
+    char cmd_scan_msg[2] = {CMD_SCAN,0};
 
 };
 

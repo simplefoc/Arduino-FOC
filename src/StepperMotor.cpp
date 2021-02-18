@@ -178,6 +178,8 @@ void StepperMotor::loopFOC() {
 void StepperMotor::move(float new_target) {
   // if disabled do nothing
   if(!enabled) return; 
+  // downsampling (optional)
+  if(motion_cnt++ < motion_downsample) return;
   // set internal target variable
   if(_isset(new_target) ) target = new_target;
   // get angular velocity

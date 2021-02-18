@@ -142,11 +142,11 @@ class FOCMotor
     float velocity_limit; //!< Velocity limitting variable - global limit
 
     // motor status vairables
-    int enabled = 0;//!< enabled or disabled motor flag
+    int8_t enabled = 0;//!< enabled or disabled motor flag
     
     // pwm modulation related variables
     FOCModulationType foc_modulation;//!<  parameter derterniming modulation algorithm
-    int modulation_centered = 1;//!< flag (1) centered modulation around driver limit /2  or  (0) pulled to 0
+    int8_t modulation_centered = 1;//!< flag (1) centered modulation around driver limit /2  or  (0) pulled to 0
 
 
     // configuration structures
@@ -162,6 +162,8 @@ class FOCMotor
     PIDController P_angle{DEF_P_ANGLE_P,0,0,1e10,DEF_VEL_LIM};	//!< parameter determining the position PID configuration 
     LowPassFilter LPF_velocity{DEF_VEL_FILTER_Tf};//!<  parameter determining the velocity Low pass filter configuration 
     LowPassFilter LPF_angle{0.0};//!<  parameter determining the angle low pass filter configuration 
+    unsigned int motion_downsample = 0; //!< parameter defining the ratio of downsampling for move commad
+    unsigned int motion_cnt = 0; //!< counting variable for downsampling for move commad
 
     // sensor related variabels
     float sensor_offset; //!< user defined sensor zero offset
@@ -181,6 +183,9 @@ class FOCMotor
      * significantly slowing the execution down!!!!
      */
     void monitor();
+    unsigned int monitor_cnt = 0 ;
+    unsigned int monitor_downsample = 1;
+    bool monitor_variables[7] = {0};
    
     /** 
       * Sensor link:

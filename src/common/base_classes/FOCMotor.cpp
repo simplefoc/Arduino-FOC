@@ -81,31 +81,46 @@ void FOCMotor::useMonitoring(Print &print){
 // utility function intended to be used with serial plotter to monitor motor variables
 // significantly slowing the execution down!!!!
 void FOCMotor::monitor() {
+  if( !monitor_downsample || monitor_cnt++ < monitor_downsample ) return;
+  monitor_cnt = 0;
   if(!monitor_port) return;
-  switch (controller) {
-    case MotionControlType::velocity_openloop:
-    case MotionControlType::velocity:
-      monitor_port->print(voltage.q);
-      monitor_port->print("\t");
-      monitor_port->print(shaft_velocity_sp);
-      monitor_port->print("\t");
-      monitor_port->println(shaft_velocity);
-      break;
-    case MotionControlType::angle_openloop:
-    case MotionControlType::angle:
-      monitor_port->print(voltage.q);
-      monitor_port->print("\t");
-      monitor_port->print(shaft_angle_sp);
-      monitor_port->print("\t");
-      monitor_port->println(shaft_angle);
-      break;
-    case MotionControlType::torque:
-      monitor_port->print(voltage.q);
-      monitor_port->print("\t");
-      monitor_port->print(shaft_angle);
-      monitor_port->print("\t");
-      monitor_port->println(shaft_velocity);
-      break;
+  bool printed = 0;
+
+  if(monitor_variables[0]){
+    monitor_port->print(target);
+    monitor_port->print("\t");
+    printed= true;
   }
+  if(monitor_variables[1]) {
+    monitor_port->print(voltage.q);
+    monitor_port->print("\t");
+    printed= true;
+  }
+  if(monitor_variables[2]) {
+    monitor_port->print(voltage.d);
+    monitor_port->print("\t");
+    printed= true;
+  }
+  if(monitor_variables[3]) {
+    monitor_port->print(current.q*1000); // mAmps
+    monitor_port->print("\t");
+    printed= true;
+  }
+  if(monitor_variables[4]) {
+    monitor_port->print(current.d*1000); // mAmps
+    monitor_port->print("\t");
+    printed= true;
+  }
+  if(monitor_variables[5]) {
+    monitor_port->print(shaft_velocity);
+    monitor_port->print("\t");
+    printed= true;
+  }
+  if(monitor_variables[6]) {
+    monitor_port->print(shaft_angle);
+    printed= true;
+  }
+  if(printed) monitor_port->println();
+  
 }
 
