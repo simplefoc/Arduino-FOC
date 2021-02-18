@@ -127,8 +127,7 @@ void cmdControl(OSCMessage &msg){
 	char cmdStr[16];
 	if (msg.isString(0)) {
 		msg.getString(0,cmdStr,16);
-		String it(cmdStr);
-		command.motor(&motor,it);
+		command.motor(&motor,cmdStr);
 	}
 }
 

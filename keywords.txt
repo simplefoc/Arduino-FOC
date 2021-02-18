@@ -107,6 +107,9 @@ skip_align	KEYWORD2
 sensor_direction	KEYWORD2
 sensor_offset	KEYWORD2
 zero_electric_angle	KEYWORD2
+verbose	KEYWORD2
+decimal_places	KEYWORD2
+
 
 
 voltage	KEYWORD2
