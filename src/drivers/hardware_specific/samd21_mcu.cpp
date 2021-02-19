@@ -21,7 +21,7 @@
 #define SIMPLEFOC_SAMD_MAX_TCC_PINCONFIGURATIONS 12
 #endif
 
-#define SIMPLEFOC_SAMD_DEBUG
+//#define SIMPLEFOC_SAMD_DEBUG
 
 
 // Wait for synchronization of registers between the clock domains
