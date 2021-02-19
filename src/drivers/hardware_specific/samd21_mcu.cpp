@@ -21,7 +21,7 @@
 #define SIMPLEFOC_SAMD_MAX_TCC_PINCONFIGURATIONS 12
 #endif
 
-//#define SIMPLEFOC_SAMD_DEBUG
+#define SIMPLEFOC_SAMD_DEBUG
 
 
 // Wait for synchronization of registers between the clock domains
@@ -306,19 +306,6 @@ tccConfiguration getTCCChannelNr(int pin, bool alternate) {
 
 
 
-bool checkPeripheralPermutationSameTCC3(tccConfiguration& pin1, tccConfiguration& pin2, tccConfiguration& pin3) {
-	if (inUse(pin3) || inUse(pin2) || inUse(pin3))
-		return false;
-
-	if (pin1.tcc.tccn!=-2
-		&& pin1.tcc.tccn==pin2.tcc.tccn && pin1.tcc.tccn==pin3.tcc.tccn && pin2.tcc.tccn==pin3.tcc.tccn
-		&& pin1.tcc.chan!=pin2.tcc.chan && pin1.tcc.chan!=pin3.tcc.chan && pin2.tcc.chan!=pin3.tcc.chan
-			)
-		return true;
-
-	return false;
-}
-
 bool checkPeripheralPermutationSameTCC6(tccConfiguration& pinAh, tccConfiguration& pinAl, tccConfiguration& pinBh, tccConfiguration& pinBl, tccConfiguration& pinCh, tccConfiguration& pinCl) {
 	if (inUse(pinAh) || inUse(pinAl) || inUse(pinBh) || inUse(pinBl) || inUse(pinCh) || inUse(pinCl))
 		return false;
@@ -347,17 +334,17 @@ bool checkPeripheralPermutationSameTCC6(tccConfiguration& pinAh, tccConfiguratio
 
 
 
-bool checkPeripheralPermutationCompatible3(tccConfiguration& pin1, tccConfiguration& pin2, tccConfiguration& pin3) {
-	if (pin1.tcc.tccn<0 || pin2.tcc.tccn<0 || pin3.tcc.tccn<0) // must have a timer
-		return false;
-	if (pin1.tcc.tccn==pin2.tcc.tccn && pin1.tcc.chan==pin2.tcc.chan) // can't be on same timer and channel
-		return false;
-	if (pin1.tcc.tccn==pin3.tcc.tccn && pin1.tcc.chan==pin3.tcc.chan)
-		return false;
-	if (pin2.tcc.tccn==pin3.tcc.tccn && pin2.tcc.chan==pin3.tcc.chan)
-		return false;
-	if (inUse(pin3) || inUse(pin2) || inUse(pin3))
-		return false;
+bool checkPeripheralPermutationCompatible(tccConfiguration pins[], uint8_t num) {
+	for (int i=0;i<num;i++)
+		if (pins[i].tcc.tccn<0)
+			return false;
+	for (int i=0;i<num-1;i++)
+		for (int j=i+1;j<num;j++)
+			if (pins[i].tcc.chaninfo==pins[j].tcc.chaninfo)
+				return false;
+	for (int i=0;i<num;i++)
+		if (inUse(pins[i]))
+			return false;
 	return true;
 }
 
@@ -403,32 +390,6 @@ bool checkPeripheralPermutationCompatible6(tccConfiguration& pinAh, tccConfigura
 
 
 
-int checkSameTCC3(int pin1, int pin2, int pin3) {
-	for (int i=0;i<8;i++) {
-		tccConfiguration pinA = getTCCChannelNr(pin1, (i>>0&0x01)==0x1);
-		tccConfiguration pinB = getTCCChannelNr(pin2, (i>>1&0x01)==0x1);
-		tccConfiguration pinC = getTCCChannelNr(pin3, (i>>2&0x01)==0x1);
-		if (checkPeripheralPermutationSameTCC3(pinA, pinB, pinC))
-			return i;
-	}
-	return -1;
-}
-
-
-int checkCompatible3(int pin1, int pin2, int pin3) {
-	for (int i=0;i<8;i++) {
-		tccConfiguration pinA = getTCCChannelNr(pin1, (i>>0&0x01)==0x1);
-		tccConfiguration pinB = getTCCChannelNr(pin2, (i>>1&0x01)==0x1);
-		tccConfiguration pinC = getTCCChannelNr(pin3, (i>>2&0x01)==0x1);
-		if (checkPeripheralPermutationCompatible3(pinA, pinB, pinC))
-			return i;
-	}
-	return -1;
-}
-
-
-
-
 int checkHardware6PWM(const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l) {
 	for (int i=0;i<64;i++) {
 		tccConfiguration pinAh = getTCCChannelNr(pinA_h, (i>>0&0x01)==0x1);
@@ -462,6 +423,45 @@ int checkSoftware6PWM(const int pinA_h, const int pinA_l,  const int pinB_h, con
 
 
 
+int scorePermutation(tccConfiguration pins[], uint8_t num) {
+	uint32_t usedtccs = 0;
+	for (int i=0;i<num;i++)
+		usedtccs |= (1<<pins[i].tcc.tccn);
+	int score = 0;
+	for (int i=0;i<TCC_INST_NUM;i++){
+		if (usedtccs&0x1)
+			score+=1;
+		usedtccs = usedtccs>>1;
+	}
+	for (int i=0;i<TC_INST_NUM;i++){
+		if (usedtccs&0x1)
+			score+=(num+1);
+		usedtccs = usedtccs>>1;
+	}
+	return score;
+}
+
+
+
+
+
+int checkPermutations(uint8_t num, int pins[], bool (*checkFunc)(tccConfiguration[], uint8_t) ) {
+	tccConfiguration tccConfs[num];
+	int best = -1;
+	int bestscore = 1000000;
+	for (int i=0;i<(0x1<<num);i++) {
+		for (int j=0;j<num;j++)
+			tccConfs[j] = getTCCChannelNr(pins[j], ((i>>j)&0x01)==0x1);
+		if (checkFunc(tccConfs, num)) {
+			int score = scorePermutation(tccConfs, num);
+			if (score<bestscore) {
+				bestscore = score;
+				best = i;
+			}
+		}
+	}
+	return best;
+}
 
 
 
@@ -509,8 +509,47 @@ void _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 #ifdef SIMPLEFOC_SAMD_DEBUG
 	printAllPinInfos();
 #endif
+	int pins[2] = { pinA, pinB };
+	int compatibility = checkPermutations(2, pins, checkPeripheralPermutationCompatible);
+	if (compatibility<0) {
+		// no result!
+#ifdef SIMPLEFOC_SAMD_DEBUG
+		Serial.println("Bad combination!");
+#endif
+		return;
+	}
 
-	return; // I don't know much about stepper motors... maybe someone can fill in these based on the BLDC methods? Someone with a stepper-setup who can test it?
+	tccConfiguration tccConfs[2] = { getTCCChannelNr(pinA, (compatibility>>0&0x01)==0x1),
+								     getTCCChannelNr(pinB, (compatibility>>1&0x01)==0x1) };
+
+
+#ifdef SIMPLEFOC_SAMD_DEBUG
+	Serial.print("Found configuration: (score=");
+	Serial.print(scorePermutation(tccConfs, 2));
+	Serial.println(")");
+	printTCCConfiguration(tccConfs[0]);
+	printTCCConfiguration(tccConfs[1]);
+#endif
+
+	// attach pins to timer peripherals
+	attachTCC(tccConfs[0]); // in theory this can fail, but there is no way to signal it...
+	attachTCC(tccConfs[1]);
+#ifdef SIMPLEFOC_SAMD_DEBUG
+	Serial.println("Attached pins...");
+#endif
+
+	// set up clock - Note: if we did this right it should be possible to get all TCC units synchronized?
+	// e.g. attach all the timers, start them, and then start the clock... but this would require API-changes in SimpleFOC...
+	configureSAMDClock();
+
+	// configure the TCC (waveform, top-value, pre-scaler = frequency)
+	configureTCC(tccConfs[0], pwm_frequency);
+	configureTCC(tccConfs[1], pwm_frequency);
+#ifdef SIMPLEFOC_SAMD_DEBUG
+	Serial.println("Configured TCCs...");
+#endif
+
+	return; // Someone with a stepper-setup who can test it?
 }
 
 
@@ -560,33 +599,34 @@ void _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const in
 #ifdef SIMPLEFOC_SAMD_DEBUG
 	printAllPinInfos();
 #endif
-	int compatibility = checkSameTCC3(pinA, pinB, pinC);
+	int pins[3] = { pinA, pinB, pinC };
+	int compatibility = checkPermutations(3, pins, checkPeripheralPermutationCompatible);
 	if (compatibility<0) {
-		compatibility = checkCompatible3(pinA, pinB, pinC);
-		if (compatibility<0) {
-			// no result!
+		// no result!
 #ifdef SIMPLEFOC_SAMD_DEBUG
-			Serial.println("Bad combination!");
+		Serial.println("Bad combination!");
 #endif
-			return;
-		}
+		return;
 	}
 
-	tccConfiguration pin1 = getTCCChannelNr(pinA, (compatibility>>0&0x01)==0x1);
-	tccConfiguration pin2 = getTCCChannelNr(pinB, (compatibility>>1&0x01)==0x1);
-	tccConfiguration pin3 = getTCCChannelNr(pinC, (compatibility>>2&0x01)==0x1);
+	tccConfiguration tccConfs[3] = { getTCCChannelNr(pinA, (compatibility>>0&0x01)==0x1),
+									 getTCCChannelNr(pinB, (compatibility>>1&0x01)==0x1),
+								     getTCCChannelNr(pinC, (compatibility>>2&0x01)==0x1) };
+
 
 #ifdef SIMPLEFOC_SAMD_DEBUG
-	Serial.println("Found configuration: ");
-	printTCCConfiguration(pin1);
-	printTCCConfiguration(pin2);
-	printTCCConfiguration(pin3);
+	Serial.print("Found configuration: (score=");
+	Serial.print(scorePermutation(tccConfs, 3));
+	Serial.println(")");
+	printTCCConfiguration(tccConfs[0]);
+	printTCCConfiguration(tccConfs[1]);
+	printTCCConfiguration(tccConfs[2]);
 #endif
 
 	// attach pins to timer peripherals
-	attachTCC(pin1); // in theory this can fail, but there is no way to signal it...
-	attachTCC(pin2);
-	attachTCC(pin3);
+	attachTCC(tccConfs[0]); // in theory this can fail, but there is no way to signal it...
+	attachTCC(tccConfs[1]);
+	attachTCC(tccConfs[2]);
 #ifdef SIMPLEFOC_SAMD_DEBUG
 	Serial.println("Attached pins...");
 #endif
@@ -596,9 +636,9 @@ void _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const in
 	configureSAMDClock();
 
 	// configure the TCC (waveform, top-value, pre-scaler = frequency)
-	configureTCC(pin1, pwm_frequency);
-	configureTCC(pin2, pwm_frequency);
-	configureTCC(pin3, pwm_frequency);
+	configureTCC(tccConfs[0], pwm_frequency);
+	configureTCC(tccConfs[1], pwm_frequency);
+	configureTCC(tccConfs[2], pwm_frequency);
 #ifdef SIMPLEFOC_SAMD_DEBUG
 	Serial.println("Configured TCCs...");
 #endif
@@ -627,8 +667,55 @@ void _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const 
 #ifdef SIMPLEFOC_SAMD_DEBUG
 	printAllPinInfos();
 #endif
+	int pins[4] = { pin1A, pin1B, pin2A, pin2B };
+	int compatibility = checkPermutations(4, pins, checkPeripheralPermutationCompatible);
+	if (compatibility<0) {
+		// no result!
+#ifdef SIMPLEFOC_SAMD_DEBUG
+		Serial.println("Bad combination!");
+#endif
+		return;
+	}
 
-	return; // stepper-code?
+	tccConfiguration tccConfs[4] = { getTCCChannelNr(pin1A, (compatibility>>0&0x01)==0x1),
+									getTCCChannelNr(pin1B, (compatibility>>1&0x01)==0x1),
+									getTCCChannelNr(pin2A, (compatibility>>2&0x01)==0x1),
+									getTCCChannelNr(pin2B, (compatibility>>3&0x01)==0x1) };
+
+
+#ifdef SIMPLEFOC_SAMD_DEBUG
+	Serial.print("Found configuration: (score=");
+	Serial.print(scorePermutation(tccConfs, 4));
+	Serial.println(")");
+	printTCCConfiguration(tccConfs[0]);
+	printTCCConfiguration(tccConfs[1]);
+	printTCCConfiguration(tccConfs[2]);
+	printTCCConfiguration(tccConfs[3]);
+#endif
+
+	// attach pins to timer peripherals
+	attachTCC(tccConfs[0]); // in theory this can fail, but there is no way to signal it...
+	attachTCC(tccConfs[1]);
+	attachTCC(tccConfs[2]);
+	attachTCC(tccConfs[3]);
+#ifdef SIMPLEFOC_SAMD_DEBUG
+	Serial.println("Attached pins...");
+#endif
+
+	// set up clock - Note: if we did this right it should be possible to get all TCC units synchronized?
+	// e.g. attach all the timers, start them, and then start the clock... but this would require API-changes in SimpleFOC...
+	configureSAMDClock();
+
+	// configure the TCC (waveform, top-value, pre-scaler = frequency)
+	configureTCC(tccConfs[0], pwm_frequency);
+	configureTCC(tccConfs[1], pwm_frequency);
+	configureTCC(tccConfs[2], pwm_frequency);
+	configureTCC(tccConfs[3], pwm_frequency);
+#ifdef SIMPLEFOC_SAMD_DEBUG
+	Serial.println("Configured TCCs...");
+#endif
+
+	return; // Someone with a stepper-setup who can test it?
 }
 
 
