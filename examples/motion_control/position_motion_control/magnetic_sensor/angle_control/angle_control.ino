@@ -87,8 +87,6 @@ void setup() {
   _delay(1000);
 }
 
-// angle set point variable
-float target_angle = 0;
 
 void loop() {
 
