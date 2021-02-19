@@ -49,12 +49,12 @@
 #include <Math.h>
 
 
-const char ssid[] = "myssid";					// your network SSID (name)
+const char ssid[] = "myssid";		// your network SSID (name)
 const char pass[] = "mypassword";	// your network password
 WiFiUDP Udp;
 IPAddress outIp(192,168,1,17);        // remote IP (not needed for receive)
-const unsigned int outPort = 8000;          // remote port (not needed for receive)
-const unsigned int inPort = 8000;        // local port to listen for UDP packets (here's where we send the packets)
+const unsigned int outPort = 8000;    // remote port (not needed for receive)
+const unsigned int inPort = 8000;     // local port to listen for UDP packets (here's where we send the packets)
 
 
 OSCErrorCode error;

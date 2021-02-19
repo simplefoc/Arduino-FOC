@@ -28,7 +28,7 @@ class Commander
      */ 
     void run();
     void run(HardwareSerial &reader);
-    /**
+    /**x
      * Function reading the string of user input and firing callbacks that have been added to the commander 
      * once the user has requested them - when he sends the command  
      * 
@@ -51,47 +51,6 @@ class Commander
     HardwareSerial* com_port = nullptr; //!< Serial terminal variable if provided
     
     /**
-     * Function setting the configuration parameters  of the motor, target value of the control loop
-     * and outputing them to the monitoring port( if available ) :
-     * - configure PID controller constants
-     * - change motion control loops
-     * - monitor motor variabels
-     * - set target values
-     * - check all the configuration values 
-     * 
-     * To check the config value just enter the command letter.
-     * For example: 
-     * - to read velocity PI controller P gain run: P
-     * - to set velocity PI controller P gain  to 1.2 run: P1.2
-     * 
-     * To change the target value just enter a number in the terminal:
-     * For example: 
-     * - to change the target value to -0.1453 enter: -0.1453
-     * - to get the current target value enter: V3 
-     * 
-     * List of commands:
-     *  - P: velocity PI controller P gain
-     *  - I: velocity PI controller I gain
-     *  - L: velocity PI controller voltage limit
-     *  - R: velocity PI controller voltage ramp
-     *  - F: velocity Low pass filter time constant
-     *  - K: angle P controller P gain
-     *  - N: angle P controller velocity limit
-     *  - C: control loop 
-     *    - 0: voltage 
-     *    - 1: velocity 
-     *    - 2: anglex
-     *  - V: get motor variables
-     *    - 0: currently set voltage
-     *    - 1: current velocity
-     *    - 2: current angle
-     *    - 3: current target value
-     *
-     * - Look into the documentation (docs.simplefoc.com) for more information.
-     * 
-     * @param command String containing the user command
-     * 
-     * returns 0 for error or 1 for executed command
      */
     void motor(FOCMotor* motor, char* user_cmd);
     void lpf(LowPassFilter* lpf, char* user_cmd);
@@ -126,14 +85,13 @@ class Commander
      *  @param message - number to be printed
      *  @param newline - if needs lewline (1) otherwise (0)
      */
-    void print(const float number, const bool newline = 0);
+    void dump(const float number, const bool newline = 1);
+    void dump(const int number, const bool newline = 1);
+    void dump(const char* message, const bool newline = 1);
+    void dump(const __FlashStringHelper *message, const bool newline = 1);
+    void dump(const char message, const bool newline = 1);
 
     void printError();
-
-    void print(const int number, const bool newline);
-    void print(const char* message, const bool newline);
-    void print(const __FlashStringHelper *message, const bool newline);
-    void print(const char message, const bool newline);
 };
 
 

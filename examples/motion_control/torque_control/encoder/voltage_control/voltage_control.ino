@@ -25,6 +25,12 @@ Encoder encoder = Encoder(2, 3, 8192);
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 
+// voltage set point variable
+float target_voltage = 2;
+// instantiate the commander
+Commander command = Commander(Serial);
+void doTarget(char* cmd) { command.variable(&target_voltage, cmd); }
+
 void setup() { 
   
   // initialize encoder sensor hardware
@@ -59,13 +65,13 @@ void setup() {
   // align sensor and start FOC
   motor.initFOC();
 
+  // add target command T
+  command.add('T', doTarget);
+
   Serial.println(F("Motor ready."));
   Serial.println(F("Set the target voltage using serial terminal:"));
   _delay(1000);
 }
-
-// target voltage to be set to the motor
-float target_voltage = 2;
 
 void loop() {
 
@@ -80,34 +86,7 @@ void loop() {
   // this function can be run at much lower frequency than loopFOC() function
   // You can also use motor.move() and set the motor.target in the code
   motor.move(target_voltage);
-  
-  // communicate with the user
-  serialReceiveUserCommand();
-}
 
-
-// utility function enabling serial communication with the user to set the target values
-// this function can be implemented in serialEvent function as well
-void serialReceiveUserCommand() {
-  
-  // a string to hold incoming data
-  static String received_chars;
-  
-  while (Serial.available()) {
-    // get the new byte:
-    char inChar = (char)Serial.read();
-    // add it to the string buffer:
-    received_chars += inChar;
-    // end of user input
-    if (inChar == '\n') {
-      
-      // change the motor target
-      target_voltage = received_chars.toFloat();
-      Serial.print("Target voltage: ");
-      Serial.println(target_voltage);
-      
-      // reset the command buffer 
-      received_chars = "";
-    }
-  }
+  // user communication
+  command.run();
 }

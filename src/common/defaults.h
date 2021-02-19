@@ -20,12 +20,12 @@
 #define DEF_CURR_FILTER_Tf 0.01 //!< default velocity filter time constant
 #else 
 // for stm32, due, teensy, esp32 and similar
-#define DEF_PID_CURR_P 5 //!< default PID controller P value
-#define DEF_PID_CURR_I 1000.0 //!<  default PID controller I value
+#define DEF_PID_CURR_P 3 //!< default PID controller P value
+#define DEF_PID_CURR_I 300.0 //!<  default PID controller I value
 #define DEF_PID_CURR_D 0.0 //!<  default PID controller D value
 #define DEF_PID_CURR_RAMP 1e11 //!< default PID controller voltage ramp value
 #define DEF_PID_CURR_LIMIT (DEF_POWER_SUPPLY) //!< default PID controller voltage limit
-#define DEF_CURR_FILTER_Tf 0.002 //!< default currnet filter time constant
+#define DEF_CURR_FILTER_Tf 0.005 //!< default currnet filter time constant
 #endif
 // default current limit values
 #define DEF_CURRENT_LIM 0.2 //!< 2Amps current limit by default

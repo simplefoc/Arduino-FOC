@@ -54,25 +54,39 @@ void Commander::run(HardwareSerial &serial){
 void Commander::run(char* user_input){
   // execute the user command
   char id = user_input[0];
-  if(id == CMD_SCAN)
-    for(int i=0; i < call_count; i++){
-        print(call_ids[i], 0);
-        print(":", 0);
-        call_list[i](cmd_scan_msg);
-    }
-  else
-    for(int i=0; i < call_count; i++){
-      if(id == call_ids[i]){
-        call_list[i](&user_input[1]);
-        break;
+  switch(id){
+    case CMD_SCAN:
+      for(int i=0; i < call_count; i++){
+          dump(call_ids[i], 0);
+          dump(":", 0);
+          call_list[i](cmd_scan_msg);
       }
+      break;
+    case CMD_VERBOSE:
+      if(user_input[1] != '\n') verbose = atoi(&user_input[1]);
+      if(verbose) dump(F("Verb. on!"),1);
+      else dump(F("Verb. off"),1);
+      break;
+    case CMD_DECIMAL:
+      if(user_input[1] != '\n') decimal_places = atoi(&user_input[1]);
+      verbosePrint(F("Decimal:"));
+      dump(decimal_places,1);
+      break;
+    default:
+      for(int i=0; i < call_count; i++){
+        if(id == call_ids[i]){
+          call_list[i](&user_input[1]);
+          break;
+        }
+      }
+      break;
   }
 }
 
 void Commander::motor(FOCMotor* motor, char* user_command) {
   // if empty string
   if( user_command[0] == CMD_SCAN ){
-     print(F("mot"),1);
+     dump(F("mot"),1);
      return;
   }
 
@@ -119,7 +133,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
             // change velocity pid limit if in voltage mode and no phase resistance set
             if( !_isset(motor->phase_resistance) && motor->torque_controller==TorqueControlType::voltage) motor->PID_velocity.limit = value;
           }
-          print(motor->voltage_limit,1);
+          dump(motor->voltage_limit,1);
           break;
         case SCMD_LIM_CURR:      // current limit
           verbosePrint(F("curr: "));
@@ -130,7 +144,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
             // if phase resistance specified or the current control is on set the current limit to the velocity PID
             if(_isset(motor->phase_resistance) ||  motor->torque_controller != TorqueControlType::voltage ) motor->PID_velocity.limit = value;
           }
-          print(motor->current_limit,1);
+          dump(motor->current_limit,1);
           break;
         case SCMD_LIM_VEL:      // velocity limit
           verbosePrint(F("vel: "));
@@ -138,7 +152,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
             motor->velocity_limit = value;
             motor->P_angle.limit = value;
           }
-          print(motor->velocity_limit,1);
+          dump(motor->velocity_limit,1);
           break;
         default:
           printError();
@@ -151,7 +165,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
         case SCMD_DOWNSAMPLE:
             verbosePrint(F("downsample: "));
             if(!GET) motor->motion_downsample = value;
-            print((int)motor->motion_downsample, 1);
+            dump((int)motor->motion_downsample, 1);
           break;
         default:
           // change control type
@@ -159,19 +173,19 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
             motor->controller = (MotionControlType)value;
           switch(motor->controller){
             case MotionControlType::torque:
-              print(F("torque"),1);
+              dump(F("torque"),1);
               break;
             case MotionControlType::velocity:
-              print(F("vel"),1);
+              dump(F("vel"),1);
               break;
             case MotionControlType::angle:
-              print(F("angle"),1);
+              dump(F("angle"),1);
               break;
             case MotionControlType::velocity_openloop:
-              print(F("vel open"),1);
+              dump(F("vel open"),1);
               break;
             case MotionControlType::angle_openloop:
-              print(F("angle open"),1);
+              dump(F("angle open"),1);
               break;
           }
             break;
@@ -184,13 +198,13 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
         motor->torque_controller = (TorqueControlType)value;
       switch(motor->torque_controller){
         case TorqueControlType::voltage:
-          print(F("volt"),1);
+          dump(F("volt"),1);
           break;
         case TorqueControlType::current:
-          print(F("curr"),1);
+          dump(F("curr"),1);
           break;
         case TorqueControlType::foc_current:
-          print(F("foc"),1);
+          dump(F("foc"),1);
           break;
       }
       break;
@@ -198,7 +212,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
       // enable/disable
       verbosePrint(F("Status: "));
       if(!GET) (bool)value ? motor->enable() : motor->disable();
-       print(motor->enabled,1);
+       dump(motor->enabled,1);
       break;
     case CMD_RESIST:
       // enable/disable
@@ -210,8 +224,8 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
           motor->PID_velocity.limit= motor->current_limit;
         }
       }
-      if(_isset(motor->phase_resistance)) print(motor->phase_resistance,1);
-      else print(0,0);
+      if(_isset(motor->phase_resistance)) dump(motor->phase_resistance,1);
+      else dump(0,0);
       break;
     case CMD_SENSOR:
       // Sensor zero offset
@@ -220,12 +234,12 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
         case SCMD_SENS_MECH_OFFSET:      // zero offset
           verbosePrint(F("offset: "));
           if(!GET) motor->sensor_offset = value;
-          print(motor->sensor_offset,1);
+          dump(motor->sensor_offset,1);
           break;
         case SCMD_SENS_ELEC_OFFSET:      // electrical zero offset - not suggested to touch
           verbosePrint(F("el. offset: "));
           if(!GET) motor->zero_electric_angle = value;
-          print(motor->zero_electric_angle,1);
+          dump(motor->zero_electric_angle,1);
           break;
         default:
           printError();
@@ -239,31 +253,31 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
           switch((uint8_t)value){
             case 0: // get target
               verbosePrint(F("target: "));
-              print(motor->target,1);
+              dump(motor->target,1);
               break;
             case 1: // get voltage q
               verbosePrint(F("Vq: "));
-              print(motor->voltage.q,1);
+              dump(motor->voltage.q,1);
               break;
             case 2: // get voltage d
               verbosePrint(F("Vd: "));
-              print(motor->voltage.q,1);
+              dump(motor->voltage.q,1);
               break;
             case 3: // get current q
               verbosePrint(F("Cq: "));
-              print(motor->voltage.q,1);
+              dump(motor->voltage.q,1);
               break;
             case 4: // get current d
               verbosePrint(F("Cd: "));
-              print(motor->voltage.q,1);
+              dump(motor->voltage.q,1);
               break;
             case 5: // get velocity
               verbosePrint(F("vel: "));
-              print(motor->shaft_velocity,1);
+              dump(motor->shaft_velocity,1);
               break;
             case 6: // get angle
               verbosePrint(F("Angle: "));
-              print(motor->shaft_angle,1);
+              dump(motor->shaft_angle,1);
               break;
             default:
               printError();
@@ -273,18 +287,18 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
         case SCMD_DOWNSAMPLE:   
           verbosePrint(F("downsample: "));
           if(!GET) motor->monitor_downsample = value;
-          print((int)motor->monitor_downsample,1);
+          dump((int)motor->monitor_downsample,1);
           break;
         case SCMD_CLEAR:    
           for(int i=0; i<7; i++) motor->monitor_variables[i] = 0; 
-          print(F("clear"),1);
+          dump(F("clear"),1);
           break;
         case SCMD_SET:   
           for(int i=0; i<7; i++){
             motor->monitor_variables[i] = user_command[value_index+i] - '0';  
-            print(motor->monitor_variables[i],0);
+            dump(motor->monitor_variables[i],0);
           }
-          print("",1);
+          dump("",1);
           break;
         default:
           printError();
@@ -294,13 +308,13 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
     default:  // target change
       verbosePrint(F("Target: "));
       motor->target = atof(user_command);
-      print(motor->target,1);
+      dump(motor->target,1);
   }
 }
 
 void Commander::pid(PIDController* pid, char* user_cmd){
   if( user_cmd[0] == CMD_SCAN ){
-     print(F("pid"),1);
+     dump(F("pid"),1);
      return;
   }
   char cmd = user_cmd[0];
@@ -311,27 +325,27 @@ void Commander::pid(PIDController* pid, char* user_cmd){
     case SCMD_PID_P:      // P gain change
       verbosePrint("P: ");
       if(!GET) pid->P = value;
-      print(pid->P,1);
+      dump(pid->P,1);
       break;
     case SCMD_PID_I:      // I gain change
       verbosePrint("I: ");
       if(!GET) pid->I = value;
-      print(pid->I,1);
+      dump(pid->I,1);
       break;
     case SCMD_PID_D:      // D gain change
       verbosePrint("D: ");
       if(!GET) pid->D = value;
-      print(pid->D,1);
+      dump(pid->D,1);
       break;
     case SCMD_PID_RAMP:      //  ramp change
       verbosePrint("ramp: ");
       if(!GET) pid->output_ramp = value;
-      print(pid->output_ramp,1);
+      dump(pid->output_ramp,1);
       break;
     case SCMD_PID_LIM:      //  limit change
       verbosePrint("limit: ");
       if(!GET) pid->limit = value;
-      print(pid->limit,1);
+      dump(pid->limit,1);
       break;
     default:
       printError();
@@ -341,7 +355,7 @@ void Commander::pid(PIDController* pid, char* user_cmd){
 
 void Commander::lpf(LowPassFilter* lpf, char* user_cmd){
   if( user_cmd[0] == CMD_SCAN ){
-     print(F("lpf"),1);
+     dump(F("lpf"),1);
      return;
   }
   char cmd = user_cmd[0];
@@ -352,7 +366,7 @@ void Commander::lpf(LowPassFilter* lpf, char* user_cmd){
     case SCMD_LPF_TF:      // Tf value change
       verbosePrint(F("Tf: "));
       if(!GET) lpf->Tf = value;
-      print(lpf->Tf,1);
+      dump(lpf->Tf,1);
       break;  
     default:
       printError();
@@ -362,36 +376,36 @@ void Commander::lpf(LowPassFilter* lpf, char* user_cmd){
 
 void Commander::variable(float* value,  char* user_cmd){
   if( user_cmd[0] == CMD_SCAN ){
-     print(F("var"),1);
+     dump(F("var"),1);
      return;
   }
   bool GET  = user_cmd[0] == '\n';
   if(!GET) *value = atof(user_cmd);
-  print(*value,1);
+  dump(*value,1);
 }
 
 
-void Commander::print(const int number, const bool newline){
+void Commander::dump(const int number, const bool newline){
   if(!com_port) return;
   if(newline) com_port->println(number);
   else com_port->print(number);
 }
-void Commander::print(const float number, const bool newline){
+void Commander::dump(const float number, const bool newline){
   if(!com_port) return;
-  if(newline) com_port->println(number,decimal_places);
-  else com_port->print(number,decimal_places);
+  if(newline) com_port->println((float)number,(int)decimal_places);
+  else com_port->print((float)number,(int)decimal_places);
 }
-void Commander::print(const char* message, const bool newline){
-  if(!com_port) return;
-  if(newline) com_port->println(message);
-  else  com_port->print(message);
-}
-void Commander::print(const __FlashStringHelper *message, const bool newline){
+void Commander::dump(const char* message, const bool newline){
   if(!com_port) return;
   if(newline) com_port->println(message);
   else  com_port->print(message);
 }
-void Commander::print(const char message, const bool newline){
+void Commander::dump(const __FlashStringHelper *message, const bool newline){
+  if(!com_port) return;
+  if(newline) com_port->println(message);
+  else  com_port->print(message);
+}
+void Commander::dump(const char message, const bool newline){
   if(!com_port) return;
   if(newline) com_port->println(message);
   else  com_port->print(message);
@@ -399,11 +413,11 @@ void Commander::print(const char message, const bool newline){
 
 
 void Commander::verbosePrint(const char* message){
-  if(verbose) print(message,0);
+  if(verbose) dump(message,0);
 }
 void Commander::verbosePrint(const __FlashStringHelper *message){
-  if(verbose) print(message,0);
+  if(verbose) dump(message,0);
 }
 void Commander::printError(){
- print(F("err"), 1);
+ dump(F("err"), 1);
 }
