@@ -8,6 +8,10 @@
 #include "./samd21_wo_associations.h"
 
 
+#define SIMPLEFOC_SAMD_DEBUG
+
+
+
 #ifndef SIMPLEFOC_SAMD_ALLOW_DIFFERENT_TCCS
 #define SIMPLEFOC_SAMD_ALLOW_DIFFERENT_TCCS false
 #endif
@@ -21,7 +25,6 @@
 #define SIMPLEFOC_SAMD_MAX_TCC_PINCONFIGURATIONS 12
 #endif
 
-//#define SIMPLEFOC_SAMD_DEBUG
 
 
 // Wait for synchronization of registers between the clock domains
