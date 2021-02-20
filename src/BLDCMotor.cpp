@@ -388,7 +388,7 @@ void BLDCMotor::velocityOpenloop(float target_velocity){
   float Ts = (now_us - open_loop_timestamp) * 1e-6;
 
   // calculate the necessary angle to achieve target velocity
-  shaft_angle += target_velocity*Ts;
+  shaft_angle = _normalizeAngle(shaft_angle + target_velocity*Ts);
 
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
   setPhaseVoltage(voltage_limit,  0, _electricalAngle(shaft_angle, pole_pairs));
