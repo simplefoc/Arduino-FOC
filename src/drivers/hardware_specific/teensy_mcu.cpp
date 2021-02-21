@@ -12,25 +12,24 @@ void _setHighFrequency(const long freq, const int pin){
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
 // - hardware speciffic
-void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
+void _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const int pinC) {
   if(!pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = 50000; // default frequency 50khz
   else pwm_frequency = _constrain(pwm_frequency, 0, 50000); // constrain to 50kHz max
   _setHighFrequency(pwm_frequency, pinA);
   _setHighFrequency(pwm_frequency, pinB);
   _setHighFrequency(pwm_frequency, pinC);
-  if(pinD != NOT_SET) _setHighFrequency(pwm_frequency, pinD); // stepper motor
 }
 
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 4PWM setting
 // - hardware speciffic
-void _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
+void _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const int pin2A, const int pin2B) {
   if(!pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = 50000; // default frequency 50khz
   else pwm_frequency = _constrain(pwm_frequency, 0, 50000); // constrain to 50kHz max
-  _setHighFrequency(pwm_frequency, pinA);
-  _setHighFrequency(pwm_frequency, pinB);
-  _setHighFrequency(pwm_frequency, pinC);
-  _setHighFrequency(pwm_frequency, pinD); 
+  _setHighFrequency(pwm_frequency, pin1A);
+  _setHighFrequency(pwm_frequency, pin1B);
+  _setHighFrequency(pwm_frequency, pin2A);
+  _setHighFrequency(pwm_frequency, pin2B);
 }
 
 // function setting the pwm duty cycle to the hardware
