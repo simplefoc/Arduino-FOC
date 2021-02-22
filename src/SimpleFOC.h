@@ -109,5 +109,6 @@ void loop() {
 #include "drivers/StepperDriver2PWM.h"
 #include "current_sense/InlineCurrentSense.h"
 #include "communication/Commander.h"
+#include "communication/StepDirListener.h"
 
 #endif

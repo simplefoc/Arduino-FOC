@@ -19,6 +19,7 @@ LowPassFilter	KEYWORD1
 InlineCurrentSense	KEYWORD1   
 CurrentSense	KEYWORD1   
 Commander	KEYWORD1   
+StepDirListener	KEYWORD1   
 
 
 initFOC	KEYWORD2
@@ -83,6 +84,11 @@ driverAlign	KEYWORD2
 driverSync	KEYWORD2
 add	KEYWORD2
 run	KEYWORD2
+attach	KEYWORD2
+enableInterrupt	KEYWORD2
+getValue	KEYWORD2
+handle	KEYWORD2
+
 
 
 current	KEYWORD2

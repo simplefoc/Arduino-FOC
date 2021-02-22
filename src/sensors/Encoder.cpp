@@ -40,7 +40,7 @@ Encoder::Encoder(int _encA, int _encB , float _ppr, int _index){
 //  Encoder interrupt callback functions
 // A channel
 void Encoder::handleA() {
-  int A = digitalRead(pinA);
+  bool A = digitalRead(pinA);
   switch (quadrature){
     case Quadrature::ON:
       // CPR = 4xPPR
@@ -61,7 +61,7 @@ void Encoder::handleA() {
 }
 // B channel
 void Encoder::handleB() {
-  int B = digitalRead(pinB);
+  bool B = digitalRead(pinB);
   switch (quadrature){
     case Quadrature::ON:
   //     // CPR = 4xPPR
@@ -84,7 +84,7 @@ void Encoder::handleB() {
 // Index channel
 void Encoder::handleIndex() {
   if(hasIndex()){
-    int I = digitalRead(index_pin);
+    bool I = digitalRead(index_pin);
     if(I && !I_active){
       index_found = true;
       // align encoder on each index
