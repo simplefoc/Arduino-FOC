@@ -42,6 +42,8 @@ Therefore this is an attempt to:
 >   - much more flexible and easy to extend
 >   - very easy to add new commands and function callbacks
 >   - implemented motor+pid+lpf commands of-the-shelf
+> - Added **step/dir interface**
+>   - integrated as an optional communication channel
 >
 > BEWARE 📢 slight API changes included
 >   - `ControlType` renamed into `MotionControlType`
