@@ -36,6 +36,11 @@ Encoder encoder = Encoder(2, 3, 8192);
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 
+
+// commander interface
+Commander command = Commander(Serial);
+void onA(char* cmd){ command.motor(&motor, cmd); }
+
 void setup() {
 
   // initialize encoder sensor hardware
@@ -69,7 +74,7 @@ void setup() {
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
 
   // set control loop type to be used
-  motor.controller = ControlType::voltage;
+  motor.controller = MotionControlType::torque;
 
   // contoller configuration based on the controll type 
   motor.PID_velocity.P = 0.2;
@@ -99,11 +104,13 @@ void setup() {
   // set the inital target value
   motor.target = 2;
 
+  // define the motor id
+  command.add('A', onA);
 
-  Serial.println("Full control example: ");
-  Serial.println("Run user commands to configure and the motor (find the full command list in docs.simplefoc.com) \n ");
-  Serial.println("Initial motion control loop is voltage loop.");
-  Serial.println("Initial target voltage 2V.");
+  Serial.println(F("Full control example: "));
+  Serial.println(F("Run user commands to configure and the motor (find the full command list in docs.simplefoc.com) \n "));
+  Serial.println(F("Initial motion control loop is voltage loop."));
+  Serial.println(F("Initial target voltage 2V."));
   
   _delay(1000);
 }
@@ -119,33 +126,5 @@ void loop() {
   motor.move();
 
   // user communication
-  motor.command(serialReceiveUserCommand());
+  command.run();
 }
-
-// utility function enabling serial communication the user
-String serialReceiveUserCommand() {
-  
-  // a string to hold incoming data
-  static String received_chars;
-  
-  String command = "";
-
-  while (Serial.available()) {
-    // get the new byte:
-    char inChar = (char)Serial.read();
-    // add it to the string buffer:
-    received_chars += inChar;
-
-    // end of user input
-    if (inChar == '\n') {
-      
-      // execute the user command
-      command = received_chars;
-
-      // reset the command buffer 
-      received_chars = "";
-    }
-  }
-  return command;
-}
-

@@ -13,11 +13,39 @@ Therefore this is an attempt to:
   - <i>Support as many <b>motor + sensor + driver + mcu</b> combinations out there</i>
 - 🎯 Develop a modular low-power BLDC driver board: [Arduino *SimpleFOCShield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
 
-> <b> RELEASE 📢:</b> <i>Simple<b>FOC</b>library v2.0.2
-> - Arduino MEGA 2560 support
-> - OSC example project by [@runger1101001](https://github.com/runger1101001) 
-> - floating point bug - open loop velocity by [@ATILIUS-REGULUS](https://github.com/ATILIUS-REGULUS) 
-
+##### <b> NEXT RELEASE 📢:</b> <i>Simple<b>FOC</b>library v2.1
+> #### Implemented features in dev branch
+> - **Initial current sensing support**🎉
+>   - Inline current sensors 
+>   - adaptive zero finding and shunt direction
+> - **Implemented real torque control** 
+>   - using voltage
+>   - using current magnitude (one current)
+>   - using FOC currents ( d-q currents ) - real foc control
+> - SVPWM full implementation  d+q axis
+> - **Simplified sensor implementation**📢
+>    - For new sensor implementation only one function necessary `getAngle()`
+> - Upgrade of the HallSensor implementation by [@owennewo](https://github.com/owennewo)
+> - Support for Arduino DUE - everything except the 6PWM mode
+> - Support for ATMega328pb
+> - bugfix for the Teensy boards ( setting 3pwm )
+> - extended support for 2PWM stepper drivers - by [@zjor](https://github.com/zjor)
+> - included F macro for shrinking string memory usage - moved to programming memory
+> - disable phase support for 3pwm driver
+>    - not yet for 6pwm
+> - rewritten `initFOC()`
+>    - can be skipped and outputs much more info
+>    - align sensor: direction + zero offset + pole pair check
+>    - align current sense
+> - sensor offset supported (`motor.sensor_offset`)
+> - **refactored motor commands interface**
+>   - much more flexible and easy to extend
+>   - very easy to add new commands and function callbacks
+>   - implemented motor+pid+lpf commands of-the-shelf
+>
+> BEWARE 📢 slight API changes included
+>   - `ControlType` renamed into `MotionControlType`
+>   - `ControlType::voltage` does not exist any more now - `MotionControlType::torque`
 
 ## Arduino *SimpleFOCShield* v2.0.2
 
@@ -147,7 +175,7 @@ void setup() {
   motor.linkDriver(&driver);
 
   // set control loop type to be used
-  motor.controller = ControlType::velocity;
+  motor.controller = MotionControlType::velocity;
   // initialize motor
   motor.init();
   

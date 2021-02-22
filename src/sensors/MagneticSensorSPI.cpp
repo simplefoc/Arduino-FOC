@@ -10,6 +10,9 @@ MagneticSensorSPIConfig_s AS5147_SPI = {
   .command_rw_bit = 14,
   .command_parity_bit = 15
 };
+// AS5048 and AS5047 are the same as AS5147
+MagneticSensorSPIConfig_s AS5048_SPI = AS5147_SPI;
+MagneticSensorSPIConfig_s AS5047_SPI = AS5147_SPI;
 
 /** Typical configuration for the 14bit MonolithicPower MA730 magnetic sensor over SPI interface */
 MagneticSensorSPIConfig_s MA730_SPI = {
@@ -41,7 +44,6 @@ MagneticSensorSPI::MagneticSensorSPI(int cs, float _bit_resolution, int _angle_r
   command_parity_bit = 15; // for backwards compatibilty
   command_rw_bit = 14; // for backwards compatibilty
   data_start_bit = 13; // for backwards compatibilty
-  
 }
 
 MagneticSensorSPI::MagneticSensorSPI(MagneticSensorSPIConfig_s config, int cs){
@@ -85,7 +87,6 @@ void MagneticSensorSPI::init(SPIClass* _spi){
 	// full rotations tracking number
 	full_rotation_offset = 0;
 	angle_data_prev = getRawCount();  
-	zero_offset = 0;
 }
 
 //  Shaft angle calculation
@@ -104,11 +105,9 @@ float MagneticSensorSPI::getAngle(){
   // in order to know if overflow happened
   angle_data_prev = angle_data;
 
-  // zero offset adding
-  angle_data -= (int)zero_offset;
   // return the full angle 
-  // (number of full rotations)*2PI + current sensor angle
-  return natural_direction * (full_rotation_offset + ( angle_data / (float)cpr) * _2PI);
+  // (number of full rotations)*2PI + current sensor angle 
+  return full_rotation_offset + ( angle_data / (float)cpr) * _2PI;
 }
 
 // Shaft velocity calculation
@@ -128,41 +127,6 @@ float MagneticSensorSPI::getVelocity(){
   angle_prev = angle_c;
   velocity_calc_timestamp = now_us;
   return vel;
-}
-
-// set current angle as zero angle 
-// return the angle [rad] difference
-float MagneticSensorSPI::initRelativeZero(){
-  float angle_offset = -getAngle();
-  zero_offset = natural_direction * getRawCount();
-
-  // angle tracking variables
-  full_rotation_offset = 0;
-  return angle_offset;
-}
-// set absolute zero angle as zero angle
-// return the angle [rad] difference
-float MagneticSensorSPI::initAbsoluteZero(){
-  float rotation = -(int)zero_offset;
-  // init absolute zero
-  zero_offset = 0;
-
-  // angle tracking variables
-  full_rotation_offset = 0;
-  // return offset in radians
-  return rotation / (float)cpr * _2PI;
-}
-// returns 0 if it has no absolute 0 measurement
-// 0 - incremental encoder without index
-// 1 - encoder with index & magnetic sensors
-int MagneticSensorSPI::hasAbsoluteZero(){
-  return 1;
-}
-// returns 0 if it does need search for absolute zero
-// 0 - magnetic sensor 
-// 1 - ecoder with index
-int MagneticSensorSPI::needsAbsoluteZeroSearch(){
-  return 0;
 }
 
 

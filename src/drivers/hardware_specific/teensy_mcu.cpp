@@ -10,10 +10,20 @@ void _setHighFrequency(const long freq, const int pin){
 
 
 // function setting the high pwm frequency to the supplied pins
+// - Stepper motor - 2PWM setting
+// - hardware speciffic
+void _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
+  if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = 50000; // default frequency 50khz
+  else pwm_frequency = _constrain(pwm_frequency, 0, 50000); // constrain to 50kHz max
+  _setHighFrequency(pwm_frequency, pinA);
+  _setHighFrequency(pwm_frequency, pinB);
+}
+
+// function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
 // - hardware speciffic
-void _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const int pinC) {
-  if(!pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = 50000; // default frequency 50khz
+void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
+  if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = 50000; // default frequency 50khz
   else pwm_frequency = _constrain(pwm_frequency, 0, 50000); // constrain to 50kHz max
   _setHighFrequency(pwm_frequency, pinA);
   _setHighFrequency(pwm_frequency, pinB);
@@ -24,14 +34,23 @@ void _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const in
 // - Stepper motor - 4PWM setting
 // - hardware speciffic
 void _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const int pin2A, const int pin2B) {
-  if(!pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = 50000; // default frequency 50khz
+  if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = 50000; // default frequency 50khz
   else pwm_frequency = _constrain(pwm_frequency, 0, 50000); // constrain to 50kHz max
+  
   _setHighFrequency(pwm_frequency, pin1A);
   _setHighFrequency(pwm_frequency, pin1B);
   _setHighFrequency(pwm_frequency, pin2A);
   _setHighFrequency(pwm_frequency, pin2B);
 }
 
+// function setting the pwm duty cycle to the hardware 
+// - Stepper motor - 2PWM setting
+// - hardware speciffic
+void _writeDutyCycle2PWM(float dc_a,  float dc_b, int pinA, int pinB){
+  // transform duty cycle from [0,1] to [0,255]
+  analogWrite(pinA, 255.0*dc_a);
+  analogWrite(pinB, 255.0*dc_b);
+}
 // function setting the pwm duty cycle to the hardware
 // - BLDC motor - 3PWM setting
 // - hardware speciffic

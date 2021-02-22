@@ -59,6 +59,12 @@ void doC(){sensor.handleC();}
 // If no available hadware interrupt pins use the software interrupt
 PciListenerImp listenC(sensor.pinC, doC);
 
+
+// commander interface
+Commander command = Commander(Serial);
+void onA(char* cmd){ command.motor(&motor, cmd); }
+
+
 void setup() {
 
   // initialize encoder sensor hardware
@@ -80,7 +86,7 @@ void setup() {
   // choose FOC modulation
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
   // set control loop type to be used
-  motor.controller = ControlType::voltage;
+  motor.controller = MotionControlType::torque;
   // contoller configuration based on the controll type 
   motor.PID_velocity.P = 0.2;
   motor.PID_velocity.I = 20;
@@ -110,9 +116,11 @@ void setup() {
   // set the inital target value
   motor.target = 2;
 
+  // define the motor id
+  command.add('A', onA);
 
   // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)
-  Serial.println("Motor commands sketch | Initial motion control > torque/voltage : target 2V.");
+  Serial.println(F("Motor commands sketch | Initial motion control > torque/voltage : target 2V."));
   
   _delay(1000);
 }
@@ -128,33 +136,7 @@ void loop() {
   motor.move();
 
   // user communication
-  motor.command(serialReceiveUserCommand());
+  command.run();
 }
 
-// utility function enabling serial communication the user
-String serialReceiveUserCommand() {
-  
-  // a string to hold incoming data
-  static String received_chars;
-  
-  String command = "";
-
-  while (Serial.available()) {
-    // get the new byte:
-    char inChar = (char)Serial.read();
-    // add it to the string buffer:
-    received_chars += inChar;
-
-    // end of user input
-    if (inChar == '\n') {
-      
-      // execute the user command
-      command = received_chars;
-
-      // reset the command buffer 
-      received_chars = "";
-    }
-  }
-  return command;
-}
 

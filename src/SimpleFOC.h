@@ -69,7 +69,7 @@ void setup() {
   motor.linkDriver(&driver);
 
   // set control loop type to be used
-  motor.controller = ControlType::velocity;
+  motor.controller = MotionControlType::velocity;
   // initialize motor
   motor.init();
   
@@ -107,5 +107,7 @@ void loop() {
 #include "drivers/BLDCDriver6PWM.h"
 #include "drivers/StepperDriver4PWM.h"
 #include "drivers/StepperDriver2PWM.h"
+#include "current_sense/InlineCurrentSense.h"
+#include "communication/Commander.h"
 
 #endif
