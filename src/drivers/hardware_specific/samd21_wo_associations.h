@@ -58,7 +58,7 @@ struct wo_association {
  * Good for SAMD2xE, SAMD2xG and SAMD2xJ devices. Other SAMD21s currently not supported in arduino anyway?
  *
  * Note: only the pins which have timers associated are listed in this table.
- * You can use the values from g_APinDescription.ulPort and g_APinDescription.ulPin_ to find the correct row in the table.
+ * You can use the values from g_APinDescription.ulPort and g_APinDescription.ulPin to find the correct row in the table.
  *
  * See Microchip Technology datasheet DS40001882F-page 30
  */
