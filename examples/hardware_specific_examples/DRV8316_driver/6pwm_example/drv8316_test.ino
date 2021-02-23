@@ -5,7 +5,7 @@
 #include <Wire.h>
 #include <SimpleFOC.h>
 #include <Math.h>
-#include "drv8316.h"
+#include "drivers/drv8316/drv8316.h"
 
 
 
