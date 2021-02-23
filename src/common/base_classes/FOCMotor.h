@@ -11,6 +11,16 @@
 #include "../pid.h"
 #include "../lowpass_filter.h"
 
+
+// monitoring bitmap
+#define _MON_TARGET 0b1000000 // monitor target value
+#define _MON_VOLT_Q 0b0100000 // monitor voltage q value
+#define _MON_VOLT_D 0b0010000 // monitor voltage d value
+#define _MON_CURR_Q 0b0001000 // monitor current q value - if measured
+#define _MON_CURR_D 0b0000100 // monitor current d value - if measured
+#define _MON_VEL    0b0000010 // monitor velocity value
+#define _MON_ANGLE  0b0000001 // monitor angle value
+
 /**
  *  Motiron control type
  */
@@ -183,9 +193,9 @@ class FOCMotor
      * significantly slowing the execution down!!!!
      */
     void monitor();
-    unsigned int monitor_cnt = 0 ;
-    unsigned int monitor_downsample = 1;
-    bool monitor_variables[7] = {0};
+    unsigned int monitor_downsample = 10; //!< show monitor outputs each monitor_downsample calls 
+    // initial monitoring will display target, voltage, velocity and angle
+    uint8_t monitor_variables = _MON_TARGET | _MON_VOLT_Q | _MON_VEL | _MON_ANGLE; //!< Bit array holding the map of variables the user wants to monitor
    
     /** 
       * Sensor link:
@@ -201,6 +211,9 @@ class FOCMotor
 
     // monitoring functions
     Print* monitor_port; //!< Serial terminal variable if provided
+  private:
+    // monitor counting variable
+    unsigned int monitor_cnt = 0 ; //!< counting variable
 };
 
 

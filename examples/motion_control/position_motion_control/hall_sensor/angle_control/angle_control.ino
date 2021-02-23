@@ -104,7 +104,7 @@ void setup() {
   motor.initFOC();
 
   // add target command T
-  command.add('T', doTarget);
+  command.add('T', doTarget, "target angle");
 
   Serial.println(F("Motor ready."));
   Serial.println(F("Set the target angle using serial terminal:"));

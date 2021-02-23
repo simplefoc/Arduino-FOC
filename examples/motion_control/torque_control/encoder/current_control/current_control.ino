@@ -2,7 +2,6 @@
  * 
  * Torque control example using current control loop.
  * 
- * 
  */
 #include <SimpleFOC.h>
 
@@ -20,7 +19,7 @@ void doB(){encoder.handleB();}
 // current sensor
 InlineCurrentSense current_sense = InlineCurrentSense(0.01, 50.0, A0, A2);
 
-// voltage set point variable
+// current set point variable
 float target_current = 0;
 // instantiate the commander
 Commander command = Commander(Serial);
@@ -40,6 +39,11 @@ void setup() {
   driver.init();
   // link driver
   motor.linkDriver(&driver);
+
+  // current sense init hardware
+  current_sense.init();
+  // link the current sense to the motor
+  motor.linkCurrentSense(&current_sense);
 
   // set torque mode:
   // TorqueControlType::current 
@@ -75,10 +79,10 @@ void setup() {
   motor.initFOC();
 
   // add target command T
-  command.add('T', doTarget);
+  command.add('T', doTarget, "target current");
 
   Serial.println(F("Motor ready."));
-  Serial.println(F("Set the target voltage using serial terminal:"));
+  Serial.println(F("Set the target current using serial terminal:"));
   _delay(1000);
 }
 

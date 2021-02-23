@@ -54,9 +54,9 @@ void setup() {
   motor.initFOC();
 
   // subscribe the new commands
-  command.add('C', doController);
-  command.add('F', doFilter);
-  command.add('T', doTarget);
+  command.add('C', doController, "tune velocity pid");
+  command.add('F', doFilter, "tune velocity LPF");
+  command.add('T', doTarget, "motor target");
 
   _delay(1000);
   Serial.println(F("Commander listening"));

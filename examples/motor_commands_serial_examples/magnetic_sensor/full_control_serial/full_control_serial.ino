@@ -55,7 +55,7 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 
 // commander interface
 Commander command = Commander(Serial);
-void onA(char* cmd){ command.motor(&motor, cmd); }
+void onMotor(char* cmd){ command.motor(&motor, cmd); }
 
 void setup() {
 
@@ -107,7 +107,7 @@ void setup() {
   motor.target = 2;
 
   // define the motor id
-  command.add('A', onA);
+  command.add('A', onMotor, "motor");
 
   // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)
   Serial.println(F("Motor commands sketch | Initial motion control > torque/voltage : target 2V."));

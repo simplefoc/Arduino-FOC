@@ -95,7 +95,7 @@ void setup() {
   motor.initFOC();
 
   // add target command T
-  command.add('T', doTarget);
+  command.add('T', doTarget, "target voltage");
 
   Serial.println(F("Motor ready."));
   Serial.println(F("Set the target velocity using serial terminal:"));

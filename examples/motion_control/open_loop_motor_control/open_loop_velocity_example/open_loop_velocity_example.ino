@@ -40,7 +40,7 @@ void setup() {
   motor.init();
 
   // add target command T
-  command.add('T', doTarget);
+  command.add('T', doTarget, "target velocity");
 
   Serial.begin(115200);
   Serial.println("Motor ready!");

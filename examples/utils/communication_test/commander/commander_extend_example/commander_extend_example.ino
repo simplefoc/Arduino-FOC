@@ -9,14 +9,12 @@ Commander command = Commander(Serial);
 
 // led control function
 void doLed(char* cmd){ 
-    if(cmd[0] == CMD_SCAN ) Serial.println("led control"); 
-    else if(atoi(cmd)) digitalWrite(LED_BUILTIN, HIGH); 
+    if(atoi(cmd)) digitalWrite(LED_BUILTIN, HIGH); 
     else digitalWrite(LED_BUILTIN, LOW); 
 };
 // get analog input 
 void doAnalog(char* cmd){ 
-    if(cmd[0] == CMD_SCAN ) Serial.println("analog read A0-A4");
-    else if (cmd[0] == '0') Serial.println(analogRead(A0));
+    if (cmd[0] == '0') Serial.println(analogRead(A0));
     else if (cmd[0] == '1') Serial.println(analogRead(A1));
     else if (cmd[0] == '2') Serial.println(analogRead(A2));
     else if (cmd[0] == '3') Serial.println(analogRead(A3));
@@ -36,8 +34,8 @@ void setup() {
     Serial.begin(115200);
 
     // add new commands
-    command.add('L', doLed);
-    command.add('A', doAnalog);
+    command.add('L', doLed, "led on/off");
+    command.add('A', doAnalog, "analog read A0-A4");
 
     Serial.println(F("Commander listening"));
     Serial.println(F(" - Send ? to see the node list..."));
@@ -51,5 +49,5 @@ void loop() {
 
     // user communication
     command.run(); 
-    _delay(300);
+    _delay(10);
 }
