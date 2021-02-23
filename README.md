@@ -11,8 +11,9 @@ Additionally, most of the efforts at this moment are still channeled towards the
 Therefore this is an attempt to: 
 - 🎯 Demystify FOC algorithm and make a robust but simple Arduino library: [Arduino *SimpleFOClibrary*](https://docs.simplefoc.com/arduino_simplefoc_library_showcase)
   - <i>Support as many <b>motor + sensor + driver + mcu</b> combinations out there</i>
-- 🎯 Develop a modular *low-power BLDC (Gimbal)* driver board: [*Arduino Simple**FOC**Shield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
-- 🎯 Develop a modular *medium-power BLDC* driver board: [*Arduino Simple**FOC**PowerShield*](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
+- 🎯 Develop a modular FOC supporting BLDC driver boards:
+   - *Low-power* gimbal driver (<5Amps) :  [*Arduino Simple**FOC**Shield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
+   - ***NEW***: *Medium-power* BLDC driver (<50Amps): [*Arduino Simple**FOC**PowerShield*](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
 
 ##### <b> NEXT RELEASE 📢:</b> <i>Simple<b>FOC</b>library v2.1
 > #### Implemented features in dev branch
