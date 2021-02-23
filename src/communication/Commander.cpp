@@ -1,7 +1,7 @@
 #include "Commander.h"
 
 
-Commander::Commander(HardwareSerial& serial){
+Commander::Commander(Stream& serial){
   com_port = &serial;
 }
 Commander::Commander(){
