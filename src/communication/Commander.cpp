@@ -202,13 +202,13 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
         motor->torque_controller = (TorqueControlType)value;
       switch(motor->torque_controller){
         case TorqueControlType::voltage:
-          println(F("volt"));
+          println(F("dc volt"));
           break;
-        case TorqueControlType::current:
-          println(F("curr"));
+        case TorqueControlType::dc_current:
+          println(F("dc curr"));
           break;
         case TorqueControlType::foc_current:
-          println(F("foc"));
+          println(F("foc curr"));
           break;
       }
       break;

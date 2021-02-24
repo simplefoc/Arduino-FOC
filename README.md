@@ -13,7 +13,8 @@ Therefore this is an attempt to:
   - <i>Support as many <b>motor + sensor + driver + mcu</b> combinations out there</i>
 - 🎯 Develop a modular FOC supporting BLDC driver boards:
    - *Low-power* gimbal driver (<5Amps) :  [*Arduino Simple**FOC**Shield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
-   - ***NEW***: *Medium-power* BLDC driver (<50Amps): [*Arduino Simple**FOC**PowerShield*](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
+   - ***NEW*** 📢: *Medium-power* BLDC driver (<30Amps): [Arduino <span class="simple">Simple<b>FOC</b>PowerShield</span> ](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
+   - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
 ##### <b> NEXT RELEASE 📢:</b> <i>Simple<b>FOC</b>library v2.1
 > #### Implemented features in dev branch

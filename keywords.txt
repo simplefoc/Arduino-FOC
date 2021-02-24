@@ -78,7 +78,7 @@ angleOpenloop	KEYWORD2
 velocityOpenloop	KEYWORD2
 getPhaseCurrents	KEYWORD2
 getFOCCurrents	KEYWORD2
-getCurrent	KEYWORD2
+getDCCurrent	KEYWORD2
 setPwm	KEYWORD2
 driverAlign	KEYWORD2
 driverSync	KEYWORD2
@@ -124,7 +124,7 @@ velocity_openloop	KEYWORD2
 angle	KEYWORD2
 angle_openloop	KEYWORD2
 torque	KEYWORD2
-current	KEYWORD2
+dc_current	KEYWORD2
 foc_current	KEYWORD2
 
 

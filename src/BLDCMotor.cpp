@@ -183,8 +183,9 @@ int BLDCMotor::alignSensor() {
     // check pole pair number 
     if(monitor_port) monitor_port->print(F("MOT: PP check: "));
     float moved =  fabs(mid_angle - end_angle);
-    if( fabs(moved*pole_pairs - _2PI) > 0.25 ) { // 0.25 is arbitrary number it can be lower or higher!
-      if(monitor_port) monitor_port->println(F("fail!"));
+    if( fabs(moved*pole_pairs - _2PI) > 0.5 ) { // 0.5 is arbitrary number it can be lower or higher!
+      if(monitor_port) monitor_port->print(F("fail - estimated pp:"));
+      if(monitor_port) monitor_port->println(_2PI/moved,4);
       return 0; // failed calibration
     }else if(monitor_port) monitor_port->println(F("OK!"));
 
@@ -250,10 +251,10 @@ void BLDCMotor::loopFOC() {
     case TorqueControlType::voltage:
       // no need to do anything really
       break;
-    case TorqueControlType::current:
+    case TorqueControlType::dc_current:
       if(!current_sense) return;
       // read overall current magnitude
-      current.q = current_sense->getCurrent(electrical_angle);
+      current.q = current_sense->getDCCurrent(electrical_angle);
       // filter the value values
       current.q = LPF_current_q(current.q);
       // calculate the phase voltage

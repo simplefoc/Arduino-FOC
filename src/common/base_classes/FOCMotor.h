@@ -37,7 +37,7 @@ enum MotionControlType{
  */
 enum TorqueControlType{
   voltage, //!< Torque control using voltage
-  current, //!< Torque control using current
+  dc_current, //!< Torque control using DC current (one current magnitude)
   foc_current //!< torque control using dq currents
 };
 

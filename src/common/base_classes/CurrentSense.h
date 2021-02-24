@@ -24,6 +24,18 @@ class CurrentSense{
      */
     virtual int driverSync(BLDCDriver *driver) = 0;
 
+    // calibration variables
+    bool skip_align = false; //!< variable signaling that the phase current direction should be verified during initFOC()
+    /**
+     * Function intended to verify if:
+     *   - phase current are oriented properly 
+     *   - if their order is the same as driver phases
+     * 
+     * This function corrects the alignment errors if possible ans if no such thing is needed it can be left empty (return 1)
+     * @returns -  0 - for failure &  positive number (with status) - for success 
+     */
+    virtual int driverAlign(BLDCDriver *driver, float voltage) = 0;
+
     /**
      *  Function rading the phase currents a, b and c
      *   This function will be used with the foc control throught the function 
@@ -41,7 +53,7 @@ class CurrentSense{
      *  
      * @param angle_el - electrical angle of the motor (optional) 
      */
-    virtual float getCurrent(float angle_el = 0);
+    virtual float getDCCurrent(float angle_el = 0);
 
     /**
      * Function used for FOC contorl, it reads the DQ currents of the motor 
@@ -50,18 +62,6 @@ class CurrentSense{
      * @param angle_el - motor electrical angle
      */
     DQCurrent_s getFOCCurrents(float angle_el);
-
-    // calibration variables
-    bool skip_align = false; //!< variable signaling that the phase current direction should be verified during initFOC()
-    /**
-     * Function intended to verify if:
-     *   - phase current are oriented properly 
-     *   - if their order is the same as driver phases
-     * 
-     * This function corrects the alignment errors if possible ans if no such thing is needed it can be left empty (return 1)
-     * @returns -  0 - for failure &  positive number (with status) - for success 
-     */
-    virtual int driverAlign(BLDCDriver *driver, float voltage) = 0;
 };
 
 #endif

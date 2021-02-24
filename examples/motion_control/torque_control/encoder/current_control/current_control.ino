@@ -46,7 +46,7 @@ void setup() {
   motor.linkCurrentSense(&current_sense);
 
   // set torque mode:
-  // TorqueControlType::current 
+  // TorqueControlType::dc_current 
   // TorqueControlType::voltage
   // TorqueControlType::foc_current
   motor.torque_controller = TorqueControlType::foc_current; 
