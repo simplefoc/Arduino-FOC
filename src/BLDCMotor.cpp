@@ -186,7 +186,6 @@ int BLDCMotor::alignSensor() {
     if( fabs(moved*pole_pairs - _2PI) > 0.5 ) { // 0.5 is arbitrary number it can be lower or higher!
       if(monitor_port) monitor_port->print(F("fail - estimated pp:"));
       if(monitor_port) monitor_port->println(_2PI/moved,4);
-      return 0; // failed calibration
     }else if(monitor_port) monitor_port->println(F("OK!"));
 
   }else if(monitor_port) monitor_port->println(F("MOT: Skip dir calib."));
@@ -216,16 +215,22 @@ int BLDCMotor::absoluteZeroSearch() {
   
   if(monitor_port) monitor_port->println(F("MOT: Index search..."));
   // search the absolute zero with small velocity
-  float limit = velocity_limit;
+  float limit_vel = velocity_limit;
+  float limit_volt = voltage_limit;
   velocity_limit = velocity_index_search;
+  voltage_limit = voltage_sensor_align;
   shaft_angle = 0;
   while(sensor->needsSearch() && shaft_angle < _2PI){
     angleOpenloop(1.5*_2PI);
+    // call important for some sensors not to loose count
+    // not needed for the search
+    sensor->getAngle();
   }
   // disable motor
   setPhaseVoltage(0, 0, 0);
   // reinit the limits
-  velocity_limit = limit;
+  velocity_limit = limit_vel;
+  voltage_limit = limit_volt;
   // check if the zero found
   if(monitor_port){
     if(sensor->needsSearch()) monitor_port->println(F("MOT: Error: Not found!"));
@@ -337,15 +342,13 @@ void BLDCMotor::move(float new_target) {
     case MotionControlType::velocity_openloop:
       // velocity control in open loop
       shaft_velocity_sp = target;
-      velocityOpenloop(shaft_velocity_sp);
-      voltage.q = voltage_limit;
+      voltage.q = velocityOpenloop(shaft_velocity_sp); // returns the voltage that is set to the motor
       voltage.d = 0;
       break;
     case MotionControlType::angle_openloop:
       // angle control in open loop
       shaft_angle_sp = target;
-      angleOpenloop(shaft_angle_sp);
-      voltage.q = voltage_limit;
+      voltage.q = angleOpenloop(shaft_angle_sp); // returns the voltage that is set to the motor
       voltage.d = 0;
       break;
   }
@@ -553,7 +556,7 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
 // Function (iterative) generating open loop movement for target velocity
 // - target_velocity - rad/s
 // it uses voltage_limit variable
-void BLDCMotor::velocityOpenloop(float target_velocity){
+float BLDCMotor::velocityOpenloop(float target_velocity){
   // get current timestamp
   unsigned long now_us = _micros();
   // calculate the sample time from last call
@@ -565,18 +568,24 @@ void BLDCMotor::velocityOpenloop(float target_velocity){
   shaft_angle = _normalizeAngle(shaft_angle + target_velocity*Ts); 
   // for display purposes
   shaft_velocity = target_velocity;
+  
+  // use voltage limit or current limit
+  float Uq = voltage_limit;
+  if(_isset(phase_resistance)) Uq =  current_limit*phase_resistance; 
 
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
-  setPhaseVoltage(voltage_limit,  0, _electricalAngle(shaft_angle, pole_pairs));
+  setPhaseVoltage(Uq,  0, _electricalAngle(shaft_angle, pole_pairs));
 
   // save timestamp for next call
   open_loop_timestamp = now_us;
+
+  return Uq;
 }
 
 // Function (iterative) generating open loop movement towards the target angle
 // - target_angle - rad
 // it uses voltage_limit and velocity_limit variables
-void BLDCMotor::angleOpenloop(float target_angle){
+float BLDCMotor::angleOpenloop(float target_angle){
   // get current timestamp
   unsigned long now_us = _micros();
   // calculate the sample time from last call
@@ -593,9 +602,16 @@ void BLDCMotor::angleOpenloop(float target_angle){
     shaft_angle = target_angle;
     shaft_velocity = 0;
   }
+
+  
+  // use voltage limit or current limit
+  float Uq = voltage_limit;
+  if(_isset(phase_resistance)) Uq =  current_limit*phase_resistance; 
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
-  setPhaseVoltage(voltage_limit,  0, _electricalAngle(shaft_angle, pole_pairs));
+  setPhaseVoltage(Uq,  0, _electricalAngle(shaft_angle, pole_pairs));
 
   // save timestamp for next call
   open_loop_timestamp = now_us;
+  
+  return Uq;
 }
