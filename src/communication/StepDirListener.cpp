@@ -1,9 +1,9 @@
 #include "StepDirListener.h"
 
-StepDirListener::StepDirListener(int _pinStep, int _pinDir, float _step_per_rotation){
+StepDirListener::StepDirListener(int _pinStep, int _pinDir, float _counter_to_value){
     pin_step = _pinStep;
     pin_dir = _pinDir;
-    step_per_rotation = _step_per_rotation;
+    counter_to_value = _counter_to_value;
 }
 
 void StepDirListener::init(){
@@ -36,5 +36,5 @@ void StepDirListener::handle(){
 }
 // calculate the position from counter
 float StepDirListener::getValue(){
-    return (float) count / step_per_rotation * _2PI;
+    return (float) count * counter_to_value;
 }
