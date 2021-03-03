@@ -35,7 +35,11 @@ void Commander::run(){
   }
 }
 
-void Commander::run(HardwareSerial &serial){
+void Commander::run(HardwareSerial& serial){
+  HardwareSerial* tmp = com_port; // save the serial instance 
+  // use the new serial instance to output if not available the one linked in constructor
+  if(!tmp) com_port = &serial; 
+
   // a string to hold incoming data
   while (serial.available()) {
     // get the new byte:
@@ -50,6 +54,8 @@ void Commander::run(HardwareSerial &serial){
       rec_cnt=0;
     }
   }
+
+  com_port = tmp; // reset the instance to the internal value
 }
 
 void Commander::run(char* user_input){
@@ -372,7 +378,7 @@ void Commander::lpf(LowPassFilter* lpf, char* user_cmd){
   }
 }
 
-void Commander::variable(float* value,  char* user_cmd){
+void Commander::scalar(float* value,  char* user_cmd){
   bool GET  = user_cmd[0] == '\n';
   if(!GET) *value = atof(user_cmd);
   println(*value);

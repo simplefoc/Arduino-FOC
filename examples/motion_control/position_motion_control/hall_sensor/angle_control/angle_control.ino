@@ -43,7 +43,7 @@ PciListenerImp listenC(sensor.pinC, doC);
 float target_angle = 0;
 // instantiate the commander
 Commander command = Commander(Serial);
-void doTarget(char* cmd) { command.variable(&target_angle, cmd); }
+void doTarget(char* cmd) { command.scalar(&target_angle, cmd); }
 
 void setup() {
   

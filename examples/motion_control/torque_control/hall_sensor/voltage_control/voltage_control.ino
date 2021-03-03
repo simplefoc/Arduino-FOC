@@ -31,7 +31,7 @@ void doC(){sensor.handleC();}
 float target_voltage = 2;
 // instantiate the commander
 Commander command = Commander(Serial);
-void doTarget(char* cmd) { command.variable(&target_voltage, cmd); }
+void doTarget(char* cmd) { command.scalar(&target_voltage, cmd); }
 
 void setup() { 
   

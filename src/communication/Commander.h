@@ -159,12 +159,12 @@ class Commander
      */
     void pid(PIDController* pid, char* user_cmd);
     /**
-     * Float variable command interface
+     * Float variable scalar command interface
      *  - It only has one property - one float value
      *  - It can be get by sending an empty string '\n'
      *  - It can be set by sending 'value' - (ex. 0.01 for settin *value=0.01)
      */
-    void variable(float* value, char* user_cmd);
+    void scalar(float* value, char* user_cmd);
 
   private:
     // Subscribed command callback variables
