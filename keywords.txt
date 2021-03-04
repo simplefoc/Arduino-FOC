@@ -15,13 +15,19 @@ StepperDriver4PWM	KEYWORD1
 StepperDriver2PWM	KEYWORD1    
 StepperDriver	KEYWORD1   
 PIDController	KEYWORD1    
-LowPassFilter	KEYWORD1    
+LowPassFilter	KEYWORD1   
+InlineCurrentSense	KEYWORD1   
+CurrentSense	KEYWORD1   
+Commander	KEYWORD1   
+StepDirListener	KEYWORD1   
+
 
 initFOC	KEYWORD2
 loopFOC	KEYWORD2
 disable	KEYWORD2
 
 _delay	KEYWORD3
+_sqrt	KEYWORD3
 _micros	KEYWORD3
 _sin	KEYWORD3
 _cos	KEYWORD3
@@ -34,19 +40,29 @@ monitor	KEYWORD3
 command	KEYWORD3
 
 PID_velocity	KEYWORD2
+PID_current_q	KEYWORD2
+PID_current_d	KEYWORD2
 LPF_velocity	KEYWORD2
+LPF_current_q	KEYWORD2
+LPF_current_d	KEYWORD2
 P_angle	KEYWORD2
+LPF_angle	KEYWORD2
 
-ControlType	KEYWORD1
+MotionControlType	KEYWORD1
+TorqueControlType	KEYWORD1
 FOCModulationType	KEYWORD2
 Quadrature	KEYWORD1
 Pullup	KEYWORD1
 Direction	KEYWORD1
 MagneticSensorI2CConfig_s	KEYWORD1
 MagneticSensorSPIConfig_s	KEYWORD1
+DQVoltage_s	KEYWORD1
+DQCurrent_s	KEYWORD1
+PhaseCurrent_s	KEYWORD1
 
 linkDriver	KEYWORD2
 linkSensor	KEYWORD2
+linkCurrentSense	KEYWORD2
 handleA	KEYWORD2
 handleB	KEYWORD2
 handleIndex	KEYWORD2
@@ -56,20 +72,37 @@ ISR	KEYWORD2
 getVelocity	KEYWORD2
 setPhaseVoltage	KEYWORD2
 getAngle	KEYWORD2
-initRelativeZero	KEYWORD2
-initAbsoluteZero	KEYWORD2
-hasAbsoluteZero	KEYWORD2
-needsAbsoluteZeroSearch	KEYWORD2
+needsSearch	KEYWORD2
 useMonitoring	KEYWORD2
 angleOpenloop	KEYWORD2
 velocityOpenloop	KEYWORD2
+getPhaseCurrents	KEYWORD2
+getFOCCurrents	KEYWORD2
+getDCCurrent	KEYWORD2
+setPwm	KEYWORD2
+driverAlign	KEYWORD2
+driverSync	KEYWORD2
+add	KEYWORD2
+run	KEYWORD2
+attach	KEYWORD2
+enableInterrupt	KEYWORD2
+getValue	KEYWORD2
+handle	KEYWORD2
+scalar	KEYWORD2
+pid	KEYWORD2
+lpf	KEYWORD2
+motor	KEYWORD2
 
-voltage_q	KEYWORD2
-voltage_d	KEYWORD2
+
+
+current	KEYWORD2
+current_measured	KEYWORD2
 shaft_angle_sp	KEYWORD2
+electrical_angle	KEYWORD2
 shaft_velocity_sp	KEYWORD2
 shaft_angle	KEYWORD2
 shaft_velocity	KEYWORD2
+torque_controller	KEYWORD2
 controller	KEYWORD2
 pullup	KEYWORD2
 quadrature	KEYWORD2
@@ -77,6 +110,16 @@ foc_modulation	KEYWORD2
 target	KEYWORD2
 pwm_frequency	KEYWORD2
 dead_zone	KEYWORD2
+gain_a	KEYWORD2
+gain_b	KEYWORD2
+gain_c	KEYWORD2
+skip_align	KEYWORD2
+sensor_direction	KEYWORD2
+sensor_offset	KEYWORD2
+zero_electric_angle	KEYWORD2
+verbose	KEYWORD2
+decimal_places	KEYWORD2
+
 
 
 voltage	KEYWORD2
@@ -84,6 +127,9 @@ velocity	KEYWORD2
 velocity_openloop	KEYWORD2
 angle	KEYWORD2
 angle_openloop	KEYWORD2
+torque	KEYWORD2
+dc_current	KEYWORD2
+foc_current	KEYWORD2
 
 
 ON	KEYWORD2
@@ -97,12 +143,16 @@ I	KEYWORD2
 D	KEYWORD2
 Tf	KEYWORD2
 voltage_limit	KEYWORD2
+current_limit	KEYWORD2
 output_ramp	KEYWORD2
 limit	KEYWORD2
 velocity_limit	KEYWORD2
 voltage_power_supply	KEYWORD2
 voltage_sensor_align	KEYWORD2
 velocity_index_search	KEYWORD2
+monitor_downsample	KEYWORD2
+monitor_variables	KEYWORD2
+motion_downsample	KEYWORD2
 
 pinA	KEYWORD2
 pinB	KEYWORD2
@@ -134,24 +184,45 @@ enable_pin	KEYWORD2
 enable_pin1	KEYWORD2
 enable_pin2	KEYWORD2
 pole_pairs	KEYWORD2
+dc_a	KEYWORD2
+dc_b	KEYWORD2
+dc_c	KEYWORD2
 
 DEF_POWER_SUPPLY	LITERAL1
 DEF_PID_VEL_P	LITERAL1
 DEF_PID_VEL_I	LITERAL1
-DEF_PID_VEL_U_RAMP	LITERAL1
+DEF_PID_VEL_D	LITERAL1
+DEF_PID_VEL_RAMP	LITERAL1
 DEF_P_ANGLE_P	LITERAL1
-DEF_VEL_LIM	LITERAL1
+DEF_PID_VEL_LIMIT	LITERAL1
 DEF_INDEX_SEARCH_TARGET_VELOCITY	LITERAL1
 DEF_VOLTAGE_SENSOR_ALIGN	LITERAL1
 DEF_VEL_FILTER_Tf	LITERAL1
+DEF_CURRENT_LIM	LITERAL1
+DEF_CURR_FILTER_Tf	LITERAL1
+DEF_PID_CURR_LIMIT	LITERAL1
+DEF_PID_CURR_RAMP	LITERAL1
+DEF_PID_CURR_D	LITERAL1
+DEF_PID_CURR_I	LITERAL1
+DEF_PID_CURR_P	LITERAL1
 _2_SQRT3	LITERAL1
 _1_SQRT3	LITERAL1
 _SQRT3_2	LITERAL1
 _SQRT2	LITERAL1
 _120_D2R	LITERAL1
 _PI_2	LITERAL1
+_PI_6	LITERAL1
 _2PI	LITERAL1
 _3PI_2	LITERAL1
 _PI_3	LITERAL1
 _SQRT3	LITERAL1
 _PI	LITERAL1
+_HIGH_Z	LITERAL1
+
+_MON_TARGET	LITERAL1
+_MON_VOLT_Q	LITERAL1
+_MON_VOLT_D	LITERAL1
+_MON_CURR_Q	LITERAL1
+_MON_CURR_D	LITERAL1
+_MON_VEL	LITERAL1
+_MON_ANGLE	LITERAL1

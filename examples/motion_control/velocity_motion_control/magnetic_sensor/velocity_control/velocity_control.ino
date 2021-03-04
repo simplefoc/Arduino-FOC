@@ -25,6 +25,12 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 //StepperMotor motor = StepperMotor(50);
 //StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
+// velocity set point variable
+float target_velocity = 0;
+// instantiate the commander
+Commander command = Commander(Serial);
+void doTarget(char* cmd) { command.scalar(&target_velocity, cmd); }
+
 void setup() {
  
   // initialise magnetic sensor hardware
@@ -40,7 +46,7 @@ void setup() {
   motor.linkDriver(&driver);
 
   // set motion control loop to be used
-  motor.controller = ControlType::velocity;
+  motor.controller = MotionControlType::velocity;
 
   // contoller configuration 
   // default parameters in defaults.h
@@ -70,13 +76,13 @@ void setup() {
   // align sensor and start FOC
   motor.initFOC();
 
-  Serial.println("Motor ready.");
-  Serial.println("Set the target velocity using serial terminal:");
+  // add target command T
+  command.add('T', doTarget, "target voltage");
+
+  Serial.println(F("Motor ready."));
+  Serial.println(F("Set the target velocity using serial terminal:"));
   _delay(1000);
 }
-
-// velocity set point variable
-float target_velocity = 0;
 
 void loop() {
   // main FOC algorithm function
@@ -96,32 +102,5 @@ void loop() {
   // motor.monitor();
   
   // user communication
-  serialReceiveUserCommand();
+  command.run();
 }
-
-// utility function enabling serial communication with the user to set the target values
-// this function can be implemented in serialEvent function as well
-void serialReceiveUserCommand() {
-  
-  // a string to hold incoming data
-  static String received_chars;
-  
-  while (Serial.available()) {
-    // get the new byte:
-    char inChar = (char)Serial.read();
-    // add it to the string buffer:
-    received_chars += inChar;
-    // end of user input
-    if (inChar == '\n') {
-      
-      // change the motor target
-      target_velocity = received_chars.toFloat();
-      Serial.print("Target velocity: ");
-      Serial.println(target_velocity);
-      
-      // reset the command buffer 
-      received_chars = "";
-    }
-  }
-}
-

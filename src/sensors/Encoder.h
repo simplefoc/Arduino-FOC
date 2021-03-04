@@ -63,28 +63,12 @@ class Encoder: public Sensor{
     float getAngle() override;
     /**  get current angular velocity (rad/s) */
     float getVelocity() override;
-    /** 
-     *  set current angle as zero angle 
-     * return the angle [rad] difference
-     */
-    float initRelativeZero() override;
-    /**
-     * set index angle as zero angle
-     * return the angle [rad] difference
-     */
-    float initAbsoluteZero() override;
-    /**
-     *  returns 0 if it has no index 
-     * 0 - encoder without index
-     * 1 - encoder with index 
-     */
-    int hasAbsoluteZero() override;
     /**
      * returns 0 if it does need search for absolute zero
      * 0 - encoder without index 
      * 1 - ecoder with index
      */
-    int needsAbsoluteZeroSearch() override;
+    int needsSearch() override;
 
   private:
     int hasIndex(); //!< function returning 1 if encoder has index pin and 0 if not.
@@ -94,7 +78,7 @@ class Encoder: public Sensor{
     volatile int A_active; //!< current active states of A channel
     volatile int B_active; //!< current active states of B channel
     volatile int I_active; //!< current active states of Index channel
-    volatile long index_pulse_counter; //!< impulse counter number upon first index interrupt
+    volatile bool index_found = false; //!< flag stating that the index has been found
 
     // velocity calculation variables
     float prev_Th, pulse_per_second;

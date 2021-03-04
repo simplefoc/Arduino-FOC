@@ -1,14 +1,18 @@
 #include "../hardware_api.h"
 
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)  // if mcu is not atmega328
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega328PB__)  // if mcu is not atmega328
 
 #elif defined(__AVR_ATmega2560__) // if mcu is not atmega2560
 
 #elif defined(__arm__) && defined(CORE_TEENSY)  // or teensy
 
+#elif defined(__arm__) && defined(__SAM3X8E__)  // or due
+
 #elif defined(ESP_H)  // or esp32
 
 #elif defined(_STM32_DEF_) // or stm32
+
+#elif defined(_SAMD21_)  // samd21 for the moment, samd51 in progress...
 
 #else
 

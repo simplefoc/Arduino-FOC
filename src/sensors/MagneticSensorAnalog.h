@@ -26,39 +26,22 @@ class MagneticSensorAnalog: public Sensor{
     
     // Encoder configuration
     Pullup pullup;
-
+    
     // implementation of abstract functions of the Sensor class
     /** get current angle (rad) */
     float getAngle() override;
     /** get current angular velocity (rad/s) **/
     float getVelocity() override;
-    /**
-     *  set current angle as zero angle 
-     * return the angle [rad] difference
-     */
-    float initRelativeZero() override;
-    /**
-     *  set absolute zero angle as zero angle
-     * return the angle [rad] difference
-     */
-    float initAbsoluteZero() override;
-    /** returns 1 because it is the absolute sensor */
-    int hasAbsoluteZero() override;
-    /** returns 0  maning it doesn't need search for absolute zero */
-    int needsAbsoluteZeroSearch() override;
+ 
+
+  private:
     /** raw count (typically in range of 0-1023), useful for debugging resolution issues */
     int raw_count;
     int min_raw_count;
     int max_raw_count;
     int cpr;
-
-  private:
-    // float cpr; //!< Maximum range of the magnetic sensor
-    
-
     int read();
 
-    int zero_offset; //!< user defined zero offset
     /**
      * Function getting current angle register value
      * it uses angle_register variable

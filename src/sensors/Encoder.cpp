@@ -24,7 +24,6 @@ Encoder::Encoder(int _encA, int _encB , float _ppr, int _index){
   I_active = 0;
   // index pin
   index_pin = _index; // its 0 if not used
-  index_pulse_counter = 0;
 
   // velocity calculation variables
   prev_Th = 0;
@@ -41,7 +40,7 @@ Encoder::Encoder(int _encA, int _encB , float _ppr, int _index){
 //  Encoder interrupt callback functions
 // A channel
 void Encoder::handleA() {
-  int A = digitalRead(pinA);
+  bool A = digitalRead(pinA);
   switch (quadrature){
     case Quadrature::ON:
       // CPR = 4xPPR
@@ -62,7 +61,7 @@ void Encoder::handleA() {
 }
 // B channel
 void Encoder::handleB() {
-  int B = digitalRead(pinB);
+  bool B = digitalRead(pinB);
   switch (quadrature){
     case Quadrature::ON:
   //     // CPR = 4xPPR
@@ -85,19 +84,15 @@ void Encoder::handleB() {
 // Index channel
 void Encoder::handleIndex() {
   if(hasIndex()){
-    int I = digitalRead(index_pin);
+    bool I = digitalRead(index_pin);
     if(I && !I_active){
+      index_found = true;
       // align encoder on each index
-      if(index_pulse_counter){
-        long tmp = pulse_counter;
-        // corrent the counter value
-        pulse_counter = round((double)pulse_counter/(double)cpr)*cpr;
-        // preserve relative speed
-        prev_pulse_counter += pulse_counter - tmp;
-      } else {
-      // initial offset
-        index_pulse_counter = pulse_counter;
-      }
+      long tmp = pulse_counter;
+      // corrent the counter value
+      pulse_counter = round((double)pulse_counter/(double)cpr)*cpr;
+      // preserve relative speed
+      prev_pulse_counter += pulse_counter - tmp;
     }
     I_active = I;
   }
@@ -107,7 +102,7 @@ void Encoder::handleIndex() {
 	Shaft angle calculation
 */
 float Encoder::getAngle(){
-  return  natural_direction * _2PI * (pulse_counter) / ((float)cpr);
+  return  _2PI * (pulse_counter) / ((float)cpr);
 }
 /*
   Shaft velocity calculation
@@ -145,31 +140,15 @@ float Encoder::getVelocity(){
   // save velocity calculation variables
   prev_Th = Th;
   prev_pulse_counter = pulse_counter;
-  return natural_direction * (velocity);
+  return velocity;
 }
 
 // getter for index pin
 // return -1 if no index
-int Encoder::needsAbsoluteZeroSearch(){
-  return index_pulse_counter == 0;
+int Encoder::needsSearch(){
+  return hasIndex() && !index_found;
 }
-// getter for index pin
-int Encoder::hasAbsoluteZero(){
-  return hasIndex();
-}
-// initialize counter to zero
-float Encoder::initRelativeZero(){
-  long angle_offset = -pulse_counter;
-  pulse_counter = 0;
-  pulse_timestamp = _micros();
-  return _2PI * (angle_offset) / ((float)cpr);
-}
-// initialize index to zero
-float Encoder::initAbsoluteZero(){
-  pulse_counter -= index_pulse_counter;
-  prev_pulse_counter = pulse_counter;
-  return (index_pulse_counter) / ((float)cpr) * (_2PI);
-}
+
 // private function used to determine if encoder has index
 int Encoder::hasIndex(){
   return index_pin != 0;

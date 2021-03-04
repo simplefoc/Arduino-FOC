@@ -5,12 +5,19 @@
 // BLDC motor & driver instance
 // BLDCMotor motor = BLDCMotor(pole pair number);
 BLDCMotor motor = BLDCMotor(11);
-// BLDCMotor motor = BLDCMotor(pole pair number);
+// BLDCDriver3PWM driver = BLDCDriver3PWM(pwmA, pwmB, pwmC, Enable(optional));
 BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 
 // Stepper motor & driver instance
 //StepperMotor motor = StepperMotor(50);
 //StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
+
+//target variable
+float target_position = 0;
+
+// instantiate the commander
+Commander command = Commander(Serial);
+void doTarget(char* cmd) { command.scalar(&target_position, cmd); }
 
 void setup() {
 
@@ -23,52 +30,27 @@ void setup() {
 
   // limiting motor movements
   motor.voltage_limit = 3;   // [V]
-  motor.velocity_limit = 20; // [rad/s]
+  motor.velocity_limit = 5; // [rad/s] cca 50rpm
   // open loop control config
-  motor.controller = ControlType::angle_openloop;
+  motor.controller = MotionControlType::angle_openloop;
 
   // init motor hardware
   motor.init();
 
+  // add target command T
+  command.add('T', doTarget, "target angle");
 
   Serial.begin(115200);
   Serial.println("Motor ready!");
+  Serial.println("Set target position [rad]");
   _delay(1000);
 }
-
-float target_position = 0; // [rad/s]
 
 void loop() {
   // open  loop angle movements
   // using motor.voltage_limit and motor.velocity_limit
   motor.move(target_position);
-
-  // receive the used commands from serial
-  serialReceiveUserCommand();
-}
-
-// utility function enabling serial communication with the user to set the target values
-// this function can be implemented in serialEvent function as well
-void serialReceiveUserCommand() {
-
-  // a string to hold incoming data
-  static String received_chars;
-
-  while (Serial.available()) {
-    // get the new byte:
-    char inChar = (char)Serial.read();
-    // add it to the string buffer:
-    received_chars += inChar;
-    // end of user input
-    if (inChar == '\n') {
-
-      // change the motor target
-      target_position = received_chars.toFloat();
-      Serial.print("Target position: ");
-      Serial.println(target_position);
-
-      // reset the command buffer
-      received_chars = "";
-    }
-  }
+  
+  // user communication
+  command.run();
 }

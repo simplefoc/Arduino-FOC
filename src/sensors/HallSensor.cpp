@@ -96,7 +96,7 @@ void HallSensor::attachSectorCallback(void (*_onSectorChange)(int sector)) {
 	Shaft angle calculation
 */
 float HallSensor::getAngle() {
-  return natural_direction * ((electric_rotations * 6 + electric_sector) / cpr) * _2PI;
+  return ((electric_rotations * 6 + electric_sector) / cpr) * _2PI ;
 }
 
 /*
@@ -107,43 +107,17 @@ float HallSensor::getVelocity(){
   if (pulse_diff == 0 || ((_micros() - pulse_timestamp) > pulse_diff) ) { // last velocity isn't accurate if too old
     return 0;
   } else {
-    return natural_direction * direction * (_2PI / cpr) / (pulse_diff / 1000000.0);
+    return direction * (_2PI / cpr) / (pulse_diff / 1000000.0);
   }
 
-}
-
-// getter for index pin
-// return -1 if no index
-int HallSensor::needsAbsoluteZeroSearch(){
-  return 0;
-}
-
-int HallSensor::hasAbsoluteZero(){
-  return 1;
-}
-
-// set current angle as zero angle 
-// return the angle [rad] difference
-float HallSensor::initRelativeZero(){
-
-  // nothing to do.  The interrupts should have changed sector.
-  electric_rotations = 0;
-  return 0;
-
-}
-
-// set absolute zero angle as zero angle
-// return the angle [rad] difference
-float HallSensor::initAbsoluteZero(){
-
-  return -getAngle();
-  
 }
 
 // HallSensor initialisation of the hardware pins 
 // and calculation variables
 void HallSensor::init(){
-  
+  // initialise the electrical rotations to 0
+  electric_rotations = 0;
+
   // HallSensor - check if pullup needed for your HallSensor
   if(pullup == Pullup::INTERN){
     pinMode(pinA, INPUT_PULLUP);

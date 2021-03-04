@@ -72,7 +72,6 @@ void MagneticSensorI2C::init(TwoWire* _wire){
 	// full rotations tracking number
 	full_rotation_offset = 0;
 	angle_data_prev = getRawCount();  
-	zero_offset = 0;
 }
 
 //  Shaft angle calculation
@@ -90,12 +89,9 @@ float MagneticSensorI2C::getAngle(){
   // save the current angle value for the next steps
   // in order to know if overflow happened
   angle_data_prev = angle_data;
-
-  // zero offset adding
-  angle_data -= (int)zero_offset;
   // return the full angle 
-  // (number of full rotations)*2PI + current sensor angle
-  return natural_direction * (full_rotation_offset + ( angle_data / (float)cpr) * _2PI);
+  // (number of full rotations)*2PI + current sensor angle 
+  return  (full_rotation_offset + ( angle_data / (float)cpr) * _2PI) ;
 }
 
 // Shaft velocity calculation
@@ -115,41 +111,6 @@ float MagneticSensorI2C::getVelocity(){
   angle_prev = angle_c;
   velocity_calc_timestamp = now_us;
   return vel;
-}
-
-// set current angle as zero angle 
-// return the angle [rad] difference
-float MagneticSensorI2C::initRelativeZero(){
-  float angle_offset = -getAngle();
-  zero_offset = natural_direction * getRawCount();
-
-  // angle tracking variables
-  full_rotation_offset = 0;
-  return angle_offset;
-}
-// set absolute zero angle as zero angle
-// return the angle [rad] difference
-float MagneticSensorI2C::initAbsoluteZero(){
-  float rotation = -(int)zero_offset;
-  // init absolute zero
-  zero_offset = 0;
-
-  // angle tracking variables
-  full_rotation_offset = 0;
-  // return offset in radians
-  return rotation / (float)cpr * _2PI;
-}
-// returns 0 if it has no absolute 0 measurement
-// 0 - incremental encoder without index
-// 1 - encoder with index & magnetic sensors
-int MagneticSensorI2C::hasAbsoluteZero(){
-  return 1;
-}
-// returns 0 if it does need search for absolute zero
-// 0 - magnetic sensor 
-// 1 - ecoder with index
-int MagneticSensorI2C::needsAbsoluteZeroSearch(){
-  return 0;
 }
 
 

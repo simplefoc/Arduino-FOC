@@ -11,16 +11,48 @@ Additionally, most of the efforts at this moment are still channeled towards the
 Therefore this is an attempt to: 
 - 🎯 Demystify FOC algorithm and make a robust but simple Arduino library: [Arduino *SimpleFOClibrary*](https://docs.simplefoc.com/arduino_simplefoc_library_showcase)
   - <i>Support as many <b>motor + sensor + driver + mcu</b> combinations out there</i>
-- 🎯 Develop a modular low-power BLDC driver board: [Arduino *SimpleFOCShield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
+- 🎯 Develop a modular FOC supporting BLDC driver boards:
+   - *Low-power* gimbal driver (<5Amps) :  [*Arduino Simple**FOC**Shield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
+   - ***NEW*** 📢: *Medium-power* BLDC driver (<30Amps): [Arduino <span class="simple">Simple<b>FOC</b>PowerShield</span> ](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
+   - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
-> <b> RELEASE 📢:</b> <i>Simple<b>FOC</b>library v2.0.2
-> - Arduino MEGA 2560 support
-> - OSC example project by [@runger1101001](https://github.com/runger1101001) 
-> - floating point bug - open loop velocity by [@ATILIUS-REGULUS](https://github.com/ATILIUS-REGULUS) 
+##### <b> NEW RELEASE 📢:</b> <i>Simple<b>FOC</b>library v2.1
+> - **Initial current sensing support**🎉
+>   - Inline current sensors 
+>   - adaptive zero finding and shunt direction
+> - **Implemented real torque control** 
+>   - using voltage
+>   - using current magnitude (one current)
+>   - using FOC currents ( d-q currents ) - real foc control
+> - SVPWM full implementation  d+q axis
+> - **Simplified sensor implementation**📢
+>    - For new sensor implementation only one function necessary `getAngle()`
+> - Upgrade of the HallSensor implementation by [@owennewo](https://github.com/owennewo)
+> - Support for Arduino DUE - everything except the 6PWM mode
+> - Support for ATMega328pb
+> - bugfix for the Teensy boards ( setting 3pwm )
+> - extended support for 2PWM stepper drivers - by [@zjor](https://github.com/zjor)
+> - included F macro for shrinking string memory usage - moved to programming memory
+> - disable phase support for 3pwm driver
+>    - not yet for 6pwm
+> - rewritten `initFOC()`
+>    - can be skipped and outputs much more info
+>    - align sensor: direction + zero offset + pole pair check
+>    - align current sense
+> - sensor offset supported (`motor.sensor_offset`)
+> - **refactored motor commands interface**
+>   - much more flexible and easy to extend
+>   - very easy to add new commands and function callbacks
+>   - implemented motor+pid+lpf commands of-the-shelf
+> - Added **step/dir interface**
+>   - integrated as an optional communication channel
+>
+> BEWARE 📢 slight API changes included
+>   - `ControlType` renamed into `MotionControlType`
+>   - `ControlType::voltage` does not exist any more now - `MotionControlType::torque`
 
 
-## Arduino *SimpleFOCShield* v2.0.2
-
+## Arduino *SimpleFOCShield* v2.0.3
 <p align="">
 <a href="https://youtu.be/G5pbo0C6ujE">
 <img src="https://docs.simplefoc.com/extras/Images/foc_shield_video.jpg"  height="320px">
@@ -46,7 +78,7 @@ Therefore this is an attempt to:
 <p align=""><img src="https://simplefoc.com/assets/img/v2.jpg" height="180px">   <img src="https://simplefoc.com/assets/img/v1.jpg"  height="180px"> <img src="https://docs.simplefoc.com/extras/Images/simple_foc_shield_v13_small.gif"  height="180x"></p>
 
 
-## Arduino *SimpleFOClibrary* v2.0.2
+## Arduino *SimpleFOClibrary* v2.1
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">
@@ -147,7 +179,7 @@ void setup() {
   motor.linkDriver(&driver);
 
   // set control loop type to be used
-  motor.controller = ControlType::velocity;
+  motor.controller = MotionControlType::velocity;
   // initialize motor
   motor.init();
   

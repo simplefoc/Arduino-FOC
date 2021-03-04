@@ -2,13 +2,13 @@
 #include "../hardware_api.h"
 
 #if defined(_STM32_DEF_)
-
+// default pwm parameters
 #define _PWM_RESOLUTION 12 // 12bit
 #define _PWM_RANGE 4095.0// 2^12 -1 = 4095
 #define _PWM_FREQUENCY 25000 // 25khz
 #define _PWM_FREQUENCY_MAX 50000 // 50khz
 
-
+// 6pwm parameters
 #define _HARDWARE_6PWM 1
 #define _SOFTWARE_6PWM 0
 #define _ERROR_6PWM -1
@@ -118,6 +118,7 @@ void _alignPWMTimers(HardwareTimer *HT1,HardwareTimer *HT2,HardwareTimer *HT3,Ha
   HT4->resume();
 }
 
+// configure hardware 6pwm interface only one timer with inverted channels
 HardwareTimer* _initHardware6PWMInterface(uint32_t PWM_freq, float dead_zone, int pinA_h, int pinA_l, int pinB_h, int pinB_l, int pinC_h, int pinC_l)
 {
   PinName uhPinName = digitalPinToPinName(pinA_h);
@@ -189,7 +190,7 @@ int _interfaceType(const int pinA_h, const int pinA_l,  const int pinB_h, const 
 // - Stepper motor - 2PWM setting
 // - hardware speciffic
 void _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
-  if( !pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
+  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
   // center-aligned frequency is uses two periods
   pwm_frequency *=2;
@@ -205,7 +206,7 @@ void _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
 // - BLDC motor - 3PWM setting
 // - hardware speciffic
 void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
-  if( !pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
+  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
   // center-aligned frequency is uses two periods
   pwm_frequency *=2;
@@ -221,7 +222,7 @@ void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int
 // - Stepper motor - 4PWM setting
 // - hardware speciffic
 void _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
-  if( !pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
+  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
   // center-aligned frequency is uses two periods
   pwm_frequency *=2;
@@ -272,7 +273,7 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, in
 // - BLDC driver - 6PWM setting
 // - hardware specific
 int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
-  if( !pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
+  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to |%0kHz max
   // center-aligned frequency is uses two periods
   pwm_frequency *=2;

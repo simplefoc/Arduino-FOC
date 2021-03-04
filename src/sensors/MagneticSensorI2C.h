@@ -34,7 +34,7 @@ class MagneticSensorI2C: public Sensor{
     MagneticSensorI2C(MagneticSensorI2CConfig_s config);
 
     static MagneticSensorI2C AS5600();
-    
+        
     /** sensor initialise pins */
     void init(TwoWire* _wire = &Wire);
 
@@ -43,21 +43,6 @@ class MagneticSensorI2C: public Sensor{
     float getAngle() override;
     /** get current angular velocity (rad/s) **/
     float getVelocity() override;
-    /**
-     *  set current angle as zero angle 
-     * return the angle [rad] difference
-     */
-    float initRelativeZero() override;
-    /**
-     *  set absolute zero angle as zero angle
-     * return the angle [rad] difference
-     */
-    float initAbsoluteZero() override;
-    /** returns 1 because it is the absolute sensor */
-    int hasAbsoluteZero() override;
-    /** returns 0  maning it doesn't need search for absolute zero */
-
-    int needsAbsoluteZeroSearch() override;
 
     /** experimental function to check and fix SDA locked LOW issues */
     int checkBus(byte sda_pin = SDA, byte scl_pin = SCL);
@@ -76,7 +61,6 @@ class MagneticSensorI2C: public Sensor{
     /** Read one I2C register value */
     int read(uint8_t angle_register_msb);
 
-    word zero_offset; //!< user defined zero offset
     /**
      * Function getting current angle register value
      * it uses angle_register variable

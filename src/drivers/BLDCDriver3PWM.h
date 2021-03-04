@@ -18,9 +18,11 @@ class BLDCDriver3PWM: public BLDCDriver
       @param phA A phase pwm pin
       @param phB B phase pwm pin
       @param phC C phase pwm pin
-      @param en enable pin (optional input)
+      @param en1 enable pin (optional input)
+      @param en2 enable pin (optional input)
+      @param en3 enable pin (optional input)
     */
-    BLDCDriver3PWM(int phA,int phB,int phC, int en = NOT_SET);
+    BLDCDriver3PWM(int phA,int phB,int phC, int en1 = NOT_SET, int en2 = NOT_SET, int en3 = NOT_SET);
     
     /**  Motor hardware init function */
   	int init() override;
@@ -33,7 +35,9 @@ class BLDCDriver3PWM: public BLDCDriver
   	int pwmA; //!< phase A pwm pin number
   	int pwmB; //!< phase B pwm pin number
   	int pwmC; //!< phase C pwm pin number
-    int enable_pin; //!< enable pin number
+    int enableA_pin; //!< enable pin number
+    int enableB_pin; //!< enable pin number
+    int enableC_pin; //!< enable pin number
 
     /** 
      * Set phase voltages to the harware 
@@ -44,6 +48,14 @@ class BLDCDriver3PWM: public BLDCDriver
     */
     void setPwm(float Ua, float Ub, float Uc) override;
 
+    /** 
+     * Set phase voltages to the harware 
+     * 
+     * @param sc - phase A state : active / disabled ( high impedance )
+     * @param sb - phase B state : active / disabled ( high impedance )
+     * @param sa - phase C state : active / disabled ( high impedance )
+    */
+    virtual void setPhaseState(int sa, int sb, int sc) override;
   private:
         
 };

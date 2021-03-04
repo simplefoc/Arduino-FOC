@@ -23,6 +23,12 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 //StepperMotor motor = StepperMotor(50);
 //StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
+// angle set point variable
+float target_angle = 0;
+// instantiate the commander
+Commander command = Commander(Serial);
+void doTarget(char* cmd) { command.scalar(&target_angle, cmd); }
+
 void setup() {
 
   // initialise magnetic sensor hardware
@@ -41,7 +47,7 @@ void setup() {
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
 
   // set motion control loop to be used
-  motor.controller = ControlType::angle;
+  motor.controller = MotionControlType::angle;
 
   // contoller configuration 
   // default parameters in defaults.h
@@ -73,14 +79,14 @@ void setup() {
   // align sensor and start FOC
   motor.initFOC();
 
+  // add target command T
+  command.add('T', doTarget, "target angle");
 
-  Serial.println("Motor ready.");
-  Serial.println("Set the target angle using serial terminal:");
+  Serial.println(F("Motor ready."));
+  Serial.println(F("Set the target angle using serial terminal:"));
   _delay(1000);
 }
 
-// angle set point variable
-float target_angle = 0;
 
 void loop() {
 
@@ -102,33 +108,5 @@ void loop() {
   // motor.monitor();
   
   // user communication
-  serialReceiveUserCommand();
+  command.run();
 }
-
-// utility function enabling serial communication with the user to set the target values
-// this function can be implemented in serialEvent function as well
-void serialReceiveUserCommand() {
-  
-  // a string to hold incoming data
-  static String received_chars;
-  
-  while (Serial.available()) {
-    // get the new byte:
-    char inChar = (char)Serial.read();
-    // add it to the string buffer:
-    received_chars += inChar;
-    // end of user input
-    if (inChar == '\n') {
-      
-      // change the motor target
-      target_angle = received_chars.toFloat();
-      Serial.print("Target angle: ");
-      Serial.println(target_angle);
-      
-      // reset the command buffer 
-      received_chars = "";
-    }
-  }
-}
-
-
