@@ -275,11 +275,11 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
               break;
             case 3: // get current q
               printVerbose(F("Cq: "));
-              println(motor->voltage.q);
+              println(motor->current.q);
               break;
             case 4: // get current d
               printVerbose(F("Cd: "));
-              println(motor->voltage.q);
+              println(motor->current.q);
               break;
             case 5: // get velocity
               printVerbose(F("vel: "));
