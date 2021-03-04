@@ -39,7 +39,7 @@ class Commander
      * 
      * @param serial - Serial com port instance
      */
-    Commander(HardwareSerial &serial);
+    Commander(Stream &serial);
     Commander();
 
     /**
@@ -90,7 +90,7 @@ class Commander
     uint8_t decimal_places = 3; //!< number of decimal places to be used when displaying numbers
 
     // monitoring functions
-    HardwareSerial* com_port = nullptr; //!< Serial terminal variable if provided
+    Stream* com_port = nullptr; //!< Serial terminal variable if provided
     
     /**
      * 
