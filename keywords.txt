@@ -151,7 +151,7 @@ voltage_power_supply	KEYWORD2
 voltage_sensor_align	KEYWORD2
 velocity_index_search	KEYWORD2
 monitor_downsample	KEYWORD2
-monitor_downsample	KEYWORD2
+monitor_variables	KEYWORD2
 motion_downsample	KEYWORD2
 
 pinA	KEYWORD2
