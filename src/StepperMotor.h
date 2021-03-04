@@ -22,9 +22,10 @@ class StepperMotor: public FOCMotor
   public:
     /**
       StepperMotor class constructor
-      @param pp  pole pair number - cpr counts per rotation number (cpm=ppm*4)
+      @param pp  pole pair number 
+      @param R  motor phase resistance
     */
-    StepperMotor(int pp);
+    StepperMotor(int pp,  float R = NOT_SET);
 
     /**
      * Function linking a motor and a foc driver 
@@ -65,7 +66,7 @@ class StepperMotor: public FOCMotor
      */ 
     void loopFOC() override;
     /**
-     * Function executing the control loops set by the controller parameter of the BLDCMotor.
+     * Function executing the control loops set by the controller parameter of the StepperMotor.
      * 
      * @param target  Either voltage, angle or velocity based on the motor.controller
      *                If it is not set the motor will use the target set in its variable motor.target
@@ -92,7 +93,7 @@ class StepperMotor: public FOCMotor
     /** Sensor alignment to electrical 0 angle of the motor */
     int alignSensor();
     /** Motor and sensor alignment to the sensors absolute 0 angle  */
-    void absoluteZeroSearch();
+    int absoluteZeroSearch();
         
     // Open loop motion control    
     /**
@@ -101,14 +102,14 @@ class StepperMotor: public FOCMotor
      * 
      * @param target_velocity - rad/s
      */
-    void velocityOpenloop(float target_velocity);
+    float velocityOpenloop(float target_velocity);
     /**
      * Function (iterative) generating open loop movement towards the target angle
      * it uses voltage_limit and velocity_limit variables
      * 
      * @param target_angle - rad
      */
-    void angleOpenloop(float target_angle);
+    float angleOpenloop(float target_angle);
     // open loop variables
     long open_loop_timestamp;
 };

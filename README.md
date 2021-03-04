@@ -53,7 +53,7 @@ Therefore this is an attempt to:
 >   - `ControlType::voltage` does not exist any more now - `MotionControlType::torque`
 
 
-## Arduino *SimpleFOCShield* v2.0.2
+## Arduino *SimpleFOCShield* v2.0.3
 
 <p align="">
 <a href="https://youtu.be/G5pbo0C6ujE">
@@ -80,7 +80,7 @@ Therefore this is an attempt to:
 <p align=""><img src="https://simplefoc.com/assets/img/v2.jpg" height="180px">   <img src="https://simplefoc.com/assets/img/v1.jpg"  height="180px"> <img src="https://docs.simplefoc.com/extras/Images/simple_foc_shield_v13_small.gif"  height="180x"></p>
 
 
-## Arduino *SimpleFOClibrary* v2.0.2
+## Arduino *SimpleFOClibrary* v2.1
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">

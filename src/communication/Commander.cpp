@@ -208,7 +208,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
         motor->torque_controller = (TorqueControlType)value;
       switch(motor->torque_controller){
         case TorqueControlType::voltage:
-          println(F("dc volt"));
+          println(F("volt"));
           break;
         case TorqueControlType::dc_current:
           println(F("dc curr"));
@@ -286,7 +286,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
               println(motor->shaft_velocity);
               break;
             case 6: // get angle
-              printVerbose(F("Angle: "));
+              printVerbose(F("angle: "));
               println(motor->shaft_angle);
               break;
             default:
@@ -303,11 +303,11 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
           motor->monitor_variables = (uint8_t) 0; 
           println(F("clear"));
           break;
-        case SCMD_SET:   
-          motor->monitor_variables = (uint8_t) 0; 
+        case SCMD_SET:  
+          if(!GET) motor->monitor_variables = (uint8_t) 0; 
           for(int i = 0; i < 7; i++){
             if(user_command[value_index+i] == '\n') break;
-            motor->monitor_variables |=  (user_command[value_index+i] - '0') << (6-i);  
+            if(!GET) motor->monitor_variables |=  (user_command[value_index+i] - '0') << (6-i);  
             print( (user_command[value_index+i] - '0') );
           }
           println("");

@@ -32,15 +32,16 @@ void InlineCurrentSense::calibrateOffsets(){
     offset_ia =0;
     offset_ib= 0;
     offset_ic= 0;
-    // read the adc voltage 500 times ( arbitrary number )
-    for (int i = 0; i < 500; i++) {
+    // read the adc voltage 1000 times ( arbitrary number )
+    for (int i = 0; i < 1000; i++) {
         offset_ia += _readADCVoltage(pinA);
         offset_ib += _readADCVoltage(pinB);
         if(_isset(pinC)) offset_ic += _readADCVoltage(pinC);
+        _delay(1);
     }
     // calculate the mean offsets
-    offset_ia = offset_ia / 500.0;
-    offset_ib = offset_ib / 500.0;
+    offset_ia = offset_ia / 1000.0;
+    offset_ib = offset_ib / 1000.0;
     if(_isset(pinC)) offset_ic = offset_ic / 500.0;
 }
 

@@ -11,4 +11,4 @@ jobs:
       uses: ArminJo/arduino-test-compile@v1.0.0
       with:
         libraries:  PciManager 
-        examples-exclude: bluepill_position_control, esp32_position_control, esp32_i2c_dual_bus_example, stm32_i2c_dual_bus_example, magnetic_sensor_spi_alt_example, simplefoc_osc_esp32_3pwm
+        examples-exclude: bluepill_position_control, esp32_position_control, esp32_i2c_dual_bus_example, stm32_i2c_dual_bus_example, magnetic_sensor_spi_alt_example, osc_esp32_3pwm, osc_esp32_fullcontrol

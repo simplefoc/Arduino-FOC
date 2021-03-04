@@ -3,7 +3,7 @@
 
 // see docs.simplefoc.com for in depth explanation of the commands
 
-// list o commands
+// list of commands
  #define CMD_C_D_PID   'D' //!< current d PID & LPF
  #define CMD_C_Q_PID   'Q' //!< current d PID & LPF
  #define CMD_V_PID     'V' //!< velocity PID & LPF
@@ -16,11 +16,12 @@
  #define CMD_MONITOR   'M' //!< monitoring
  #define CMD_RESIST    'R' //!< motor phase resistance
 
+ // commander configuration
  #define CMD_SCAN    '?' //!< command scaning the network - only for commander
  #define CMD_VERBOSE '@' //!< command setting output mode - only for commander
  #define CMD_DECIMAL '#' //!< command setting decimal places - only for commander
 
-// subcomands
+ // subcomands
  //pid - lpf
  #define SCMD_PID_P     'P' //!< PID gain P
  #define SCMD_PID_I     'I' //!< PID gain I

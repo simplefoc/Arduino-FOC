@@ -1,6 +1,6 @@
 #include "BLDCMotor.h"
 
-// BLDCMotor( int pp)
+// BLDCMotor( int pp , float R)
 // - pp            - pole pair number
 // - R             - motor phase resistance
 BLDCMotor::BLDCMotor(int pp, float _R)
@@ -306,7 +306,7 @@ void BLDCMotor::move(float new_target) {
   switch (controller) {
     case MotionControlType::torque:
       if(torque_controller == TorqueControlType::voltage) // if voltage torque control
-        if(!_isset(phase_resistance))  voltage.q = current_sp;
+        if(!_isset(phase_resistance))  voltage.q = target;
         else voltage.q =  target*phase_resistance; 
       else 
         current_sp = target; // if current/foc_current torque control
