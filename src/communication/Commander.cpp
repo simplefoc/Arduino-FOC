@@ -35,8 +35,8 @@ void Commander::run(){
   }
 }
 
-void Commander::run(HardwareSerial& serial){
-  HardwareSerial* tmp = com_port; // save the serial instance 
+void Commander::run(Stream& serial){
+  Stream* tmp = com_port; // save the serial instance 
   // use the new serial instance to output if not available the one linked in constructor
   if(!tmp) com_port = &serial; 
 

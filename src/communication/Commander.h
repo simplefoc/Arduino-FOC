@@ -61,9 +61,9 @@ class Commander
      *    '#' - Number of decimal places
      *    '?' - Scan command - displays all the labels of attached nodes
      * 
-     * @param reader - HardwareSerial to read user input
+     * @param reader - Stream to read user input
      */ 
-    void run(HardwareSerial &reader);
+    void run(Stream &reader);
     /**
      * Function reading the string of user input and firing callbacks that have been added to the commander 
      * once the user has requested them - when he sends the command  

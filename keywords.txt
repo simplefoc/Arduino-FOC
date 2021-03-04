@@ -88,6 +88,10 @@ attach	KEYWORD2
 enableInterrupt	KEYWORD2
 getValue	KEYWORD2
 handle	KEYWORD2
+scalar	KEYWORD2
+pid	KEYWORD2
+lpf	KEYWORD2
+motor	KEYWORD2
 
 
 
