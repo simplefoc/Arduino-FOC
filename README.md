@@ -13,7 +13,8 @@ Therefore this is an attempt to:
   - <i>Support as many <b>motor + sensor + driver + mcu</b> combinations out there</i>
 - 🎯 Develop a modular FOC supporting BLDC driver boards:
    - *Low-power* gimbal driver (<5Amps) :  [*Arduino Simple**FOC**Shield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
-   - ***NEW***: *Medium-power* BLDC driver (<50Amps): [*Arduino Simple**FOC**PowerShield*](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
+   - ***NEW*** 📢: *Medium-power* BLDC driver (<30Amps): [Arduino <span class="simple">Simple<b>FOC</b>PowerShield</span> ](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
+   - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
 ##### <b> NEXT RELEASE 📢:</b> <i>Simple<b>FOC</b>library v2.1
 > #### Implemented features in dev branch
@@ -52,7 +53,7 @@ Therefore this is an attempt to:
 >   - `ControlType::voltage` does not exist any more now - `MotionControlType::torque`
 
 
-## Arduino *SimpleFOCShield* v2.0.2
+## Arduino *SimpleFOCShield* v2.0.3
 
 <p align="">
 <a href="https://youtu.be/G5pbo0C6ujE">
@@ -79,7 +80,7 @@ Therefore this is an attempt to:
 <p align=""><img src="https://simplefoc.com/assets/img/v2.jpg" height="180px">   <img src="https://simplefoc.com/assets/img/v1.jpg"  height="180px"> <img src="https://docs.simplefoc.com/extras/Images/simple_foc_shield_v13_small.gif"  height="180x"></p>
 
 
-## Arduino *SimpleFOClibrary* v2.0.2
+## Arduino *SimpleFOClibrary* v2.1
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">

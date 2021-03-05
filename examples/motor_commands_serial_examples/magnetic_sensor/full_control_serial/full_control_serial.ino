@@ -8,33 +8,7 @@
  * - set target values
  * - check all the configuration values 
  * 
- * To check the config value just enter the command letter.
- * For example: - to read velocity PI controller P gain run: P
- *              - to set velocity PI controller P gain  to 1.2 run: P1.2
- * 
- * To change the target value just enter a number in the terminal:
- * For example: - to change the target value to -0.1453 enter: -0.1453
- *              - to get the current target value enter: V3 
- * 
- * List of commands:
- *  - P: velocity PID controller P gain
- *  - I: velocity PID controller I gain
- *  - D: velocity PID controller D gain
- *  - R: velocity PID controller voltage ramp
- *  - F: velocity Low pass filter time constant
- *  - K: angle P controller P gain
- *  - N: angle P controller velocity limit
- *  - L: system voltage limit
- *  - C: control loop 
- *    - 0: voltage 
- *    - 1: velocity 
- *    - 2: angle
- *  - V: get motor variables
- *    - 0: currently set voltage
- *    - 1: current velocity
- *    - 2: current angle
- *    - 3: current target value
- * 
+ * See more info in docs.simplefoc.com/commander_interface
  */
 #include <SimpleFOC.h>
 

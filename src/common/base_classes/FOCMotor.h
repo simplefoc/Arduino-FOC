@@ -37,7 +37,7 @@ enum MotionControlType{
  */
 enum TorqueControlType{
   voltage, //!< Torque control using voltage
-  current, //!< Torque control using current
+  dc_current, //!< Torque control using DC current (one current magnitude)
   foc_current //!< torque control using dq currents
 };
 
@@ -172,7 +172,7 @@ class FOCMotor
     PIDController P_angle{DEF_P_ANGLE_P,0,0,1e10,DEF_VEL_LIM};	//!< parameter determining the position PID configuration 
     LowPassFilter LPF_velocity{DEF_VEL_FILTER_Tf};//!<  parameter determining the velocity Low pass filter configuration 
     LowPassFilter LPF_angle{0.0};//!<  parameter determining the angle low pass filter configuration 
-    unsigned int motion_downsample = 0; //!< parameter defining the ratio of downsampling for move commad
+    unsigned int motion_downsample = DEF_MOTION_DOWNSMAPLE; //!< parameter defining the ratio of downsampling for move commad
     unsigned int motion_cnt = 0; //!< counting variable for downsampling for move commad
 
     // sensor related variabels
@@ -193,7 +193,7 @@ class FOCMotor
      * significantly slowing the execution down!!!!
      */
     void monitor();
-    unsigned int monitor_downsample = 10; //!< show monitor outputs each monitor_downsample calls 
+    unsigned int monitor_downsample = DEF_MON_DOWNSMAPLE; //!< show monitor outputs each monitor_downsample calls 
     // initial monitoring will display target, voltage, velocity and angle
     uint8_t monitor_variables = _MON_TARGET | _MON_VOLT_Q | _MON_VEL | _MON_ANGLE; //!< Bit array holding the map of variables the user wants to monitor
    

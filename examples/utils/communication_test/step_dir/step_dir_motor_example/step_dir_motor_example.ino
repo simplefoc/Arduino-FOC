@@ -18,8 +18,8 @@ Encoder encoder = Encoder(2, 3, 500);
 void doA() { encoder.handleA(); }
 void doB() { encoder.handleB(); }
 
-// StepDirListener( step_pin, dir_pin, counts_per_revolution)
-StepDirListener step_dir = StepDirListener(A4, A5, 200);
+// StepDirListener( step_pin, dir_pin, counter_to_value)
+StepDirListener step_dir = StepDirListener(A4, A5, 2.0*_PI/200.0);
 void onStep() { step_dir.handle(); }
 
 void setup() {

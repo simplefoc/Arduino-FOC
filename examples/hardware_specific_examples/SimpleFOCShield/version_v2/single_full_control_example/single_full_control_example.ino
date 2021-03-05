@@ -56,7 +56,9 @@ void setup() {
   Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
-
+  motor.monitor_downsample = 0; // disable intially
+  motor.monitor_variables = _MON_TARGET | _MON_VEL | _MON_ANGLE; // monitor target velocity and angle
+  
   // current sense init and linking
   current_sense.init();
   motor.linkCurrentSense(&current_sense);
@@ -72,7 +74,7 @@ void setup() {
   // subscribe motor to the commander
   command.add('M', doMotor, "motor");
 
-  // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)
+  // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)  
   Serial.println(F("Motor commands sketch | Initial motion control > torque/voltage : target 2V."));
   
   _delay(1000);

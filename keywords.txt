@@ -78,7 +78,7 @@ angleOpenloop	KEYWORD2
 velocityOpenloop	KEYWORD2
 getPhaseCurrents	KEYWORD2
 getFOCCurrents	KEYWORD2
-getCurrent	KEYWORD2
+getDCCurrent	KEYWORD2
 setPwm	KEYWORD2
 driverAlign	KEYWORD2
 driverSync	KEYWORD2
@@ -88,6 +88,10 @@ attach	KEYWORD2
 enableInterrupt	KEYWORD2
 getValue	KEYWORD2
 handle	KEYWORD2
+scalar	KEYWORD2
+pid	KEYWORD2
+lpf	KEYWORD2
+motor	KEYWORD2
 
 
 
@@ -124,7 +128,7 @@ velocity_openloop	KEYWORD2
 angle	KEYWORD2
 angle_openloop	KEYWORD2
 torque	KEYWORD2
-current	KEYWORD2
+dc_current	KEYWORD2
 foc_current	KEYWORD2
 
 
@@ -147,7 +151,7 @@ voltage_power_supply	KEYWORD2
 voltage_sensor_align	KEYWORD2
 velocity_index_search	KEYWORD2
 monitor_downsample	KEYWORD2
-monitor_downsample	KEYWORD2
+monitor_variables	KEYWORD2
 motion_downsample	KEYWORD2
 
 pinA	KEYWORD2

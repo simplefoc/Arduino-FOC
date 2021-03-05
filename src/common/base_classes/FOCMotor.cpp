@@ -93,9 +93,9 @@ void FOCMotor::monitor() {
   }
   if(monitor_variables & _MON_VOLT_Q) {
     monitor_port->print(voltage.q,4);
+    monitor_port->print("\t");
     printed= true;
   }
-    monitor_port->print("\t");
   if(monitor_variables & _MON_VOLT_D) {
     monitor_port->print(voltage.d,4);
     monitor_port->print("\t");

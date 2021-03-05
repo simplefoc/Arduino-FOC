@@ -24,7 +24,7 @@ void setup() {
 void loop() {
 
     PhaseCurrent_s currents = current_sense.getPhaseCurrents();
-    float current_magnitude = current_sense.getCurrent();
+    float current_magnitude = current_sense.getDCCurrent();
 
     Serial.print(currents.a*1000); // milli Amps
     Serial.print("\t");

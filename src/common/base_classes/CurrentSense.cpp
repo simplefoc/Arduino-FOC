@@ -4,7 +4,7 @@
 // get current magnitude 
 //   - absolute  - if no electrical_angle provided 
 //   - signed    - if angle provided
-float CurrentSense::getCurrent(float motor_electrical_angle){
+float CurrentSense::getDCCurrent(float motor_electrical_angle){
     // read current phase currents
     PhaseCurrent_s current = getPhaseCurrents();
     // currnet sign - if motor angle not provided the magnitude is always positive

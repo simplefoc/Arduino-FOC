@@ -17,7 +17,7 @@ float target_position = 0;
 
 // instantiate the commander
 Commander command = Commander(Serial);
-void doTarget(char* cmd) { command.variable(&target_position, cmd); }
+void doTarget(char* cmd) { command.scalar(&target_position, cmd); }
 
 void setup() {
 

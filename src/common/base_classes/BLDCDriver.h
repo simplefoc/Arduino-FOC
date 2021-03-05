@@ -32,7 +32,7 @@ class BLDCDriver{
         virtual void setPwm(float Ua, float Ub, float Uc) = 0;
 
         /** 
-         * Set phase voltages to the harware 
+         * Set phase state, enable/disable 
          * 
          * @param sc - phase A state : active / disabled ( high impedance )
          * @param sb - phase B state : active / disabled ( high impedance )

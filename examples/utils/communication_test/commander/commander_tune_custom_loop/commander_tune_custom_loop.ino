@@ -24,7 +24,7 @@ LowPassFilter LPFv{0.01};
 Commander command = Commander(Serial);
 void doController(char* cmd) { command.pid(&PIDv, cmd); }
 void doFilter(char* cmd) { command.lpf(&LPFv, cmd); }
-void doTarget(char* cmd) { command.variable(&target_velocity, cmd); }
+void doTarget(char* cmd) { command.scalar(&target_velocity, cmd); }
 
 
 void setup() {
