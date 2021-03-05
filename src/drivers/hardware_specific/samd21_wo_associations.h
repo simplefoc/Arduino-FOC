@@ -1,4 +1,9 @@
 
+#include "variant.h"
+
+#ifdef _SAMD21_
+
+
 
 struct wo_association {
 	EPortType port;
@@ -10,8 +15,6 @@ struct wo_association {
 };
 
 
-
-#ifdef _SAMD21_
 
 
 

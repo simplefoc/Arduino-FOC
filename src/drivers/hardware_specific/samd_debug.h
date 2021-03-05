@@ -4,8 +4,12 @@
 #include "../hardware_api.h"
 #include "wiring_private.h"
 
-// Read count
-//TCC0->CTRLBSET.reg = TCC_CTRLBSET_CMD_READSYNC;
+#if defined(_SAMD21_)
+#include "./samd21_wo_associations.h"
+#elif defined(_SAMD51_)
+#include "./samd51_wo_associations.h"
+#endif
+
 //while (TCC0->SYNCBUSY.bit.CTRLB); // or while (TCC0->SYNCBUSY.reg);
 //int count = TCC0->COUNT.reg;
 
@@ -65,6 +69,22 @@ void printAllPinInfos() {
 		}
 		else
 			Serial.println("  None ");
+
+#ifdef _SAMD51_
+		Serial.print(" G=");
+		if (association.tccG>=0) {
+			int tcn = GetTCNumber(association.tccG);
+			Serial.print(" TCC");
+			Serial.print(tcn);
+			Serial.print("-");
+			Serial.print(GetTCChannelNumber(association.tccG));
+			Serial.print("[");
+			Serial.print(GetTCChannelNumber(association.woG));
+			Serial.println("]");
+		}
+		else
+			Serial.println("  None ");
+#endif
 
 	}
 	Serial.println();

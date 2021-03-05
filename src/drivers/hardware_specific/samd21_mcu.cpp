@@ -1,22 +1,21 @@
 
 
-#if defined(ARDUINO_ARCH_SAMD)
-//#if defined(_SAMD21_)
-
-
-#include "../hardware_api.h"
-#include "wiring_private.h"
-
-#include "./samd21_wo_associations.h"
-
 
 #define SIMPLEFOC_SAMD_DEBUG
 
 
 
-#ifndef SIMPLEFOC_SAMD_ALLOW_DIFFERENT_TCCS
-#define SIMPLEFOC_SAMD_ALLOW_DIFFERENT_TCCS false
+#include "../hardware_api.h"
+#include "wiring_private.h"
+
+#if defined(SAMD_SERIES)
+
+#if defined(_SAMD21_)
+#include "./samd21_wo_associations.h"
+#elif defined(_SAMD51_)
+#include "./samd21_wo_associations.h"
 #endif
+
 
 #ifndef SIMPLEFOC_SAMD_PWM_RESOLUTION
 #define SIMPLEFOC_SAMD_PWM_RESOLUTION 1000
@@ -24,7 +23,7 @@
 #endif
 
 #ifndef SIMPLEFOC_SAMD_MAX_TCC_PINCONFIGURATIONS
-#define SIMPLEFOC_SAMD_MAX_TCC_PINCONFIGURATIONS 12
+#define SIMPLEFOC_SAMD_MAX_TCC_PINCONFIGURATIONS 24
 #endif
 
 
