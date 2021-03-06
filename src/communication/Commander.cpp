@@ -28,7 +28,7 @@ void Commander::run(){
       // execute the user command
       run(received_chars);
 
-      // reset the command buffer 
+      // reset the command buffer
       received_chars[0] = 0;
       rec_cnt=0;
     }
@@ -36,9 +36,9 @@ void Commander::run(){
 }
 
 void Commander::run(Stream& serial){
-  Stream* tmp = com_port; // save the serial instance 
+  Stream* tmp = com_port; // save the serial instance
   // use the new serial instance to output if not available the one linked in constructor
-  if(!tmp) com_port = &serial; 
+  if(!tmp) com_port = &serial;
 
   // a string to hold incoming data
   while (serial.available()) {
@@ -49,7 +49,7 @@ void Commander::run(Stream& serial){
       // execute the user command
       run(received_chars);
 
-      // reset the command buffer 
+      // reset the command buffer
       received_chars[0] = 0;
       rec_cnt=0;
     }
@@ -111,27 +111,27 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
 
   // a bit of optimisation of variable memory for Arduino UNO (atmega328)
   switch(cmd){
-    case CMD_C_Q_PID:      // 
+    case CMD_C_Q_PID:      //
       printVerbose(F("PID curr q| "));
       if(sub_cmd == SCMD_LPF_TF) lpf(&motor->LPF_current_q, &user_command[1]);
       else pid(&motor->PID_current_q,&user_command[1]);
       break;
-    case CMD_C_D_PID:      // 
+    case CMD_C_D_PID:      //
       printVerbose(F("PID curr d| "));
       if(sub_cmd == SCMD_LPF_TF) lpf(&motor->LPF_current_d, &user_command[1]);
       else pid(&motor->PID_current_d, &user_command[1]);
       break;
-    case CMD_V_PID:      // 
+    case CMD_V_PID:      //
       printVerbose(F("PID vel| "));
       if(sub_cmd == SCMD_LPF_TF) lpf(&motor->LPF_velocity, &user_command[1]);
       else pid(&motor->PID_velocity, &user_command[1]);
       break;
-    case CMD_A_PID:      // 
+    case CMD_A_PID:      //
       printVerbose(F("PID angle| "));
       if(sub_cmd == SCMD_LPF_TF) lpf(&motor->LPF_angle, &user_command[1]);
       else pid(&motor->P_angle, &user_command[1]);
       break;
-    case CMD_LIMITS:      // 
+    case CMD_LIMITS:      //
      printVerbose(F("Limits| "));
       switch (sub_cmd){
         case SCMD_LIM_VOLT:      // voltage limit change
@@ -294,20 +294,20 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
               break;
           }
           break;
-        case SCMD_DOWNSAMPLE:   
+        case SCMD_DOWNSAMPLE:
           printVerbose(F("downsample: "));
           if(!GET) motor->monitor_downsample = value;
           println((int)motor->monitor_downsample);
           break;
-        case SCMD_CLEAR:    
-          motor->monitor_variables = (uint8_t) 0; 
+        case SCMD_CLEAR:
+          motor->monitor_variables = (uint8_t) 0;
           println(F("clear"));
           break;
-        case SCMD_SET:  
-          if(!GET) motor->monitor_variables = (uint8_t) 0; 
+        case SCMD_SET:
+          if(!GET) motor->monitor_variables = (uint8_t) 0;
           for(int i = 0; i < 7; i++){
             if(user_command[value_index+i] == '\n') break;
-            if(!GET) motor->monitor_variables |=  (user_command[value_index+i] - '0') << (6-i);  
+            if(!GET) motor->monitor_variables |=  (user_command[value_index+i] - '0') << (6-i);
             print( (user_command[value_index+i] - '0') );
           }
           println("");
@@ -371,7 +371,7 @@ void Commander::lpf(LowPassFilter* lpf, char* user_cmd){
       printVerbose(F("Tf: "));
       if(!GET) lpf->Tf = value;
       println(lpf->Tf);
-      break;  
+      break;
     default:
       printError();
       break;
@@ -435,5 +435,5 @@ void Commander::printVerbose(const __FlashStringHelper *message){
   if(verbose == VerboseMode::user_friendly) print(message);
 }
 void Commander::printError(){
- print(F("err"));
+ println(F("err"));
 }
