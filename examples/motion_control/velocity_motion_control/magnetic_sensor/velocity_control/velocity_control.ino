@@ -29,7 +29,7 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 float target_velocity = 0;
 // instantiate the commander
 Commander command = Commander(Serial);
-void doTarget(char* cmd) { command.variable(&target_velocity, cmd); }
+void doTarget(char* cmd) { command.scalar(&target_velocity, cmd); }
 
 void setup() {
  

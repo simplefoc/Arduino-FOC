@@ -53,6 +53,8 @@ void setup() {
   Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
+  motor.monitor_downsample = 0; // disable intially
+  motor.monitor_variables = _MON_TARGET | _MON_VEL | _MON_ANGLE; // monitor target velocity and angle
   
   // initialise motor
   motor.init();

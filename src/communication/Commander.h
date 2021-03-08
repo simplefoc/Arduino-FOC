@@ -39,7 +39,7 @@ class Commander
      * 
      * @param serial - Serial com port instance
      */
-    Commander(HardwareSerial &serial);
+    Commander(Stream &serial);
     Commander();
 
     /**
@@ -61,9 +61,9 @@ class Commander
      *    '#' - Number of decimal places
      *    '?' - Scan command - displays all the labels of attached nodes
      * 
-     * @param reader - HardwareSerial to read user input
+     * @param reader - Stream to read user input
      */ 
-    void run(HardwareSerial &reader);
+    void run(Stream &reader);
     /**
      * Function reading the string of user input and firing callbacks that have been added to the commander 
      * once the user has requested them - when he sends the command  
@@ -90,7 +90,7 @@ class Commander
     uint8_t decimal_places = 3; //!< number of decimal places to be used when displaying numbers
 
     // monitoring functions
-    HardwareSerial* com_port = nullptr; //!< Serial terminal variable if provided
+    Stream* com_port = nullptr; //!< Serial terminal variable if provided
     
     /**
      * 
@@ -159,12 +159,12 @@ class Commander
      */
     void pid(PIDController* pid, char* user_cmd);
     /**
-     * Float variable command interface
+     * Float variable scalar command interface
      *  - It only has one property - one float value
      *  - It can be get by sending an empty string '\n'
      *  - It can be set by sending 'value' - (ex. 0.01 for settin *value=0.01)
      */
-    void variable(float* value, char* user_cmd);
+    void scalar(float* value, char* user_cmd);
 
   private:
     // Subscribed command callback variables

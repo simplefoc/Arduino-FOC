@@ -15,9 +15,9 @@ class StepDirListener
      * Constructor for step/direction interface
      *  @param step              - pin
      *  @param direction         - pin
-     *  @param step_per_rotation - number of steps per motor rotation
+     *  @param counter_to_value  - step counter to value
      */
-    StepDirListener(int pinStep, int pinDir, float step_per_rotation = 1);
+    StepDirListener(int pinStep, int pinDir, float counter_to_value = 1);
     /**
      * Start listenning for step commands
      * 
@@ -50,7 +50,7 @@ class StepDirListener
 
   private:
     float* attached_variable = nullptr; //!< pointer to the attached variable 
-    long step_per_rotation; //!< number of steps per rotation 
+    float counter_to_value; //!< step counter to value 
     bool step_active = 0; //!< current step pin status (HIGH/LOW) - debouncing variable
 };
 

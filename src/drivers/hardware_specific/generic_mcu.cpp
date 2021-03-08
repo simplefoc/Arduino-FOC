@@ -12,6 +12,8 @@
 
 #elif defined(_STM32_DEF_) // or stm32
 
+#elif defined(_SAMD21_)  // samd21 for the moment, samd51 in progress...
+
 #else
 
 // function setting the high pwm frequency to the supplied pins

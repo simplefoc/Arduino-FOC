@@ -13,8 +13,8 @@
 // angle 
 float received_angle = 0;
 
-// StepDirListener( step_pin, dir_pin, counts_per_revolution)
-StepDirListener step_dir = StepDirListener(4, 5, 200);
+// StepDirListener( step_pin, dir_pin, counter_to_value)
+StepDirListener step_dir = StepDirListener(4, 5, 2.0*_PI/200.0); // receive the angle in radians
 void onStep() { step_dir.handle(); }
 
 // If no available hadware interrupt pins use the software interrupt

@@ -96,14 +96,14 @@ class BLDCMotor: public FOCMotor
      * 
      * @param target_velocity - rad/s
      */
-    void velocityOpenloop(float target_velocity);
+    float velocityOpenloop(float target_velocity);
     /**
      * Function (iterative) generating open loop movement towards the target angle
      * it uses voltage_limit and velocity_limit variables
      * 
      * @param target_angle - rad
      */
-    void angleOpenloop(float target_angle);
+    float angleOpenloop(float target_angle);
     // open loop variables
     long open_loop_timestamp;
 };

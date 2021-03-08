@@ -8,8 +8,8 @@
 // angle 
 float received_angle = 0;
 
-// StepDirListener( step_pin, dir_pin, counts_per_revolution)
-StepDirListener step_dir = StepDirListener(2, 3, 200);
+// StepDirListener( step_pin, dir_pin, counter_to_value)
+StepDirListener step_dir = StepDirListener(2, 3, 360.0/200.0); // receive the angle in degrees
 void onStep() { step_dir.handle(); }
 
 void setup() {

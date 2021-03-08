@@ -23,7 +23,7 @@ InlineCurrentSense current_sense = InlineCurrentSense(0.01, 50.0, A0, A2);
 float target_current = 0;
 // instantiate the commander
 Commander command = Commander(Serial);
-void doTarget(char* cmd) { command.variable(&target_current, cmd); }
+void doTarget(char* cmd) { command.scalar(&target_current, cmd); }
 
 void setup() { 
   
@@ -46,7 +46,7 @@ void setup() {
   motor.linkCurrentSense(&current_sense);
 
   // set torque mode:
-  // TorqueControlType::current 
+  // TorqueControlType::dc_current 
   // TorqueControlType::voltage
   // TorqueControlType::foc_current
   motor.torque_controller = TorqueControlType::foc_current; 

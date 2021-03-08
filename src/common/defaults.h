@@ -30,6 +30,10 @@
 // default current limit values
 #define DEF_CURRENT_LIM 0.2 //!< 2Amps current limit by default
 
+// default monitor downsample
+#define DEF_MON_DOWNSMAPLE 100 //!< default monitor downsample
+#define DEF_MOTION_DOWNSMAPLE 0 //!< default motion downsample - disable 
+
 // angle P params
 #define DEF_P_ANGLE_P 20.0 //!< default P controller P value
 #define DEF_VEL_LIM 20.0 //!< angle velocity limit default
