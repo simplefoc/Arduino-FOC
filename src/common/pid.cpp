@@ -29,8 +29,8 @@ float PIDController::operator() (float error){
     // Tustin transform of the integral part
     // u_ik = u_ik_1  + I*Ts/2*(ek + ek_1)
     float integral = integral_prev + I*Ts*0.5*(error + error_prev);
-    // antiwindup - limit the output
-    integral = _constrain(integral, -limit, limit);
+    // antiwindup - limit the accumulator
+    integral = _constrain(integral, -(limit-proportional), limit-proportional);
     // Discrete derivation
     // u_dk = D(ek - ek_1)/Ts
     float derivative = D*(error - error_prev)/Ts;
