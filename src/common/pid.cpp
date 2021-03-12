@@ -29,17 +29,13 @@ float PIDController::operator() (float error){
     // Tustin transform of the integral part
     // u_ik = u_ik_1  + I*Ts/2*(ek + ek_1)
     float integral = integral_prev + I*Ts*0.5*(error + error_prev);
-    // antiwindup - limit the accumulator
-    integral = _constrain(integral, -(limit-proportional), limit-proportional);
     // Discrete derivation
     // u_dk = D(ek - ek_1)/Ts
     float derivative = D*(error - error_prev)/Ts;
 
     // sum all the components
     float output = proportional + integral + derivative;
-    // antiwindup - limit the output variable
-    output = _constrain(output, -limit, limit);
-
+    
     // limit the acceleration by ramping the output
     float output_rate = (output - output_prev)/Ts;
     if (output_rate > output_ramp)
@@ -47,6 +43,15 @@ float PIDController::operator() (float error){
     else if (output_rate < -output_ramp)
         output = output_prev - output_ramp*Ts;
         
+    // limit abs value of output and antiwindup for integrator
+    if (output > limit) {
+        output = limit;
+        integral = output - proportional - derivative;
+    } else if (output < limit) {
+        output = -limit;
+        integral = output - proportional - derivative;
+    }
+    
     // saving for the next pass
     integral_prev = integral;
     output_prev = output;
