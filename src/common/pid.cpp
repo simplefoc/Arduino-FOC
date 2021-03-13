@@ -47,7 +47,7 @@ float PIDController::operator() (float error){
     if (output > limit) {
         output = limit;
         integral = output - proportional;
-    } else if (output < limit) {
+    } else if (output < -limit) {
         output = -limit;
         integral = output - proportional;
     }
