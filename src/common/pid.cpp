@@ -46,10 +46,10 @@ float PIDController::operator() (float error){
     // limit abs value of output and antiwindup for integrator
     if (output > limit) {
         output = limit;
-        integral = output - proportional - derivative;
+        integral = output - proportional;
     } else if (output < limit) {
         output = -limit;
-        integral = output - proportional - derivative;
+        integral = output - proportional;
     }
     
     // saving for the next pass
