@@ -27,8 +27,8 @@ float PIDController::operator() (float error){
     // u_p  = P *e(k)
     float proportional = P * error;
     // Tustin transform of the integral part
-    // u_ik = u_ik_1  + I*Ts/2*(ek + ek_1)
-    float integral = integral_prev + I*Ts*0.5*(error + error_prev);
+    // u_ik = u_ik_1  + I*Ts*e(k)
+    float integral = integral_prev + I*Ts*error;
     // Discrete derivation
     // u_dk = D(ek - ek_1)/Ts
     float derivative = D*(error - error_prev)/Ts;
