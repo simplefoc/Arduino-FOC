@@ -24,12 +24,6 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 //StepperMotor motor = StepperMotor(1);
 //StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
-//  Encoder(int encA, int encB , int cpr, int index)
-Encoder encoder = Encoder(2, 3, 2048);
-// interrupt routine intialisation
-void doA(){encoder.handleA();}
-void doB(){encoder.handleB();}
-
 // magnetic sensor instance - SPI
 MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
 // magnetic sensor instance - I2C
