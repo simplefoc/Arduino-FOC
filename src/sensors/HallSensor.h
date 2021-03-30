@@ -57,30 +57,8 @@ class HallSensor: public Sensor{
     float getAngle() override;
     /**  get current angular velocity (rad/s) */
     float getVelocity() override;
-    /** 
-     *  set current angle as zero angle 
-     * return the angle [rad] difference
-     */
-    float initRelativeZero() override;
-    /**
-     * set index angle as zero angle
-     * return the angle [rad] difference
-     */
-    float initAbsoluteZero() override;
-    /**
-     *  returns 0 if it has no index 
-     * 0 - HallSensor without index
-     * 1 - HallSensor with index 
-     */
-    int hasAbsoluteZero() override;
-    /**
-     * returns 0 if it does need search for absolute zero
-     * 0 - HallSensor without index 
-     * 1 - ecoder with index
-     */
-    int needsAbsoluteZeroSearch() override;
 
-    // whether last step was CW (+1) or CCW (-1).  Note - this is a raw direction (i.e. doesn't include natural_direction reversal)
+    // whether last step was CW (+1) or CCW (-1).  
     Direction direction;
 
     void attachSectorCallback(void (*onSectorChange)(int a) = nullptr);
@@ -99,7 +77,6 @@ class HallSensor: public Sensor{
     Direction decodeDirection(int oldState, int newState);
     void updateState();
 
-    int zero_offset;
     volatile long pulse_timestamp;//!< last impulse timestamp in us
     volatile int A_active; //!< current active states of A channel
     volatile int B_active; //!< current active states of B channel

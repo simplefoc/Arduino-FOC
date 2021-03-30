@@ -39,6 +39,13 @@ void doB(){encoder.handleB();}
 PciListenerImp listenerA(encoder.pinA, doA);
 PciListenerImp listenerB(encoder.pinB, doB);
 
+
+// voltage set point variable
+float target_voltage = 2;
+// instantiate the commander
+Commander command = Commander(Serial);
+void doTarget(char* cmd) { command.scalar(&target_voltage, cmd); }
+
 void setup() { 
   
   // initialize encoder sensor hardware
@@ -60,7 +67,7 @@ void setup() {
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
 
   // set motion control loop to be used
-  motor.controller = ControlType::voltage;
+  motor.controller = MotionControlType::torque;
 
   // use monitoring with serial for motor init
   // comment out if not needed
@@ -75,14 +82,14 @@ void setup() {
   motor.init();
   // align sensor and start FOC
   motor.initFOC();
+  
+  // add target command T
+  command.add('T', doTarget, "target voltage");
 
-  Serial.println("Motor ready.");
-  Serial.println("Set the target voltage using serial terminal:");
+  Serial.println(F("Motor ready."));
+  Serial.println(F("Set the target voltage using serial terminal:"));
   _delay(1000);
 }
-
-// target voltage to be set to the motor
-float target_voltage = 2;
 
 void loop() {
 
@@ -98,33 +105,6 @@ void loop() {
   // You can also use motor.move() and set the motor.target in the code
   motor.move(target_voltage);
   
-  // communicate with the user
-  serialReceiveUserCommand();
-}
-
-
-// utility function enabling serial communication with the user to set the target values
-// this function can be implemented in serialEvent function as well
-void serialReceiveUserCommand() {
-  
-  // a string to hold incoming data
-  static String received_chars;
-  
-  while (Serial.available()) {
-    // get the new byte:
-    char inChar = (char)Serial.read();
-    // add it to the string buffer:
-    received_chars += inChar;
-    // end of user input
-    if (inChar == '\n') {
-      
-      // change the motor target
-      target_voltage = received_chars.toFloat();
-      Serial.print("Target voltage: ");
-      Serial.println(target_voltage);
-      
-      // reset the command buffer 
-      received_chars = "";
-    }
-  }
+  // user communication
+  command.run();
 }

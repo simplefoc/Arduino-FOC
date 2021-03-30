@@ -33,7 +33,7 @@ public:
 protected:
     float integral_prev; //!< last integral component value
     float error_prev; //!< last tracking error value
-    float timestamp_prev; //!< Last execution timestamp
+    unsigned long timestamp_prev; //!< Last execution timestamp
     float output_prev;  //!< last pid output value
 };
 

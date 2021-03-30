@@ -15,17 +15,28 @@ class StepperDriver2PWM: public StepperDriver
   public:
     /**
       StepperMotor class constructor
-      @param ph1PWM  PWM1 phase pwm pin
-      @param ph1INA  IN1A phase dir pin
-      @param ph1INB  IN1B phase dir pin
-      @param ph2PWM  PWM2 phase pwm pin
-      @param ph2INA  IN2A phase dir pin
-      @param ph2INB  IN2B phase dir pin
+      @param pwm1  PWM1 phase pwm pin
+      @param in1a  IN1A phase dir pin
+      @param in1b  IN1B phase dir pin
+      @param pwm2  PWM2 phase pwm pin
+      @param in2a  IN2A phase dir pin
+      @param in2b  IN2B phase dir pin
       @param en1 enable pin phase 1 (optional input)
       @param en2 enable pin phase 2 (optional input)
     */
-    StepperDriver2PWM(int ph1PWM,int ph1INA,int ph1INB,int ph2PWM,int ph2INA,int ph2INB, int en1 = NOT_SET, int en2 = NOT_SET);
+    StepperDriver2PWM(int pwm1, int in1a, int in1b, int pwm2, int in2a, int in2b, int en1 = NOT_SET, int en2 = NOT_SET);
     
+    /**
+      StepperMotor class constructor
+      @param pwm1  PWM1 phase pwm pin
+      @param dir1  DIR1 phase dir pin
+      @param pwm2  PWM2 phase pwm pin
+      @param dir2  DIR2 phase dir pin
+      @param en1 enable pin phase 1 (optional input)
+      @param en2 enable pin phase 2 (optional input)
+    */
+    StepperDriver2PWM(int pwm1, int dir1, int pwm2, int dir2, int en1 = NOT_SET, int en2 = NOT_SET);
+
     /**  Motor hardware init function */
   	int init() override;
     /** Motor disable function */
@@ -35,11 +46,11 @@ class StepperDriver2PWM: public StepperDriver
 
     // hardware variables
     int pwm1; //!< phase 1 pwm pin number
-    int ina1; //!< phase 1 INA pin number
-    int inb1; //!< phase 1 INB pin number
+    int dir1a; //!< phase 1 INA pin number
+    int dir1b; //!< phase 1 INB pin number
     int pwm2; //!< phase 2 pwm pin number
-    int ina2; //!< phase 2 INA pin number
-    int inb2; //!< phase 2 INB pin number
+    int dir2a; //!< phase 2 INA pin number
+    int dir2b; //!< phase 2 INB pin number
     int enable_pin1; //!< enable pin number phase 1
     int enable_pin2; //!< enable pin number phase 2
 

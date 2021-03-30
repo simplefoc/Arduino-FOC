@@ -1,6 +1,6 @@
 #include "../hardware_api.h"
 
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega328PB__) 
 
 // set pwm frequency to 32KHz
 void _pinHighFrequency(const int pin){

@@ -5,11 +5,11 @@ class StepperDriver{
     public:
         
         /** Initialise hardware */
-        virtual int init();
+        virtual int init() = 0;
         /** Enable hardware */
-        virtual void enable();
+        virtual void enable() = 0;
         /** Disable hardware */
-        virtual void disable();
+        virtual void disable() = 0;
 
         long pwm_frequency; //!< pwm frequency value in hertz
         float voltage_power_supply; //!< power supply voltage 
@@ -21,7 +21,7 @@ class StepperDriver{
          * @param Ua phase A voltage
          * @param Ub phase B voltage
         */
-        virtual void setPwm(float Ua, float Ub);
+        virtual void setPwm(float Ua, float Ub) = 0;
 };
 
 #endif

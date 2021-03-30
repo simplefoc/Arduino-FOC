@@ -18,8 +18,9 @@ class BLDCMotor: public FOCMotor
     /**
      BLDCMotor class constructor
      @param pp pole pairs number
+     @param R  motor phase resistance
      */ 
-    BLDCMotor(int pp);
+    BLDCMotor(int pp,  float R = NOT_SET);
     
     /**
      * Function linking a motor and a foc driver 
@@ -65,8 +66,8 @@ class BLDCMotor: public FOCMotor
      */
     void move(float target = NOT_SET) override;
     
-    float Ua,Ub,Uc;//!< Current phase voltages Ua,Ub and Uc set to motor
-    float	Ualpha,Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
+    float Ua, Ub, Uc;//!< Current phase voltages Ua,Ub and Uc set to motor
+    float	Ualpha, Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
 
 
   private:
@@ -82,8 +83,10 @@ class BLDCMotor: public FOCMotor
     void setPhaseVoltage(float Uq, float Ud, float angle_el);
     /** Sensor alignment to electrical 0 angle of the motor */
     int alignSensor();
+    /** Current sense and motor phase alignment */
+    int alignCurrentSense();
     /** Motor and sensor alignment to the sensors absolute 0 angle  */
-    int absoluteZeroAlign();
+    int absoluteZeroSearch();
 
         
     // Open loop motion control    
@@ -93,14 +96,14 @@ class BLDCMotor: public FOCMotor
      * 
      * @param target_velocity - rad/s
      */
-    void velocityOpenloop(float target_velocity);
+    float velocityOpenloop(float target_velocity);
     /**
      * Function (iterative) generating open loop movement towards the target angle
      * it uses voltage_limit and velocity_limit variables
      * 
      * @param target_angle - rad
      */
-    void angleOpenloop(float target_angle);
+    float angleOpenloop(float target_angle);
     // open loop variables
     long open_loop_timestamp;
 };

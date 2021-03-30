@@ -106,7 +106,7 @@ void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm
   mcpwm_init(mcpwm_unit, MCPWM_TIMER_1, &pwm_config);    //Configure PWM0A & PWM0B with above settings
   mcpwm_init(mcpwm_unit, MCPWM_TIMER_2, &pwm_config);    //Configure PWM0A & PWM0B with above settings
   
-  if (dead_zone != NOT_SET){
+  if (_isset(dead_zone)){
     // dead zone is configured  
     float dead_time = (float)(_MCPWM_FREQ / (pwm_frequency)) * dead_zone;  
     mcpwm_deadtime_enable(mcpwm_unit, MCPWM_TIMER_0, MCPWM_ACTIVE_HIGH_COMPLIMENT_MODE, dead_time/2.0, dead_time/2.0); 
@@ -170,7 +170,7 @@ void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm
 // supports Arudino/ATmega328, STM32 and ESP32 
 void _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
 
-  if(!pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = 20000; // default frequency 20khz - centered pwm has twice lower frequency
+  if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = 20000; // default frequency 20khz - centered pwm has twice lower frequency
   else pwm_frequency = _constrain(pwm_frequency, 0, 40000); // constrain to 40kHz max - centered pwm has twice lower frequency
 
   stepper_2pwm_motor_slots_t m_slot = {};
@@ -216,7 +216,7 @@ void _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
 // supports Arudino/ATmega328, STM32 and ESP32 
 void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
 
-  if(!pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = 20000; // default frequency 20khz - centered pwm has twice lower frequency
+  if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = 20000; // default frequency 20khz - centered pwm has twice lower frequency
   else pwm_frequency = _constrain(pwm_frequency, 0, 40000); // constrain to 40kHz max - centered pwm has twice lower frequency
 
   bldc_3pwm_motor_slots_t m_slot = {};
@@ -261,7 +261,7 @@ void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int
 // - hardware speciffic
 void _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
 
-  if(!pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = 20000; // default frequency 20khz - centered pwm has twice lower frequency
+  if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = 20000; // default frequency 20khz - centered pwm has twice lower frequency
   else pwm_frequency = _constrain(pwm_frequency, 0, 40000); // constrain to 50kHz max - centered pwm has twice lower frequency
   stepper_4pwm_motor_slots_t m_slot = {};
   // determine which motor are we connecting
@@ -364,7 +364,7 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, in
 // - hardware specific
 int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
   
-  if(!pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = 20000; // default frequency 20khz - centered pwm has twice lower frequency
+  if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = 20000; // default frequency 20khz - centered pwm has twice lower frequency
   else pwm_frequency = _constrain(pwm_frequency, 0, 40000); // constrain to 40kHz max - centered pwm has twice lower frequency
   bldc_6pwm_motor_slots_t m_slot = {};
   // determine which motor are we connecting

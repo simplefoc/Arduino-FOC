@@ -20,8 +20,8 @@ StepperDriver4PWM::StepperDriver4PWM(int ph1A,int ph1B,int ph2A,int ph2B,int en1
 // enable motor driver
 void  StepperDriver4PWM::enable(){
     // enable_pin the driver - if enable_pin pin available
-    if ( enable_pin1 != NOT_SET ) digitalWrite(enable_pin1, HIGH);
-    if ( enable_pin2 != NOT_SET ) digitalWrite(enable_pin2, HIGH);
+    if ( _isset(enable_pin1) ) digitalWrite(enable_pin1, HIGH);
+    if ( _isset(enable_pin2) ) digitalWrite(enable_pin2, HIGH);
     // set zero to PWM
     setPwm(0,0);
 }
@@ -32,8 +32,8 @@ void StepperDriver4PWM::disable()
   // set zero to PWM
   setPwm(0, 0);
   // disable the driver - if enable_pin pin available
-  if ( enable_pin1 != NOT_SET ) digitalWrite(enable_pin1, LOW);
-  if ( enable_pin2 != NOT_SET ) digitalWrite(enable_pin2, LOW);
+  if ( _isset(enable_pin1) ) digitalWrite(enable_pin1, LOW);
+  if ( _isset(enable_pin2) ) digitalWrite(enable_pin2, LOW);
 
 }
 
@@ -47,11 +47,11 @@ int StepperDriver4PWM::init() {
   pinMode(pwm1B, OUTPUT);
   pinMode(pwm2A, OUTPUT);
   pinMode(pwm2B, OUTPUT);
-  if(enable_pin1 != NOT_SET) pinMode(enable_pin1, OUTPUT);
-  if(enable_pin2 != NOT_SET) pinMode(enable_pin2, OUTPUT);
+  if( _isset(enable_pin1) ) pinMode(enable_pin1, OUTPUT);
+  if( _isset(enable_pin2) ) pinMode(enable_pin2, OUTPUT);
 
   // sanity check for the voltage limit configuration
-  if(voltage_limit == NOT_SET || voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
+  if( !_isset(voltage_limit) || voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
 
   // Set the pwm frequency to the pins
   // hardware specific function - depending on driver and mcu
