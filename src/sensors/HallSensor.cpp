@@ -93,7 +93,7 @@ void HallSensor::attachSectorCallback(void (*_onSectorChange)(int sector)) {
 }
 
 /*
-	Shaft angle calculation
+  Shaft angle calculation
 */
 float HallSensor::getAngle() {
   return ((electric_rotations * 6 + electric_sector) / cpr) * _2PI ;

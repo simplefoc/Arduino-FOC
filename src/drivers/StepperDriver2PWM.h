@@ -38,9 +38,9 @@ class StepperDriver2PWM: public StepperDriver
     StepperDriver2PWM(int pwm1, int dir1, int pwm2, int dir2, int en1 = NOT_SET, int en2 = NOT_SET);
 
     /**  Motor hardware init function */
-  	int init() override;
+    int init() override;
     /** Motor disable function */
-  	void disable() override;
+    void disable() override;
     /** Motor enable function */
     void enable() override;
 

@@ -17,7 +17,7 @@ StepperMotor::StepperMotor(int pp, float _R)
 }
 
 /**
-	Link the driver which controls the motor
+  Link the driver which controls the motor
 */
 void StepperMotor::linkDriver(StepperDriver* _driver) {
   driver = _driver;

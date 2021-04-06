@@ -65,13 +65,13 @@ void MagneticSensorI2C::init(TwoWire* _wire){
   // I2C communication begin
   wire->begin();
 
-	// velocity calculation init
-	angle_prev = 0;
-	velocity_calc_timestamp = _micros(); 
+  // velocity calculation init
+  angle_prev = 0;
+  velocity_calc_timestamp = _micros(); 
 
-	// full rotations tracking number
-	full_rotation_offset = 0;
-	angle_data_prev = getRawCount();  
+  // full rotations tracking number
+  full_rotation_offset = 0;
+  angle_data_prev = getRawCount();  
 }
 
 //  Shaft angle calculation
@@ -116,7 +116,7 @@ float MagneticSensorI2C::getVelocity(){
 
 // function reading the raw counter of the magnetic sensor
 int MagneticSensorI2C::getRawCount(){
-	return (int)MagneticSensorI2C::read(angle_register_msb);
+  return (int)MagneticSensorI2C::read(angle_register_msb);
 }
 
 // I2C functions 
@@ -127,26 +127,26 @@ int MagneticSensorI2C::getRawCount(){
 */
 int MagneticSensorI2C::read(uint8_t angle_reg_msb) {
   // read the angle register first MSB then LSB
-	byte readArray[2];
-	uint16_t readValue = 0;
+  byte readArray[2];
+  uint16_t readValue = 0;
   // notify the device that is aboout to be read
-	wire->beginTransmission(chip_address);
-	wire->write(angle_reg_msb);
+  wire->beginTransmission(chip_address);
+  wire->write(angle_reg_msb);
   wire->endTransmission(false);
   
   // read the data msb and lsb
-	wire->requestFrom(chip_address, (uint8_t)2);
-	for (byte i=0; i < 2; i++) {
-		readArray[i] = wire->read();
-	}
+  wire->requestFrom(chip_address, (uint8_t)2);
+  for (byte i=0; i < 2; i++) {
+    readArray[i] = wire->read();
+  }
 
   // depending on the sensor architecture there are different combinations of 
   // LSB and MSB register used bits
   // AS5600 uses 0..7 LSB and 8..11 MSB
   // AS5048 uses 0..5 LSB and 6..13 MSB
   readValue = ( readArray[1] &  lsb_mask );
-	readValue += ( ( readArray[0] & msb_mask ) << lsb_used );
-	return readValue;
+  readValue += ( ( readArray[0] & msb_mask ) << lsb_used );
+  return readValue;
 }
 
 /*

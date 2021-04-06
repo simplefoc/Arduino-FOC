@@ -99,7 +99,7 @@ void Encoder::handleIndex() {
 }
 
 /*
-	Shaft angle calculation
+  Shaft angle calculation
 */
 float Encoder::getAngle(){
   return  _2PI * (pulse_counter) / ((float)cpr);

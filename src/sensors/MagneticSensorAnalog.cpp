@@ -24,13 +24,13 @@ MagneticSensorAnalog::MagneticSensorAnalog(uint8_t _pinAnalog, int _min_raw_coun
 
 void MagneticSensorAnalog::init(){
 
-	// velocity calculation init
-	angle_prev = 0;
-	velocity_calc_timestamp = _micros(); 
+  // velocity calculation init
+  angle_prev = 0;
+  velocity_calc_timestamp = _micros(); 
 
-	// full rotations tracking number
-	full_rotation_offset = 0;
-	raw_count_prev = getRawCount();  
+  // full rotations tracking number
+  full_rotation_offset = 0;
+  raw_count_prev = getRawCount();  
 }
 
 //  Shaft angle calculation
@@ -68,5 +68,5 @@ float MagneticSensorAnalog::getVelocity(){
 
 // function reading the raw counter of the magnetic sensor
 int MagneticSensorAnalog::getRawCount(){
-	return analogRead(pinAnalog);
+  return analogRead(pinAnalog);
 }

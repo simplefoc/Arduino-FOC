@@ -29,16 +29,16 @@ class InlineCurrentSense: public CurrentSense{
     // ADC measuremnet gain for each phase
     // support for different gains for different phases of more commonly - inverted phase currents
     // this should be automated later
-  	int gain_a; //!< phase A gain 
-  	int gain_b; //!< phase B gain 
-  	int gain_c; //!< phase C gain 
+    int gain_a; //!< phase A gain 
+    int gain_b; //!< phase B gain 
+    int gain_c; //!< phase C gain 
 
   private:
 
     // hardware variables
-  	int pinA; //!< pin A analog pin for current measurement
-  	int pinB; //!< pin B analog pin for current measurement
-  	int pinC; //!< pin C analog pin for current measurement
+    int pinA; //!< pin A analog pin for current measurement
+    int pinB; //!< pin B analog pin for current measurement
+    int pinC; //!< pin C analog pin for current measurement
 
     // gain variables
     double shunt_resistor; //!< Shunt resistor value 

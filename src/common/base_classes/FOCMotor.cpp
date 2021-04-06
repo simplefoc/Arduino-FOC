@@ -39,14 +39,14 @@ FOCMotor::FOCMotor()
 
 
 /**
-	Sensor linking method
+  Sensor linking method
 */
 void FOCMotor::linkSensor(Sensor* _sensor) {
   sensor = _sensor;
 }
 
 /**
-	CurrentSense linking method
+  CurrentSense linking method
 */
 void FOCMotor::linkCurrentSense(CurrentSense* _current_sense) {
   current_sense = _current_sense;

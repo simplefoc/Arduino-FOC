@@ -25,16 +25,16 @@ class StepperDriver4PWM: public StepperDriver
     StepperDriver4PWM(int ph1A,int ph1B,int ph2A,int ph2B, int en1 = NOT_SET, int en2 = NOT_SET);
     
     /**  Motor hardware init function */
-  	int init() override;
+    int init() override;
     /** Motor disable function */
-  	void disable() override;
+    void disable() override;
     /** Motor enable function */
     void enable() override;
 
     // hardware variables
-  	int pwm1A; //!< phase 1A pwm pin number
-  	int pwm1B; //!< phase 1B pwm pin number
-  	int pwm2A; //!< phase 2A pwm pin number
+    int pwm1A; //!< phase 1A pwm pin number
+    int pwm1B; //!< phase 1B pwm pin number
+    int pwm2A; //!< phase 2A pwm pin number
     int pwm2B; //!< phase 2B pwm pin number
     int enable_pin1; //!< enable pin number phase 1
     int enable_pin2; //!< enable pin number phase 2

@@ -15,7 +15,7 @@
 #include "common/defaults.h"
 
 /**
- Stepper Motor class
+  Stepper Motor class
 */
 class StepperMotor: public FOCMotor
 {
@@ -41,9 +41,9 @@ class StepperMotor: public FOCMotor
     StepperDriver* driver; 
 
     /**  Motor hardware init function */
-  	void init() override;
+    void init() override;
     /** Motor disable function */
-  	void disable() override;
+    void disable() override;
     /** Motor enable function */
     void enable() override;
 
@@ -75,7 +75,7 @@ class StepperMotor: public FOCMotor
      */
     void move(float target = NOT_SET) override;
     
-    float	Ualpha,Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
+    float  Ualpha,Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
 
   private:
   

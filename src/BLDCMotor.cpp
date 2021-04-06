@@ -16,7 +16,7 @@ BLDCMotor::BLDCMotor(int pp, float _R)
 
 
 /**
-	Link the driver which controls the motor
+  Link the driver which controls the motor
 */
 void BLDCMotor::linkDriver(BLDCDriver* _driver) {
   driver = _driver;

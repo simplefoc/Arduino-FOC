@@ -65,28 +65,28 @@ void MagneticSensorSPI::init(SPIClass* _spi){
 
   spi = _spi;
 
-	// 1MHz clock (AMS should be able to accept up to 10MHz)
-	settings = SPISettings(clock_speed, MSBFIRST, spi_mode);
+  // 1MHz clock (AMS should be able to accept up to 10MHz)
+  settings = SPISettings(clock_speed, MSBFIRST, spi_mode);
 
-	//setup pins
-	pinMode(chip_select_pin, OUTPUT);
+  //setup pins
+  pinMode(chip_select_pin, OUTPUT);
   
-	//SPI has an internal SPI-device counter, it is possible to call "begin()" from different devices
-	spi->begin();
+  //SPI has an internal SPI-device counter, it is possible to call "begin()" from different devices
+  spi->begin();
 #ifndef ESP_H // if not ESP32 board
-	spi->setBitOrder(MSBFIRST); // Set the SPI_1 bit order
-	spi->setDataMode(spi_mode) ;
-	spi->setClockDivider(SPI_CLOCK_DIV8);
+  spi->setBitOrder(MSBFIRST); // Set the SPI_1 bit order
+  spi->setDataMode(spi_mode) ;
+  spi->setClockDivider(SPI_CLOCK_DIV8);
 #endif
 
-	digitalWrite(chip_select_pin, HIGH);
-	// velocity calculation init
-	angle_prev = 0;
-	velocity_calc_timestamp = _micros(); 
+  digitalWrite(chip_select_pin, HIGH);
+  // velocity calculation init
+  angle_prev = 0;
+  velocity_calc_timestamp = _micros(); 
 
-	// full rotations tracking number
-	full_rotation_offset = 0;
-	angle_data_prev = getRawCount();  
+  // full rotations tracking number
+  full_rotation_offset = 0;
+  angle_data_prev = getRawCount();  
 }
 
 //  Shaft angle calculation
@@ -132,7 +132,7 @@ float MagneticSensorSPI::getVelocity(){
 
 // function reading the raw counter of the magnetic sensor
 int MagneticSensorSPI::getRawCount(){
-	return (int)MagneticSensorSPI::read(angle_register);
+  return (int)MagneticSensorSPI::read(angle_register);
 }
 
 // SPI functions 
@@ -140,15 +140,15 @@ int MagneticSensorSPI::getRawCount(){
  * Utility function used to calculate even parity of word
  */
 byte MagneticSensorSPI::spiCalcEvenParity(word value){
-	byte cnt = 0;
-	byte i;
+  byte cnt = 0;
+  byte i;
 
-	for (i = 0; i < 16; i++)
-	{
-		if (value & 0x1) cnt++;
-		value >>= 1;
-	}
-	return cnt & 0x1;
+  for (i = 0; i < 16; i++)
+  {
+    if (value & 0x1) cnt++;
+    value >>= 1;
+  }
+  return cnt & 0x1;
 }
 
   /*
@@ -164,8 +164,8 @@ word MagneticSensorSPI::read(word angle_register){
     command = angle_register | (1 << command_rw_bit);
   }
   if (command_parity_bit > 0) {
-   	//Add a parity bit on the the MSB
-  	command |= ((word)spiCalcEvenParity(command) << command_parity_bit);
+     //Add a parity bit on the the MSB
+    command |= ((word)spiCalcEvenParity(command) << command_parity_bit);
   }
 
 #if !defined(_STM32_DEF_) // if not stm chips
@@ -202,7 +202,7 @@ word MagneticSensorSPI::read(word angle_register){
 
   const static word data_mask = 0xFFFF >> (16 - bit_resolution);
 
-	return register_value & data_mask;  // Return the data, stripping the non data (e.g parity) bits
+  return register_value & data_mask;  // Return the data, stripping the non data (e.g parity) bits
 }
 
 /**
@@ -210,5 +210,5 @@ word MagneticSensorSPI::read(word angle_register){
  * SPI has an internal SPI-device counter, for each init()-call the close() function must be called exactly 1 time
  */
 void MagneticSensorSPI::close(){
-	spi->end();
+  spi->end();
 }

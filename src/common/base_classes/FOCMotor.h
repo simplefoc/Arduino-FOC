@@ -63,9 +63,9 @@ class FOCMotor
     FOCMotor();
 
     /**  Motor hardware init function */
-  	virtual void init()=0;
+    virtual void init()=0;
     /** Motor disable function */
-  	virtual void disable()=0;
+    virtual void disable()=0;
     /** Motor enable function */
     virtual void enable()=0;
 
@@ -129,9 +129,9 @@ class FOCMotor
 
     // state variables
     float target; //!< current target value - depends of the controller
-  	float shaft_angle;//!< current motor angle
-  	float electrical_angle;//!< current electrical angle
-  	float shaft_velocity;//!< current motor velocity 
+    float shaft_angle;//!< current motor angle
+    float electrical_angle;//!< current electrical angle
+    float shaft_velocity;//!< current motor velocity 
     float current_sp;//!< target current ( q current )
     float shaft_velocity_sp;//!< current target velocity
     float shaft_angle_sp;//!< current target angle
@@ -143,7 +143,7 @@ class FOCMotor
     float velocity_index_search;//!< target velocity for index search 
     
     // motor physical parameters
-    float	phase_resistance; //!< motor phase resistance
+    float  phase_resistance; //!< motor phase resistance
     int pole_pairs;//!< motor pole pairs number
 
     // limiting variables
@@ -169,7 +169,7 @@ class FOCMotor
     LowPassFilter LPF_current_q{DEF_CURR_FILTER_Tf};//!<  parameter determining the current Low pass filter configuration 
     LowPassFilter LPF_current_d{DEF_CURR_FILTER_Tf};//!<  parameter determining the current Low pass filter configuration 
     PIDController PID_velocity{DEF_PID_VEL_P,DEF_PID_VEL_I,DEF_PID_VEL_D,DEF_PID_VEL_RAMP,DEF_PID_VEL_LIMIT};//!< parameter determining the velocity PID configuration
-    PIDController P_angle{DEF_P_ANGLE_P,0,0,1e10,DEF_VEL_LIM};	//!< parameter determining the position PID configuration 
+    PIDController P_angle{DEF_P_ANGLE_P,0,0,1e10,DEF_VEL_LIM};  //!< parameter determining the position PID configuration 
     LowPassFilter LPF_velocity{DEF_VEL_FILTER_Tf};//!<  parameter determining the velocity Low pass filter configuration 
     LowPassFilter LPF_angle{0.0};//!<  parameter determining the angle low pass filter configuration 
     unsigned int motion_downsample = DEF_MOTION_DOWNSMAPLE; //!< parameter defining the ratio of downsampling for move commad

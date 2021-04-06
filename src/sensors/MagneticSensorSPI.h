@@ -58,7 +58,7 @@ class MagneticSensorSPI: public Sensor{
     // spi variables
     int angle_register; //!< SPI angle register to read
     int chip_select_pin; //!< SPI chip select pin
-	  SPISettings settings; //!< SPI settings variable
+    SPISettings settings; //!< SPI settings variable
     // spi functions
     /** Stop SPI communication */
     void close(); 
