@@ -133,7 +133,6 @@ void writeSAMDDutyCycle(int chaninfo, float dc) {
 		tcc->CCBUF[chan].reg = (uint32_t)((SIMPLEFOC_SAMD_PWM_RESOLUTION-1) * dc); // TODO pwm frequency!
 		tcc->STATUS.vec.CCBUFV |= (0x1<<chan);
 		while ( tcc->SYNCBUSY.bit.STATUS > 0 );
-
 		tcc->CTRLBSET.reg |= TCC_CTRLBSET_CMD(TCC_CTRLBSET_CMD_UPDATE_Val);
 		while ( tcc->SYNCBUSY.bit.CTRLB > 0 );
 	}

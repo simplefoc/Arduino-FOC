@@ -769,15 +769,17 @@ void printAllPinInfos() {
 		if (association.tccE>=0) {
 			int tcn = GetTCNumber(association.tccE);
 			if (tcn>=TCC_INST_NUM)
-				Serial.print("  TC");
+				Serial.print(" TC");
 			else
-				Serial.print(" TCC");
+				Serial.print("TCC");
 			Serial.print(tcn);
 			Serial.print("-");
 			Serial.print(GetTCChannelNumber(association.tccE));
 			Serial.print("[");
 			Serial.print(GetTCChannelNumber(association.woE));
 			Serial.print("]");
+			if (tcn<10)
+				Serial.print(" ");
 		}
 		else
 			Serial.print("  None    ");
@@ -786,24 +788,28 @@ void printAllPinInfos() {
 		if (association.tccF>=0) {
 			int tcn = GetTCNumber(association.tccF);
 			if (tcn>=TCC_INST_NUM)
-				Serial.print("  TC");
+				Serial.print(" TC");
 			else
-				Serial.print(" TCC");
+				Serial.print("TCC");
 			Serial.print(tcn);
 			Serial.print("-");
 			Serial.print(GetTCChannelNumber(association.tccF));
 			Serial.print("[");
 			Serial.print(GetTCChannelNumber(association.woF));
-			Serial.println("]");
+			Serial.print("]");
+			if (tcn<10)
+				Serial.print(" ");
 		}
 		else
-			Serial.println("  None ");
+			Serial.print("  None    ");
 
 #ifdef _SAMD51_
 		Serial.print(" G=");
 		if (association.tccG>=0) {
 			int tcn = GetTCNumber(association.tccG);
-			Serial.print(" TCC");
+			Serial.print("TCC");
+			if (tcn<10)
+				Serial.print(" ");
 			Serial.print(tcn);
 			Serial.print("-");
 			Serial.print(GetTCChannelNumber(association.tccG));
@@ -813,6 +819,8 @@ void printAllPinInfos() {
 		}
 		else
 			Serial.println("  None ");
+#else
+		Serial.println("");
 #endif
 
 	}
