@@ -16,40 +16,10 @@ Therefore this is an attempt to:
    - ***NEW*** 📢: *Medium-power* BLDC driver (<30Amps): [Arduino <span class="simple">Simple<b>FOC</b>PowerShield</span> ](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
-##### <b> NEW RELEASE 📢:</b> <i>Simple<b>FOC</b>library v2.1
-> - **Initial current sensing support**🎉
->   - Inline current sensors 
->   - adaptive zero finding and shunt direction
-> - **Implemented real torque control** 
->   - using voltage
->   - using current magnitude (one current)
->   - using FOC currents ( d-q currents ) - real foc control
-> - SVPWM full implementation  d+q axis
-> - **Simplified sensor implementation**📢
->    - For new sensor implementation only one function necessary `getAngle()`
-> - Upgrade of the HallSensor implementation by [@owennewo](https://github.com/owennewo)
-> - Support for Arduino DUE - everything except the 6PWM mode
-> - Support for ATMega328pb
-> - bugfix for the Teensy boards ( setting 3pwm )
-> - extended support for 2PWM stepper drivers - by [@zjor](https://github.com/zjor)
-> - included F macro for shrinking string memory usage - moved to programming memory
-> - disable phase support for 3pwm driver
->    - not yet for 6pwm
-> - rewritten `initFOC()`
->    - can be skipped and outputs much more info
->    - align sensor: direction + zero offset + pole pair check
->    - align current sense
-> - sensor offset supported (`motor.sensor_offset`)
-> - **refactored motor commands interface**
->   - much more flexible and easy to extend
->   - very easy to add new commands and function callbacks
->   - implemented motor+pid+lpf commands of-the-shelf
-> - Added **step/dir interface**
->   - integrated as an optional communication channel
->
-> BEWARE 📢 slight API changes included
->   - `ControlType` renamed into `MotionControlType`
->   - `ControlType::voltage` does not exist any more now - `MotionControlType::torque`
+##### <b> Next release will be:</b> <i>Simple<b>FOC</b>library v2.1.1
+> - bugfixes commander
+> - bugfix `voltage_limit` when provided `phase_resistance`
+> - bugfix `hall_sensor` examples 
 
 
 ## Arduino *SimpleFOCShield* v2.0.3
