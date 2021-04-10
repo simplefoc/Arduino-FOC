@@ -8,6 +8,7 @@ HallSensors	KEYWORD1
 MagneticSensorSPI	KEYWORD1
 MagneticSensorI2C	KEYWORD1
 MagneticSensorAnalog	KEYWORD1
+MagneticSensorPWM	KEYWORD1
 BLDCDriver3PWM	KEYWORD1    
 BLDCDriver6PWM	KEYWORD1    
 BLDCDriver	KEYWORD1    
@@ -92,6 +93,8 @@ scalar	KEYWORD2
 pid	KEYWORD2
 lpf	KEYWORD2
 motor	KEYWORD2
+handlePWM	KEYWORD2
+enableInterrupt	KEYWORD2
 
 
 

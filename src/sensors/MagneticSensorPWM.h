@@ -26,7 +26,11 @@ class MagneticSensorPWM: public Sensor{
     float getAngle() override;
     // get current angular velocity (rad/s)
     float getVelocity() override;
- 
+  
+    // pwm handler
+    void handlePWM();
+    void enableInterrupt(void (*doPWM)());
+    unsigned long pulse_length_us;
 
   private:
     // raw count (typically in range of 0-1023)
@@ -50,6 +54,10 @@ class MagneticSensorPWM: public Sensor{
     float angle_prev; //!< angle in previous velocity calculation step
     long velocity_calc_timestamp; //!< last velocity calculation timestamp
     float velocity;
+
+    // time tracking variables
+    unsigned long last_call_us;
+    // unsigned long pulse_length_us;
     
 
 };

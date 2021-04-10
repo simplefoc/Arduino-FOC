@@ -1,4 +1,5 @@
 #include "MagneticSensorPWM.h"
+#include "Arduino.h"
 
 /** MagneticSensorPWM(uint8_t _pinPWM, int _min, int _max)
  * @param _pinPWM  the pin that is reading the pwm from magnetic sensor
@@ -14,6 +15,9 @@ MagneticSensorPWM::MagneticSensorPWM(uint8_t _pinPWM, int _min_raw_count, int _m
     max_raw_count = _max_raw_count;
     
     pinMode(pinPWM, INPUT);
+
+    // init last call 
+    last_call_us = _micros();
 }
 
 
@@ -57,10 +61,35 @@ float MagneticSensorPWM::getAngle(){
 
 //  get velocity (rad/s)
 float MagneticSensorPWM::getVelocity(){
-  return velocity;
+    return velocity;
 }
 
 // read the raw counter of the magnetic sensor
 int MagneticSensorPWM::getRawCount(){
-	return pulseIn(pinPWM,HIGH);
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega328PB__)  || defined(__AVR_ATmega2560__) // if mcu is not atmega328 && if mcu is not atmega2560
+    pulse_length_us = pulseIn(pinPWM, HIGH);
+#endif
+
+    return pulse_length_us;
+}
+
+
+void MagneticSensorPWM::handlePWM() {
+    //  unsigned long now_us = ticks();
+    unsigned long now_us = _micros();
+    
+    // if falling edge, calculate the pulse length
+    if (!digitalRead(pinPWM)) pulse_length_us = now_us - last_call_us;
+
+    // save the currrent timestamp for the next call
+    last_call_us = now_us;
+}
+
+// function enabling hardware interrupts of the for the callback provided
+// if callback is not provided then the interrupt is not enabled
+void MagneticSensorPWM::enableInterrupt(void (*doPWM)()){
+    #if !defined(__AVR_ATmega328P__) && !defined(__AVR_ATmega168__) && !defined(__AVR_ATmega328PB__)  && !defined(__AVR_ATmega2560__) // if mcu is not atmega328 && if mcu is not atmega2560
+        // enable interrupts on pwm input pin
+        attachInterrupt(digitalPinToInterrupt(pinPWM), doPWM, CHANGE);
+    #endif
 }
