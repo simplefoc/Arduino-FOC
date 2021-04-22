@@ -6,17 +6,15 @@
 // uncomment to enable debug output to Serial port
 #define SIMPLEFOC_SAMD_DEBUG
 
+#include "../hardware_api.h"
+
+
+#if defined(_SAMD21_)||defined(_SAMD51_)
 
 
 #include "Arduino.h"
 #include "variant.h"
 #include "wiring_private.h"
-#include "../hardware_api.h"
-
-
-
-
-#if defined(_SAMD21_)||defined(_SAMD51_)
 
 
 #ifndef SIMPLEFOC_SAMD_PWM_RESOLUTION
