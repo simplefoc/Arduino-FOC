@@ -122,6 +122,8 @@ sensor_offset	KEYWORD2
 zero_electric_angle	KEYWORD2
 verbose	KEYWORD2
 decimal_places	KEYWORD2
+phase_resistance	KEYWORD2
+modulation_centered	KEYWORD2
 
 
 

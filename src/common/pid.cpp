@@ -40,13 +40,15 @@ float PIDController::operator() (float error){
     // antiwindup - limit the output variable
     output = _constrain(output, -limit, limit);
 
-    // limit the acceleration by ramping the output
-    float output_rate = (output - output_prev)/Ts;
-    if (output_rate > output_ramp)
-        output = output_prev + output_ramp*Ts;
-    else if (output_rate < -output_ramp)
-        output = output_prev - output_ramp*Ts;
-        
+    // if output ramp defined
+    if(output_ramp > 0){
+        // limit the acceleration by ramping the output
+        float output_rate = (output - output_prev)/Ts;
+        if (output_rate > output_ramp)
+            output = output_prev + output_ramp*Ts;
+        else if (output_rate < -output_ramp)
+            output = output_prev - output_ramp*Ts;
+    }
     // saving for the next pass
     integral_prev = integral;
     output_prev = output;

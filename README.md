@@ -20,6 +20,9 @@ Therefore this is an attempt to:
 > - bugfixes commander
 > - bugfix `voltage_limit` when provided `phase_resistance`
 > - bugfix `hall_sensor` examples 
+> - added examples fot the powershield
+> - added initial support for `MagneticSensorPWM`
+> - extension of the `Commander` interface
 
 
 ## Arduino *SimpleFOCShield* v2.0.3

@@ -16,7 +16,7 @@ MagneticSensorPWM sensor = MagneticSensorPWM(A0, 4, 904);
 void doPWM(){sensor.handlePWM();}
 
 // encoder interrupt init
-PciListenerImp listenerPWM(sensor.pinPWM, doPWM);}
+PciListenerImp listenerPWM(sensor.pinPWM, doPWM);
 
 void setup() {
   // monitoring port
