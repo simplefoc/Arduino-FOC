@@ -29,9 +29,9 @@ class InlineCurrentSense: public CurrentSense{
     // ADC measuremnet gain for each phase
     // support for different gains for different phases of more commonly - inverted phase currents
     // this should be automated later
-  	int gain_a; //!< phase A gain 
-  	int gain_b; //!< phase B gain 
-  	int gain_c; //!< phase C gain 
+    float gain_a; //!< phase A gain
+    float gain_b; //!< phase B gain
+    float gain_c; //!< phase C gain
 
   private:
 
