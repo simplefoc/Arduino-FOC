@@ -141,6 +141,7 @@ HardwareTimer* _initHardware6PWMInterface(uint32_t PWM_freq, float dead_zone, in
   if (HardwareTimer_Handle[index] == NULL) {
     HardwareTimer_Handle[index]->__this = new HardwareTimer((TIM_TypeDef *)pinmap_peripheral(uhPinName, PinMap_PWM));
     HardwareTimer_Handle[index]->handle.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
+    HardwareTimer_Handle[index]->handle.Init.RepetitionCounter = 1;
     HAL_TIM_Base_Init(&(HardwareTimer_Handle[index]->handle));
     ((HardwareTimer *)HardwareTimer_Handle[index]->__this)->setOverflow(PWM_freq, HERTZ_FORMAT);
   }
@@ -159,8 +160,16 @@ HardwareTimer* _initHardware6PWMInterface(uint32_t PWM_freq, float dead_zone, in
   LL_TIM_OC_SetDeadTime(HT->getHandle()->Instance, dead_time); // deadtime is non linear!
   LL_TIM_CC_EnableChannel(HT->getHandle()->Instance, LL_TIM_CHANNEL_CH1 | LL_TIM_CHANNEL_CH1N | LL_TIM_CHANNEL_CH2 | LL_TIM_CHANNEL_CH2N | LL_TIM_CHANNEL_CH3 | LL_TIM_CHANNEL_CH3N);
 
+  // Set Trigger out for DMA transfer
+  LL_TIM_SetTriggerOutput(HT->getHandle()->Instance, LL_TIM_TRGO_UPDATE);
+
   HT->pause();
   HT->refresh();
+
+  // adjust the initial timer state such that the trigger for DMA transfer aligns with the pwm peaks instead of throughs.
+  HT->getHandle()->Instance->CR1 |= TIM_CR1_DIR;
+  HT->getHandle()->Instance->CNT = TIM1->ARR;
+
   HT->resume();
   return HT;
 #else 
