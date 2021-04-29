@@ -17,8 +17,12 @@ float CurrentSense::getDCCurrent(float motor_electrical_angle){
         i_alpha = current.a;  
         i_beta = _1_SQRT3 * current.a + _2_SQRT3 * current.b;
     }else{
-        i_alpha = 2*(current.a - (current.b - current.c))/3.0;    
-        i_beta = _2_SQRT3 *( current.b  - current.c );
+        // signal filtering using identity a + b + c = 0. Assumes measurement error is normally distributed.
+        float mid = (1.f/3) * (current.a + current.b + current.c);
+        float a = current.a - mid;
+        float b = current.b - mid;
+        i_alpha = a;
+        i_beta = _1_SQRT3 * a + _2_SQRT3 * b;
     }
 
     // if motor angle provided function returns signed value of the current
@@ -44,9 +48,13 @@ DQCurrent_s CurrentSense::getFOCCurrents(float angle_el){
         // if only two measured currents
         i_alpha = current.a;  
         i_beta = _1_SQRT3 * current.a + _2_SQRT3 * current.b;
-    }else{
-        i_alpha = 0.6666667*(current.a - (current.b - current.c));    
-        i_beta = _2_SQRT3 *( current.b  - current.c );
+    } else {
+        // signal filtering using identity a + b + c = 0. Assumes measurement error is normally distributed.
+        float mid = (1.f/3) * (current.a + current.b + current.c);
+        float a = current.a - mid;
+        float b = current.b - mid;
+        i_alpha = a;
+        i_beta = _1_SQRT3 * a + _2_SQRT3 * b;
     }
 
     // calculate park transform
