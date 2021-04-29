@@ -170,10 +170,10 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
       }
       break;
     case CMD_MOTION_TYPE:
-      printVerbose(F("Motion: "));
+      printVerbose(F("Motion:"));
       switch(sub_cmd){
         case SCMD_DOWNSAMPLE:
-            printVerbose(F("downsample: "));
+            printVerbose(F(" downsample: "));
             if(!GET) motor->motion_downsample = value;
             println((int)motor->motion_downsample);
           break;
@@ -224,6 +224,38 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
       if(!GET) (bool)value ? motor->enable() : motor->disable();
        println(motor->enabled);
       break;
+    case CMD_PWMMOD:
+       // PWM modulation change
+       printVerbose(F("PWM Mod | "));
+       switch (sub_cmd){
+        case SCMD_PWMMOD_TYPE:      // zero offset
+          printVerbose(F("type: "));
+          if(!GET) motor->foc_modulation = (FOCModulationType)value;
+          switch(motor->foc_modulation){
+            case FOCModulationType::SinePWM:
+              println(F("SinePWM"));
+              break;
+            case FOCModulationType::SpaceVectorPWM:
+              println(F("SVPWM"));
+              break;
+            case FOCModulationType::Trapezoid_120:
+              println(F("Trap 120"));
+              break;
+            case FOCModulationType::Trapezoid_150:
+              println(F("Trap 150"));
+              break;
+          }
+          break;
+        case SCMD_PWMMOD_CENTER:      // centered modulation
+          printVerbose(F("center: "));
+          if(!GET) motor->modulation_centered = value;
+          println(motor->modulation_centered);
+          break;
+        default:
+          printError();
+          break;
+       }
+      break;
     case CMD_RESIST:
       // enable/disable
       printVerbose(F("R phase: "));
@@ -271,7 +303,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
               break;
             case 2: // get voltage d
               printVerbose(F("Vd: "));
-              println(motor->voltage.q);
+              println(motor->voltage.d);
               break;
             case 3: // get current q
               printVerbose(F("Cq: "));
@@ -279,7 +311,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
               break;
             case 4: // get current d
               printVerbose(F("Cd: "));
-              println(motor->current.q);
+              println(motor->current.d);
               break;
             case 5: // get velocity
               printVerbose(F("vel: "));
@@ -287,6 +319,22 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
               break;
             case 6: // get angle
               printVerbose(F("angle: "));
+              println(motor->shaft_angle);
+              break;
+            case 7: // get all states
+              printVerbose(F("all: "));
+              print(motor->target);
+              print(";");
+              print(motor->voltage.q);
+              print(";");
+              print(motor->voltage.d);
+              print(";");
+              print(motor->current.q);
+              print(";");
+              print(motor->current.d);
+              print(";");
+              print(motor->shaft_velocity);
+              print(";");
               println(motor->shaft_angle);
               break;
             default:
