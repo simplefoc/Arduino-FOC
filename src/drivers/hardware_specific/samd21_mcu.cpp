@@ -310,17 +310,18 @@ void writeSAMDDutyCycle(int chaninfo, float dc) {
 	uint8_t chan = GetTCChannelNumber(chaninfo);
 	if (tccn<TCC_INST_NUM) {
 		Tcc* tcc = (Tcc*)GetTC(chaninfo);
-			// set via CC
-			//tcc->CC[chan].reg = (uint32_t)((SIMPLEFOC_SAMD_PWM_RESOLUTION-1) * dc);
-			//uint32_t chanbit = 0x1<<(TCC_SYNCBUSY_CC0_Pos+chan);
-			//while ( (tcc->SYNCBUSY.reg & chanbit) > 0 );
+		// set via CC
+//		tcc->CC[chan].reg = (uint32_t)((SIMPLEFOC_SAMD_PWM_RESOLUTION-1) * dc);
+//		uint32_t chanbit = 0x1<<(TCC_SYNCBUSY_CC0_Pos+chan);
+//		while ( (tcc->SYNCBUSY.reg & chanbit) > 0 );
 		// set via CCB
+		while ( (tcc->SYNCBUSY.vec.CC & (0x1<<chan)) > 0 );
 		tcc->CCB[chan].reg = (uint32_t)((SIMPLEFOC_SAMD_PWM_RESOLUTION-1) * dc);
-		while ( (tcc->SYNCBUSY.vec.CCB & (0x1<<chan)) > 0 );
-		tcc->STATUS.vec.CCBV |= (0x1<<chan);
-		while ( tcc->SYNCBUSY.bit.STATUS > 0 );
-		tcc->CTRLBSET.reg |= TCC_CTRLBSET_CMD(TCC_CTRLBSET_CMD_UPDATE_Val);
-		while ( tcc->SYNCBUSY.bit.CTRLB > 0 );
+//		while ( (tcc->SYNCBUSY.vec.CCB & (0x1<<chan)) > 0 );
+//		tcc->STATUS.vec.CCBV |= (0x1<<chan);
+//		while ( tcc->SYNCBUSY.bit.STATUS > 0 );
+//		tcc->CTRLBSET.reg |= TCC_CTRLBSET_CMD(TCC_CTRLBSET_CMD_UPDATE_Val);
+//		while ( tcc->SYNCBUSY.bit.CTRLB > 0 );
 	}
 	else {
 		Tc* tc = (Tc*)GetTC(chaninfo);
