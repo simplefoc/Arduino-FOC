@@ -3,7 +3,7 @@
 #include "./samd_mcu.h"
 
 
-#ifdef _SAMD51_
+#if defined(_SAMD51_)||defined(_SAME51_)
 
 
 
@@ -129,12 +129,13 @@ void writeSAMDDutyCycle(int chaninfo, float dc) {
 	uint8_t chan = GetTCChannelNumber(chaninfo);
 	if (tccn<TCC_INST_NUM) {
 		Tcc* tcc = (Tcc*)GetTC(chaninfo);
-		// set via CCBUF]
+		// set via CCBUF
+		while ( (tcc->SYNCBUSY.vec.CC & (0x1<<chan)) > 0 );
 		tcc->CCBUF[chan].reg = (uint32_t)((SIMPLEFOC_SAMD_PWM_RESOLUTION-1) * dc); // TODO pwm frequency!
-		tcc->STATUS.vec.CCBUFV |= (0x1<<chan);
-		while ( tcc->SYNCBUSY.bit.STATUS > 0 );
-		tcc->CTRLBSET.reg |= TCC_CTRLBSET_CMD(TCC_CTRLBSET_CMD_UPDATE_Val);
-		while ( tcc->SYNCBUSY.bit.CTRLB > 0 );
+//		tcc->STATUS.vec.CCBUFV |= (0x1<<chan);
+//		while ( tcc->SYNCBUSY.bit.STATUS > 0 );
+//		tcc->CTRLBSET.reg |= TCC_CTRLBSET_CMD(TCC_CTRLBSET_CMD_UPDATE_Val);
+//		while ( tcc->SYNCBUSY.bit.CTRLB > 0 );
 	}
 	else {
 		// Tc* tc = (Tc*)GetTC(chaninfo);

@@ -3,7 +3,7 @@
 
 #include "./samd_mcu.h"
 
-#if defined(_SAMD21_)||defined(_SAMD51_)
+#if defined(_SAMD21_)||defined(_SAMD51_)||defined(_SAME51_)
 
 
 
@@ -90,7 +90,7 @@ tccConfiguration getTCCChannelNr(int pin, EPioType peripheral) {
 		result.tcc.chaninfo = association.tccF;
 		result.wo = association.woF;
 	}
-#ifdef _SAMD51_
+#if defined(_SAMD51_)||defined(_SAME51_)
 	else if (peripheral==PIO_TCC_PDEC) {
 		result.tcc.chaninfo = association.tccG;
 		result.wo = association.woG;
@@ -758,7 +758,7 @@ void printAllPinInfos() {
 			case PORTA: Serial.print("  PA"); break;
 			case PORTB: Serial.print("  PB"); break;
 			case PORTC: Serial.print("  PC"); break;
-#ifdef _SAMD51_
+#if defined(_SAMD51_)||defined(_SAME51_)
 			case PORTD: Serial.print("  PD"); break;
 #endif
 		}
@@ -803,7 +803,7 @@ void printAllPinInfos() {
 		else
 			Serial.print("  None    ");
 
-#ifdef _SAMD51_
+#if defined(_SAMD51_)||defined(_SAME51_)
 		Serial.print(" G=");
 		if (association.tccG>=0) {
 			int tcn = GetTCNumber(association.tccG);
@@ -842,7 +842,7 @@ void printTCCConfiguration(tccConfiguration& info) {
 		Serial.print(" E "); break;
 	case PIO_TIMER_ALT:
 		Serial.print(" F "); break;
-#ifdef _SAMD51_
+#if defined(_SAMD51_)||defined(_SAME51_)
 	case PIO_TCC_PDEC:
 		Serial.print(" G "); break;
 #endif
