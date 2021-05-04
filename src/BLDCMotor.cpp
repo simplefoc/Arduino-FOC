@@ -98,8 +98,11 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction _sensor_direction
   // sensor and motor alignment - can be skipped
   // by setting motor.sensor_direction and motor.zero_electric_angle
   _delay(500);
-  if(sensor) exit_flag *= alignSensor();
-  else if(monitor_port) monitor_port->println(F("MOT: No sensor."));
+  if(sensor){
+    exit_flag *= alignSensor();
+    // added the shaft_angle update
+    shaft_angle = sensor->getAngle();
+  }else if(monitor_port) monitor_port->println(F("MOT: No sensor."));
 
   // aligning the current sensor - can be skipped
   // checks if driver phases are the same as current sense phases

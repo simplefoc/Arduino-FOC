@@ -96,8 +96,11 @@ int  StepperMotor::initFOC( float zero_electric_offset, Direction _sensor_direct
   // sensor and motor alignment - can be skipped
   // by setting motor.sensor_direction and motor.zero_electric_angle
   _delay(500);
-  if(sensor) exit_flag = alignSensor();
-  else if(monitor_port) monitor_port->println(F("MOT: No sensor."));
+  if(sensor){
+    exit_flag *= alignSensor();
+    // added the shaft_angle update
+    shaft_angle = sensor->getAngle();
+  }else if(monitor_port) monitor_port->println(F("MOT: No sensor."));
   
   if(exit_flag){
     if(monitor_port) monitor_port->println(F("MOT: Ready."));
