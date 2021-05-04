@@ -20,9 +20,12 @@ Therefore this is an attempt to:
 > - bugfixes commander
 > - bugfix `voltage_limit` when provided `phase_resistance`
 > - bugfix `hall_sensor` examples 
-> - added examples fot the powershield
+> - added examples fot the PowerShield
 > - added initial support for `MagneticSensorPWM`
+> - added examples to find the raw max and min of the analog and pwm sensor
 > - extension of the `Commander` interface
+> - improved esp32 implementation to avoid the need for mcpwm.h changes by @tschundler 
+
 
 
 ## Arduino *SimpleFOCShield* v2.0.3
