@@ -247,13 +247,15 @@ int BLDCMotor::absoluteZeroSearch() {
 // Iterative function looping FOC algorithm, setting Uq on the Motor
 // The faster it can be run the better
 void BLDCMotor::loopFOC() {
+  
+  // shaft angle
+  shaft_angle = shaftAngle(); // read value even if motor is disabled to keep the monitoring updated
+
   // if disabled do nothing
   if(!enabled) return;
   // if open-loop do nothing
   if( controller==MotionControlType::angle_openloop || controller==MotionControlType::velocity_openloop ) return;
 
-  // shaft angle
-  shaft_angle = shaftAngle();
   // electrical angle - need shaftAngle to be called first
   electrical_angle = electricalAngle();
 
@@ -298,6 +300,10 @@ void BLDCMotor::loopFOC() {
 // - needs to be called iteratively it is asynchronous function
 // - if target is not set it uses motor.target value
 void BLDCMotor::move(float new_target) {
+
+  // get angular velocity
+  shaft_velocity = shaftVelocity(); // read value even if motor is disabled to keep the monitoring updated
+
   // if disabled do nothing
   if(!enabled) return;
   // downsampling (optional)
@@ -305,8 +311,6 @@ void BLDCMotor::move(float new_target) {
   motion_cnt = 0;
   // set internal target variable
   if(_isset(new_target)) target = new_target;
-  // get angular velocity
-  shaft_velocity = shaftVelocity();
 
   switch (controller) {
     case MotionControlType::torque:

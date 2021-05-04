@@ -9,7 +9,14 @@
 #include "../hardware_api.h"
 
 
-#if defined(_SAMD21_)||defined(_SAMD51_)
+#if defined(__SAME51J19A__) || defined(__ATSAME51J19A__)
+#ifndef _SAME51_
+#define _SAME51_
+#endif
+#endif
+
+
+#if defined(_SAMD21_)||defined(_SAMD51_)||defined(_SAME51_)
 
 
 #include "Arduino.h"
@@ -53,7 +60,7 @@ struct wo_association {
 	uint8_t woE;
 	ETCChannel tccF;
 	uint8_t woF;
-#if defined(_SAMD51_)
+#if defined(_SAMD51_)||defined(_SAME51_)
 	ETCChannel tccG;
 	uint8_t woG;
 #endif
@@ -63,7 +70,7 @@ struct wo_association {
 
 #if defined(_SAMD21_)
 #define NUM_PIO_TIMER_PERIPHERALS 2
-#elif defined(_SAMD51_)
+#elif defined(_SAMD51_)||defined(_SAME51_)
 #define NUM_PIO_TIMER_PERIPHERALS 3
 #endif
 

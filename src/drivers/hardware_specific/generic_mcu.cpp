@@ -12,9 +12,11 @@
 
 #elif defined(_STM32_DEF_) // or stm32
 
-#elif defined(_SAMD21_)  // samd21 for the moment, samd51 in progress...
+#elif defined(_SAMD21_)  // samd21
 
-#elif defined(_SAMD51_)  // samd21 for the moment, samd51 in progress...
+#elif defined(_SAMD51_)  // samd51
+
+#elif defined(__SAME51J19A__) || defined(__ATSAME51J19A__)  // samd51
 
 #else
 
