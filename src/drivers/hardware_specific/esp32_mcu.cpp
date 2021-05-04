@@ -154,10 +154,15 @@ void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm
   mcpwm_start(mcpwm_unit, MCPWM_TIMER_1);
   mcpwm_start(mcpwm_unit, MCPWM_TIMER_2);
   _delay(1); 
-
-  mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_0, MCPWM_SELECT_SYNC_INT0, 0);
-  mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_1, MCPWM_SELECT_SYNC_INT0, 0);
-  mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_2, MCPWM_SELECT_SYNC_INT0, 0);
+  // mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_0, MCPWM_SELECT_SYNC_INT0, 0);
+  // mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_1, MCPWM_SELECT_SYNC_INT0, 0);
+  // mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_2, MCPWM_SELECT_SYNC_INT0, 0);
+  // Cast here because MCPWM_SELECT_SYNC_INT0 (1) is not defined
+  // in the default Espressif MCPWM headers. The correct const may be used
+  // when https://github.com/espressif/esp-idf/issues/5429 is resolved.
+  mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_0, (mcpwm_sync_signal_t)1, 0);
+  mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_1, (mcpwm_sync_signal_t)1, 0);
+  mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_2, (mcpwm_sync_signal_t)1, 0);
   _delay(1);
   mcpwm_num->timer[0].sync.out_sel = 1;
   _delay(1);
