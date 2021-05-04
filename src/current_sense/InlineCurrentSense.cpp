@@ -28,21 +28,23 @@ void InlineCurrentSense::init(){
 }
 // Function finding zero offsets of the ADC
 void InlineCurrentSense::calibrateOffsets(){
+    const int calibration_rounds = 1000;
+
     // find adc offset = zero current voltage
-    offset_ia =0;
-    offset_ib= 0;
-    offset_ic= 0;
+    offset_ia = 0;
+    offset_ib = 0;
+    offset_ic = 0;
     // read the adc voltage 1000 times ( arbitrary number )
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < calibration_rounds; i++) {
         offset_ia += _readADCVoltage(pinA);
         offset_ib += _readADCVoltage(pinB);
         if(_isset(pinC)) offset_ic += _readADCVoltage(pinC);
         _delay(1);
     }
     // calculate the mean offsets
-    offset_ia = offset_ia / 1000.0;
-    offset_ib = offset_ib / 1000.0;
-    if(_isset(pinC)) offset_ic = offset_ic / 500.0;
+    offset_ia = offset_ia / calibration_rounds;
+    offset_ib = offset_ib / calibration_rounds;
+    if(_isset(pinC)) offset_ic = offset_ic / calibration_rounds;
 }
 
 // read all three phase currents (if possible 2 or 3)
