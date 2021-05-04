@@ -25,6 +25,7 @@ Therefore this is an attempt to:
 > - added examples to find the raw max and min of the analog and pwm sensor
 > - extension of the `Commander` interface
 > - improved esp32 implementation to avoid the need for mcpwm.h changes by @tschundler 
+> - issue #62: motor.shaft_angle setting in the motor.initFOC() 
 
 ## Arduino *SimpleFOClibrary* v2.1
 
