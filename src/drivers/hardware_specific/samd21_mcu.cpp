@@ -163,7 +163,7 @@ void configureSAMDClock() {
 		while (GCLK->STATUS.bit.SYNCBUSY);              // Wait for synchronization
 
 #ifdef SIMPLEFOC_SAMD_DEBUG
-		Serial.println("Configured clock...");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured clock...");
 #endif
 	}
 }
@@ -217,8 +217,8 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 			tc->COUNT8.CTRLA.bit.ENABLE = 1;
 			while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
 #ifdef SIMPLEFOC_SAMD_DEBUG
-			Serial.print("Initialized TC ");
-			Serial.println(tccConfig.tcc.tccn);
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("Initialized TC ");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.println(tccConfig.tcc.tccn);
 #endif
 		}
 		else {
@@ -255,13 +255,13 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 			while ( tcc->SYNCBUSY.bit.ENABLE == 1 ); // wait for sync
 
 #ifdef SIMPLEFOC_SAMD_DEBUG
-			Serial.print("    Initialized TCC ");
-			Serial.print(tccConfig.tcc.tccn);
-			Serial.print("-");
-			Serial.print(tccConfig.tcc.chan);
-			Serial.print("[");
-			Serial.print(tccConfig.wo);
-			Serial.println("]");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("    Initialized TCC ");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.tcc.tccn);
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("-");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.tcc.chan);
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("[");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.wo);
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.println("]");
 #endif
 		}
 	}
@@ -288,13 +288,13 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 		while ( tcc->SYNCBUSY.bit.ENABLE == 1 );
 
 #ifdef SIMPLEFOC_SAMD_DEBUG
-		Serial.print("(Re-)Initialized TCC ");
-		Serial.print(tccConfig.tcc.tccn);
-		Serial.print("-");
-		Serial.print(tccConfig.tcc.chan);
-		Serial.print("[");
-		Serial.print(tccConfig.wo);
-		Serial.println("]");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("(Re-)Initialized TCC ");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.tcc.tccn);
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("-");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.tcc.chan);
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("[");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.wo);
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("]");
 #endif
 	}
 
