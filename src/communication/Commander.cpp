@@ -32,6 +32,10 @@ void Commander::run(){
       received_chars[0] = 0;
       rec_cnt=0;
     }
+    if (rec_cnt>=MAX_COMMAND_LENGTH) { // prevent buffer overrun if message is too long
+        received_chars[0] = 0;
+        rec_cnt=0;
+    }
   }
 }
 
