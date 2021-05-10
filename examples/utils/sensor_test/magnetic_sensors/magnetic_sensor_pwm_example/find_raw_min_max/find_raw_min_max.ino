@@ -22,9 +22,22 @@ void setup() {
   _delay(1000);
 }
 
+int max_pulse= 0;
+int min_pulse = 10000;
+
 void loop() {
-  // display the angle and the angular velocity to the terminal
+
+  // keep track of min and max
+  if(sensor.pulse_length_us > max_pulse) max_pulse = sensor.pulse_length_us;
+  else if(sensor.pulse_length_us < min_pulse) min_pulse = sensor.pulse_length_us;
+
+  // display the raw count, and max and min raw count
+  Serial.print("angle:");
+  Serial.print(sensor.getAngle());
+  Serial.print("\t, raw:");
   Serial.print(sensor.pulse_length_us);
-  Serial.print("\t");
-  Serial.println(sensor.getAngle());
+  Serial.print("\t, min:");
+  Serial.print(min_pulse);
+  Serial.print("\t, max:");
+  Serial.println(max_pulse);
 }
