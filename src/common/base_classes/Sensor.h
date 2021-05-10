@@ -15,8 +15,8 @@ enum Direction{
  *  Pullup configuration structure
  */
 enum Pullup{
-    INTERN, //!< Use internal pullups
-    EXTERN //!< Use external pullups
+    INTERNAL, //!< Use internal pullups
+    EXTERNAL //!< Use external pullups
 };
 
 /**
