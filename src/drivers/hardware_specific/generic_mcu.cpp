@@ -18,6 +18,8 @@
 
 #elif defined(__SAME51J19A__) || defined(__ATSAME51J19A__)  // samd51
 
+#elif defined(TARGET_RP2040)
+
 #else
 
 // function setting the high pwm frequency to the supplied pins
