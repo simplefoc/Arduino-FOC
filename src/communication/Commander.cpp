@@ -69,7 +69,7 @@ void Commander::run(char* user_input){
       }
       break;
     case CMD_VERBOSE:
-      if(user_input[1] != eol) verbose = (VerboseMode)atoi(&user_input[1]);
+      if(!isSentinel(user_input[1])) verbose = (VerboseMode)atoi(&user_input[1]);
       printVerbose(F("Verb:"));
       switch (verbose){
       case VerboseMode::nothing:
@@ -82,7 +82,7 @@ void Commander::run(char* user_input){
       }
       break;
     case CMD_DECIMAL:
-      if(user_input[1] != eol) decimal_places = atoi(&user_input[1]);
+      if(!isSentinel(user_input[1])) decimal_places = atoi(&user_input[1]);
       printVerbose(F("Decimal:"));
       println(decimal_places);
       break;
