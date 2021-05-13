@@ -16,6 +16,7 @@ void setup() {
 
   // initialise magnetic sensor hardware
   sensor.init();
+   // comment out to use sensor in blocking (non-interrupt) way
   sensor.enableInterrupt(doPWM);
 
   Serial.println("Sensor ready");

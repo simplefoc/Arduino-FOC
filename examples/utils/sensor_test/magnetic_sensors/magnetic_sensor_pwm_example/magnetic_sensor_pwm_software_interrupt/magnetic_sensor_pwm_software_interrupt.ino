@@ -24,6 +24,7 @@ void setup() {
 
   // initialise magnetic sensor hardware
   sensor.init();
+  // comment out to use sensor in blocking (non-interrupt) way
   PciManager.registerListener(&listenerPWM);
 
   Serial.println("Sensor ready");
