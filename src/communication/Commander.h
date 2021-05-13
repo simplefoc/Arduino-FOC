@@ -7,6 +7,10 @@
 #include "../common/lowpass_filter.h"
 #include "commands.h"
 
+
+#define MAX_COMMAND_LENGTH 20
+
+
 // Commander verbose display to the user type
 enum VerboseMode{
   nothing = 0,   // display nothing - good for monitoring
@@ -178,7 +182,7 @@ class Commander
     int call_count = 0;//!< number callbacks that are subscribed
 
     // helping variable for serial communication reading
-    char received_chars[20] = {0}; //!< so far received user message - waiting for newline
+    char received_chars[MAX_COMMAND_LENGTH] = {0}; //!< so far received user message - waiting for newline
     int rec_cnt = 0; //!< number of characters receives
         
     // serial printing functions
