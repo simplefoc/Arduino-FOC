@@ -38,6 +38,10 @@ class MagneticSensorPWM: public Sensor{
     int min_raw_count;
     int max_raw_count;
     int cpr;
+
+    // flag saying if the readings are interrupt based or not
+    bool is_interrupt_based;
+
     int read();
 
     /**

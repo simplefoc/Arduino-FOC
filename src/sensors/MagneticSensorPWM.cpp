@@ -14,15 +14,19 @@ MagneticSensorPWM::MagneticSensorPWM(uint8_t _pinPWM, int _min_raw_count, int _m
     min_raw_count = _min_raw_count;
     max_raw_count = _max_raw_count;
     
-    pinMode(pinPWM, INPUT);
+    // define if the sensor uses interrupts
+    is_interrupt_based = false;
 
-    // init last call 
+    // define as not set
     last_call_us = _micros();
 }
 
 
 void MagneticSensorPWM::init(){
     
+    // initial hardware
+    pinMode(pinPWM, INPUT);
+
     // velocity calculation init
     angle_prev = 0;
     velocity_calc_timestamp = _micros();
@@ -66,10 +70,9 @@ float MagneticSensorPWM::getVelocity(){
 
 // read the raw counter of the magnetic sensor
 int MagneticSensorPWM::getRawCount(){
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega328PB__)  || defined(__AVR_ATmega2560__) // if mcu is not atmega328 && if mcu is not atmega2560
-    pulse_length_us = pulseIn(pinPWM, HIGH);
-#endif
-
+    if (!is_interrupt_based){ // if it's not interrupt based read the value in a blocking way
+        pulse_length_us = pulseIn(pinPWM, HIGH);
+    }
     return pulse_length_us;
 }
 
@@ -83,11 +86,15 @@ void MagneticSensorPWM::handlePWM() {
 
     // save the currrent timestamp for the next call
     last_call_us = now_us;
+    is_interrupt_based = true; // set the flag to true
 }
 
 // function enabling hardware interrupts of the for the callback provided
 // if callback is not provided then the interrupt is not enabled
 void MagneticSensorPWM::enableInterrupt(void (*doPWM)()){
+    // declare it's interrupt based
+    is_interrupt_based  = true;
+
     #if !defined(__AVR_ATmega328P__) && !defined(__AVR_ATmega168__) && !defined(__AVR_ATmega328PB__)  && !defined(__AVR_ATmega2560__) // if mcu is not atmega328 && if mcu is not atmega2560
         // enable interrupts on pwm input pin
         attachInterrupt(digitalPinToInterrupt(pinPWM), doPWM, CHANGE);
