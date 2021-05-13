@@ -24,8 +24,13 @@ Therefore this is an attempt to:
 > - added initial support for `MagneticSensorPWM`
 > - added examples to find the raw max and min of the analog and pwm sensor
 > - extension of the `Commander` interface
+>   - added pwm centering option `WC`
+>   - added pwm modulation cmd `WT`
 > - improved esp32 implementation to avoid the need for mcpwm.h changes by @tschundler 
 > - issue #62: motor.shaft_angle setting in the motor.initFOC() 
+> - issue #76: esp32 division by zero  
+> - issue #46: commander end of line character - by @maxlem
+> - [community fix](https://community.simplefoc.com/t/as5600-dead-spot-around-0/208) AS5600 register value
 
 ## Arduino *SimpleFOClibrary* v2.1
 
