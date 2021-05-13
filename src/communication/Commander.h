@@ -42,9 +42,11 @@ class Commander
      * Also if the function run() is used it uses this serial instance to read the serial for user commands
      * 
      * @param serial - Serial com port instance
+     * @param eol - the end of line sentinel character
+     * @param echo - echo last typed character (for command line feedback)
      */
-    Commander(Stream &serial);
-    Commander();
+    Commander(Stream &serial, char eol = '\n', bool echo = false);
+    Commander(char eol = '\n', bool echo = false);
 
     /**
      * Function reading the serial port and firing callbacks that have been added to the commander 
@@ -65,9 +67,10 @@ class Commander
      *    '#' - Number of decimal places
      *    '?' - Scan command - displays all the labels of attached nodes
      * 
-     * @param reader - Stream to read user input
+     * @param reader - temporary stream to read user input
+     * @param eol - temporary end of line sentinel
      */ 
-    void run(Stream &reader);
+    void run(Stream &reader, char eol = '\n');
     /**
      * Function reading the string of user input and firing callbacks that have been added to the commander 
      * once the user has requested them - when he sends the command  
@@ -95,7 +98,8 @@ class Commander
 
     // monitoring functions
     Stream* com_port = nullptr; //!< Serial terminal variable if provided
-    
+    char eol = '\n'; //!< end of line sentinel character
+    bool echo = false; //!< echo last typed character (for command line feedback)
     /**
      * 
      * FOC motor (StepperMotor and BLDCMotor) command interface
@@ -198,6 +202,7 @@ class Commander
      *  @param message - number to be printed
      *  @param newline - if needs lewline (1) otherwise (0)
      */
+
     void print(const float number);
     void print(const int number);
     void print(const char* message);
@@ -210,6 +215,7 @@ class Commander
     void println(const char message);
 
     void printError();
+    bool isSentinel(char ch);
 };
 
 
