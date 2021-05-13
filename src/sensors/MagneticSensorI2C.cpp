@@ -4,7 +4,7 @@
 MagneticSensorI2CConfig_s AS5600_I2C = {
   .chip_address = 0x36,
   .bit_resolution = 12,
-  .angle_register = 0x0E,
+  .angle_register = 0x0C,
   .data_start_bit = 11
 };
 
