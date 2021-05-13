@@ -25,7 +25,7 @@ void setup() {
   Serial.begin(115200);
 
   // check if you need internal pullups
-  sensor.pullup = Pullup::EXTERN;
+  sensor.pullup = Pullup::USE_EXTERN;
   
   // initialise encoder hardware
   sensor.init();

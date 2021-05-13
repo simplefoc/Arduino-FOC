@@ -33,7 +33,7 @@ Therefore this is an attempt to:
 > - issue #76: esp32 division by zero  
 > - issue #46: commander end of line character - by @maxlem
 > - [community fix](https://community.simplefoc.com/t/as5600-dead-spot-around-0/208) AS5600 register value
-> - renamed `Pullup::EXTERN` and `Pullup::INTERN` to `Pullup::EXTERNAL` and `Pullup::INTERNAL`
+> - renamed `Pullup::EXTERN` and `Pullup::INTERN` to `Pullup::USE_EXTERN` and `Pullup::USE_INTERN`
 
 ## Arduino *SimpleFOClibrary* v2.1
 

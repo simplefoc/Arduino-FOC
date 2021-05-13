@@ -21,7 +21,7 @@ void setup() {
   encoder.quadrature = Quadrature::ON;
 
   // check if you need internal pullups
-  encoder.pullup = Pullup::EXTERN;
+  encoder.pullup = Pullup::USE_EXTERN;
   
   // initialise encoder hardware
   encoder.init();
