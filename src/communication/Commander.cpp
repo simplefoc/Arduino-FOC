@@ -159,10 +159,8 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
           printVerbose(F("curr: "));
           if(!GET){
             motor->current_limit = value;
-            // if phase resistance is set, change the voltage limit as well.
-            if(_isset(motor->phase_resistance)) motor->voltage_limit = value*motor->phase_resistance;
             // if phase resistance specified or the current control is on set the current limit to the velocity PID
-            if(_isset(motor->phase_resistance) ||  motor->torque_controller != TorqueControlType::voltage ) motor->PID_velocity.limit = value;
+            if(_isset(motor->phase_resistance) || motor->torque_controller != TorqueControlType::voltage ) motor->PID_velocity.limit = value;
           }
           println(motor->current_limit);
           break;
