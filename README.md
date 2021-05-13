@@ -22,6 +22,8 @@ Therefore this is an attempt to:
 > - bugfix `hall_sensor` examples 
 > - added examples fot the PowerShield
 > - added initial support for `MagneticSensorPWM`
+> - SAMD51 support 
+> - **initial support for Raspberry pi Pico**
 > - added examples to find the raw max and min of the analog and pwm sensor
 > - extension of the `Commander` interface
 >   - added pwm centering option `WC`
@@ -31,6 +33,7 @@ Therefore this is an attempt to:
 > - issue #76: esp32 division by zero  
 > - issue #46: commander end of line character - by @maxlem
 > - [community fix](https://community.simplefoc.com/t/as5600-dead-spot-around-0/208) AS5600 register value
+> - renamed `Pullup::EXTERN` and `Pullup::INTERN` to `Pullup::EXTERNAL` and `Pullup::INTERNAL`
 
 ## Arduino *SimpleFOClibrary* v2.1
 
