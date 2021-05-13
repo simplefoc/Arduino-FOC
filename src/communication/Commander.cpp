@@ -54,15 +54,12 @@ void Commander::run(Stream& serial, char eol){
   }
 
   com_port = tmp; // reset the instance to the internal value
-   this->eol = eol_tmp;
+  this->eol = eol_tmp;
 }
 
 void Commander::run(char* user_input){
   // execute the user command
   char id = user_input[0];
-
-
-
   switch(id){
     case CMD_SCAN:
       for(int i=0; i < call_count; i++){
@@ -102,14 +99,25 @@ void Commander::run(char* user_input){
 }
 
 void Commander::motor(FOCMotor* motor, char* user_command) {
+
+  // if target setting
+  if(isDigit(user_command[0]) || user_command[0] == '-' || user_command[0] == '+'){
+    printVerbose(F("Target: "));
+    motor->target = atof(user_command);
+    println(motor->target);
+    return;
+  }
+
   // parse command letter
   char cmd = user_command[0];
   char sub_cmd = user_command[1];
+  // check if there is a subcommand or not
   int value_index = (sub_cmd >= 'A'  && sub_cmd <= 'Z') ?  2 :  1;
   // check if get command
   bool GET = isSentinel(user_command[value_index]);
   // parse command values
-  float  value  = atof(&user_command[value_index]);
+  float value = atof(&user_command[value_index]);
+
 
   // a bit of optimisation of variable memory for Arduino UNO (atmega328)
   switch(cmd){
@@ -181,7 +189,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
           break;
         default:
           // change control type
-          if(!GET && value >= 0 && (int)value < 5)// if set command
+          if(!GET && value >= 0 && (int)value < 5) // if set command
             motor->controller = (MotionControlType)value;
           switch(motor->controller){
             case MotionControlType::torque:
@@ -367,10 +375,9 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
           break;
        }
       break;
-    default:  // target change
-      printVerbose(F("Target: "));
-      motor->target = atof(user_command);
-      println(motor->target);
+    default:  // unknown cmd
+      printVerbose(F("unknown cmd "));
+      printError();
   }
 }
 
@@ -440,12 +447,7 @@ bool Commander::isSentinel(char ch)
     return true;
   else if (ch == '\r')
   {
-    if(verbose == VerboseMode::user_friendly)
-    {
-      print(F("Warning! \\r detected but is not configured as end of line sentinel, which is configured as ascii code '"));
-      print(int(eol));
-      print("'\n");
-    }
+      printVerbose(F("Warn: \\r detected! \n"));
   }
   return false;
 }
