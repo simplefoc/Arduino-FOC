@@ -1,11 +1,11 @@
-#include "InlineCurrentSense.h"
-// InlineCurrentSensor constructor
+#include "LowsideCurrentSense.h"
+// LowsideCurrentSensor constructor
 //  - shunt_resistor  - shunt resistor value
 //  - gain  - current-sense op-amp gain
 //  - phA   - A phase adc pin
 //  - phB   - B phase adc pin
 //  - phC   - C phase adc pin (optional)
-InlineCurrentSense::InlineCurrentSense(float _shunt_resistor, float _gain, int _pinA, int _pinB, int _pinC){
+LowsideCurrentSense::LowsideCurrentSense(float _shunt_resistor, float _gain, int _pinA, int _pinB, int _pinC){
     pinA = _pinA;
     pinB = _pinB;
     pinC = _pinC;
@@ -19,45 +19,44 @@ InlineCurrentSense::InlineCurrentSense(float _shunt_resistor, float _gain, int _
     gain_c = volts_to_amps_ratio;
 }
 
-// Inline sensor init function
-void InlineCurrentSense::init(){
+// Lowside sensor init function
+void LowsideCurrentSense::init(){
     // configure ADC variables
-    _configureADCInline(pinA,pinB,pinC);
+    _configureADCLowSide(pinA,pinB,pinC);
     // calibrate zero offsets
     calibrateOffsets();
 }
 // Function finding zero offsets of the ADC
-void InlineCurrentSense::calibrateOffsets(){
-    const int calibration_rounds = 1000;
-
+void LowsideCurrentSense::calibrateOffsets(){
     // find adc offset = zero current voltage
-    offset_ia = 0;
-    offset_ib = 0;
-    offset_ic = 0;
+    offset_ia =0;
+    offset_ib= 0;
+    offset_ic= 0;
     // read the adc voltage 1000 times ( arbitrary number )
-    for (int i = 0; i < calibration_rounds; i++) {
-        offset_ia += _readADCVoltageInline(pinA);
-        offset_ib += _readADCVoltageInline(pinB);
-        if(_isset(pinC)) offset_ic += _readADCVoltageInline(pinC);
+    for (int i = 0; i < 1000; i++) {
+        offset_ia += _readADCVoltageLowSide(pinA);
+        offset_ib += _readADCVoltageLowSide(pinB);
+        if(_isset(pinC)) offset_ic += _readADCVoltageLowSide(pinC);
         _delay(1);
     }
     // calculate the mean offsets
-    offset_ia = offset_ia / calibration_rounds;
-    offset_ib = offset_ib / calibration_rounds;
-    if(_isset(pinC)) offset_ic = offset_ic / calibration_rounds;
+    offset_ia = offset_ia / 1000.0;
+    offset_ib = offset_ib / 1000.0;
+    if(_isset(pinC)) offset_ic = offset_ic / 1000.0;
 }
 
 // read all three phase currents (if possible 2 or 3)
-PhaseCurrent_s InlineCurrentSense::getPhaseCurrents(){
+PhaseCurrent_s LowsideCurrentSense::getPhaseCurrents(){
     PhaseCurrent_s current;
-    current.a = (_readADCVoltageInline(pinA) - offset_ia)*gain_a;// amps
-    current.b = (_readADCVoltageInline(pinB) - offset_ib)*gain_b;// amps
-    current.c = (!_isset(pinC)) ? 0 : (_readADCVoltageInline(pinC) - offset_ic)*gain_c; // amps
+    current.a = (_readADCVoltageLowSide(pinA) - offset_ia)*gain_a;// amps
+    current.b = (_readADCVoltageLowSide(pinB) - offset_ib)*gain_b;// amps
+    current.c = (!_isset(pinC)) ? 0 : (_readADCVoltageLowSide(pinC) - offset_ic)*gain_c; // amps
     return current;
 }
 // Function synchronizing current sense with motor driver.
 // for in-line sensig no such thing is necessary
-int InlineCurrentSense::driverSync(BLDCDriver *driver){
+int LowsideCurrentSense::driverSync(BLDCDriver *driver){
+    _driverSyncLowSide();
     return 1;
 }
 
@@ -69,13 +68,18 @@ int InlineCurrentSense::driverSync(BLDCDriver *driver){
 // 2 - success but pins reconfigured
 // 3 - success but gains inverted
 // 4 - success but pins reconfigured and gains inverted
-int InlineCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
+int LowsideCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
+    //gain_a *= -1;
+    //gain_b *= -1;
+    //gain_c *= -1;
+
+    /*
     int exit_flag = 1;
     if(skip_align) return exit_flag;
-    
+
     // set phase A active and phases B and C down
     driver->setPwm(voltage, 0, 0);
-    _delay(200); 
+    _delay(2000);
     PhaseCurrent_s c = getPhaseCurrents();
     // read the current 100 times ( arbitrary number )
     for (int i = 0; i < 100; i++) {
@@ -89,19 +93,19 @@ int InlineCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
     // align phase A
     float ab_ratio = fabs(c.a / c.b);
     float ac_ratio = c.c ? fabs(c.a / c.c) : 0;
-    if( ab_ratio > 1.5 ){ // should be ~2    
+    if( ab_ratio > 1.5 ){ // should be ~2
         gain_a *= _sign(c.a);
     }else if( ab_ratio < 0.7 ){ // should be ~0.5
         // switch phase A and B
         int tmp_pinA = pinA;
-        pinA = pinB; 
+        pinA = pinB;
         pinB = tmp_pinA;
         gain_a *= _sign(c.b);
         exit_flag = 2; // signal that pins have been switched
     }else if(_isset(pinC) &&  ac_ratio < 0.7 ){ // should be ~0.5
         // switch phase A and C
         int tmp_pinA = pinA;
-        pinA = pinC; 
+        pinA = pinC;
         pinC= tmp_pinA;
         gain_a *= _sign(c.c);
         exit_flag = 2;// signal that pins have been switched
@@ -109,10 +113,10 @@ int InlineCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
         // error in current sense - phase either not measured or bad connection
         return 0;
     }
-    
+
     // set phase B active and phases A and C down
     driver->setPwm(0, voltage, 0);
-    _delay(200); 
+    _delay(200);
     c = getPhaseCurrents();
     // read the current 50 times
     for (int i = 0; i < 100; i++) {
@@ -130,14 +134,14 @@ int InlineCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
     }else if( ba_ratio < 0.7 ){ // it should be ~0.5
         // switch phase A and B
         int tmp_pinB = pinB;
-        pinB = pinA; 
+        pinB = pinA;
         pinA = tmp_pinB;
         gain_b *= _sign(c.a);
         exit_flag = 2; // signal that pins have been switched
     }else if(_isset(pinC) && bc_ratio < 0.7 ){ // should be ~0.5
         // switch phase A and C
         int tmp_pinB = pinB;
-        pinB = pinC; 
+        pinB = pinC;
         pinC = tmp_pinB;
         gain_b *= _sign(c.c);
         exit_flag = 2; // signal that pins have been switched
@@ -150,7 +154,7 @@ int InlineCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
     if(_isset(pinC)){
         // set phase B active and phases A and C down
         driver->setPwm(0, 0, voltage);
-        _delay(200); 
+        _delay(200);
         c = getPhaseCurrents();
         // read the adc voltage 500 times ( arbitrary number )
         for (int i = 0; i < 50; i++) {
@@ -168,6 +172,8 @@ int InlineCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
     // 2 - success but pins reconfigured
     // 3 - success but gains inverted
     // 4 - success but pins reconfigured and gains inverted
-    return exit_flag;
-}
 
+    return exit_flag;
+    */
+    return 1;
+}

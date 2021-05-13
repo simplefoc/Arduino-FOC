@@ -18,8 +18,8 @@
   #define _ADC_VOLTAGE 3.3
   #define _ADC_RESOLUTION 1024.0
 #elif defined(ESP_H)  // or esp32
-  #define _ADC_VOLTAGE 3.3 
-  #define _ADC_RESOLUTION 4095.0
+  // do nothing implemented in esp32_mcu.h
+
 #elif defined(_STM32_DEF_) // or stm32
   #define _ADC_VOLTAGE 3.3
   #define _ADC_RESOLUTION 1024.0
@@ -33,14 +33,14 @@
 #define _ADC_CONV ( (_ADC_VOLTAGE) / (_ADC_RESOLUTION) )
 
 // function reading an ADC value and returning the read voltage
-float _readADCVoltage(const int pinA){
+float _readADCVoltageInline(const int pinA){
   uint32_t raw_adc = analogRead(pinA);
   return raw_adc * _ADC_CONV;
 }
 
 
 // function reading an ADC value and returning the read voltage
-void _configureADC(const int pinA,const int pinB,const int pinC){
+void _configureADCInline(const int pinA,const int pinB,const int pinC){
   pinMode(pinA, INPUT);
   pinMode(pinB, INPUT);
   if( _isset(pinC) ) pinMode(pinC, INPUT);
