@@ -16,7 +16,7 @@ Therefore this is an attempt to:
    - ***NEW*** 📢: *Medium-power* BLDC driver (<30Amps): [Arduino <span class="simple">Simple<b>FOC</b>PowerShield</span> ](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
-##### <b> Release notes be:</b> <i>Simple<b>FOC</b>library v2.1.1
+##### <b> Release notes be:</b> <i>Simple<b>FOC</b>library</i> v2.1.1
 > - bugfixes commander
 > - bugfix `voltage_limit` when provided `phase_resistance`
 > - bugfix `hall_sensor` examples 
