@@ -16,6 +16,12 @@ struct MagneticSensorI2CConfig_s  {
 // some predefined structures
 extern MagneticSensorI2CConfig_s AS5600_I2C,AS5048_I2C;
 
+#if defined(TARGET_RP2040)
+#define SDA I2C_SDA
+#define SCL I2C_SCL
+#endif
+
+
 class MagneticSensorI2C: public Sensor{
  public:
     /**
