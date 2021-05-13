@@ -1,11 +1,14 @@
 #include "Commander.h"
 
 
-Commander::Commander(Stream& serial){
+Commander::Commander(Stream& serial, char eol, bool echo){
   com_port = &serial;
+  this->eol = eol;
+  this->echo = echo;
 }
-Commander::Commander(){
-  // do nothing
+Commander::Commander(char eol, bool echo){
+  this->eol = eol;
+  this->echo = echo;
 }
 
 
@@ -19,33 +22,24 @@ void Commander::add(char id, CommandCallback onCommand, char* label ){
 
 void Commander::run(){
   if(!com_port) return;
-  // a string to hold incoming data
-  while (com_port->available()) {
-    // get the new byte:
-    received_chars[rec_cnt] = (char)com_port->read();
-    // end of user input
-    if (received_chars[rec_cnt++] == '\n') {
-      // execute the user command
-      run(received_chars);
-
-      // reset the command buffer
-      received_chars[0] = 0;
-      rec_cnt=0;
-    }
-  }
+  run(*com_port, eol);
 }
 
-void Commander::run(Stream& serial){
+void Commander::run(Stream& serial, char eol){
   Stream* tmp = com_port; // save the serial instance
-  // use the new serial instance to output if not available the one linked in constructor
-  if(!tmp) com_port = &serial;
+  char eol_tmp = this->eol;
+  this->eol = eol;
+  com_port = &serial;
 
   // a string to hold incoming data
   while (serial.available()) {
     // get the new byte:
-    received_chars[rec_cnt] = (char)serial.read();
+    int ch = serial.read();
+    received_chars[rec_cnt++] = (char)ch;
     // end of user input
-    if (received_chars[rec_cnt++] == '\n') {
+    if(echo)
+      print((char)ch);
+    if (isSentinel(ch)) {
       // execute the user command
       run(received_chars);
 
@@ -56,11 +50,15 @@ void Commander::run(Stream& serial){
   }
 
   com_port = tmp; // reset the instance to the internal value
+   this->eol = eol_tmp;
 }
 
 void Commander::run(char* user_input){
   // execute the user command
   char id = user_input[0];
+
+
+
   switch(id){
     case CMD_SCAN:
       for(int i=0; i < call_count; i++){
@@ -71,7 +69,7 @@ void Commander::run(char* user_input){
       }
       break;
     case CMD_VERBOSE:
-      if(user_input[1] != '\n') verbose = (VerboseMode)atoi(&user_input[1]);
+      if(!isSentinel(user_input[1])) verbose = (VerboseMode)atoi(&user_input[1]);
       printVerbose(F("Verb:"));
       switch (verbose){
       case VerboseMode::nothing:
@@ -84,7 +82,7 @@ void Commander::run(char* user_input){
       }
       break;
     case CMD_DECIMAL:
-      if(user_input[1] != '\n') decimal_places = atoi(&user_input[1]);
+      if(!isSentinel(user_input[1])) decimal_places = atoi(&user_input[1]);
       printVerbose(F("Decimal:"));
       println(decimal_places);
       break;
@@ -105,7 +103,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
   char sub_cmd = user_command[1];
   int value_index = (sub_cmd >= 'A'  && sub_cmd <= 'Z') ?  2 :  1;
   // check if get command
-  bool GET = user_command[value_index] == '\n';
+  bool GET = isSentinel(user_command[value_index]);
   // parse command values
   float  value  = atof(&user_command[value_index]);
 
@@ -354,7 +352,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
         case SCMD_SET:
           if(!GET) motor->monitor_variables = (uint8_t) 0;
           for(int i = 0; i < 7; i++){
-            if(user_command[value_index+i] == '\n') break;
+            if(isSentinel(user_command[value_index+i])) break;
             if(!GET) motor->monitor_variables |=  (user_command[value_index+i] - '0') << (6-i);
             print( (user_command[value_index+i] - '0') );
           }
@@ -374,7 +372,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
 
 void Commander::pid(PIDController* pid, char* user_cmd){
   char cmd = user_cmd[0];
-  bool GET  = user_cmd[1] == '\n';
+  bool GET  = isSentinel(user_cmd[1]);
   float value = atof(&user_cmd[1]);
 
   switch (cmd){
@@ -411,7 +409,7 @@ void Commander::pid(PIDController* pid, char* user_cmd){
 
 void Commander::lpf(LowPassFilter* lpf, char* user_cmd){
   char cmd = user_cmd[0];
-  bool GET  = user_cmd[1] == '\n';
+  bool GET  = isSentinel(user_cmd[1]);
   float value = atof(&user_cmd[1]);
 
   switch (cmd){
@@ -427,11 +425,26 @@ void Commander::lpf(LowPassFilter* lpf, char* user_cmd){
 }
 
 void Commander::scalar(float* value,  char* user_cmd){
-  bool GET  = user_cmd[0] == '\n';
+  bool GET  = isSentinel(user_cmd[0]);
   if(!GET) *value = atof(user_cmd);
   println(*value);
 }
 
+bool Commander::isSentinel(char ch)
+{
+  if(ch == eol)
+    return true;
+  else if (ch == '\r')
+  {
+    if(verbose == VerboseMode::user_friendly)
+    {
+      print(F("Warning! \\r detected but is not configured as end of line sentinel, which is configured as ascii code '"));
+      print(int(eol));
+      print("'\n");
+    }
+  }
+  return false;
+}
 
 void Commander::print(const int number){
   if( !com_port || verbose == VerboseMode::nothing ) return;
