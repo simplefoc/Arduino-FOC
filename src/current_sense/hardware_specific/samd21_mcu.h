@@ -1,60 +1,52 @@
 
 #include "../hardware_api.h"
 
+  typedef struct {
+    uint16_t btctrl;
+    uint16_t btcnt;
+    uint32_t srcaddr;
+    uint32_t dstaddr;
+    uint32_t descaddr;
+  } dmacdescriptor ;
 
-class SAMDCurrentSensceADC
+class SAMDCurrentSenseADCDMA
 {
 
 public:
   
-  SAMDCurrentSensceADC(int pinA, int pinB, int pinC, float arefaVoltage = 3.3, uint32_t adcBits = 12);
+  SAMDCurrentSenseADCDMA(int pinA, int pinB, int pinC, int pinAREF = 42, float voltageAREF = 3.3, uint32_t adcBits = 12, uint32_t channelDMA = 3);
 
   void init();
-  // this code was pulled from Paul Gould's git https://github.com/gouldpa/FOC-Arduino-Brushless
-  uint32_t ADC_OneBeforeFirstPin; // hack to discard first noisy readout
-  uint32_t ADC_FirstPin; // PA04
-  uint32_t ADC_LastPin;  // PA06
+  void startADCScan();
+  void readResults(float & a, float & b, float & c);
+
+private:
+
+  void adcToDMATransfer(void *rxdata,  size_t hwords);
+
+  void initPins();
+  void initADC();
+  void initDMA();
+ 
+  uint32_t oneBeforeFirstAIN; // hack to discard first noisy readout
+  uint32_t firstAIN;
+  uint32_t lastAIN; 
   uint32_t BufferSize = 0;
 
   uint16_t adcBuffer[20];
 
 
-  uint32_t pinA = A4;
-  uint32_t pinB = A5;
-  uint32_t pinC = 8;
+  uint32_t pinA;
+  uint32_t pinB;
+  uint32_t pinC;
+  uint32_t pinAREF;
+  uint32_t channelDMA;  // DMA channel
 
-  float _ADC_VOLTAGE;
-  float _ADC_RESOLUTION;
-  float ADC_CONV_;
-
-  void _start3PinsDMA();
-  void _read3PinsDMA(const int pinA,const int pinB,const int pinC, float & a, float & b, float & c);
-  // function reading an ADC value and returning the read voltage
-  void _configure3PinsDMA();
-
-
-
-
-  uint32_t ADC_DMA_chnl = 3;  // DMA channel
-
-
-  /**
-   * @brief  Initialize ADC
-   * @retval void
-   */
-  void adc_init();
-
-
-  /**
-   * @brief  dma_init
-   * @retval void
-   */
-  void dma_init();
-
-  /**
-   * @brief  adc_dma 
-   * @retval void
-   */
-  void adc_dma(void *rxdata,  size_t hwords);
+  float voltageAREF;
+  float maxCountsADC;
+  float countsToVolts;
+  
+  dmacdescriptor descriptor_section[12] __attribute__ ((aligned (16)));
+  dmacdescriptor descriptor __attribute__ ((aligned (16)));
 
 };

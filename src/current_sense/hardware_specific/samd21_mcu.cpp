@@ -1,9 +1,10 @@
 
 #include "samd21_mcu.h"
 
+ // Credit: significant portions of this code were pulled from Paul Gould's git https://github.com/gouldpa/FOC-Arduino-Brushless
 
-void adc_stop_with_DMA(void);
-void adc_start_with_DMA(void);
+static void adcStopWithDMA(void);
+static void adcStartWithDMA(void);
 
 /**
  * @brief  ADC sync wait 
@@ -16,91 +17,66 @@ static void   ADCsync() {
 
 //  ADC DMA sequential free running (6) with Interrupts /////////////////
 
-typedef struct {
-  uint16_t btctrl;
-  uint16_t btcnt;
-  uint32_t srcaddr;
-  uint32_t dstaddr;
-  uint32_t descaddr;
-} dmacdescriptor ;
-volatile dmacdescriptor wrb[12] __attribute__ ((aligned (16)));
-dmacdescriptor descriptor_section[12] __attribute__ ((aligned (16)));
-dmacdescriptor descriptor __attribute__ ((aligned (16)));
-DmacDescriptor *desc; // DMA descriptor address (so we can change contents)
 
 
 
-SAMDCurrentSensceADC::SAMDCurrentSensceADC(int pinA, int pinB, int pinC, float arefaVoltage, uint32_t adcBits) 
-: _ADC_VOLTAGE(arefaVoltage), _ADC_RESOLUTION(1 << adcBits)
+
+SAMDCurrentSenseADCDMA::SAMDCurrentSenseADCDMA(int pinA, int pinB, int pinC, int pinAREF, float voltageAREF, uint32_t adcBits, uint32_t channelDMA) 
+: pinA(pinA), pinB(pinB), pinC(pinC), pinAREF(pinAREF), channelDMA(channelDMA), voltageAREF(voltageAREF), maxCountsADC(1 << adcBits)
 {
-  ADC_CONV_ = ( _ADC_VOLTAGE / _ADC_RESOLUTION );
-  this->pinA = pinA;
-  this->pinB = pinB;
-  this->pinC = pinC;
+  countsToVolts = ( voltageAREF / maxCountsADC );
 }
 
-void SAMDCurrentSensceADC::init()
-{
-  _configure3PinsDMA();
-  _start3PinsDMA(); //s
+void SAMDCurrentSenseADCDMA::init(){
+  initPins();
+  initADC();
+  initDMA();
+  startADCScan(); //so we have something to read next time we call readResults()
 }
 
 
-void SAMDCurrentSensceADC::_start3PinsDMA()
-{
-  adc_dma(adcBuffer + ADC_OneBeforeFirstPin, BufferSize);
-  adc_start_with_DMA();
+void SAMDCurrentSenseADCDMA::startADCScan(){
+  adcToDMATransfer(adcBuffer + oneBeforeFirstAIN, BufferSize);
+  adcStartWithDMA();
 }
-void SAMDCurrentSensceADC::_read3PinsDMA(const int pinA,const int pinB,const int pinC, float & a, float & b, float & c)
-{
+
+void SAMDCurrentSenseADCDMA::readResults(float & a, float & b, float & c){
   while(ADC->CTRLA.bit.ENABLE) ;
-  uint32_t adcA = g_APinDescription[pinA].ulADCChannelNumber;
-  uint32_t adcB = g_APinDescription[pinB].ulADCChannelNumber;
-  a = adcBuffer[adcA] * ADC_CONV_;
-  b = adcBuffer[adcB] * ADC_CONV_;
+  uint32_t ainA = g_APinDescription[pinA].ulADCChannelNumber;
+  uint32_t ainB = g_APinDescription[pinB].ulADCChannelNumber;
+  uint32_t ainC = g_APinDescription[pinC].ulADCChannelNumber;
+  a = adcBuffer[ainA] * countsToVolts;
+  b = adcBuffer[ainB] * countsToVolts;
   if(_isset(pinC))
   {
-    uint32_t adcC = g_APinDescription[pinC].ulADCChannelNumber;
-    c = adcBuffer[adcC] * ADC_CONV_;
+    c = adcBuffer[ainC] * countsToVolts;
   }
 }
 
-// function reading an ADC value and returning the read voltage
-void SAMDCurrentSensceADC::_configure3PinsDMA(){
+void SAMDCurrentSenseADCDMA::initPins(){
   
-  uint32_t adcA = g_APinDescription[pinA].ulADCChannelNumber;
-  uint32_t adcB = g_APinDescription[pinB].ulADCChannelNumber;
-  uint32_t adcC = g_APinDescription[pinC].ulADCChannelNumber;
-
-  pinMode(42, INPUT);
-  ADC_FirstPin = min(adcA, adcB);
-  ADC_LastPin = max(adcA, adcB);
+  pinMode(pinAREF, INPUT);
   pinMode(pinA, INPUT);
   pinMode(pinB, INPUT);
+
+  uint32_t ainA = g_APinDescription[pinA].ulADCChannelNumber;
+  uint32_t ainB = g_APinDescription[pinB].ulADCChannelNumber;
+  uint32_t ainC = g_APinDescription[pinC].ulADCChannelNumber;
+  firstAIN = min(ainA, ainB);
+  lastAIN = max(ainA, ainB);
   if( _isset(pinC) ) 
   {
     pinMode(pinC, INPUT);
-    ADC_FirstPin = min(ADC_FirstPin, adcC);
-    ADC_LastPin = max(ADC_LastPin, adcC);
+    firstAIN = min(firstAIN, ainC);
+    lastAIN = max(lastAIN, ainC);
   }
 
-  ADC_OneBeforeFirstPin = ADC_FirstPin - 1; //hack to discard noisy first readout
-  BufferSize = ADC_LastPin - ADC_OneBeforeFirstPin + 1;
+  oneBeforeFirstAIN = firstAIN - 1; //hack to discard noisy first readout
+  BufferSize = lastAIN - oneBeforeFirstAIN + 1;
 
-  // ADC and DMA
-  adc_init();
-  dma_init();
 }
 
-
-
-
-
-/**
- * @brief  Initialize ADC
- * @retval void
- */
-void SAMDCurrentSensceADC::adc_init(){
+void SAMDCurrentSenseADCDMA::initADC(){
 
   analogRead(pinA);  // do some pin init  pinPeripheral() 
   analogRead(pinB);  // do some pin init  pinPeripheral() 
@@ -155,9 +131,9 @@ void SAMDCurrentSensceADC::adc_init(){
   0x1C DAC DAC output
   0x1D-0x1F Reserved
   */
-  ADC->INPUTCTRL.bit.MUXPOS = ADC_OneBeforeFirstPin;
+  ADC->INPUTCTRL.bit.MUXPOS = oneBeforeFirstAIN;
   ADCsync();
-  ADC->INPUTCTRL.bit.INPUTSCAN = ADC_LastPin; // so the adc will scan from AIN[1] to AIN[ADC_Number+1] 
+  ADC->INPUTCTRL.bit.INPUTSCAN = lastAIN; // so the adc will scan from oneBeforeFirstAIN to lastAIN (inclusive) 
   ADCsync();
   ADC->INPUTCTRL.bit.INPUTOFFSET = 0; //input scan cursor
   ADCsync();
@@ -169,12 +145,9 @@ void SAMDCurrentSensceADC::adc_init(){
   ADCsync();
 }
 
+volatile dmacdescriptor wrb[12] __attribute__ ((aligned (16)));
 
-/**
- * @brief  dma_init
- * @retval void
- */
-void SAMDCurrentSensceADC::dma_init() {
+void SAMDCurrentSenseADCDMA::initDMA() {
   // probably on by default
   PM->AHBMASK.reg |= PM_AHBMASK_DMAC ;
   PM->APBBMASK.reg |= PM_APBBMASK_DMAC ;
@@ -184,68 +157,46 @@ void SAMDCurrentSensceADC::dma_init() {
   DMAC->CTRL.reg = DMAC_CTRL_DMAENABLE | DMAC_CTRL_LVLEN(0xf);
 }
 
-/**
- * @brief  adc_dma 
- * @retval void
- */
-void SAMDCurrentSensceADC::adc_dma(void *rxdata,  size_t hwords) {
-  uint32_t temp_CHCTRLB_reg;
 
-  DMAC->CHID.reg = DMAC_CHID_ID(ADC_DMA_chnl);
+void SAMDCurrentSenseADCDMA::adcToDMATransfer(void *rxdata,  size_t hwords) {
+
+  DMAC->CHID.reg = DMAC_CHID_ID(channelDMA);
   DMAC->CHCTRLA.reg &= ~DMAC_CHCTRLA_ENABLE;
   DMAC->CHCTRLA.reg = DMAC_CHCTRLA_SWRST;
-  DMAC->SWTRIGCTRL.reg &= (uint32_t)(~(1 << ADC_DMA_chnl));
-  temp_CHCTRLB_reg = DMAC_CHCTRLB_LVL(0) |
-  DMAC_CHCTRLB_TRIGSRC(ADC_DMAC_ID_RESRDY) | DMAC_CHCTRLB_TRIGACT_BEAT;
-  DMAC->CHCTRLB.reg = temp_CHCTRLB_reg;
+  DMAC->SWTRIGCTRL.reg &= (uint32_t)(~(1 << channelDMA));
+  
+  DMAC->CHCTRLB.reg = DMAC_CHCTRLB_LVL(0) 
+  | DMAC_CHCTRLB_TRIGSRC(ADC_DMAC_ID_RESRDY) 
+  | DMAC_CHCTRLB_TRIGACT_BEAT;
   DMAC->CHINTENSET.reg = DMAC_CHINTENSET_MASK ; // enable all 3 interrupts
   descriptor.descaddr = 0;
   descriptor.srcaddr = (uint32_t) &ADC->RESULT.reg;
   descriptor.btcnt =  hwords;
   descriptor.dstaddr = (uint32_t)rxdata + hwords*2;   // end address
   descriptor.btctrl =  DMAC_BTCTRL_BEATSIZE_HWORD | DMAC_BTCTRL_DSTINC | DMAC_BTCTRL_VALID;
-  memcpy(&descriptor_section[ADC_DMA_chnl],&descriptor, sizeof(dmacdescriptor));
+  memcpy(&descriptor_section[channelDMA],&descriptor, sizeof(dmacdescriptor));
 
   // start channel
-  DMAC->CHID.reg = DMAC_CHID_ID(ADC_DMA_chnl);
+  DMAC->CHID.reg = DMAC_CHID_ID(channelDMA);
   DMAC->CHCTRLA.reg |= DMAC_CHCTRLA_ENABLE;
 }
 
 
-
-
-/**
- * @brief  adc_stop_with_DMA
- * @retval void
- */
-void adc_stop_with_DMA(void)
-{
+void adcStopWithDMA(void){
   ADC->CTRLA.bit.ENABLE = 0x00;
-  // SerialUSB.println("DMA stopped!");
 }
 
-/**
- * @brief  adc_start_with_DMA
- * @retval void
- */
-void adc_start_with_DMA(void)
-{
-  // SerialUSB.println("strating DMA...");
-  // ADC->INPUTCTRL.bit.MUXPOS = ADC_OneBeforeFirstPin;
-  // ADC->INPUTCTRL.bit.INPUTSCAN = ADC_LastPin;
+void adcStartWithDMA(void){
   ADC->INPUTCTRL.bit.INPUTOFFSET = 0;
   ADC->SWTRIG.bit.FLUSH = 1;
   ADC->CTRLA.bit.ENABLE = 0x01; 
 }
-/**
- * @brief  DMAC_Handler
- * @retval void
- */
+
 void DMAC_Handler() {
   uint8_t active_channel;
   active_channel =  DMAC->INTPEND.reg & DMAC_INTPEND_ID_Msk; // get channel number
   DMAC->CHID.reg = DMAC_CHID_ID(active_channel);
-  adc_stop_with_DMA();
+  adcStopWithDMA();
   DMAC->CHINTFLAG.reg = DMAC_CHINTENCLR_TCMPL; // clear
   DMAC->CHINTFLAG.reg = DMAC_CHINTENCLR_TERR;
   DMAC->CHINTFLAG.reg = DMAC_CHINTENCLR_SUSP;
