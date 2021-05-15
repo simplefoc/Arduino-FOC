@@ -1,6 +1,11 @@
 #include "../hardware_api.h" 
 
-#if defined(__arm__) && defined(__SAM3X8E__) 
+#if defined(__arm__) && defined(__SAM3X8E__)
+
+#define _PWM_FREQUENCY 25000 // 25khz
+#define _PWM_FREQUENCY_MAX 50000 // 50khz
+
+#define _PWM_RES_MIN 255 // 50khz
 
 // pwm frequency and max duty cycle
 static unsigned long _pwm_frequency;
@@ -101,7 +106,29 @@ void initPWM(uint32_t ulPin, uint32_t pwm_freq){
     if (!PWMEnabled) {
       // PWM Startup code
       pmc_enable_periph_clk(PWM_INTERFACE_ID);
-      PWMC_ConfigureClocks(pwm_freq * _max_pwm_value, 0, VARIANT_MCK);
+			// this function does not work too well - I'll rewrite it
+      // PWMC_ConfigureClocks(PWM_FREQUENCY * _max_pwm_value, 0, VARIANT_MCK);
+
+      // finding the divisors an prescalers form FindClockConfiguration function
+      uint32_t divisors[11] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024};
+      uint8_t divisor = 0;
+      uint32_t prescaler;
+
+      /* Find prescaler and divisor values */
+      prescaler = (VARIANT_MCK / divisors[divisor]) / (pwm_freq*_max_pwm_value);
+      while ((prescaler > 255) && (divisor < 11)) {
+          divisor++;
+          prescaler = (VARIANT_MCK / divisors[divisor]) / (pwm_freq*_max_pwm_value);
+      }
+      // update the divisor*prescaler value 
+      prescaler = prescaler | (divisor << 8);
+
+      // now calculate the real resolution timer period necessary (pwm resolution)
+      // pwm_res = bus_freq / (pwm_freq * (prescaler))
+      _max_pwm_value = (double)VARIANT_MCK / (double)pwm_freq / (double)(prescaler);
+      // set the prescaler value
+      PWM->PWM_CLK = prescaler;
+
       PWMEnabled = 1;
     }
 
@@ -112,6 +139,8 @@ void initPWM(uint32_t ulPin, uint32_t pwm_freq){
           g_APinDescription[ulPin].ulPinType,
           g_APinDescription[ulPin].ulPin,
           g_APinDescription[ulPin].ulPinConfiguration);
+      // PWM_CMR_CALG - center align
+      // PWMC_ConfigureChannel(PWM_INTERFACE, chan, PWM_CMR_CPRE_CLKA, PWM_CMR_CALG, 0);
       PWMC_ConfigureChannel(PWM_INTERFACE, chan, PWM_CMR_CPRE_CLKA, 0, 0);
       PWMC_SetPeriod(PWM_INTERFACE, chan, _max_pwm_value);
       PWMC_SetDutyCycle(PWM_INTERFACE, chan, 0);
@@ -123,7 +152,7 @@ void initPWM(uint32_t ulPin, uint32_t pwm_freq){
 
   if ((attr & PIN_ATTR_TIMER) == PIN_ATTR_TIMER) { // if timer pin
     // We use MCLK/2 as clock.
-    const uint32_t TC = VARIANT_MCK / 2 / pwm_freq;
+    const uint32_t TC = VARIANT_MCK / 2 / pwm_freq ;
     // Setup Timer for this pin
     ETCChannel channel = g_APinDescription[ulPin].ulTCChannel;
     uint32_t chNo = channelToChNo[channel];
@@ -131,17 +160,18 @@ void initPWM(uint32_t ulPin, uint32_t pwm_freq){
     Tc *chTC = channelToTC[channel];
     uint32_t interfaceID = channelToId[channel];
 
-    if (!TCChanEnabled[interfaceID]) {
-      pmc_enable_periph_clk(TC_INTERFACE_ID + interfaceID);
-      TC_Configure(chTC, chNo,
-        TC_CMR_TCCLKS_TIMER_CLOCK1 |
-        TC_CMR_WAVE |         // Waveform mode
-        TC_CMR_WAVSEL_UP_RC | // Counter running up and reset when equals to RC
-        TC_CMR_EEVT_XC0 |     // Set external events from XC0 (this setup TIOB as output)
-        TC_CMR_ACPA_CLEAR | TC_CMR_ACPC_CLEAR |
-        TC_CMR_BCPB_CLEAR | TC_CMR_BCPC_CLEAR);
-      TC_SetRC(chTC, chNo, TC);
-    } 
+      if (!TCChanEnabled[interfaceID]) {
+        pmc_enable_periph_clk(TC_INTERFACE_ID + interfaceID);
+        TC_Configure(chTC, chNo,
+          TC_CMR_TCCLKS_TIMER_CLOCK1 |
+          TC_CMR_WAVE |         // Waveform mode
+          TC_CMR_WAVSEL_UP_RC | // Counter running up and reset when equals to RC
+          TC_CMR_EEVT_XC0 |     // Set external events from XC0 (this setup TIOB as output)
+          TC_CMR_ACPA_CLEAR | TC_CMR_ACPC_CLEAR |
+          TC_CMR_BCPB_CLEAR | TC_CMR_BCPC_CLEAR);
+        TC_SetRC(chTC, chNo, TC);
+      } 
+
     // disable the counter on start
     if (chA){
       TC_SetCMR_ChannelA(chTC, chNo, TC_CMR_ACPA_CLEAR | TC_CMR_ACPC_SET);
@@ -197,7 +227,7 @@ void setPwm(uint32_t ulPin, uint32_t ulValue) {
       const uint32_t TC = VARIANT_MCK / 2 / _pwm_frequency;
       // Map value to Timer ranges 0..max_duty_cycle => 0..TC
       // Setup Timer for this pin
-      ulValue = ulValue * TC;
+      ulValue = ulValue * TC ;
       pwm_counter_vals[channel] = ulValue / _max_pwm_value;
       // enable counter
       if (channelToAB[channel])
@@ -297,8 +327,8 @@ void TC8_Handler()
 // - BLDC motor - 3PWM setting
 // - hardware specific
 void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
-  if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = 35000; // default frequency 50khz
-  else pwm_frequency = _constrain(pwm_frequency, 0, 50000); // constrain to 50kHz max
+  if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 50khz
+  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
   // save the pwm frequency
   _pwm_frequency = pwm_frequency;
   // cinfigure pwm pins
@@ -314,8 +344,8 @@ void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int
 //- Stepper driver - 2PWM setting
 // - hardware specific
 void _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
-  if(!pwm_frequency || !_isset(pwm_frequency)) pwm_frequency = 35000; // default frequency 50khz
-  else pwm_frequency = _constrain(pwm_frequency, 0, 50000); // constrain to 50kHz max
+  if(!pwm_frequency || !_isset(pwm_frequency)) pwm_frequency = _PWM_FREQUENCY; // default frequency 50khz
+  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
   // save the pwm frequency
   _pwm_frequency = pwm_frequency;
   // cinfigure pwm pins
@@ -329,8 +359,8 @@ void _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 // - Stepper motor - 4PWM setting
 // - hardware speciffic
 void _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
-  if(!pwm_frequency || !_isset(pwm_frequency)) pwm_frequency = 35000; // default frequency 50khz
-  else pwm_frequency = _constrain(pwm_frequency, 0, 50000); // constrain to 50kHz max
+  if(!pwm_frequency || !_isset(pwm_frequency)) pwm_frequency = _PWM_FREQUENCY; // default frequency 50khz
+  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
   // save the pwm frequency
   _pwm_frequency = pwm_frequency;
   // cinfigure pwm pins
@@ -370,21 +400,6 @@ void  _writeDutyCycle2PWM(float dc_a,  float dc_b, int pinA, int pinB){
   // transform duty cycle from [0,1] to [0,_max_pwm_value]
   setPwm(pinA, _max_pwm_value*dc_a);
   setPwm(pinB, _max_pwm_value*dc_b);
-}
-
-
-// Configuring PWM frequency, resolution and alignment
-// - BLDC driver - 6PWM setting
-// - hardware specific
-int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
-  return -1;
-}
-
-// Function setting the duty cycle to the pwm pin (ex. analogWrite())
-// - BLDC driver - 6PWM setting
-// - hardware specific
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, int pinA_h, int pinA_l, int pinB_h, int pinB_l, int pinC_h, int pinC_l){
-  return;
 }
 
 

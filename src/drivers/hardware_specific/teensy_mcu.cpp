@@ -74,18 +74,4 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, in
   analogWrite(pin2B, 255.0*dc_2b);
 }
 
-
-// Configuring PWM frequency, resolution and alignment
-// - BLDC driver - 6PWM setting
-// - hardware specific
-int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
-  return -1;
-}
-
-// Function setting the duty cycle to the pwm pin (ex. analogWrite())
-// - BLDC driver - 6PWM setting
-// - hardware specific
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, int pinA_h, int pinA_l, int pinB_h, int pinB_l, int pinC_h, int pinC_l){
-  return;
-}
 #endif

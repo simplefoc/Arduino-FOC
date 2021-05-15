@@ -9,6 +9,7 @@
 #define _constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 #define _sqrt(a) (_sqrtApprox(a))
 #define _isset(a) ( (a) != (NOT_SET) )
+#define _UNUSED(v) (void) (v)
 
 // utility defines
 #define _2_SQRT3 1.15470053838

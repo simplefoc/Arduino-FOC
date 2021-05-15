@@ -6,7 +6,7 @@
 void _pinHighFrequency(const int pin){
   //  High PWM frequency
   //  https://sites.google.com/site/qeewiki/books/avr-guide/timers-on-the-atmega328
-   if (pin == 5 || pin == 6  ) {
+  if (pin == 5 || pin == 6  ) {
       TCCR0A = ((TCCR0A & 0b11111100) | 0x01); // configure the pwm phase-corrected mode
       TCCR0B = ((TCCR0B & 0b11110000) | 0x01); // set prescaler to 1
   }
@@ -17,12 +17,12 @@ void _pinHighFrequency(const int pin){
   
 }
 
-
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 2PWM setting
 // - hardware speciffic
 // supports Arudino/ATmega328
 void _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
+  _UNUSED(pwm_frequency);
    //  High PWM frequency
    // - always max 32kHz
   _pinHighFrequency(pinA);
@@ -34,6 +34,7 @@ void _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
 // - hardware speciffic
 // supports Arudino/ATmega328
 void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
+  _UNUSED(pwm_frequency);
    //  High PWM frequency
    // - always max 32kHz
   _pinHighFrequency(pinA);
@@ -118,6 +119,8 @@ int _configureComplementaryPair(int pinH, int pinL) {
 // - hardware specific
 // supports Arudino/ATmega328 
 int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l) {
+  _UNUSED(pwm_frequency);
+  _UNUSED(dead_zone);
   //  High PWM frequency
   // - always max 32kHz
   int ret_flag = 0;
