@@ -55,8 +55,8 @@ PhaseCurrent_s LowSideCurrentSense::getPhaseCurrents(){
     // current.b = (_readADCVoltage(pinB) - offset_ib)*gain_b;// amps
     // current.c = (!_isset(pinC)) ? 0 : (_readADCVoltage(pinC) - offset_ic)*gain_c; // amps
     
-    adc._read3PinsDMA(pinA, pinB, pinC, current.a, current.b, current.c);
-    adc._start3PinsDMA();
+    adc.readResults(current.a, current.b, current.c);
+    adc.startADCScan();
 
     return current;
 }
