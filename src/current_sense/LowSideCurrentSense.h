@@ -6,6 +6,7 @@
 #include "../common/time_utils.h"
 #include "../common/base_classes/CurrentSense.h"
 #include "hardware_api.h"
+#include "hardware_specific/samd21_mcu.h"
 
 class LowSideCurrentSense: public CurrentSense{
   public:
@@ -51,6 +52,8 @@ class LowSideCurrentSense: public CurrentSense{
     double offset_ia; //!< zero current A voltage value (center of the adc reading)
     double offset_ib; //!< zero current B voltage value (center of the adc reading)
     double offset_ic; //!< zero current C voltage value (center of the adc reading)
+
+    SAMDCurrentSensceADC adc;
 
 };
 

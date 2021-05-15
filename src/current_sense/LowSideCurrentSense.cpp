@@ -5,7 +5,9 @@
 //  - phA   - A phase adc pin
 //  - phB   - B phase adc pin
 //  - phC   - C phase adc pin (optional)
-LowSideCurrentSense::LowSideCurrentSense(float _shunt_resistor, float _gain, int _pinA, int _pinB, int _pinC){
+LowSideCurrentSense::LowSideCurrentSense(float _shunt_resistor, float _gain, int _pinA, int _pinB, int _pinC): 
+adc(_pinA, _pinB, _pinC)
+{
     pinA = _pinA;
     pinB = _pinB;
     pinC = _pinC;
@@ -21,9 +23,7 @@ LowSideCurrentSense::LowSideCurrentSense(float _shunt_resistor, float _gain, int
 
 // Inline sensor init function
 void LowSideCurrentSense::init(){
-    // configure ADC variables
-    _configure3PinsDMA(pinA,pinB,pinC);
-    _start3PinsDMA(); //start next acuisition
+    adc.init();
     // calibrate zero offsets
     // calibrateOffsets();
 }
@@ -54,8 +54,9 @@ PhaseCurrent_s LowSideCurrentSense::getPhaseCurrents(){
     // current.a = (_readADCVoltage(pinA) - offset_ia)*gain_a;// amps
     // current.b = (_readADCVoltage(pinB) - offset_ib)*gain_b;// amps
     // current.c = (!_isset(pinC)) ? 0 : (_readADCVoltage(pinC) - offset_ic)*gain_c; // amps
-    _read3PinsDMA(pinA, pinB, pinC, current.a, current.b, current.c);
-    _start3PinsDMA();
+    
+    adc._read3PinsDMA(pinA, pinB, pinC, current.a, current.b, current.c);
+    adc._start3PinsDMA();
 
     return current;
 }
