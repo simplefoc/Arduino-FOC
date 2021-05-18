@@ -52,7 +52,8 @@ class LowSideCurrentSense: public CurrentSense{
     double offset_ia; //!< zero current A voltage value (center of the adc reading)
     double offset_ib; //!< zero current B voltage value (center of the adc reading)
     double offset_ic; //!< zero current C voltage value (center of the adc reading)
-
+  
+    PhaseCurrent_s oldCurrent;
     SAMDCurrentSenseADCDMA adc;
 
 };

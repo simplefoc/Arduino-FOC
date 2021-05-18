@@ -40,17 +40,19 @@ void SAMDCurrentSenseADCDMA::startADCScan(){
   adcStartWithDMA();
 }
 
-void SAMDCurrentSenseADCDMA::readResults(float & a, float & b, float & c){
-  while(ADC->CTRLA.bit.ENABLE) ;
+bool SAMDCurrentSenseADCDMA::readResults(float & a, float & b, float & c){
+  if(ADC->CTRLA.bit.ENABLE)
+    return false;
   uint32_t ainA = g_APinDescription[pinA].ulADCChannelNumber;
   uint32_t ainB = g_APinDescription[pinB].ulADCChannelNumber;
-  uint32_t ainC = g_APinDescription[pinC].ulADCChannelNumber;
   a = adcBuffer[ainA] * countsToVolts;
   b = adcBuffer[ainB] * countsToVolts;
   if(_isset(pinC))
   {
+    uint32_t ainC = g_APinDescription[pinC].ulADCChannelNumber;
     c = adcBuffer[ainC] * countsToVolts;
   }
+  return true;
 }
 
 void SAMDCurrentSenseADCDMA::initPins(){
@@ -61,11 +63,11 @@ void SAMDCurrentSenseADCDMA::initPins(){
 
   uint32_t ainA = g_APinDescription[pinA].ulADCChannelNumber;
   uint32_t ainB = g_APinDescription[pinB].ulADCChannelNumber;
-  uint32_t ainC = g_APinDescription[pinC].ulADCChannelNumber;
   firstAIN = min(ainA, ainB);
   lastAIN = max(ainA, ainB);
   if( _isset(pinC) ) 
   {
+    uint32_t ainC = g_APinDescription[pinC].ulADCChannelNumber;
     pinMode(pinC, INPUT);
     firstAIN = min(firstAIN, ainC);
     lastAIN = max(lastAIN, ainC);
@@ -158,7 +160,7 @@ void SAMDCurrentSenseADCDMA::initDMA() {
 }
 
 
-void SAMDCurrentSenseADCDMA::adcToDMATransfer(void *rxdata,  size_t hwords) {
+void SAMDCurrentSenseADCDMA::adcToDMATransfer(void *rxdata,  uint32_t hwords) {
 
   DMAC->CHID.reg = DMAC_CHID_ID(channelDMA);
   DMAC->CHCTRLA.reg &= ~DMAC_CHCTRLA_ENABLE;
@@ -183,13 +185,19 @@ void SAMDCurrentSenseADCDMA::adcToDMATransfer(void *rxdata,  size_t hwords) {
 
 
 void adcStopWithDMA(void){
+  ADCsync();
   ADC->CTRLA.bit.ENABLE = 0x00;
+  
 }
 
 void adcStartWithDMA(void){
+  ADCsync();
   ADC->INPUTCTRL.bit.INPUTOFFSET = 0;
+  ADCsync();
   ADC->SWTRIG.bit.FLUSH = 1;
+  ADCsync();
   ADC->CTRLA.bit.ENABLE = 0x01; 
+  ADCsync();
 }
 
 void DMAC_Handler() {
