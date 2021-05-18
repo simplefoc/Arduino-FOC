@@ -30,6 +30,9 @@ float _readADCVoltageLowSide(const int pin){
   return raw_adc * _ADC_CONV;
 }
 
+void _startADC3PinConversionLowSide(){
+  
+}
 
 // function reading an ADC value and returning the read voltage
 void _configureADCLowSide(const int pinA,const int pinB,const int pinC){

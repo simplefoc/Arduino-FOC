@@ -4,7 +4,10 @@
 
 
 // uncomment to enable debug output to Serial port
-#define SIMPLEFOC_SAMD_DEBUG
+// #define SIMPLEFOC_SAMD_DEBUG
+#if !defined(SIMPLEFOC_SAMD_DEBUG_SERIAL)
+#define SIMPLEFOC_SAMD_DEBUG_SERIAL Serial
+#endif
 
 #include "../hardware_api.h"
 
