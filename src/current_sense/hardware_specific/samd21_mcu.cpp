@@ -1,5 +1,69 @@
 
 #include "samd21_mcu.h"
+#include "../hardware_api.h"
+
+
+static bool freeRunning = false;
+static int _pinA, _pinB, _pinC;
+static uint16_t a = 0xFFFF, b = 0xFFFF, c = 0xFFFF; // updated by adcStopWithDMA when configured in freerunning mode
+static SAMDCurrentSenseADCDMA instance;
+/**
+ *  function reading an ADC value and returning the read voltage 
+ * 
+ * @param pinA - adc pin A
+ * @param pinB - adc pin B
+ * @param pinC - adc pin C
+ */
+void _configureADCLowSide(const int pinA,const int pinB,const int pinC)
+{
+  _pinA = pinA;
+  _pinB = pinB; 
+  _pinC = pinC;
+  freeRunning = true;
+  instance.init(pinA, pinB, pinC);
+
+}
+void _startADC3PinConversionLowSide()
+{
+  instance.startADCScan();
+}
+/**
+ *  function reading an ADC value and returning the read voltage
+ * 
+ * @param pinA - the arduino pin to be read (it has to be ADC pin)
+ */
+float _readADCVoltageLowSide(const int pinA)
+{
+  instance.readResults(a, b, c);
+  
+  if(pinA == _pinA)
+    return instance.toVolts(a);
+  if(pinA == _pinB)
+    return instance.toVolts(b);
+  if(pinA == _pinC)
+    return instance.toVolts(c);
+
+  return NAN;
+}
+
+/**
+ *  function syncing the Driver with the ADC  for the LowSide Sensing
+ */
+void _driverSyncLowSide()
+{
+  SIMPLEFOC_SAMD_DEBUG_SERIAL.println(F("TODO! _driverSyncLowSide() is not implemented"));
+  instance.startADCScan();
+  //TODO: hook with PWM interrupts
+}
+
+
+
+
+
+
+
+
+
 
  // Credit: significant portions of this code were pulled from Paul Gould's git https://github.com/gouldpa/FOC-Arduino-Brushless
 
@@ -17,17 +81,27 @@ static void   ADCsync() {
 
 //  ADC DMA sequential free running (6) with Interrupts /////////////////
 
-
-
-
-
-SAMDCurrentSenseADCDMA::SAMDCurrentSenseADCDMA(int pinA, int pinB, int pinC, int pinAREF, float voltageAREF, uint32_t adcBits, uint32_t channelDMA) 
-: pinA(pinA), pinB(pinB), pinC(pinC), pinAREF(pinAREF), channelDMA(channelDMA), voltageAREF(voltageAREF), maxCountsADC(1 << adcBits)
+SAMDCurrentSenseADCDMA * SAMDCurrentSenseADCDMA::getHardwareAPIInstance() 
 {
-  countsToVolts = ( voltageAREF / maxCountsADC );
+  
+  return &instance;
 }
 
-void SAMDCurrentSenseADCDMA::init(){
+SAMDCurrentSenseADCDMA::SAMDCurrentSenseADCDMA()
+{
+}
+
+void SAMDCurrentSenseADCDMA::init(int pinA, int pinB, int pinC, int pinAREF, float voltageAREF, uint32_t adcBits, uint32_t channelDMA)
+{
+  this->pinA = pinA;
+  this->pinB = pinB;
+  this->pinC = pinC;
+  this->pinAREF = pinAREF;
+  this->channelDMA = channelDMA;
+  this->voltageAREF = voltageAREF;
+  this->maxCountsADC = 1 << adcBits;
+  countsToVolts = ( voltageAREF / maxCountsADC );
+
   initPins();
   initADC();
   initDMA();
@@ -40,19 +114,24 @@ void SAMDCurrentSenseADCDMA::startADCScan(){
   adcStartWithDMA();
 }
 
-bool SAMDCurrentSenseADCDMA::readResults(float & a, float & b, float & c){
+bool SAMDCurrentSenseADCDMA::readResults(uint16_t & a, uint16_t & b, uint16_t & c){
   if(ADC->CTRLA.bit.ENABLE)
     return false;
   uint32_t ainA = g_APinDescription[pinA].ulADCChannelNumber;
   uint32_t ainB = g_APinDescription[pinB].ulADCChannelNumber;
-  a = adcBuffer[ainA] * countsToVolts;
-  b = adcBuffer[ainB] * countsToVolts;
+  a = adcBuffer[ainA];
+  b = adcBuffer[ainB];
   if(_isset(pinC))
   {
     uint32_t ainC = g_APinDescription[pinC].ulADCChannelNumber;
-    c = adcBuffer[ainC] * countsToVolts;
+    c = adcBuffer[ainC];
   }
   return true;
+}
+
+
+float SAMDCurrentSenseADCDMA::toVolts(uint16_t counts) {
+  return counts * countsToVolts;
 }
 
 void SAMDCurrentSenseADCDMA::initPins(){
@@ -184,10 +263,23 @@ void SAMDCurrentSenseADCDMA::adcToDMATransfer(void *rxdata,  uint32_t hwords) {
 }
 
 
+int iii = 0;
+
 void adcStopWithDMA(void){
   ADCsync();
   ADC->CTRLA.bit.ENABLE = 0x00;
-  
+  // ADCsync();
+  // if(iii++ % 1000 == 0)
+  // {
+  //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(a);
+  //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(" :: ");
+  //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(b);
+  //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(" :: ");
+  //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(c);
+  //   SIMPLEFOC_SAMD_DEBUG_SERIAL.println("yo!");
+  // }
+
+
 }
 
 void adcStartWithDMA(void){
@@ -208,4 +300,5 @@ void DMAC_Handler() {
   DMAC->CHINTFLAG.reg = DMAC_CHINTENCLR_TCMPL; // clear
   DMAC->CHINTFLAG.reg = DMAC_CHINTENCLR_TERR;
   DMAC->CHINTFLAG.reg = DMAC_CHINTENCLR_SUSP;
+
 }
