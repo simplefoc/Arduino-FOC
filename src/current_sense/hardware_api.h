@@ -20,4 +20,8 @@ float _readADCVoltageInline(const int pinA);
  */
 void _configureADCInline(const int pinA,const int pinB,const int pinC = NOT_SET);
 
+void _start3PinsDMA();
+void _read3PinsDMA(const int pinA,const int pinB,const int pinC, float & a, float & b, float & c);
+void _configure3PinsDMA(const int pinA,const int pinB,const int pinC = NOT_SET);
+
 #endif
