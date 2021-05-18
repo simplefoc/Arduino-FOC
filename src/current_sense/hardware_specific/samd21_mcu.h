@@ -1,6 +1,6 @@
 
 #include "../hardware_api.h"
-
+#include <stdint.h>
   typedef struct {
     uint16_t btctrl;
     uint16_t btcnt;
@@ -18,11 +18,11 @@ public:
 
   void init();
   void startADCScan();
-  void readResults(float & a, float & b, float & c);
+  bool readResults(float & a, float & b, float & c);
 
 private:
 
-  void adcToDMATransfer(void *rxdata,  size_t hwords);
+  void adcToDMATransfer(void *rxdata,  uint32_t hwords);
 
   void initPins();
   void initADC();

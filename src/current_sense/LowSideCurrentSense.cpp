@@ -55,10 +55,13 @@ PhaseCurrent_s LowSideCurrentSense::getPhaseCurrents(){
     // current.b = (_readADCVoltage(pinB) - offset_ib)*gain_b;// amps
     // current.c = (!_isset(pinC)) ? 0 : (_readADCVoltage(pinC) - offset_ic)*gain_c; // amps
     
-    adc.readResults(current.a, current.b, current.c);
+    if(adc.readResults(current.a, current.b, current.c))
+    {
+        oldCurrent = current;
+    }
     adc.startADCScan();
 
-    return current;
+    return oldCurrent;
 }
 // Function synchronizing current sense with motor driver.
 // for in-line sensig no such thing is necessary
