@@ -125,12 +125,12 @@ bool SAMDCurrentSenseADCDMA::readResults(uint16_t & a, uint16_t & b, uint16_t & 
   //   return false;
   uint32_t ainA = g_APinDescription[pinA].ulADCChannelNumber;
   uint32_t ainB = g_APinDescription[pinB].ulADCChannelNumber;
-  a = adcBuffer[1];
-  b = adcBuffer[2];
+  a = adcBuffer[ainA];
+  b = adcBuffer[ainB];
   if(_isset(pinC))
   {
     uint32_t ainC = g_APinDescription[pinC].ulADCChannelNumber;
-    c = adcBuffer[3];
+    c = adcBuffer[ainC];
   }
   return true;
 }
@@ -221,7 +221,7 @@ void SAMDCurrentSenseADCDMA::initADC(){
   inputctrl.bit.GAIN = refctrl.bit.REFSEL == ADC_REFCTRL_REFSEL_AREFA_Val ? ADC_INPUTCTRL_GAIN_1X_Val : ADC_INPUTCTRL_GAIN_DIV2_Val;
   inputctrl.bit.MUXPOS = firstAIN;
   inputctrl.bit.MUXNEG = ADC_INPUTCTRL_MUXNEG_GND_Val;
-  inputctrl.bit.INPUTSCAN = 3; // so the adc will scan from oneBeforeFirstAIN to lastAIN (inclusive) 
+  inputctrl.bit.INPUTSCAN = lastAIN - inputctrl.bit.MUXPOS + 1; // so the adc will scan from oneBeforeFirstAIN to lastAIN (inclusive) 
   inputctrl.bit.INPUTOFFSET = 0; //input scan cursor
   ADC->INPUTCTRL.reg = inputctrl.reg;
   ADCsync();
@@ -320,7 +320,7 @@ void SAMDCurrentSenseADCDMA::initADC(){
 void ADC_Handler()
 {
 
-  instance.adcBuffer[ADC->INPUTCTRL.bit.INPUTOFFSET] = ADC->RESULT.reg;
+  instance.adcBuffer[ADC->INPUTCTRL.bit.MUXPOS + ADC->INPUTCTRL.bit.INPUTOFFSET - 1] = ADC->RESULT.reg;
 
   // instance.adcBuffer[i++%4] = ADC->RESULT.reg;
 }

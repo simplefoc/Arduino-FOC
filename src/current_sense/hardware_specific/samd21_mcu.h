@@ -26,6 +26,7 @@ public:
   void startADCScan();
   bool readResults(uint16_t & a, uint16_t & b, uint16_t & c);
   float toVolts(uint16_t counts);
+  uint16_t adcBuffer[20];
 private:
 
   void adcToDMATransfer(void *rxdata,  uint32_t hwords);
@@ -39,7 +40,6 @@ private:
   uint32_t firstAIN;
   uint32_t lastAIN; 
   uint32_t BufferSize = 0;
-  uint16_t adcBuffer[20];
 
 
   uint32_t pinA;
