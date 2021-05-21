@@ -162,6 +162,19 @@ void configureSAMDClock() {
 						 GCLK_GENCTRL_ID(4);          	// Select GCLK4
 		while (GCLK->STATUS.bit.SYNCBUSY);              // Wait for synchronization
 
+		//EVSYS config
+		/* Turn on the digital interface clock */
+		PM->APBCMASK.reg |= PM_APBCMASK_EVSYS;
+
+		/* Turn on the peripheral interface clock and select GCLK */
+		GCLK_CLKCTRL_Type clkctrl;
+		clkctrl.bit.WRTLOCK = 0;
+		clkctrl.bit.CLKEN = 1;
+		clkctrl.bit.ID = EVSYS_GCLK_ID_0;
+		clkctrl.bit.GEN = 0; /* GCLK_GENERATOR_0 */
+		GCLK->CLKCTRL.reg = clkctrl.reg;
+		while (GCLK->STATUS.bit.SYNCBUSY);              // Wait for synchronization
+
 #ifdef SIMPLEFOC_SAMD_DEBUG
 		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured clock...");
 #endif
@@ -176,7 +189,7 @@ void configureSAMDClock() {
  * pwm_frequency is fixed at 24kHz for now. We could go slower, but going
  * faster won't be possible without sacrificing resolution.
  */
-void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, float hw6pwm) {
+void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, float hw6pwm, bool enableOVFEO) {
 	// TODO for the moment we ignore the frequency...
 	if (!tccConfigured[tccConfig.tcc.tccn]) {
 		uint32_t GCLK_CLKCTRL_ID_ofthistcc = -1;
@@ -194,7 +207,45 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 									   GCLK_CLKCTRL_ID_ofthistcc;   // Feed GCLK4 to tcc
 		while (GCLK->STATUS.bit.SYNCBUSY);              			// Wait for synchronization
 
+
+		if(enableOVFEO)
+		{
+			#ifdef SIMPLEFOC_SAMD_DEBUG
+				SIMPLEFOC_SAMD_DEBUG_SERIAL.print("Configuring EVSYS for TCC channel ");
+				SIMPLEFOC_SAMD_DEBUG_SERIAL.println(tccConfig.tcc.tccn);
+			#endif
+
+
+			EVSYS_USER_Type user;
+			user.bit.CHANNEL = tccConfig.tcc.tccn + 1; /* use channel tccn p421: "Note that to select channel n, the value (n+1) must be written to the USER.CHANNEL bit group." */
+			user.bit.USER = EVSYS_ID_USER_ADC_SYNC; /* ADC Start*/
+			EVSYS->USER.reg = user.reg;
+			// configuration of the event system so that it triggers an "EVSYS_ID_USER_ADC_SYNC" at each timer overflow (underflow)
+			EVSYS_CHANNEL_Type channel;
+			switch (tccConfig.tcc.tccn){
+			case 0: channel.bit.EVGEN = EVSYS_ID_GEN_TCC0_OVF; break;
+			case 1: channel.bit.EVGEN = EVSYS_ID_GEN_TCC1_OVF; break;
+			case 2: channel.bit.EVGEN = EVSYS_ID_GEN_TCC2_OVF; break;
+			// case 3: channel.bit.EVGEN = EVSYS_ID_GEN_TC3_OVF; break; // TODO: we need the TC equivalent of TCC_WAVEB_WAVEGENB_DSBOTTOM 
+			// case 4: channel.bit.EVGEN = EVSYS_ID_GEN_TC4_OVF; break; // TODO: we need the TC equivalent of TCC_WAVEB_WAVEGENB_DSBOTTOM
+			// case 5: channel.bit.EVGEN = EVSYS_ID_GEN_TC5_OVF; break; // TODO: we need the TC equivalent of TCC_WAVEB_WAVEGENB_DSBOTTOM
+			default: 
+			#ifdef SIMPLEFOC_SAMD_DEBUG
+				SIMPLEFOC_SAMD_DEBUG_SERIAL.print("Error in configureTCC() [EVSYS] Bad tccn number: ");
+				SIMPLEFOC_SAMD_DEBUG_SERIAL.println(tccConfig.tcc.tccn);
+			#endif
+				return;
+			}
+
+			channel.bit.EDGSEL = EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val;
+			channel.bit.PATH = EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val;
+			channel.bit.SWEVT = 0;   /* no software trigger */
+			channel.bit.CHANNEL = tccConfig.tcc.tccn; /* use channel tccn */
+			EVSYS->CHANNEL.reg = channel.reg;
+		}
+
 		tccConfigured[tccConfig.tcc.tccn] = true;
+
 
 		if (tccConfig.tcc.tccn>=TCC_INST_NUM) {
 			Tc* tc = (Tc*)GetTC(tccConfig.tcc.chaninfo);
@@ -229,7 +280,17 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 			tcc->DRVCTRL.vec.INVEN = (tcc->DRVCTRL.vec.INVEN&invenMask)|invenVal;
 			syncTCC(tcc); // wait for sync
 
-			tcc->WAVE.reg |= TCC_WAVE_POL(0xF)|TCC_WAVEB_WAVEGENB_DSBOTH;   // Set wave form configuration
+			// Set wave form configuration
+			// We do phase-correct PWM (up-down counting) - so the TOP value represents exactly the middle of the PWM on-period for the high-side, 
+			// and the BOTTOM value represents the middle of the PWM on-period for the low-side (which has inverted output).
+			// Personally, I would just attach to the high side, then the code can probably remain the same for 3-PWM and 6-PWM.
+			// So basically for low side sensing I think you always want to generate events when the counter reaches the bottom value (turns around). 
+			// You do this by setting PWM mode “DSBOTTOM” 
+			if(enableOVFEO)
+				tcc->WAVE.reg |= TCC_WAVE_POL(0xF)|TCC_WAVEB_WAVEGENB_DSBOTTOM; 
+			else
+				tcc->WAVE.reg |= TCC_WAVE_POL(0xF)|TCC_WAVEB_WAVEGENB_DSBOTH;   
+
 			while ( tcc->SYNCBUSY.bit.WAVE == 1 ); // wait for sync
 
 			if (hw6pwm>0.0) {
@@ -250,10 +311,15 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 				while ( (tcc->SYNCBUSY.reg & chanbit) > 0 );
 			}
 
+			if(enableOVFEO) {
+				tcc->EVCTRL.bit.OVFEO = 1;
+				while ( tcc->SYNCBUSY.bit.ENABLE == 1 ); // wait for sync
+			}
+			
 			// Enable TC
 			tcc->CTRLA.reg |= TCC_CTRLA_ENABLE | TCC_CTRLA_PRESCALER_DIV1; //48Mhz/1=48Mhz/2(up/down)=24MHz/1024=24KHz
 			while ( tcc->SYNCBUSY.bit.ENABLE == 1 ); // wait for sync
-
+			
 #ifdef SIMPLEFOC_SAMD_DEBUG
 			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("    Initialized TCC ");
 			SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.tcc.tccn);
@@ -301,7 +367,12 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 
 }
 
+void EVSYS_Init(int chaninfo)
+{
 
+
+
+}
 
 
 

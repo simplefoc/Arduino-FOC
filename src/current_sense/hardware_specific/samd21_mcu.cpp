@@ -25,7 +25,7 @@ void _configureADCLowSide(const int pinA,const int pinB,const int pinC)
 }
 void _startADC3PinConversionLowSide()
 {
-  instance.startADCScan();
+  // instance.startADCScan();
 }
 /**
  *  function reading an ADC value and returning the read voltage
@@ -91,7 +91,9 @@ SAMDCurrentSenseADCDMA::SAMDCurrentSenseADCDMA()
 {
 }
 
-void SAMDCurrentSenseADCDMA::init(int pinA, int pinB, int pinC, int pinAREF, float voltageAREF, uint32_t adcBits, uint32_t channelDMA)
+void SAMDCurrentSenseADCDMA::init(int pinA, int pinB, int pinC
+, int pinAREF, float voltageAREF
+, uint32_t adcBits, uint32_t channelDMA)
 {
   this->pinA = pinA;
   this->pinB = pinB;
@@ -102,29 +104,33 @@ void SAMDCurrentSenseADCDMA::init(int pinA, int pinB, int pinC, int pinAREF, flo
   this->maxCountsADC = 1 << adcBits;
   countsToVolts = ( voltageAREF / maxCountsADC );
 
+  for(static int i = 0; i < 20; i++)
+    adcBuffer[i] = 0;
   initPins();
   initADC();
-  initDMA();
-  startADCScan(); //so we have something to read next time we call readResults()
+  // initDMA();
+  // startADCScan(); //so we have something to read next time we call readResults()
+
+
 }
 
 
 void SAMDCurrentSenseADCDMA::startADCScan(){
-  adcToDMATransfer(adcBuffer + oneBeforeFirstAIN, BufferSize);
-  adcStartWithDMA();
+  // adcToDMATransfer(adcBuffer + oneBeforeFirstAIN, BufferSize);
+  // adcStartWithDMA();
 }
 
 bool SAMDCurrentSenseADCDMA::readResults(uint16_t & a, uint16_t & b, uint16_t & c){
-  if(ADC->CTRLA.bit.ENABLE)
-    return false;
+  // if(ADC->CTRLA.bit.ENABLE)
+  //   return false;
   uint32_t ainA = g_APinDescription[pinA].ulADCChannelNumber;
   uint32_t ainB = g_APinDescription[pinB].ulADCChannelNumber;
-  a = adcBuffer[ainA];
-  b = adcBuffer[ainB];
+  a = adcBuffer[1];
+  b = adcBuffer[2];
   if(_isset(pinC))
   {
     uint32_t ainC = g_APinDescription[pinC].ulADCChannelNumber;
-    c = adcBuffer[ainC];
+    c = adcBuffer[3];
   }
   return true;
 }
@@ -163,14 +169,30 @@ void SAMDCurrentSenseADCDMA::initADC(){
   analogRead(pinB);  // do some pin init  pinPeripheral() 
   analogRead(pinC);  // do some pin init  pinPeripheral() 
 
-  ADC->CTRLA.bit.ENABLE = 0x00; // Disable ADC
+  ADC->CTRLA.bit.ENABLE = 0x00;             // Disable ADC
+
+	/* Turn on the digital interface clock */
+	PM->APBCMASK.reg |= PM_APBCMASK_ADC;
+
+	/* Turn on the analog interface clock and use GCLK Generator
+	 */
+	GCLK_CLKCTRL_Type adc_clkctrl{.reg = 0};
+	adc_clkctrl.bit.WRTLOCK = 0;
+	adc_clkctrl.bit.CLKEN = 1;  /* enable clock */
+	adc_clkctrl.bit.ID = ADC_GCLK_ID;
+	adc_clkctrl.bit.GEN = 0;   /* GCLK_GENERATOR_0 */
+	GCLK->CLKCTRL.reg = adc_clkctrl.reg;
+
+	/* reset the ADC to its initial settings */
+	ADC->CTRLA.reg = ADC_CTRLA_SWRST;
   ADCsync();
-  //ADC->REFCTRL.bit.REFSEL = ADC_REFCTRL_REFSEL_INTVCC0_Val; //  2.2297 V Supply VDDANA
-  ADC->INPUTCTRL.bit.GAIN = ADC_INPUTCTRL_GAIN_1X_Val; // Gain select as 1X
-  // ADC->INPUTCTRL.bit.GAIN = ADC_INPUTCTRL_GAIN_DIV2_Val;  // default
-  ADC->REFCTRL.bit.REFSEL = ADC_REFCTRL_REFSEL_AREFA;
-  // ADC->REFCTRL.bit.REFSEL = ADC_REFCTRL_REFSEL_INTVCC0;
-  ADCsync();  //  ref 31.6.16
+
+	/* Configure reference */
+	ADC_REFCTRL_Type refctrl{.reg = 0};
+  // refctrl.bit.REFCOMP = 1; /* enable reference compensation */
+  refctrl.bit.REFSEL = this->pinAREF == 42 ? ADC_REFCTRL_REFSEL_AREFA_Val : ADC_REFCTRL_REFSEL_INTVCC1_Val;
+  
+	ADC->REFCTRL.reg = refctrl.reg;
 
   /*
   Bits 19:16 – INPUTSCAN[3:0]: Number of Input Channels Included in Scan
@@ -185,24 +207,7 @@ void SAMDCurrentSenseADCDMA::initADC(){
   Table 32-14. Positive Mux Input Selection
   MUXPOS[4:0] Group configuration Description
   0x00 PIN0 ADC AIN0 pin
-  0x01 PIN1 ADC AIN1 pin
-  0x02 PIN2 ADC AIN2 pin
-  0x03 PIN3 ADC AIN3 pin
-  0x04 PIN4 ADC AIN4 pin
-  0x05 PIN5 ADC AIN5 pin
-  0x06 PIN6 ADC AIN6 pin
-  0x07 PIN7 ADC AIN7 pin
-  0x08 PIN8 ADC AIN8 pin
-  0x09 PIN9 ADC AIN9 pin
-  0x0A PIN10 ADC AIN10 pin
-  0x0B PIN11 ADC AIN11 pin
-  0x0C PIN12 ADC AIN12 pin
-  0x0D PIN13 ADC AIN13 pin
-  0x0E PIN14 ADC AIN14 pin
-  0x0F PIN15 ADC AIN15 pin
-  0x10 PIN16 ADC AIN16 pin
-  0x11 PIN17 ADC AIN17 pin
-  0x12 PIN18 ADC AIN18 pin
+  [...]
   0x13 PIN19 ADC AIN19 pin
   0x14-0x17 Reserved
   0x18 TEMP Temperature reference
@@ -212,93 +217,131 @@ void SAMDCurrentSenseADCDMA::initADC(){
   0x1C DAC DAC output
   0x1D-0x1F Reserved
   */
-  ADC->INPUTCTRL.bit.MUXPOS = oneBeforeFirstAIN;
+  ADC_INPUTCTRL_Type inputctrl{.reg = 0};
+  inputctrl.bit.GAIN = refctrl.bit.REFSEL == ADC_REFCTRL_REFSEL_AREFA_Val ? ADC_INPUTCTRL_GAIN_1X_Val : ADC_INPUTCTRL_GAIN_DIV2_Val;
+  inputctrl.bit.MUXPOS = firstAIN;
+  inputctrl.bit.MUXNEG = ADC_INPUTCTRL_MUXNEG_GND_Val;
+  inputctrl.bit.INPUTSCAN = 3; // so the adc will scan from oneBeforeFirstAIN to lastAIN (inclusive) 
+  inputctrl.bit.INPUTOFFSET = 0; //input scan cursor
+  ADC->INPUTCTRL.reg = inputctrl.reg;
   ADCsync();
-  ADC->INPUTCTRL.bit.INPUTSCAN = lastAIN; // so the adc will scan from oneBeforeFirstAIN to lastAIN (inclusive) 
+
+  	/* Set up the average and samples */
+	ADC_AVGCTRL_Type avgctrl{.reg = 0};
+	avgctrl.bit.ADJRES = 0,
+	avgctrl.bit.SAMPLENUM = ADC_AVGCTRL_SAMPLENUM_1_Val,
+	ADC->AVGCTRL.reg = avgctrl.reg;
+	/* Configure sample length */
+	ADC->SAMPCTRL.reg = ADC_SAMPCTRL_SAMPLEN(5); //sample length in 1/2 CLK_ADC cycles, see GCLK_ADC and ADC_CTRLB_PRESCALER_DIV16
+  // according to the specsheet: fGCLK_ADC ADC input clock frequency 48 MHz, so same as fCPU
   ADCsync();
-  ADC->INPUTCTRL.bit.INPUTOFFSET = 0; //input scan cursor
-  ADCsync();
-  ADC->AVGCTRL.reg = 0x00 ;  //no averaging
-  ADC->SAMPCTRL.reg = 0x05;  ; //sample length in 1/2 CLK_ADC cycles, see GCLK_ADC and ADC_CTRLB_PRESCALER_DIV16
-  // according to the specsheet: f_GCLK_ADC ADC input clock frequency 48 MHz, so same as fCPU
-  ADCsync();
-  ADC->CTRLB.reg = ADC_CTRLB_PRESCALER_DIV16 | ADC_CTRLB_FREERUN | ADC_CTRLB_RESSEL_12BIT;
-  ADCsync();
-}
-
-volatile dmacdescriptor wrb[12] __attribute__ ((aligned (16)));
-
-void SAMDCurrentSenseADCDMA::initDMA() {
-  // probably on by default
-  PM->AHBMASK.reg |= PM_AHBMASK_DMAC ;
-  PM->APBBMASK.reg |= PM_APBBMASK_DMAC ;
-  NVIC_EnableIRQ( DMAC_IRQn ) ;
-  DMAC->BASEADDR.reg = (uint32_t)descriptor_section;
-  DMAC->WRBADDR.reg = (uint32_t)wrb;
-  DMAC->CTRL.reg = DMAC_CTRL_DMAENABLE | DMAC_CTRL_LVLEN(0xf);
-}
-
-
-void SAMDCurrentSenseADCDMA::adcToDMATransfer(void *rxdata,  uint32_t hwords) {
-
-  DMAC->CHID.reg = DMAC_CHID_ID(channelDMA);
-  DMAC->CHCTRLA.reg &= ~DMAC_CHCTRLA_ENABLE;
-  DMAC->CHCTRLA.reg = DMAC_CHCTRLA_SWRST;
-  DMAC->SWTRIGCTRL.reg &= (uint32_t)(~(1 << channelDMA));
   
-  DMAC->CHCTRLB.reg = DMAC_CHCTRLB_LVL(0) 
-  | DMAC_CHCTRLB_TRIGSRC(ADC_DMAC_ID_RESRDY) 
-  | DMAC_CHCTRLB_TRIGACT_BEAT;
-  DMAC->CHINTENSET.reg = DMAC_CHINTENSET_MASK ; // enable all 3 interrupts
-  descriptor.descaddr = 0;
-  descriptor.srcaddr = (uint32_t) &ADC->RESULT.reg;
-  descriptor.btcnt =  hwords;
-  descriptor.dstaddr = (uint32_t)rxdata + hwords*2;   // end address
-  descriptor.btctrl =  DMAC_BTCTRL_BEATSIZE_HWORD | DMAC_BTCTRL_DSTINC | DMAC_BTCTRL_VALID;
-  memcpy(&descriptor_section[channelDMA],&descriptor, sizeof(dmacdescriptor));
+  ADC_CTRLB_Type ctrlb{.reg = 0};
+  /* ADC clock is 8MHz / 4 = 2MHz */
+  ctrlb.bit.PRESCALER = ADC_CTRLB_PRESCALER_DIV16_Val;
+  ctrlb.bit.RESSEL =  ADC_CTRLB_RESSEL_12BIT_Val;
+  ctrlb.bit.CORREN = 0;
+  ctrlb.bit.FREERUN = 0;
+  ctrlb.bit.LEFTADJ = 0;
+  ctrlb.bit.DIFFMODE = 0;
 
-  // start channel
-  DMAC->CHID.reg = DMAC_CHID_ID(channelDMA);
-  DMAC->CHCTRLA.reg |= DMAC_CHCTRLA_ENABLE;
-}
-
-
-int iii = 0;
-
-void adcStopWithDMA(void){
+  ADC->CTRLB.reg = ctrlb.reg;
   ADCsync();
-  ADC->CTRLA.bit.ENABLE = 0x00;
-  // ADCsync();
-  // if(iii++ % 1000 == 0)
-  // {
-  //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(a);
-  //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(" :: ");
-  //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(b);
-  //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(" :: ");
-  //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(c);
-  //   SIMPLEFOC_SAMD_DEBUG_SERIAL.println("yo!");
-  // }
 
+  ADC_EVCTRL_Type adc_evctrl{.reg = 0};
+	adc_evctrl.bit.WINMONEO = 0;
+	adc_evctrl.bit.RESRDYEO = 0;
+	adc_evctrl.bit.SYNCEI = 1;
+	adc_evctrl.bit.STARTEI = 1;
+	ADC->EVCTRL.reg = adc_evctrl.reg;
+
+  ADC->INTENSET.bit.RESRDY = 1;
+  NVIC_EnableIRQ( ADC_IRQn );
+  ADC->CTRLA.bit.ENABLE = 0x01;
 
 }
 
-void adcStartWithDMA(void){
-  ADCsync();
-  ADC->INPUTCTRL.bit.INPUTOFFSET = 0;
-  ADCsync();
-  ADC->SWTRIG.bit.FLUSH = 1;
-  ADCsync();
-  ADC->CTRLA.bit.ENABLE = 0x01; 
-  ADCsync();
+// volatile dmacdescriptor wrb[12] __attribute__ ((aligned (16)));
+
+// void SAMDCurrentSenseADCDMA::initDMA() {
+//   // probably on by default
+//   PM->AHBMASK.reg |= PM_AHBMASK_DMAC ;
+//   PM->APBBMASK.reg |= PM_APBBMASK_DMAC ;
+//   NVIC_EnableIRQ( DMAC_IRQn ) ;
+//   DMAC->BASEADDR.reg = (uint32_t)descriptor_section;
+//   DMAC->WRBADDR.reg = (uint32_t)wrb;
+//   DMAC->CTRL.reg = DMAC_CTRL_DMAENABLE | DMAC_CTRL_LVLEN(0xf);
+// }
+
+
+// void SAMDCurrentSenseADCDMA::adcToDMATransfer(void *rxdata,  uint32_t hwords) {
+
+//   DMAC->CHID.reg = DMAC_CHID_ID(channelDMA);
+//   DMAC->CHCTRLA.reg &= ~DMAC_CHCTRLA_ENABLE;
+//   DMAC->CHCTRLA.reg = DMAC_CHCTRLA_SWRST;
+//   DMAC->SWTRIGCTRL.reg &= (uint32_t)(~(1 << channelDMA));
+  
+//   DMAC->CHCTRLB.reg = DMAC_CHCTRLB_LVL(0) 
+//   | DMAC_CHCTRLB_TRIGSRC(ADC_DMAC_ID_RESRDY) 
+//   | DMAC_CHCTRLB_TRIGACT_BEAT;
+//   DMAC->CHINTENSET.reg = DMAC_CHINTENSET_MASK ; // enable all 3 interrupts
+//   descriptor.descaddr = 0;
+//   descriptor.srcaddr = (uint32_t) &ADC->RESULT.reg;
+//   descriptor.btcnt =  hwords;
+//   descriptor.dstaddr = (uint32_t)rxdata + hwords*2;   // end address
+//   descriptor.btctrl =  DMAC_BTCTRL_BEATSIZE_HWORD | DMAC_BTCTRL_DSTINC | DMAC_BTCTRL_VALID;
+//   memcpy(&descriptor_section[channelDMA],&descriptor, sizeof(dmacdescriptor));
+
+//   // start channel
+//   DMAC->CHID.reg = DMAC_CHID_ID(channelDMA);
+//   DMAC->CHCTRLA.reg |= DMAC_CHCTRLA_ENABLE;
+// }
+
+
+// int iii = 0;
+
+// void adcStopWithDMA(void){
+//   ADCsync();
+//   ADC->CTRLA.bit.ENABLE = 0x00;
+//   // ADCsync();
+//   // if(iii++ % 1000 == 0)
+//   // {
+//   //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(a);
+//   //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(" :: ");
+//   //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(b);
+//   //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(" :: ");
+//   //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(c);
+//   //   SIMPLEFOC_SAMD_DEBUG_SERIAL.println("yo!");
+//   // }
+
+
+// }
+
+void ADC_Handler()
+{
+
+  instance.adcBuffer[ADC->INPUTCTRL.bit.INPUTOFFSET] = ADC->RESULT.reg;
+
+  // instance.adcBuffer[i++%4] = ADC->RESULT.reg;
 }
 
-void DMAC_Handler() {
-  uint8_t active_channel;
-  active_channel =  DMAC->INTPEND.reg & DMAC_INTPEND_ID_Msk; // get channel number
-  DMAC->CHID.reg = DMAC_CHID_ID(active_channel);
-  adcStopWithDMA();
-  DMAC->CHINTFLAG.reg = DMAC_CHINTENCLR_TCMPL; // clear
-  DMAC->CHINTFLAG.reg = DMAC_CHINTENCLR_TERR;
-  DMAC->CHINTFLAG.reg = DMAC_CHINTENCLR_SUSP;
+// void adcStartWithDMA(void){
+//   ADCsync();
+//   ADC->INPUTCTRL.bit.INPUTOFFSET = 0;
+//   ADCsync();
+//   ADC->SWTRIG.bit.FLUSH = 1;
+//   ADCsync();
+//   ADC->CTRLA.bit.ENABLE = 0x01; 
+//   ADCsync();
+// }
 
-}
+// void DMAC_Handler() {
+//   uint8_t active_channel;
+//   active_channel =  DMAC->INTPEND.reg & DMAC_INTPEND_ID_Msk; // get channel number
+//   DMAC->CHID.reg = DMAC_CHID_ID(active_channel);
+//   // adcStopWithDMA(); no need to stop it anymore it's not freerunning
+//   DMAC->CHINTFLAG.reg = DMAC_CHINTENCLR_TCMPL; // clear
+//   DMAC->CHINTFLAG.reg = DMAC_CHINTENCLR_TERR;
+//   DMAC->CHINTFLAG.reg = DMAC_CHINTENCLR_SUSP;
+
+// }

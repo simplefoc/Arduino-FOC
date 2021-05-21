@@ -202,7 +202,7 @@ void configureSAMDClock() {
  * pwm_frequency is fixed at 24kHz for now. We could go slower, but going
  * faster won't be possible without sacrificing resolution.
  */
-void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, float hw6pwm) {
+void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, float hw6pwm, bool enableOVFEO) {
 	// TODO for the moment we ignore the frequency...
 	if (!tccConfigured[tccConfig.tcc.tccn]) {
 		uint32_t GCLK_CLKCTRL_ID_ofthistcc = GCLK_CLKCTRL_IDs[tccConfig.tcc.tccn];

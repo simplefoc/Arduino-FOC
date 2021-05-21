@@ -32,13 +32,13 @@ private:
 
   void initPins();
   void initADC();
-  void initDMA();
+  // void initDMA();
  
+
   uint32_t oneBeforeFirstAIN; // hack to discard first noisy readout
   uint32_t firstAIN;
   uint32_t lastAIN; 
   uint32_t BufferSize = 0;
-
   uint16_t adcBuffer[20];
 
 
