@@ -287,7 +287,7 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 			// So basically for low side sensing I think you always want to generate events when the counter reaches the bottom value (turns around). 
 			// You do this by setting PWM mode “DSBOTTOM” 
 			if(enableOVFEO)
-				tcc->WAVE.reg |= TCC_WAVE_POL(0xF)|TCC_WAVEB_WAVEGENB_DSBOTTOM; 
+				tcc->WAVE.reg |= TCC_WAVE_POL(0xF)|TCC_WAVEB_WAVEGENB_DSTOP; 
 			else
 				tcc->WAVE.reg |= TCC_WAVE_POL(0xF)|TCC_WAVEB_WAVEGENB_DSBOTH;   
 

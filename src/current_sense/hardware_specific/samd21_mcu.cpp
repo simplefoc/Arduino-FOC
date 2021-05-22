@@ -187,6 +187,17 @@ void SAMDCurrentSenseADCDMA::initADC(){
 	ADC->CTRLA.reg = ADC_CTRLA_SWRST;
   ADCsync();
 
+
+  uint32_t bias = (*((uint32_t *) ADC_FUSES_BIASCAL_ADDR) & ADC_FUSES_BIASCAL_Msk) >> ADC_FUSES_BIASCAL_Pos;
+  uint32_t linearity = (*((uint32_t *) ADC_FUSES_LINEARITY_0_ADDR) & ADC_FUSES_LINEARITY_0_Msk) >> ADC_FUSES_LINEARITY_0_Pos;
+  linearity |= ((*((uint32_t *) ADC_FUSES_LINEARITY_1_ADDR) & ADC_FUSES_LINEARITY_1_Msk) >> ADC_FUSES_LINEARITY_1_Pos) << 5;
+
+  /* Wait for bus synchronization. */
+  while (ADC->STATUS.bit.SYNCBUSY) {};
+
+  /* Write the calibration data. */
+  ADC->CALIB.reg = ADC_CALIB_BIAS_CAL(bias) | ADC_CALIB_LINEARITY_CAL(linearity);
+
 	/* Configure reference */
 	ADC_REFCTRL_Type refctrl{.reg = 0};
   // refctrl.bit.REFCOMP = 1; /* enable reference compensation */
@@ -316,7 +327,7 @@ void SAMDCurrentSenseADCDMA::initADC(){
 
 
 // }
-
+void ADC_Handler() __attribute__((weak));
 void ADC_Handler()
 {
 
