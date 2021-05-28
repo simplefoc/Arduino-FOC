@@ -20,19 +20,14 @@ byte currentState = 1;
 #define _ADC_CONV ( (_ADC_VOLTAGE) / (_ADC_RESOLUTION) )
 
 // function reading an ADC value and returning the read voltage
-float _readADCVoltageLowSide(const int pin){
-  uint32_t raw_adc;
+void _readADCVoltagesLowSide(float & a, float & b, float & c){
 
-  if (pin == _pinA) raw_adc = a1;
-  else if (pin == _pinB) raw_adc = a2;
-  else if (pin == _pinC) raw_adc = a3;
-
-  return raw_adc * _ADC_CONV;
+  a = _ADC_CONV * a1;
+  b = _ADC_CONV * a2;
+  if(_isset(_pinC))
+    c = _ADC_CONV * a3;
 }
 
-void _startADC3PinConversionLowSide(){
-  
-}
 
 // function reading an ADC value and returning the read voltage
 void _configureADCLowSide(const int pinA,const int pinB,const int pinC){

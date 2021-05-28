@@ -32,25 +32,29 @@ void LowsideCurrentSense::calibrateOffsets(){
     offset_ia =0;
     offset_ib= 0;
     offset_ic= 0;
+    float a, b, c;
     // read the adc voltage 1000 times ( arbitrary number )
     for (int i = 0; i < 1000; i++) {
-        offset_ia += _readADCVoltageLowSide(pinA);
-        offset_ib += _readADCVoltageLowSide(pinB);
-        if(_isset(pinC)) offset_ic += _readADCVoltageLowSide(pinC);
+        _readADCVoltagesLowSide(a, b, c);
+        offset_ia += a;
+        offset_ib += b;
+        if(_isset(pinC)) offset_ic += c;
         _delay(1);
     }
     // calculate the mean offsets
-    offset_ia = offset_ia / 1000.0;
-    offset_ib = offset_ib / 1000.0;
-    if(_isset(pinC)) offset_ic = offset_ic / 1000.0;
+    offset_ia = offset_ia / 1000.0f;
+    offset_ib = offset_ib / 1000.0f;
+    if(_isset(pinC)) offset_ic = offset_ic / 1000.0f;
 }
 
 // read all three phase currents (if possible 2 or 3)
 PhaseCurrent_s LowsideCurrentSense::getPhaseCurrents(){
     PhaseCurrent_s current;
-    current.a = (_readADCVoltageLowSide(pinA) - offset_ia)*gain_a;// amps
-    current.b = (_readADCVoltageLowSide(pinB) - offset_ib)*gain_b;// amps
-    current.c = (!_isset(pinC)) ? 0 : (_readADCVoltageLowSide(pinC) - offset_ic)*gain_c; // amps
+
+    _readADCVoltagesLowSide(current.a, current.b, current.c);
+    current.a = (current.a - offset_ia)*gain_a;// amps
+    current.b = (current.b - offset_ib)*gain_b;// amps
+    current.c = (!_isset(pinC)) ? 0 : (current.c - offset_ic)*gain_c; // amps
     return current;
 }
 // Function synchronizing current sense with motor driver.

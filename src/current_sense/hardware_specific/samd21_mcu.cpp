@@ -4,7 +4,7 @@
 
 
 static int _pinA, _pinB, _pinC;
-static uint16_t a = 0xFFFF, b = 0xFFFF, c = 0xFFFF; // updated by adcStopWithDMA when configured in freerunning mode
+static uint16_t a_raw = 0xFFFF, b_raw = 0xFFFF, c_raw = 0xFFFF; // updated by adcStopWithDMA when configured in freerunning mode
 static SAMDCurrentSenseADCDMA instance;
 /**
  *  function reading an ADC value and returning the read voltage 
@@ -26,18 +26,21 @@ void _configureADCLowSide(const int pinA,const int pinB,const int pinC)
  * 
  * @param pinA - the arduino pin to be read (it has to be ADC pin)
  */
-float _readADCVoltageLowSide(const int pinA)
+void _readADCVoltagesLowSide(float & a, float & b, float & c)
 {
-  instance.readResults(a, b, c);
-  
-  if(pinA == _pinA)
-    return instance.toVolts(a);
-  if(pinA == _pinB)
-    return instance.toVolts(b);
-  if(pinA == _pinC)
-    return instance.toVolts(c);
+  static int last_read = -1;
 
-  return NAN;
+  while(last_read == instance.dma_i);
+
+  last_read = instance.dma_i;
+  
+  instance.readResults(a_raw, b_raw, c_raw);
+  
+  a = instance.toVolts(a_raw);
+  b = instance.toVolts(b_raw);
+  if(_isset(_pinC))
+    c = instance.toVolts(c_raw);
+
 }
 
 /**
@@ -263,12 +266,10 @@ void SAMDCurrentSenseADCDMA::initADC(){
 	adc_evctrl.bit.STARTEI = 1;
 	ADC->EVCTRL.reg = adc_evctrl.reg;
 
-  // if(this->EVSYS_ID_GEN_TCC_OVF == -1)
-  // {
-    //not evsys + dma driven
-    ADC->INTENSET.bit.RESRDY = 1;
-    NVIC_EnableIRQ( ADC_IRQn );
-  // }
+  //not evsys + dma driven
+  // ADC->INTENSET.bit.RESRDY = 1;
+  // NVIC_EnableIRQ( ADC_IRQn );
+
   ADC->CTRLA.bit.ENABLE = 0x01;
 
 }
@@ -419,7 +420,20 @@ void SAMDCurrentSenseADCDMA::initEVSYS()
   EVSYS_CHANNEL_Type channel_1{.reg = 0};
   channel_1.bit.EDGSEL = EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val;
   channel_1.bit.PATH = EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val;
-  channel_1.bit.EVGEN = EVSYS_ID_GEN_DMAC_CH_0;
+  switch(channelDMA)
+  {
+    case 0: channel_1.bit.EVGEN = EVSYS_ID_GEN_DMAC_CH_0; break;
+    case 1: channel_1.bit.EVGEN = EVSYS_ID_GEN_DMAC_CH_1; break;
+    case 2: channel_1.bit.EVGEN = EVSYS_ID_GEN_DMAC_CH_2; break;
+    case 3: channel_1.bit.EVGEN = EVSYS_ID_GEN_DMAC_CH_3; break;
+    default:
+    #ifdef SIMPLEFOC_SAMD_DEBUG
+		  SIMPLEFOC_SAMD_DEBUG_SERIAL.print("Bad dma channel, only 0,1,2 or 3 are supported : ");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.println(channelDMA);
+		#endif
+      break;
+  }
+  
   channel_1.bit.SWEVT = 0b0;   
   channel_1.bit.CHANNEL = user_1.bit.CHANNEL - 1; 
   EVSYS->CHANNEL.reg = channel_1.reg;

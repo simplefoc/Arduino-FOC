@@ -34,7 +34,7 @@ void _configureADCLowSide(const int pinA,const int pinB,const int pinC = NOT_SET
  * 
  * @param pinA - the arduino pin to be read (it has to be ADC pin)
  */
-float _readADCVoltageLowSide(const int pinA);
+void _readADCVoltagesLowSide(float & a, float & b, float & c);
 
 /**
  *  function syncing the Driver with the ADC  for the LowSide Sensing
