@@ -29,8 +29,6 @@ void _configureADCInline(const int pinA,const int pinB,const int pinC = NOT_SET)
  */
 void _configureADCLowSide(const int pinA,const int pinB,const int pinC = NOT_SET);
 
-void _startADC3PinConversionLowSide();
-
 /**
  *  function reading an ADC value and returning the read voltage
  * 

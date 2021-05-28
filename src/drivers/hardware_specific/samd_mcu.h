@@ -94,7 +94,11 @@ extern bool tccConfigured[TCC_INST_NUM+TC_INST_NUM];
 struct wo_association& getWOAssociation(EPortType port, uint32_t pin);
 void writeSAMDDutyCycle(int chaninfo, float dc);
 void configureSAMDClock();
-void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate=false, float hw6pwm=-1, bool enableOVFEO = true);
+
+/*
+	@param enableOVFEO : This will trigger ADC + DMA input scan on each counter TOP, I recommand only enabling OVFO for one TCC, and assume all TCC reach their TOP at the same time
+*/
+void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate=false, float hw6pwm=-1, bool enableOVFEO = false); 
 __inline__ void syncTCC(Tcc* TCCx) __attribute__((always_inline, unused));
 EPioType getPeripheralOfPermutation(int permutation, int pin_position);
 

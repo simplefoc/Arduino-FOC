@@ -3,7 +3,6 @@
 #include "../hardware_api.h"
 
 
-static bool freeRunning = false;
 static int _pinA, _pinB, _pinC;
 static uint16_t a = 0xFFFF, b = 0xFFFF, c = 0xFFFF; // updated by adcStopWithDMA when configured in freerunning mode
 static SAMDCurrentSenseADCDMA instance;
@@ -19,13 +18,8 @@ void _configureADCLowSide(const int pinA,const int pinB,const int pinC)
   _pinA = pinA;
   _pinB = pinB; 
   _pinC = pinC;
-  freeRunning = true;
-  instance.init(pinA, pinB, pinC);
+  instance.init(pinA, pinB, pinC, EVSYS_ID_GEN_TCC0_OVF);
 
-}
-void _startADC3PinConversionLowSide()
-{
-  // instance.startADCScan();
 }
 /**
  *  function reading an ADC value and returning the read voltage
@@ -51,8 +45,7 @@ float _readADCVoltageLowSide(const int pinA)
  */
 void _driverSyncLowSide()
 {
-  SIMPLEFOC_SAMD_DEBUG_SERIAL.println(F("TODO! _driverSyncLowSide() is not implemented"));
-  instance.startADCScan();
+  SIMPLEFOC_SAMD_DEBUG_SERIAL.println(F("TODO! _driverSyncLowSide() is not untested, but if you use EVSYS_ID_GEN_TCC_OVF != -1 you are in sync"));
   //TODO: hook with PWM interrupts
 }
 
@@ -67,8 +60,6 @@ void _driverSyncLowSide()
 
  // Credit: significant portions of this code were pulled from Paul Gould's git https://github.com/gouldpa/FOC-Arduino-Brushless
 
-static void adcStopWithDMA(void);
-static void adcStartWithDMA(void);
 
 /**
  * @brief  ADC sync wait 
@@ -91,8 +82,8 @@ SAMDCurrentSenseADCDMA::SAMDCurrentSenseADCDMA()
 {
 }
 
-void SAMDCurrentSenseADCDMA::init(int pinA, int pinB, int pinC
-, int pinAREF, float voltageAREF
+void SAMDCurrentSenseADCDMA::init(int pinA, int pinB, int pinC,
+int EVSYS_ID_GEN_TCC_OVF, int pinAREF, float voltageAREF
 , uint32_t adcBits, uint32_t channelDMA)
 {
   this->pinA = pinA;
@@ -102,23 +93,27 @@ void SAMDCurrentSenseADCDMA::init(int pinA, int pinB, int pinC
   this->channelDMA = channelDMA;
   this->voltageAREF = voltageAREF;
   this->maxCountsADC = 1 << adcBits;
+  this->EVSYS_ID_GEN_TCC_OVF = EVSYS_ID_GEN_TCC_OVF;
   countsToVolts = ( voltageAREF / maxCountsADC );
 
   for(static int i = 0; i < 20; i++)
-    adcBuffer[i] = 0;
+    adcBuffer[i] = 42;
   initPins();
+  if(this->EVSYS_ID_GEN_TCC_OVF != -1)
+  {
+    #ifdef SIMPLEFOC_SAMD_DEBUG
+		  SIMPLEFOC_SAMD_DEBUG_SERIAL.print("Configuring EVSYS for ADC with EVSYS_ID_GEN_TCC_OVF");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.println(this->EVSYS_ID_GEN_TCC_OVF);
+		#endif
+
+    initEVSYS();
+    initDMA();
+    initDMAChannel();
+  }
   initADC();
-  // initDMA();
-  // startADCScan(); //so we have something to read next time we call readResults()
-
 
 }
 
-
-void SAMDCurrentSenseADCDMA::startADCScan(){
-  // adcToDMATransfer(adcBuffer + oneBeforeFirstAIN, BufferSize);
-  // adcStartWithDMA();
-}
 
 bool SAMDCurrentSenseADCDMA::readResults(uint16_t & a, uint16_t & b, uint16_t & c){
   // if(ADC->CTRLA.bit.ENABLE)
@@ -142,7 +137,13 @@ float SAMDCurrentSenseADCDMA::toVolts(uint16_t counts) {
 
 void SAMDCurrentSenseADCDMA::initPins(){
   
-  pinMode(pinAREF, INPUT);
+  if(pinAREF != -1)
+  {
+    SIMPLEFOC_SAMD_DEBUG_SERIAL.print("wtf");
+    if(g_APinDescription[pinAREF].ulPort == EPortType::PORTA && g_APinDescription[pinAREF].ulPin == 3)
+      pinMode(pinAREF, INPUT);
+  }
+
   pinMode(pinA, INPUT);
   pinMode(pinB, INPUT);
 
@@ -159,7 +160,7 @@ void SAMDCurrentSenseADCDMA::initPins(){
   }
 
   oneBeforeFirstAIN = firstAIN - 1; //hack to discard noisy first readout
-  BufferSize = lastAIN - oneBeforeFirstAIN + 1;
+  bufferSize = lastAIN - oneBeforeFirstAIN + 1;
 
 }
 
@@ -188,21 +189,17 @@ void SAMDCurrentSenseADCDMA::initADC(){
   ADCsync();
 
 
+  /* Load the factory calibration data. */
+
   uint32_t bias = (*((uint32_t *) ADC_FUSES_BIASCAL_ADDR) & ADC_FUSES_BIASCAL_Msk) >> ADC_FUSES_BIASCAL_Pos;
   uint32_t linearity = (*((uint32_t *) ADC_FUSES_LINEARITY_0_ADDR) & ADC_FUSES_LINEARITY_0_Msk) >> ADC_FUSES_LINEARITY_0_Pos;
   linearity |= ((*((uint32_t *) ADC_FUSES_LINEARITY_1_ADDR) & ADC_FUSES_LINEARITY_1_Msk) >> ADC_FUSES_LINEARITY_1_Pos) << 5;
-
-  /* Wait for bus synchronization. */
-  while (ADC->STATUS.bit.SYNCBUSY) {};
-
-  /* Write the calibration data. */
   ADC->CALIB.reg = ADC_CALIB_BIAS_CAL(bias) | ADC_CALIB_LINEARITY_CAL(linearity);
 
 	/* Configure reference */
 	ADC_REFCTRL_Type refctrl{.reg = 0};
   // refctrl.bit.REFCOMP = 1; /* enable reference compensation */
-  refctrl.bit.REFSEL = this->pinAREF == 42 ? ADC_REFCTRL_REFSEL_AREFA_Val : ADC_REFCTRL_REFSEL_INTVCC1_Val;
-  
+  refctrl.bit.REFSEL = this->pinAREF != -1 ? ADC_REFCTRL_REFSEL_AREFA_Val : ADC_REFCTRL_REFSEL_INTVCC1_Val;
 	ADC->REFCTRL.reg = refctrl.reg;
 
   /*
@@ -266,93 +263,191 @@ void SAMDCurrentSenseADCDMA::initADC(){
 	adc_evctrl.bit.STARTEI = 1;
 	ADC->EVCTRL.reg = adc_evctrl.reg;
 
-  ADC->INTENSET.bit.RESRDY = 1;
-  NVIC_EnableIRQ( ADC_IRQn );
+  // if(this->EVSYS_ID_GEN_TCC_OVF == -1)
+  // {
+    //not evsys + dma driven
+    ADC->INTENSET.bit.RESRDY = 1;
+    NVIC_EnableIRQ( ADC_IRQn );
+  // }
   ADC->CTRLA.bit.ENABLE = 0x01;
 
 }
 
-// volatile dmacdescriptor wrb[12] __attribute__ ((aligned (16)));
+DmacDescriptor descriptor_section[12] __attribute__ ((aligned (16)));
+volatile DmacDescriptor write_back[12] __attribute__ ((aligned (16)));
 
-// void SAMDCurrentSenseADCDMA::initDMA() {
-//   // probably on by default
-//   PM->AHBMASK.reg |= PM_AHBMASK_DMAC ;
-//   PM->APBBMASK.reg |= PM_APBBMASK_DMAC ;
-//   NVIC_EnableIRQ( DMAC_IRQn ) ;
-//   DMAC->BASEADDR.reg = (uint32_t)descriptor_section;
-//   DMAC->WRBADDR.reg = (uint32_t)wrb;
-//   DMAC->CTRL.reg = DMAC_CTRL_DMAENABLE | DMAC_CTRL_LVLEN(0xf);
-// }
-
-
-// void SAMDCurrentSenseADCDMA::adcToDMATransfer(void *rxdata,  uint32_t hwords) {
-
-//   DMAC->CHID.reg = DMAC_CHID_ID(channelDMA);
-//   DMAC->CHCTRLA.reg &= ~DMAC_CHCTRLA_ENABLE;
-//   DMAC->CHCTRLA.reg = DMAC_CHCTRLA_SWRST;
-//   DMAC->SWTRIGCTRL.reg &= (uint32_t)(~(1 << channelDMA));
+void SAMDCurrentSenseADCDMA::initDMA() {
+  // probably on by default
+  PM->AHBMASK.reg |= PM_AHBMASK_DMAC ;
+  PM->APBBMASK.reg |= PM_APBBMASK_DMAC ;
   
-//   DMAC->CHCTRLB.reg = DMAC_CHCTRLB_LVL(0) 
-//   | DMAC_CHCTRLB_TRIGSRC(ADC_DMAC_ID_RESRDY) 
-//   | DMAC_CHCTRLB_TRIGACT_BEAT;
-//   DMAC->CHINTENSET.reg = DMAC_CHINTENSET_MASK ; // enable all 3 interrupts
-//   descriptor.descaddr = 0;
-//   descriptor.srcaddr = (uint32_t) &ADC->RESULT.reg;
-//   descriptor.btcnt =  hwords;
-//   descriptor.dstaddr = (uint32_t)rxdata + hwords*2;   // end address
-//   descriptor.btctrl =  DMAC_BTCTRL_BEATSIZE_HWORD | DMAC_BTCTRL_DSTINC | DMAC_BTCTRL_VALID;
-//   memcpy(&descriptor_section[channelDMA],&descriptor, sizeof(dmacdescriptor));
-
-//   // start channel
-//   DMAC->CHID.reg = DMAC_CHID_ID(channelDMA);
-//   DMAC->CHCTRLA.reg |= DMAC_CHCTRLA_ENABLE;
-// }
+  DMAC->BASEADDR.reg = (uint32_t)descriptor_section; // Descriptor Base Memory Address
+  DMAC->WRBADDR.reg = (uint32_t)write_back; //Write-Back Memory Base Address
 
 
-// int iii = 0;
+  DMAC_PRICTRL0_Type prictrl0{.reg = 0};
 
-// void adcStopWithDMA(void){
-//   ADCsync();
-//   ADC->CTRLA.bit.ENABLE = 0x00;
-//   // ADCsync();
-//   // if(iii++ % 1000 == 0)
-//   // {
-//   //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(a);
-//   //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(" :: ");
-//   //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(b);
-//   //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(" :: ");
-//   //   SIMPLEFOC_SAMD_DEBUG_SERIAL.print(c);
-//   //   SIMPLEFOC_SAMD_DEBUG_SERIAL.println("yo!");
-//   // }
+  prictrl0.bit.RRLVLEN0 = 0b1; //enable round-robin
+  prictrl0.bit.RRLVLEN1 = 0b1; //enable round-robin
+  prictrl0.bit.RRLVLEN2 = 0b1; //enable round-robin
+  prictrl0.bit.RRLVLEN3 = 0b1; //enable round-robin
+
+  DMAC->PRICTRL0.reg = prictrl0.reg;
+
+  DMAC_CTRL_Type ctrl{.reg = 0};
+  ctrl.bit.DMAENABLE = 0b1;
+  ctrl.bit.LVLEN0 = 0b1;
+  ctrl.bit.LVLEN1 = 0b1;
+  ctrl.bit.LVLEN2 = 0b1;
+  ctrl.bit.LVLEN3 = 0b1;
+  ctrl.bit.CRCENABLE = 0b0;
+
+  DMAC->CTRL.reg = ctrl.reg;
+
+  NVIC_EnableIRQ( DMAC_IRQn ) ;
+}
+
+DmacDescriptor descriptors[20] __attribute__ ((aligned (16)));
+
+void SAMDCurrentSenseADCDMA::initDMAChannel() {
+
+  //select the channel
+  DMAC->CHID.bit.ID = channelDMA;
+
+  // disable and reset the channel
+  DMAC->CHCTRLA.bit.ENABLE = 0b0; //must be done **before** SWRST
+  DMAC->CHCTRLA.bit.SWRST = 0b1;
+
+  DMAC->CHINTENSET.bit.TCMPL = DMAC_CHINTENSET_MASK ; // enable all 3 interrupts
+
+  // configure the channel
+  DMAC_CHCTRLB_Type chctrlb{.reg = 0};
+  chctrlb.bit.LVL = DMAC_CHCTRLB_LVL_LVL0_Val;
+  chctrlb.bit.EVIE = 0b0; //input (USER) event enabled?
+  chctrlb.bit.EVOE = 0b1; //output (GEN) event enabled?
+  chctrlb.bit.EVACT = DMAC_CHCTRLB_EVACT_NOACT_Val; //only used if EVIE is set
+  chctrlb.bit.TRIGSRC = ADC_DMAC_ID_RESRDY;
+  chctrlb.bit.TRIGACT = DMAC_CHCTRLB_TRIGACT_BEAT_Val; //block, beat or transaction
+  DMAC->CHCTRLB.reg = chctrlb.reg;
+
+  for(uint32_t i = firstAIN; i < lastAIN + 1; i++)
+  {
+    bool isLast = (i == lastAIN);
+    
+    descriptors[i].DESCADDR.reg = isLast ? 0 : (uint32_t)&descriptors[i+1];
+    descriptors[i].SRCADDR.reg  = (uint32_t) &ADC->RESULT.reg;
+    descriptors[i].BTCNT.reg    = 1;
+
+    volatile DMAC_BTCTRL_Type & btctrl = descriptors[i].BTCTRL;
+    btctrl.bit.VALID = 0b1;                                     /*!< bit:      0  Descriptor Valid                   */
+    
+    //we want no events after the last adc read
+    btctrl.bit.EVOSEL = isLast ? DMAC_BTCTRL_EVOSEL_DISABLE_Val : DMAC_BTCTRL_EVOSEL_BLOCK_Val;            /*!< bit:  1.. 2  Event Output Selection             */
+    
+    btctrl.bit.BLOCKACT = DMAC_BTCTRL_BLOCKACT_NOACT_Val; //isLast ? DMAC_BTCTRL_BLOCKACT_NOACT_Val : DMAC_BTCTRL_BLOCKACT_INT_Val;       /*!< bit:  3.. 4  Block Action                       */
+    btctrl.bit.BEATSIZE = DMAC_BTCTRL_BEATSIZE_HWORD_Val;       /*!< bit:  8.. 9  Beat Size (byte, half-words, words) */
+    btctrl.bit.SRCINC = 0b0;                                    /*!< bit:     10  Source Address Increment Enable    */
+    btctrl.bit.DSTINC = 0b1;                                    /*!< bit:     11  Destination Address Increment Enable */
+    btctrl.bit.STEPSEL = DMAC_BTCTRL_STEPSEL_DST_Val;           /*!< bit:     12  Step Selection                     */
+    btctrl.bit.STEPSIZE = DMAC_BTCTRL_STEPSIZE_X1_Val;          /*!< bit: 13..15  Address Increment Step Size        */
+    /*
+    p.283 When destination address incrementation is configured (BTCTRL.DSTINC is one), SRCADDR must be set to the 
+    destination address of the last beat transfer in the block transfer. The destination address should be calculated as 
+    follows: 
+    DSTADDR = DSTADDRSTART + BTCNT ⋅ ( BEATSIZE + 1 ) ⋅ 2 STEPSIZE , where BTCTRL.STEPSEL is zero 
+    DSTADDR = DSTADDRSTART + BTCNT ⋅ ( BEATSIZE + 1 ) , where BTCTRL.STEPSEL is one 
+    -  DSTADDRSTART is the destination address of the first beat transfer in the block transfer 
+    -  BTCNT is the initial number of beats remaining in the block transfer 
+    -  BEATSIZE is the configured number of bytes in a beat 
+    -  STEPSIZE is the configured number of beats for each incrementation 
+    */
+    uint32_t factor  = btctrl.bit.STEPSEL == 0 ? (1 << btctrl.bit.STEPSIZE) /*2^STEPSIZE*/: 1;
+
+    descriptors[i].DSTADDR.reg  = (uint32_t)(((uint8_t*)&adcBuffer[i]) + descriptors[i].BTCNT.reg * (btctrl.bit.BEATSIZE + 1) * factor);   // end address
+
+  }
+  
+  memcpy(&descriptor_section[channelDMA], &descriptors[firstAIN], sizeof(DmacDescriptor));
+  
+  // start channel
+  DMAC->CHCTRLA.bit.ENABLE = 0b1;
+}
+
+void SAMDCurrentSenseADCDMA::initEVSYS()
+{
+  	/* Turn on the digital interface clock */
+	PM->APBCMASK.reg |= PM_APBCMASK_EVSYS;
+
+	/* Turn on the peripheral interface clock and select GCLK */
+	GCLK_CLKCTRL_Type clkctrl0;
+  clkctrl0.bit.WRTLOCK = 0;
+  clkctrl0.bit.CLKEN = 1;
+  clkctrl0.bit.ID = EVSYS_GCLK_ID_0; //enable clock for channel 0
+  clkctrl0.bit.GEN = GCLK_CLKCTRL_GEN_GCLK0_Val; /* GCLK_GENERATOR_0 */
+	GCLK->CLKCTRL.reg = clkctrl0.reg;
+
+  GCLK_CLKCTRL_Type clkctrl1;
+  clkctrl1.bit.WRTLOCK = 0;
+  clkctrl1.bit.CLKEN = 1;
+  clkctrl1.bit.ID = EVSYS_GCLK_ID_1; //enable clock for channel 1
+  clkctrl1.bit.GEN = GCLK_CLKCTRL_GEN_GCLK0_Val; /* GCLK_GENERATOR_0 */
+	GCLK->CLKCTRL.reg = clkctrl1.reg;
+
+  // event user (destination)
+	EVSYS_USER_Type user_0;
+		user_0.bit.CHANNEL = 0 + 1; /* use channel 0 p421: "Note that to select channel n, the value (n+1) must be written to the USER.CHANNEL bit group." */
+		user_0.bit.USER = EVSYS_ID_USER_ADC_SYNC; /* ADC Sync*/
+	EVSYS->USER.reg = user_0.reg;
+
+  // event user (destination)
+  EVSYS_USER_Type user_1;
+  user_1.bit.CHANNEL   = 1 + 1; /* p421: "Note that to select channel n, the value (n+1) must be written to the USER.CHANNEL bit group." */
+  // user_1.bit.USER = EVSYS_ID_USER_DMAC_CH_0; /* ADC Start*/
+  user_1.bit.USER = EVSYS_ID_USER_ADC_START; /* ADC Start*/
+  EVSYS->USER.reg = user_1.reg;
+
+  // event generator (source)
+	EVSYS_CHANNEL_Type channel_0;
+	channel_0.bit.EDGSEL = EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val;
+	channel_0.bit.PATH = EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val;
+	channel_0.bit.EVGEN = this->EVSYS_ID_GEN_TCC_OVF; /* TCCO Timer OVF */
+	channel_0.bit.SWEVT = 0b0;   /* no software trigger */
+	channel_0.bit.CHANNEL = user_0.bit.CHANNEL - 1; /* use channel 0 */
+	EVSYS->CHANNEL.reg = channel_0.reg;
+
+  // event generator (source)
+  EVSYS_CHANNEL_Type channel_1{.reg = 0};
+  channel_1.bit.EDGSEL = EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val;
+  channel_1.bit.PATH = EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val;
+  channel_1.bit.EVGEN = EVSYS_ID_GEN_DMAC_CH_0;
+  channel_1.bit.SWEVT = 0b0;   
+  channel_1.bit.CHANNEL = user_1.bit.CHANNEL - 1; 
+  EVSYS->CHANNEL.reg = channel_1.reg;
 
 
-// }
+  // EVSYS does not emit interrups on asynchronous path
+  // EVSYS->INTENSET.reg = EVSYS_INTENSET_MASK;
+  // NVIC_EnableIRQ( EVSYS_IRQn ) ;
+}
+
 void ADC_Handler() __attribute__((weak));
 void ADC_Handler()
 {
-
-  instance.adcBuffer[ADC->INPUTCTRL.bit.MUXPOS + ADC->INPUTCTRL.bit.INPUTOFFSET - 1] = ADC->RESULT.reg;
-
-  // instance.adcBuffer[i++%4] = ADC->RESULT.reg;
+  instance.adc_i++;
+  // only used if event system is not used
+  if(instance.EVSYS_ID_GEN_TCC_OVF == -1)
+    instance.adcBuffer[ADC->INPUTCTRL.bit.MUXPOS + ADC->INPUTCTRL.bit.INPUTOFFSET - 1] = ADC->RESULT.reg;
+  ADC->INTFLAG.bit.RESRDY = 0b1;
+  ADC->INTFLAG.bit.SYNCRDY = 0b1;
 }
 
-// void adcStartWithDMA(void){
-//   ADCsync();
-//   ADC->INPUTCTRL.bit.INPUTOFFSET = 0;
-//   ADCsync();
-//   ADC->SWTRIG.bit.FLUSH = 1;
-//   ADCsync();
-//   ADC->CTRLA.bit.ENABLE = 0x01; 
-//   ADCsync();
-// }
+void DMAC_Handler() __attribute__((weak));
+void DMAC_Handler() {
 
-// void DMAC_Handler() {
-//   uint8_t active_channel;
-//   active_channel =  DMAC->INTPEND.reg & DMAC_INTPEND_ID_Msk; // get channel number
-//   DMAC->CHID.reg = DMAC_CHID_ID(active_channel);
-//   // adcStopWithDMA(); no need to stop it anymore it's not freerunning
-//   DMAC->CHINTFLAG.reg = DMAC_CHINTENCLR_TCMPL; // clear
-//   DMAC->CHINTFLAG.reg = DMAC_CHINTENCLR_TERR;
-//   DMAC->CHINTFLAG.reg = DMAC_CHINTENCLR_SUSP;
+  instance.dma_i++;
+  DMAC->CHID.bit.ID = DMAC->INTPEND.bit.ID;
+  DMAC->CHINTFLAG.bit.TCMPL = 0b1; // clear
+  DMAC->CHCTRLA.bit.ENABLE = 0b1;
+  ADC->INPUTCTRL.bit.INPUTOFFSET = 0;
 
-// }
+}

@@ -162,19 +162,6 @@ void configureSAMDClock() {
 						 GCLK_GENCTRL_ID(4);          	// Select GCLK4
 		while (GCLK->STATUS.bit.SYNCBUSY);              // Wait for synchronization
 
-		//EVSYS config
-		/* Turn on the digital interface clock */
-		PM->APBCMASK.reg |= PM_APBCMASK_EVSYS;
-
-		/* Turn on the peripheral interface clock and select GCLK */
-		GCLK_CLKCTRL_Type clkctrl;
-		clkctrl.bit.WRTLOCK = 0;
-		clkctrl.bit.CLKEN = 1;
-		clkctrl.bit.ID = EVSYS_GCLK_ID_0;
-		clkctrl.bit.GEN = 0; /* GCLK_GENERATOR_0 */
-		GCLK->CLKCTRL.reg = clkctrl.reg;
-		while (GCLK->STATUS.bit.SYNCBUSY);              // Wait for synchronization
-
 #ifdef SIMPLEFOC_SAMD_DEBUG
 		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured clock...");
 #endif
@@ -217,7 +204,7 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 
 
 			EVSYS_USER_Type user;
-			user.bit.CHANNEL = tccConfig.tcc.tccn + 1; /* use channel tccn p421: "Note that to select channel n, the value (n+1) must be written to the USER.CHANNEL bit group." */
+			user.bit.CHANNEL = 0 + 1; /* use channel tccn p421: "Note that to select channel n, the value (n+1) must be written to the USER.CHANNEL bit group." */
 			user.bit.USER = EVSYS_ID_USER_ADC_SYNC; /* ADC Start*/
 			EVSYS->USER.reg = user.reg;
 			// configuration of the event system so that it triggers an "EVSYS_ID_USER_ADC_SYNC" at each timer overflow (underflow)
@@ -238,9 +225,9 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 			}
 
 			channel.bit.EDGSEL = EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val;
-			channel.bit.PATH = EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val;
+			channel.bit.PATH = EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val; //EVSYS_ID_USER_ADC_SYNC is asynchronous only
 			channel.bit.SWEVT = 0;   /* no software trigger */
-			channel.bit.CHANNEL = tccConfig.tcc.tccn; /* use channel tccn */
+			channel.bit.CHANNEL = user.bit.CHANNEL - 1; /* use channel tccn */
 			EVSYS->CHANNEL.reg = channel.reg;
 		}
 

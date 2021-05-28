@@ -316,7 +316,7 @@ void _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 	configureSAMDClock();
 
 	// configure the TCC (waveform, top-value, pre-scaler = frequency)
-	configureTCC(tccConfs[0], pwm_frequency);
+	configureTCC(tccConfs[0], pwm_frequency, false, -1, true);
 	configureTCC(tccConfs[1], pwm_frequency);
 #ifdef SIMPLEFOC_SAMD_DEBUG
 	SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured TCCs...");
@@ -409,7 +409,7 @@ void _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const in
 	configureSAMDClock();
 
 	// configure the TCC (waveform, top-value, pre-scaler = frequency)
-	configureTCC(tccConfs[0], pwm_frequency);
+	configureTCC(tccConfs[0], pwm_frequency, false, -1, true);
 	configureTCC(tccConfs[1], pwm_frequency);
 	configureTCC(tccConfs[2], pwm_frequency);
 #ifdef SIMPLEFOC_SAMD_DEBUG
@@ -480,7 +480,7 @@ void _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const 
 	configureSAMDClock();
 
 	// configure the TCC (waveform, top-value, pre-scaler = frequency)
-	configureTCC(tccConfs[0], pwm_frequency);
+	configureTCC(tccConfs[0], pwm_frequency, false, -1, true);
 	configureTCC(tccConfs[1], pwm_frequency);
 	configureTCC(tccConfs[2], pwm_frequency);
 	configureTCC(tccConfs[3], pwm_frequency);
@@ -580,7 +580,7 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
 	configureSAMDClock();
 
 	// configure the TCC(s)
-	configureTCC(pinAh, pwm_frequency, false, (pinAh.tcc.chaninfo==pinAl.tcc.chaninfo)?dead_zone:-1);
+	configureTCC(pinAh, pwm_frequency, false, (pinAh.tcc.chaninfo==pinAl.tcc.chaninfo)?dead_zone:-1, true);
 	if ((pinAh.tcc.chaninfo!=pinAl.tcc.chaninfo))
 		configureTCC(pinAl, pwm_frequency, true, -1.0);
 	configureTCC(pinBh, pwm_frequency, false, (pinBh.tcc.chaninfo==pinBl.tcc.chaninfo)?dead_zone:-1);
