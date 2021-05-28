@@ -436,7 +436,10 @@ void ADC_Handler()
   instance.adc_i++;
   // only used if event system is not used
   if(instance.EVSYS_ID_GEN_TCC_OVF == -1)
-    instance.adcBuffer[ADC->INPUTCTRL.bit.MUXPOS + ADC->INPUTCTRL.bit.INPUTOFFSET - 1] = ADC->RESULT.reg;
+  {
+    uint16_t offset = ADC->INPUTCTRL.bit.INPUTOFFSET;
+    instance.adcBuffer[ADC->INPUTCTRL.bit.MUXPOS + (offset > 0 ? offset - 1 : ADC->INPUTCTRL.bit.INPUTSCAN)] = ADC->RESULT.reg;
+  }
   ADC->INTFLAG.bit.RESRDY = 0b1;
   ADC->INTFLAG.bit.SYNCRDY = 0b1;
 }
