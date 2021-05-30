@@ -102,8 +102,25 @@ void Encoder::handleIndex() {
 	Shaft angle calculation
 */
 float Encoder::getAngle(){
+  return  _2PI * (pulse_counter % (int)cpr);
+}
+
+float Encoder::getPosition(){
   return  _2PI * (pulse_counter) / ((float)cpr);
 }
+double Encoder::getPrecisePosition(){
+  return  _2PI * (pulse_counter) / ((double)cpr);
+}
+int32_t Encoder::getFullRotations(){
+  return  pulse_counter / (int)cpr;
+}
+float Encoder::getShaftAngle(){
+  return  getAngle();
+}
+
+
+
+
 /*
   Shaft velocity calculation
   function using mixed time and frequency measurement technique
