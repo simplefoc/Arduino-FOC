@@ -78,7 +78,7 @@ void MagneticSensorSPI::init(SPIClass* _spi){
 
 //  Shaft angle calculation
 //  angle is in radians [rad]
-float MagneticSensorSPI::getShaftAngle(){
+float MagneticSensorSPI::getSensorAngle(){
   return (getRawCount() / (float)cpr) * _2PI;
 }
 

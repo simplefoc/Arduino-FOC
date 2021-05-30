@@ -23,7 +23,7 @@ class MagneticSensorPWM: public Sensor{
     int pinPWM;
 
     // get current angle (rad)
-    float getShaftAngle() override;
+    float getSensorAngle() override;
   
     // pwm handler
     void handlePWM();

@@ -92,11 +92,19 @@ void HallSensor::attachSectorCallback(void (*_onSectorChange)(int sector)) {
   onSectorChange = _onSectorChange;
 }
 
+
+
+float HallSensor::getSensorAngle() {
+  return getShaftAngle();
+}
+
+
+
 /*
 	Shaft angle calculation
 */
-float HallSensor::getAngle() {
-  return getShaftAngle();
+float HallSensor::getShaftAngle() {
+  return (float)((electric_rotations * 6 + electric_sector) % cpr) * _2PI ;
 }
 
 /*
@@ -114,17 +122,12 @@ float HallSensor::getVelocity(){
 
 
 
-float HallSensor::getShaftAngle() {
-  return (float)((electric_rotations * 6 + electric_sector) % cpr) * _2PI ;
-}
-
-
-float HallSensor::getPosition() {
+float HallSensor::getAngle() {
   return ((float)(electric_rotations * 6 + electric_sector) / (float)cpr) * _2PI ;
 }
 
 
-double HallSensor::getPrecisePosition() {
+double HallSensor::getPreciseAngle() {
   return ((double)(electric_rotations * 6 + electric_sector) / (double)cpr) * (double)_2PI ;
 }
 

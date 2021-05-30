@@ -101,23 +101,22 @@ void Encoder::handleIndex() {
 /*
 	Shaft angle calculation
 */
-float Encoder::getAngle(){
+float Encoder::getSensorAngle(){
+  return getShaftAngle();
+}
+float Encoder::getShaftAngle(){
   return  _2PI * (pulse_counter % (int)cpr);
 }
 
-float Encoder::getPosition(){
+float Encoder::getAngle(){
   return  _2PI * (pulse_counter) / ((float)cpr);
 }
-double Encoder::getPrecisePosition(){
+double Encoder::getPreciseAngle(){
   return  _2PI * (pulse_counter) / ((double)cpr);
 }
 int32_t Encoder::getFullRotations(){
   return  pulse_counter / (int)cpr;
 }
-float Encoder::getShaftAngle(){
-  return  getAngle();
-}
-
 
 
 

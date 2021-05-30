@@ -3,8 +3,9 @@
 #include "../time_utils.h"
 
 
-float Sensor::getAngle() {
-    float val = getShaftAngle();
+
+float Sensor::updateSensor() {
+    float val = getSensorAngle();
     angle_prev_ts = _micros();
     float d_angle = val - angle_prev;
     // if overflow happened track it as full rotation
@@ -12,7 +13,6 @@ float Sensor::getAngle() {
     angle_prev = val;
     return val;
 }
-
 
 
  /** get current angular velocity (rad/s)*/
@@ -30,14 +30,19 @@ float Sensor::getVelocity() {
 }
 
 
+float Sensor::getShaftAngle() {
+    return angle_prev;
+}
 
-float Sensor::getPosition(){
+
+
+float Sensor::getAngle(){
     return (float)full_rotations * _2PI + angle_prev;
 }
 
 
 
-double Sensor::getPrecisePosition() {
+double Sensor::getPreciseAngle() {
     return (double)full_rotations * (double)_2PI + (double)angle_prev;
 }
 

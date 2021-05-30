@@ -46,7 +46,7 @@ class MagneticSensorI2C: public Sensor{
 
     // implementation of abstract functions of the Sensor class
     /** get current angle (rad) */
-    float getShaftAngle() override;
+    float getSensorAngle() override;
 
     /** experimental function to check and fix SDA locked LOW issues */
     int checkBus(byte sda_pin = SDA, byte scl_pin = SCL);

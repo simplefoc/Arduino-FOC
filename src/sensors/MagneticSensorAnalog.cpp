@@ -28,7 +28,7 @@ void MagneticSensorAnalog::init(){
 
 //  Shaft angle calculation
 //  angle is in radians [rad]
-float MagneticSensorAnalog::getShaftAngle(){
+float MagneticSensorAnalog::getSensorAngle(){
   // raw data from the sensor
   raw_count = getRawCount();   
   return ( (float) (raw_count) / (float)cpr) * _2PI;

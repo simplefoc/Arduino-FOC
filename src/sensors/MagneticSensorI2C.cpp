@@ -68,7 +68,7 @@ void MagneticSensorI2C::init(TwoWire* _wire){
 
 //  Shaft angle calculation
 //  angle is in radians [rad]
-float MagneticSensorI2C::getShaftAngle(){
+float MagneticSensorI2C::getSensorAngle(){
   // (number of full rotations)*2PI + current sensor angle 
   return  ( getRawCount() / (float)cpr) * _2PI ;
 }
