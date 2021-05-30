@@ -1,3 +1,5 @@
+#ifdef _SAMD21_
+
 #ifndef CURRENT_SENSE_SAMD21_H
 #define CURRENT_SENSE_SAMD21_H
 
@@ -57,5 +59,9 @@ private:
   dmacdescriptor descriptor __attribute__ ((aligned (16)));
 
 };
+
+#endif
+
+
 
 #endif
