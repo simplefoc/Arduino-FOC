@@ -112,6 +112,7 @@ class Sensor{
         float vel_angle_prev=0; // angle at last call to getVelocity, used for velocity
         long vel_angle_prev_ts=0; //!< last velocity calculation timestamp
         int32_t full_rotations=0; // full rotation tracking
+        int32_t vel_full_rotations=0;
 };
 
 #endif

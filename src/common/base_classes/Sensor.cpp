@@ -2,7 +2,7 @@
 #include "../foc_utils.h"
 #include "../time_utils.h"
 
-
+// TODO add an init method to make the startup smoother by initializing internal variables to current values rather than 0
 
 float Sensor::updateSensor() {
     float val = getSensorAngle();
@@ -22,9 +22,10 @@ float Sensor::getVelocity() {
     // quick fix for strange cases (micros overflow)
     if(Ts <= 0 || Ts > 0.5) Ts = 1e-3;
     // velocity calculation
-    float vel = (angle_prev - vel_angle_prev)/Ts;    
+    float vel = ( (full_rotations - vel_full_rotations)*_2PI + (angle_prev - vel_angle_prev) ) / Ts;    
     // save variables for future pass
     vel_angle_prev = angle_prev;
+    vel_full_rotations = full_rotations;
     vel_angle_prev_ts = angle_prev_ts;
     return vel;
 }
