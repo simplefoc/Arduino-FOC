@@ -75,11 +75,8 @@ void MagneticSensorSPI::init(SPIClass* _spi){
   
 	//SPI has an internal SPI-device counter, it is possible to call "begin()" from different devices
 	spi->begin();
-#ifndef ESP_H // if not ESP32 board
-	spi->setBitOrder(MSBFIRST); // Set the SPI_1 bit order
-	spi->setDataMode(spi_mode) ;
-	spi->setClockDivider(SPI_CLOCK_DIV8);
-#endif
+	// do any architectures need to set the clock divider for SPI? Why was this in the code?
+  //spi->setClockDivider(SPI_CLOCK_DIV8);
 
 	digitalWrite(chip_select_pin, HIGH);
 	// velocity calculation init
@@ -170,35 +167,27 @@ word MagneticSensorSPI::read(word angle_register){
   	command |= ((word)spiCalcEvenParity(command) << command_parity_bit);
   }
 
-#if !defined(_STM32_DEF_) // if not stm chips
   //SPI - begin transaction
   spi->beginTransaction(settings);
-#endif
 
   //Send the command
   digitalWrite(chip_select_pin, LOW);
-  digitalWrite(chip_select_pin, LOW);
   spi->transfer16(command);
-  digitalWrite(chip_select_pin,HIGH);
   digitalWrite(chip_select_pin,HIGH);
   
 #if defined( ESP_H ) // if ESP32 board
-  delayMicroseconds(50);
+  delayMicroseconds(50); // why do we need to delay 50us on ESP32? In my experience no extra delays are needed, on any of the architectures I've tested...
 #else
-  delayMicroseconds(10);
+  delayMicroseconds(1); // delay 1us, the minimum time possible in plain arduino. 350ns is the required time for AMS sensors, 80ns for MA730, MA702
 #endif
   
   //Now read the response
   digitalWrite(chip_select_pin, LOW);
-  digitalWrite(chip_select_pin, LOW);
   word register_value = spi->transfer16(0x00);
   digitalWrite(chip_select_pin, HIGH);
-  digitalWrite(chip_select_pin,HIGH);
 
-#if !defined(_STM32_DEF_) // if not stm chips
   //SPI - end transaction
   spi->endTransaction();
-#endif
   
   register_value = register_value >> (1 + data_start_bit - bit_resolution);  //this should shift data to the rightmost bits of the word
 
