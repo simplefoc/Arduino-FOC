@@ -64,54 +64,15 @@ void MagneticSensorI2C::init(TwoWire* _wire){
   
   // I2C communication begin
   wire->begin();
-
-	// velocity calculation init
-	angle_prev = 0;
-	velocity_calc_timestamp = _micros(); 
-
-	// full rotations tracking number
-	full_rotation_offset = 0;
-	angle_data_prev = getRawCount();  
 }
 
 //  Shaft angle calculation
 //  angle is in radians [rad]
-float MagneticSensorI2C::getAngle(){
-  // raw data from the sensor
-  float angle_data = getRawCount(); 
-
-  // tracking the number of rotations 
-  // in order to expand angle range form [0,2PI] 
-  // to basically infinity
-  float d_angle = angle_data - angle_data_prev;
-  // if overflow happened track it as full rotation
-  if(abs(d_angle) > (0.8*cpr) ) full_rotation_offset += d_angle > 0 ? -_2PI : _2PI; 
-  // save the current angle value for the next steps
-  // in order to know if overflow happened
-  angle_data_prev = angle_data;
-  // return the full angle 
+float MagneticSensorI2C::getShaftAngle(){
   // (number of full rotations)*2PI + current sensor angle 
-  return  (full_rotation_offset + ( angle_data / (float)cpr) * _2PI) ;
+  return  ( getRawCount() / (float)cpr) * _2PI ;
 }
 
-// Shaft velocity calculation
-float MagneticSensorI2C::getVelocity(){
-  // calculate sample time
-  unsigned long now_us = _micros();
-  float Ts = (now_us - velocity_calc_timestamp)*1e-6;
-  // quick fix for strange cases (micros overflow)
-  if(Ts <= 0 || Ts > 0.5) Ts = 1e-3; 
-
-  // current angle
-  float angle_c = getAngle();
-  // velocity calculation
-  float vel = (angle_c - angle_prev)/Ts;
-  
-  // save variables for future pass
-  angle_prev = angle_c;
-  velocity_calc_timestamp = now_us;
-  return vel;
-}
 
 
 // function reading the raw counter of the magnetic sensor
