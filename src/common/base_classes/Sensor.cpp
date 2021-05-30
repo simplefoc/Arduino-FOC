@@ -11,7 +11,7 @@ float Sensor::updateSensor() {
     // if overflow happened track it as full rotation
     if(abs(d_angle) > (0.8*_2PI) ) full_rotations += ( d_angle > 0 ) ? -1 : 1; 
     angle_prev = val;
-    return val;
+    return getAngle();
 }
 
 

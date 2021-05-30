@@ -85,7 +85,7 @@ class Sensor{
          * Override in subclasses if alternative behaviours are required for your
          * sensor hardware.
          * 
-         * Returns the current value of getShaftAngle()
+         * Returns the same value as getAngle() as its result
          */
         virtual float updateSensor();
 
