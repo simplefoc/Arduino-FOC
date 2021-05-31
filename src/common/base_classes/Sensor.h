@@ -45,12 +45,15 @@ class Sensor{
     public:
         /**
          * Get shaft angle in the range 0 to 2PI. This value will be as precise as possible with
-         * the hardware.
+         * the hardware. Base implementation uses the values returned by updateSensor() so that 
+         * the same values are returned until updateSensor() is called again.
          */
         virtual float getShaftAngle();
 
         /**
-         * Get current position (in rad) including full rotations and shaft angle
+         * Get current position (in rad) including full rotations and shaft angle.
+         * Base implementation uses the values returned by updateSensor() so that the same
+         * values are returned until updateSensor() is called again.
          * Note that this value has limited precision as the number of rotations increases,
          * because the limited precision of float can't capture the large angle of the full 
          * rotations and the small angle of the shaft angle at the same time.
@@ -60,18 +63,23 @@ class Sensor{
         /** 
          * On architectures supporting it, this will return a double precision position value,
          * which should have improved precision for large position values.
+         * Base implementation uses the values returned by updateSensor() so that the same
+         * values are returned until updateSensor() is called again.
          */
         virtual double getPreciseAngle();
 
         /** 
          * Get current angular velocity (rad/s)
          * Can be overridden in subclasses. Base implementation uses the values 
-         * previously returned by getShaftAngle().
+         * returned by updateSensor() so that it only makes sense to call this if updateSensor()
+         * has been called in the meantime.
          */
         virtual float getVelocity();
 
         /**
          * Get the number of full rotations
+         * Base implementation uses the values returned by updateSensor() so that the same
+         * values are returned until updateSensor() is called again. 
          */
         virtual int32_t getFullRotations();
 
@@ -107,12 +115,12 @@ class Sensor{
         virtual float getSensorAngle()=0;
 
         // velocity calculation variables
-        float angle_prev=0; // result of last call to getAngle, used for full rotations and velocity
+        float angle_prev=0; // result of last call to getSensorAngle(), used for full rotations and velocity
         long angle_prev_ts=0; // timestamp of last call to getAngle, used for velocity
         float vel_angle_prev=0; // angle at last call to getVelocity, used for velocity
-        long vel_angle_prev_ts=0; //!< last velocity calculation timestamp
+        long vel_angle_prev_ts=0; // last velocity calculation timestamp
         int32_t full_rotations=0; // full rotation tracking
-        int32_t vel_full_rotations=0;
+        int32_t vel_full_rotations=0; // previous full rotation value for velocity calculation
 };
 
 #endif
