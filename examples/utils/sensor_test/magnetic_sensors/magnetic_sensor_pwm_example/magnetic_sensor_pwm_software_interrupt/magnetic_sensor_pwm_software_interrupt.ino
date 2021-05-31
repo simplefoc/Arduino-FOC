@@ -1,19 +1,23 @@
 #include <SimpleFOC.h>
 
 // software interrupt library
-#include <PciManager.h>
 #include <PciListenerImp.h>
+#include <PciManager.h>
 
 /**
- * Magnetic sensor reading analog voltage on pin which does not have hardware interrupt support. Such as A0.
- * 
+ * Magnetic sensor reading analog voltage on pin which does not have hardware
+ * interrupt support. Such as A0.
+ *
  * MagneticSensorPWM(uint8_t MagneticSensorPWM, int _min, int _max)
  * - pinPWM         - the pin that is reading the pwm from magnetic sensor
- * - min_raw_count  - the smallest expected reading.  Whilst you might expect it to be 0 it is often ~5.  Getting this wrong results in a small click once per revolution
- * - max_raw_count  - the largest value read.  whilst you might expect it to be 1kHz = 1000 it is often ~910. depending on the exact frequency and saturation
+ * - min_raw_count  - the smallest expected reading.  Whilst you might expect it
+ * to be 0 it is often ~5.  Getting this wrong results in a small click once per
+ * revolution
+ * - max_raw_count  - the largest value read.  whilst you might expect it to be
+ * 1kHz = 1000 it is often ~910. depending on the exact frequency and saturation
  */
 MagneticSensorPWM sensor = MagneticSensorPWM(A0, 4, 904);
-void doPWM(){sensor.handlePWM();}
+void doPWM() { sensor.handlePWM(); }
 
 // encoder interrupt init
 PciListenerImp listenerPWM(sensor.pinPWM, doPWM);

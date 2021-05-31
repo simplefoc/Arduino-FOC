@@ -1,13 +1,14 @@
 /**
  * Comprehensive BLDC motor control example using magnetic sensor
- * 
- * Using serial terminal user can send motor commands and configure the motor and FOC in real-time:
+ *
+ * Using serial terminal user can send motor commands and configure the motor
+ * and FOC in real-time:
  * - configure PID controller constants
  * - change motion control loops
  * - monitor motor variabels
  * - set target values
- * - check all the configuration values 
- * 
+ * - check all the configuration values
+ *
  * See more info in docs.simplefoc.com/commander_interface
  */
 #include <SimpleFOC.h>
@@ -15,21 +16,20 @@
 // magnetic sensor instance - SPI
 MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, 10);
 // magnetic sensor instance - MagneticSensorI2C
-//MagneticSensorI2C sensor = MagneticSensorI2C(AS5600_I2C);
+// MagneticSensorI2C sensor = MagneticSensorI2C(AS5600_I2C);
 // magnetic sensor instance - analog output
 // MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
-
 
 // BLDC motor & driver instance
 BLDCMotor motor = BLDCMotor(11);
 BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 // Stepper motor & driver instance
-//StepperMotor motor = StepperMotor(50);
-//StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
+// StepperMotor motor = StepperMotor(50);
+// StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
 // commander interface
 Commander command = Commander(Serial);
-void onMotor(char* cmd){ command.motor(&motor, cmd); }
+void onMotor(char *cmd) { command.motor(&motor, cmd); }
 
 void setup() {
 
@@ -51,7 +51,7 @@ void setup() {
   // set control loop type to be used
   motor.controller = MotionControlType::torque;
 
-  // contoller configuration based on the control type 
+  // contoller configuration based on the control type
   motor.PID_velocity.P = 0.2;
   motor.PID_velocity.I = 20;
   motor.PID_velocity.D = 0;
@@ -83,12 +83,13 @@ void setup() {
   // define the motor id
   command.add('A', onMotor, "motor");
 
-  // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)
-  Serial.println(F("Motor commands sketch | Initial motion control > torque/voltage : target 2V."));
-  
+  // Run user commands to configure and the motor (find the full command list in
+  // docs.simplefoc.com)
+  Serial.println(F("Motor commands sketch | Initial motion control > "
+                   "torque/voltage : target 2V."));
+
   _delay(1000);
 }
-
 
 void loop() {
   // iterative setting FOC phase voltage
@@ -98,8 +99,7 @@ void loop() {
   // velocity, position or voltage
   // if tatget not set in parameter uses motor.target variable
   motor.move();
-  
+
   // user communication
   command.run();
 }
-

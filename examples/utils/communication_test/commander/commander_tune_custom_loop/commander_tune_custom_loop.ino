@@ -1,6 +1,7 @@
 /**
- * A simple example to show how to use the commander with the control loops outside of the scope of the SimpleFOC library
-*/
+ * A simple example to show how to use the commander with the control loops
+ * outside of the scope of the SimpleFOC library
+ */
 #include <SimpleFOC.h>
 
 // BLDC motor & driver instance
@@ -20,12 +21,11 @@ float target_velocity = 0;
 PIDController PIDv{0.05, 1, 0, 100000000, 12};
 LowPassFilter LPFv{0.01};
 
-//add communication
+// add communication
 Commander command = Commander(Serial);
-void doController(char* cmd) { command.pid(&PIDv, cmd); }
-void doFilter(char* cmd) { command.lpf(&LPFv, cmd); }
-void doTarget(char* cmd) { command.scalar(&target_velocity, cmd); }
-
+void doController(char *cmd) { command.pid(&PIDv, cmd); }
+void doFilter(char *cmd) { command.lpf(&LPFv, cmd); }
+void doTarget(char *cmd) { command.scalar(&target_velocity, cmd); }
 
 void setup() {
 
@@ -62,8 +62,6 @@ void setup() {
   Serial.println(F("Commander listening"));
   Serial.println(F(" - Send ? to see the node list..."));
 }
-
-
 
 void loop() {
   // looping foc

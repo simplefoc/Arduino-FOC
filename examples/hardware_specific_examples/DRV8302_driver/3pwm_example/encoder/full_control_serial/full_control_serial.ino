@@ -1,15 +1,16 @@
 /**
  * Comprehensive BLDC motor control example using encoder and the DRV8302 board
- * 
- * Using serial terminal user can send motor commands and configure the motor and FOC in real-time:
+ *
+ * Using serial terminal user can send motor commands and configure the motor
+ * and FOC in real-time:
  * - configure PID controller constants
  * - change motion control loops
  * - monitor motor variabels
  * - set target values
- * - check all the configuration values 
- * 
+ * - check all the configuration values
+ *
  * check the https://docs.simplefoc.com for full list of motor commands
- * 
+ *
  */
 #include <SimpleFOC.h>
 
@@ -20,7 +21,7 @@
 #define INH_C 11
 
 #define EN_GATE 7
-#define M_PWM A1 
+#define M_PWM A1
 #define M_OC A2
 #define OC_ADJ A3
 
@@ -33,34 +34,32 @@ Encoder encoder = Encoder(2, 3, 8192);
 
 // Interrupt routine intialisation
 // channel A and B callbacks
-void doA(){encoder.handleA();}
-void doB(){encoder.handleB();}
-
+void doA() { encoder.handleA(); }
+void doB() { encoder.handleB(); }
 
 // commander interface
 Commander command = Commander(Serial);
-void onMotor(char* cmd){ command.motor(&motor, cmd); }
+void onMotor(char *cmd) { command.motor(&motor, cmd); }
 
 void setup() {
 
   // initialize encoder sensor hardware
   encoder.init();
-  encoder.enableInterrupts(doA, doB); 
+  encoder.enableInterrupts(doA, doB);
   // link the motor to the sensor
   motor.linkSensor(&encoder);
 
   // DRV8302 specific code
   // M_OC  - enable overcurrent protection
-  pinMode(M_OC,OUTPUT);
-  digitalWrite(M_OC,LOW);
+  pinMode(M_OC, OUTPUT);
+  digitalWrite(M_OC, LOW);
   // M_PWM  - enable 3pwm mode
-  pinMode(M_PWM,OUTPUT);
-  digitalWrite(M_PWM,HIGH);
+  pinMode(M_PWM, OUTPUT);
+  digitalWrite(M_PWM, HIGH);
   // OD_ADJ - set the maximum overcurrent limit possible
   // Better option would be to use voltage divisor to set exact value
-  pinMode(OC_ADJ,OUTPUT);
-  digitalWrite(OC_ADJ,HIGH);
-
+  pinMode(OC_ADJ, OUTPUT);
+  digitalWrite(OC_ADJ, HIGH);
 
   // driver config
   // power supply voltage [V]
@@ -69,14 +68,13 @@ void setup() {
   // link the motor and the driver
   motor.linkDriver(&driver);
 
-
   // choose FOC modulation
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
 
   // set control loop type to be used
   motor.controller = MotionControlType::torque;
 
-  // contoller configuration based on the controll type 
+  // contoller configuration based on the controll type
   motor.PID_velocity.P = 0.2;
   motor.PID_velocity.I = 20;
   // default voltage_power_supply
@@ -108,13 +106,13 @@ void setup() {
   command.add('A', onMotor, "motor");
 
   Serial.println(F("Full control example: "));
-  Serial.println(F("Run user commands to configure and the motor (find the full command list in docs.simplefoc.com) \n "));
+  Serial.println(F("Run user commands to configure and the motor (find the "
+                   "full command list in docs.simplefoc.com) \n "));
   Serial.println(F("Initial motion control loop is voltage loop."));
   Serial.println(F("Initial target voltage 2V."));
-  
+
   _delay(1000);
 }
-
 
 void loop() {
   // iterative setting FOC phase voltage

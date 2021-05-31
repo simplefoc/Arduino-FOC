@@ -1,16 +1,15 @@
 // Stepper driver standalone example
 #include <SimpleFOC.h>
 
-
 // Stepper driver instance
 // StepperDriver2PWM(pwm1, in1a, in1b, pwm2, in2a, in2b, (en1, en2 optional))
-StepperDriver2PWM driver = StepperDriver2PWM(3, 4, 5, 10 , 9 , 8 , 11, 12);
+StepperDriver2PWM driver = StepperDriver2PWM(3, 4, 5, 10, 9, 8, 11, 12);
 
 // StepperDriver2PWM(pwm1, dir1, pwm2, dir2,(en1, en2 optional))
 // StepperDriver2PWM driver = StepperDriver2PWM(3, 4, 5, 6, 11, 12);
 
 void setup() {
-  
+
   // pwm frequency to be used [Hz]
   // for atmega328 fixed to 32kHz
   // esp32/stm32/teensy configurable
@@ -19,7 +18,7 @@ void setup() {
   driver.voltage_power_supply = 12;
   // Max DC voltage allowed - default voltage_power_supply
   driver.voltage_limit = 12;
-  
+
   // driver init
   driver.init();
 
@@ -30,8 +29,8 @@ void setup() {
 }
 
 void loop() {
-    // setting pwm
-    // phase A: 3V
-    // phase B: 6V
-    driver.setPwm(3,6);
+  // setting pwm
+  // phase A: 3V
+  // phase B: 6V
+  driver.setPwm(3, 6);
 }

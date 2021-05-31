@@ -4,12 +4,13 @@
 #include "Arduino.h"
 
 // sign function
-#define _sign(a) ( ( (a) < 0 )  ?  -1   : ( (a) > 0 ) )
-#define _round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
-#define _constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+#define _sign(a) (((a) < 0) ? -1 : ((a) > 0))
+#define _round(x) ((x) >= 0 ? (long)((x) + 0.5) : (long)((x)-0.5))
+#define _constrain(amt, low, high)                                             \
+  ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
 #define _sqrt(a) (_sqrtApprox(a))
-#define _isset(a) ( (a) != (NOT_SET) )
-#define _UNUSED(v) (void) (v)
+#define _isset(a) ((a) != (NOT_SET))
+#define _UNUSED(v) (void)(v)
 
 // utility defines
 #define _2_SQRT3 1.15470053838
@@ -30,51 +31,46 @@
 #define _HIGH_Z _HIGH_IMPEDANCE
 #define _ACTIVE 1
 
-// dq current structure 
-struct DQCurrent_s
-{
-    float d;
-    float q;
+// dq current structure
+struct DQCurrent_s {
+  float d;
+  float q;
 };
-// phase current structure 
-struct PhaseCurrent_s
-{
-    float a;
-    float b;
-    float c;
+// phase current structure
+struct PhaseCurrent_s {
+  float a;
+  float b;
+  float c;
 };
 // dq voltage structs
-struct DQVoltage_s
-{
-    float d;
-    float q;
+struct DQVoltage_s {
+  float d;
+  float q;
 };
-
 
 /**
  *  Function approximating the sine calculation by using fixed size array
  * - execution time ~40us (Arduino UNO)
- * 
+ *
  * @param a angle in between 0 and 2PI
  */
 float _sin(float a);
 /**
  * Function approximating cosine calculation by using fixed size array
  * - execution time ~50us (Arduino UNO)
- * 
+ *
  * @param a angle in between 0 and 2PI
  */
 float _cos(float a);
 
-/** 
- * normalizing radian angle to [0,2PI] 
+/**
+ * normalizing radian angle to [0,2PI]
  * @param angle - angle to be normalized
- */ 
+ */
 float _normalizeAngle(float angle);
 
-    
-/** 
- * Electrical angle calculation  
+/**
+ * Electrical angle calculation
  *
  * @param shaft_angle - shaft angle of the motor
  * @param pole_pairs - number of pole pairs
@@ -84,7 +80,7 @@ float _electricalAngle(float shaft_angle, int pole_pairs);
 /**
  * Function approximating square root function
  *  - using fast inverse square root
- * 
+ *
  * @param value - number
  */
 float _sqrtApprox(float value);

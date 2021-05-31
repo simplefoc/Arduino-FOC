@@ -1,24 +1,24 @@
 /**
  *  Encoder example code using only software interrupts
- * 
- * This is a code intended to test the encoder connections and to 
+ *
+ * This is a code intended to test the encoder connections and to
  * demonstrate the encoder setup fully using software interrupts.
  * - We use PciManager library: https://github.com/prampec/arduino-pcimanager
- * 
+ *
  * This code will work on Arduino devices but not on STM32 devices
- * 
+ *
  */
 
 #include <SimpleFOC.h>
 // software interrupt library
-#include <PciManager.h>
 #include <PciListenerImp.h>
+#include <PciManager.h>
 
 // encoder instance
 Encoder encoder = Encoder(A0, A1, 2048);
 // interrupt routine intialisation
-void doA(){encoder.handleA();}
-void doB(){encoder.handleB();}
+void doA() { encoder.handleA(); }
+void doB() { encoder.handleB(); }
 
 // encoder interrupt init
 PciListenerImp listenerA(encoder.pinA, doA);
@@ -33,10 +33,10 @@ void setup() {
 
   // check if you need internal pullups
   encoder.pullup = Pullup::USE_EXTERN;
-  
+
   // initialise encoder hardware
   encoder.init();
-  
+
   // interrupt initialization
   PciManager.registerListener(&listenerA);
   PciManager.registerListener(&listenerB);
