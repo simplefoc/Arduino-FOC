@@ -1,41 +1,43 @@
 /**
- * 
+ *
  * Velocity motion control example
  * Steps:
- * 1) Configure the motor and sensor 
+ * 1) Configure the motor and sensor
  * 2) Run the code
  * 3) Set the target velocity (in radians per second) from serial terminal
- * 
- * 
- * 
+ *
+ *
+ *
  * NOTE :
- * > Specifically for Arduino UNO example code for running velocity motion control using a hall sensor 
- * > Since Arduino UNO doesn't have enough interrupt pins we have to use software interrupt library PciManager.
- *  
- * > If running this code with Nucleo or Bluepill or any other board which has more than 2 interrupt pins 
- * > you can supply doC directly to the sensor.enableInterrupts(doA,doB,doC) and avoid using PciManger
- * 
+ * > Specifically for Arduino UNO example code for running velocity motion
+ * control using a hall sensor > Since Arduino UNO doesn't have enough interrupt
+ * pins we have to use software interrupt library PciManager.
+ *
+ * > If running this code with Nucleo or Bluepill or any other board which has
+ * more than 2 interrupt pins > you can supply doC directly to the
+ * sensor.enableInterrupts(doA,doB,doC) and avoid using PciManger
+ *
  */
 #include <SimpleFOC.h>
 // software interrupt library
-#include <PciManager.h>
 #include <PciListenerImp.h>
+#include <PciManager.h>
 
 // BLDC motor & driver instance
 BLDCMotor motor = BLDCMotor(11);
 BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 // Stepper motor & driver instance
-//StepperMotor motor = StepperMotor(50);
-//StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
+// StepperMotor motor = StepperMotor(50);
+// StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
 // hall sensor instance
 HallSensor sensor = HallSensor(2, 3, 4, 11);
 
 // Interrupt routine intialisation
 // channel A and B callbacks
-void doA(){sensor.handleA();}
-void doB(){sensor.handleB();}
-void doC(){sensor.handleC();}
+void doA() { sensor.handleA(); }
+void doB() { sensor.handleB(); }
+void doC() { sensor.handleC(); }
 // If no available hadware interrupt pins use the software interrupt
 PciListenerImp listenerIndex(sensor.pinC, doC);
 
@@ -43,13 +45,13 @@ PciListenerImp listenerIndex(sensor.pinC, doC);
 float target_velocity = 0;
 // instantiate the commander
 Commander command = Commander(Serial);
-void doTarget(char* cmd) { command.scalar(&target_velocity, cmd); }
+void doTarget(char *cmd) { command.scalar(&target_velocity, cmd); }
 
 void setup() {
 
   // initialize sensor sensor hardware
   sensor.init();
-  sensor.enableInterrupts(doA, doB); //, doC); 
+  sensor.enableInterrupts(doA, doB); //, doC);
   // software interrupts
   PciManager.registerListener(&listenerIndex);
   // link the motor to the sensor
@@ -64,11 +66,11 @@ void setup() {
 
   // aligning voltage [V]
   motor.voltage_sensor_align = 3;
-  
+
   // set motion control loop to be used
   motor.controller = MotionControlType::velocity;
 
-  // contoller configuration 
+  // contoller configuration
   // default parameters in defaults.h
 
   // velocity PI controller parameters
@@ -80,11 +82,11 @@ void setup() {
   // jerk control using voltage voltage ramp
   // default value is 300 volts per sec  ~ 0.3V per millisecond
   motor.PID_velocity.output_ramp = 1000;
-  
+
   // velocity low pass filtering time constant
   motor.LPF_velocity.Tf = 0.01;
 
-  // use monitoring with serial 
+  // use monitoring with serial
   Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
@@ -102,12 +104,11 @@ void setup() {
   _delay(1000);
 }
 
-
 void loop() {
   // main FOC algorithm function
   // the faster you run this function the better
   // Arduino UNO loop  ~1kHz
-  // Bluepill loop ~10kHz 
+  // Bluepill loop ~10kHz
   motor.loopFOC();
 
   // Motion control function
@@ -119,7 +120,7 @@ void loop() {
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
   // motor.monitor();
-  
+
   // user communication
   command.run();
 }

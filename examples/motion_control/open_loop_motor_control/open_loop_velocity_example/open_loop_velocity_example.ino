@@ -1,7 +1,6 @@
 // Open loop motor control example
 #include <SimpleFOC.h>
 
-
 // BLDC motor & driver instance
 // BLDCMotor motor = BLDCMotor(pole pair number);
 BLDCMotor motor = BLDCMotor(11);
@@ -9,16 +8,15 @@ BLDCMotor motor = BLDCMotor(11);
 BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 
 // Stepper motor & driver instance
-//StepperMotor motor = StepperMotor(50);
-//StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
+// StepperMotor motor = StepperMotor(50);
+// StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
-
-//target variable
+// target variable
 float target_velocity = 0;
 
 // instantiate the commander
 Commander command = Commander(Serial);
-void doTarget(char* cmd) { command.scalar(&target_velocity, cmd); }
+void doTarget(char *cmd) { command.scalar(&target_velocity, cmd); }
 
 void setup() {
 
@@ -30,9 +28,9 @@ void setup() {
   motor.linkDriver(&driver);
 
   // limiting motor movements
-  motor.voltage_limit = 3;   // [V]
+  motor.voltage_limit = 3;  // [V]
   motor.velocity_limit = 5; // [rad/s] cca 50rpm
- 
+
   // open loop control config
   motor.controller = MotionControlType::velocity_openloop;
 

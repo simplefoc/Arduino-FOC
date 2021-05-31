@@ -5,8 +5,12 @@
  *
  * @section intro_sec Introduction
  *
- * Proper low-cost and low-power FOC supporting boards are very hard to find these days and even may not exist.<br> Even harder to find is a stable and simple FOC algorithm code capable of running on Arduino devices. Therefore this is an attempt to:
- * - Demystify FOC algorithm and make a robust but simple Arduino library: Arduino SimpleFOC library
+ * Proper low-cost and low-power FOC supporting boards are very hard to find
+these days and even may not exist.<br> Even harder to find is a stable and
+simple FOC algorithm code capable of running on Arduino devices. Therefore this
+is an attempt to:
+ * - Demystify FOC algorithm and make a robust but simple Arduino library:
+Arduino SimpleFOC library
  * - Develop a modular BLDC driver board: Arduino SimpleFOC shield.
  *
  * @section features Features
@@ -18,26 +22,26 @@
  *     - Supports as many sensors , BLDC motors and driver boards as possible
  *     - Supports as many application requirements as possible
  *  - Plug & play: Arduino SimpleFOC shield
- * 
+ *
  * @section dependencies Supported Hardware
- *  - Motors 
+ *  - Motors
  *    - BLDC motors
  *    - Stepper motors
- * - Drivers 
+ * - Drivers
  *    - BLDC drivers
  *    - Gimbal drivers
  *    - Stepper drivers
- * - Position sensors 
+ * - Position sensors
  *    - Encoders
  *    - Magnetic sensors
  *    - Hall sensors
  *    - Open-loop control
- * - Microcontrollers 
+ * - Microcontrollers
  *    - Arduino
  *    - STM32
  *    - ESP32
  *    - Teensy
- * 
+ *
  * @section example_code Example code
  * @code
 #include <SimpleFOC.h>
@@ -53,14 +57,14 @@ void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 
 
-void setup() {  
+void setup() {
   // initialize encoder hardware
   encoder.init();
   // hardware interrupt enable
   encoder.enableInterrupts(doA, doB);
   // link the motor to the sensor
   motor.linkSensor(&encoder);
-  
+
   // power supply voltage [V]
   driver.voltage_power_supply = 12;
   // initialise driver hardware
@@ -72,7 +76,7 @@ void setup() {
   motor.controller = MotionControlType::velocity;
   // initialize motor
   motor.init();
-  
+
   // align encoder and start FOC
   motor.initFOC();
 }
@@ -85,7 +89,7 @@ void loop() {
   // setting the target velocity or 2rad/s
   motor.move(2);
 }
- * @endcode 
+ * @endcode
  *
  * @section license License
  *
@@ -98,19 +102,19 @@ void loop() {
 
 #include "BLDCMotor.h"
 #include "StepperMotor.h"
-#include "sensors/Encoder.h"
-#include "sensors/MagneticSensorSPI.h"
-#include "sensors/MagneticSensorI2C.h"
-#include "sensors/MagneticSensorAnalog.h"
-#include "sensors/MagneticSensorPWM.h"
-#include "sensors/HallSensor.h"
-#include "drivers/BLDCDriver3PWM.h"
-#include "drivers/BLDCDriver6PWM.h"
-#include "drivers/StepperDriver4PWM.h"
-#include "drivers/StepperDriver2PWM.h"
-#include "current_sense/InlineCurrentSense.h"
-#include "current_sense/LowsideCurrentSense.h"
 #include "communication/Commander.h"
 #include "communication/StepDirListener.h"
+#include "current_sense/InlineCurrentSense.h"
+#include "current_sense/LowsideCurrentSense.h"
+#include "drivers/BLDCDriver3PWM.h"
+#include "drivers/BLDCDriver6PWM.h"
+#include "drivers/StepperDriver2PWM.h"
+#include "drivers/StepperDriver4PWM.h"
+#include "sensors/Encoder.h"
+#include "sensors/HallSensor.h"
+#include "sensors/MagneticSensorAnalog.h"
+#include "sensors/MagneticSensorI2C.h"
+#include "sensors/MagneticSensorPWM.h"
+#include "sensors/MagneticSensorSPI.h"
 
 #endif

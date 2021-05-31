@@ -1,17 +1,17 @@
 /**
- *  Encoder example code 
- * 
- * This is a code intended to test the encoder connections and to demonstrate the encoder setup.
- * 
+ *  Encoder example code
+ *
+ * This is a code intended to test the encoder connections and to demonstrate
+ * the encoder setup.
+ *
  */
 
 #include <SimpleFOC.h>
 
-
 Encoder encoder = Encoder(2, 3, 8192);
 // interrupt routine intialisation
-void doA(){encoder.handleA();}
-void doB(){encoder.handleB();}
+void doA() { encoder.handleA(); }
+void doB() { encoder.handleB(); }
 
 void setup() {
   // monitoring port
@@ -22,7 +22,7 @@ void setup() {
 
   // check if you need internal pullups
   encoder.pullup = Pullup::USE_EXTERN;
-  
+
   // initialise encoder hardware
   encoder.init();
   // hardware interrupt enable

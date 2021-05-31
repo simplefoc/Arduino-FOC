@@ -1,8 +1,9 @@
 /**
- *  Hall sensor example code 
- * 
- * This is a code intended to test the hall sensors connections and to demonstrate the hall sensor setup.
- * 
+ *  Hall sensor example code
+ *
+ * This is a code intended to test the hall sensors connections and to
+ * demonstrate the hall sensor setup.
+ *
  */
 
 #include <SimpleFOC.h>
@@ -15,10 +16,9 @@ HallSensor sensor = HallSensor(2, 3, 4, 11);
 
 // Interrupt routine intialisation
 // channel A and B callbacks
-void doA(){sensor.handleA();}
-void doB(){sensor.handleB();}
-void doC(){sensor.handleC();}
-
+void doA() { sensor.handleA(); }
+void doB() { sensor.handleB(); }
+void doC() { sensor.handleC(); }
 
 void setup() {
   // monitoring port
@@ -26,7 +26,7 @@ void setup() {
 
   // check if you need internal pullups
   sensor.pullup = Pullup::USE_EXTERN;
-  
+
   // initialise encoder hardware
   sensor.init();
   // hardware interrupt enable

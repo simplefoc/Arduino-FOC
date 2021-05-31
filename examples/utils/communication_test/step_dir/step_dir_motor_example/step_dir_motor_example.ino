@@ -1,5 +1,6 @@
 /**
- * A position control example using step/dir interface to update the motor position
+ * A position control example using step/dir interface to update the motor
+ * position
  */
 
 #include <SimpleFOC.h>
@@ -9,8 +10,8 @@ BLDCMotor motor = BLDCMotor(11);
 BLDCDriver3PWM driver = BLDCDriver3PWM(10, 5, 6, 8);
 
 // Stepper motor & driver instance
-//StepperMotor motor = StepperMotor(50);
-//StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
+// StepperMotor motor = StepperMotor(50);
+// StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
 // encoder instance
 Encoder encoder = Encoder(2, 3, 500);
@@ -19,7 +20,7 @@ void doA() { encoder.handleA(); }
 void doB() { encoder.handleB(); }
 
 // StepDirListener( step_pin, dir_pin, counter_to_value)
-StepDirListener step_dir = StepDirListener(A4, A5, 2.0*_PI/200.0);
+StepDirListener step_dir = StepDirListener(A4, A5, 2.0 * _PI / 200.0);
 void onStep() { step_dir.handle(); }
 
 void setup() {
@@ -77,12 +78,13 @@ void setup() {
 
   // init step and dir pins
   step_dir.init();
-  // enable interrupts 
+  // enable interrupts
   step_dir.enableInterrupt(onStep);
-  // attach the variable to be updated on each step (optional) 
-  // the same can be done asynchronously by caling motor.move(step_dir.getValue());
+  // attach the variable to be updated on each step (optional)
+  // the same can be done asynchronously by caling
+  // motor.move(step_dir.getValue());
   step_dir.attach(&motor.target);
-    
+
   Serial.println(F("Motor ready."));
   Serial.println(F("Listening to step/dir commands!"));
   _delay(1000);

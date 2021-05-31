@@ -2,125 +2,130 @@
 
 #include "MagneticSensorSPI.h"
 
-/** Typical configuration for the 14bit AMS AS5147 magnetic sensor over SPI interface */
-MagneticSensorSPIConfig_s AS5147_SPI = {
-  .spi_mode = SPI_MODE1,
-  .clock_speed = 1000000,
-  .bit_resolution = 14,
-  .angle_register = 0x3FFF,
-  .data_start_bit = 13, 
-  .command_rw_bit = 14,
-  .command_parity_bit = 15
-};
+/** Typical configuration for the 14bit AMS AS5147 magnetic sensor over SPI
+ * interface */
+MagneticSensorSPIConfig_s AS5147_SPI = {.spi_mode = SPI_MODE1,
+                                        .clock_speed = 1000000,
+                                        .bit_resolution = 14,
+                                        .angle_register = 0x3FFF,
+                                        .data_start_bit = 13,
+                                        .command_rw_bit = 14,
+                                        .command_parity_bit = 15};
 // AS5048 and AS5047 are the same as AS5147
 MagneticSensorSPIConfig_s AS5048_SPI = AS5147_SPI;
 MagneticSensorSPIConfig_s AS5047_SPI = AS5147_SPI;
 
-/** Typical configuration for the 14bit MonolithicPower MA730 magnetic sensor over SPI interface */
+/** Typical configuration for the 14bit MonolithicPower MA730 magnetic sensor
+ * over SPI interface */
 MagneticSensorSPIConfig_s MA730_SPI = {
-  .spi_mode = SPI_MODE0,
-  .clock_speed = 1000000,
-  .bit_resolution = 14,
-  .angle_register = 0x0000,
-  .data_start_bit = 15, 
-  .command_rw_bit = 0,  // not required
-  .command_parity_bit = 0 // parity not implemented
+    .spi_mode = SPI_MODE0,
+    .clock_speed = 1000000,
+    .bit_resolution = 14,
+    .angle_register = 0x0000,
+    .data_start_bit = 15,
+    .command_rw_bit = 0,    // not required
+    .command_parity_bit = 0 // parity not implemented
 };
 
-
 // MagneticSensorSPI(int cs, float _bit_resolution, int _angle_register)
-//  cs              - SPI chip select pin 
+//  cs              - SPI chip select pin
 //  _bit_resolution   sensor resolution bit number
 // _angle_register  - (optional) angle read register - default 0x3FFF
-MagneticSensorSPI::MagneticSensorSPI(int cs, float _bit_resolution, int _angle_register){
-  
-  chip_select_pin = cs; 
+MagneticSensorSPI::MagneticSensorSPI(int cs, float _bit_resolution,
+                                     int _angle_register) {
+
+  chip_select_pin = cs;
   // angle read register of the magnetic sensor
   angle_register = _angle_register ? _angle_register : DEF_ANGLE_REGISTER;
   // register maximum value (counts per revolution)
-  cpr = pow(2,_bit_resolution);
+  cpr = pow(2, _bit_resolution);
   spi_mode = SPI_MODE1;
   clock_speed = 1000000;
   bit_resolution = _bit_resolution;
-  
+
   command_parity_bit = 15; // for backwards compatibilty
-  command_rw_bit = 14; // for backwards compatibilty
-  data_start_bit = 13; // for backwards compatibilty
+  command_rw_bit = 14;     // for backwards compatibilty
+  data_start_bit = 13;     // for backwards compatibilty
 }
 
-MagneticSensorSPI::MagneticSensorSPI(MagneticSensorSPIConfig_s config, int cs){
-  chip_select_pin = cs; 
+MagneticSensorSPI::MagneticSensorSPI(MagneticSensorSPIConfig_s config, int cs) {
+  chip_select_pin = cs;
   // angle read register of the magnetic sensor
-  angle_register = config.angle_register ? config.angle_register : DEF_ANGLE_REGISTER;
+  angle_register =
+      config.angle_register ? config.angle_register : DEF_ANGLE_REGISTER;
   // register maximum value (counts per revolution)
   cpr = pow(2, config.bit_resolution);
   spi_mode = config.spi_mode;
   clock_speed = config.clock_speed;
   bit_resolution = config.bit_resolution;
-  
+
   command_parity_bit = config.command_parity_bit; // for backwards compatibilty
-  command_rw_bit = config.command_rw_bit; // for backwards compatibilty
-  data_start_bit = config.data_start_bit; // for backwards compatibilty
+  command_rw_bit = config.command_rw_bit;         // for backwards compatibilty
+  data_start_bit = config.data_start_bit;         // for backwards compatibilty
 }
 
-void MagneticSensorSPI::init(SPIClass* _spi){
+void MagneticSensorSPI::init(SPIClass *_spi) {
 
   spi = _spi;
 
-	// 1MHz clock (AMS should be able to accept up to 10MHz)
-	settings = SPISettings(clock_speed, MSBFIRST, spi_mode);
+  // 1MHz clock (AMS should be able to accept up to 10MHz)
+  settings = SPISettings(clock_speed, MSBFIRST, spi_mode);
 
-	//setup pins
-	pinMode(chip_select_pin, OUTPUT);
-  
-	//SPI has an internal SPI-device counter, it is possible to call "begin()" from different devices
-	spi->begin();
-	// do any architectures need to set the clock divider for SPI? Why was this in the code?
-  //spi->setClockDivider(SPI_CLOCK_DIV8);
+  // setup pins
+  pinMode(chip_select_pin, OUTPUT);
 
-	digitalWrite(chip_select_pin, HIGH);
-	// velocity calculation init
-	angle_prev = 0;
-	velocity_calc_timestamp = _micros(); 
+  // SPI has an internal SPI-device counter, it is possible to call "begin()"
+  // from different devices
+  spi->begin();
+  // do any architectures need to set the clock divider for SPI? Why was this in
+  // the code?
+  // spi->setClockDivider(SPI_CLOCK_DIV8);
 
-	// full rotations tracking number
-	full_rotation_offset = 0;
-	angle_data_prev = getRawCount();  
+  digitalWrite(chip_select_pin, HIGH);
+  // velocity calculation init
+  angle_prev = 0;
+  velocity_calc_timestamp = _micros();
+
+  // full rotations tracking number
+  full_rotation_offset = 0;
+  angle_data_prev = getRawCount();
 }
 
 //  Shaft angle calculation
 //  angle is in radians [rad]
-float MagneticSensorSPI::getAngle(){
+float MagneticSensorSPI::getAngle() {
   // raw data from the sensor
-  float angle_data = getRawCount(); 
+  float angle_data = getRawCount();
 
-  // tracking the number of rotations 
-  // in order to expand angle range form [0,2PI] 
+  // tracking the number of rotations
+  // in order to expand angle range form [0,2PI]
   // to basically infinity
   float d_angle = angle_data - angle_data_prev;
   // if overflow happened track it as full rotation
-  if(abs(d_angle) > (0.8*cpr) ) full_rotation_offset += d_angle > 0 ? -_2PI : _2PI; 
+  if (abs(d_angle) > (0.8 * cpr))
+    full_rotation_offset += d_angle > 0 ? -_2PI : _2PI;
   // save the current angle value for the next steps
   // in order to know if overflow happened
   angle_data_prev = angle_data;
 
-  // return the full angle 
-  // (number of full rotations)*2PI + current sensor angle 
-  return full_rotation_offset + ( angle_data / (float)cpr) * _2PI;
+  // return the full angle
+  // (number of full rotations)*2PI + current sensor angle
+  return full_rotation_offset + (angle_data / (float)cpr) * _2PI;
 }
 
 // Shaft velocity calculation
-float MagneticSensorSPI::getVelocity(){
+float MagneticSensorSPI::getVelocity() {
   // calculate sample time
   unsigned long now_us = _micros();
-  float Ts = (now_us - velocity_calc_timestamp)*1e-6;
+  float Ts = (now_us - velocity_calc_timestamp) * 1e-6;
   // quick fix for strange cases (micros overflow)
-  if(Ts <= 0 || Ts > 0.5) Ts = 1e-3; 
+  if (Ts <= 0 || Ts > 0.5)
+    Ts = 1e-3;
 
   // current angle
   float angle_c = getAngle();
   // velocity calculation
-  float vel = (angle_c - angle_prev)/Ts;
+  float vel = (angle_c - angle_prev) / Ts;
 
   // save variables for future pass
   angle_prev = angle_c;
@@ -128,34 +133,33 @@ float MagneticSensorSPI::getVelocity(){
   return vel;
 }
 
-
 // function reading the raw counter of the magnetic sensor
-int MagneticSensorSPI::getRawCount(){
-	return (int)MagneticSensorSPI::read(angle_register);
+int MagneticSensorSPI::getRawCount() {
+  return (int)MagneticSensorSPI::read(angle_register);
 }
 
-// SPI functions 
+// SPI functions
 /**
  * Utility function used to calculate even parity of word
  */
-byte MagneticSensorSPI::spiCalcEvenParity(word value){
-	byte cnt = 0;
-	byte i;
+byte MagneticSensorSPI::spiCalcEvenParity(word value) {
+  byte cnt = 0;
+  byte i;
 
-	for (i = 0; i < 16; i++)
-	{
-		if (value & 0x1) cnt++;
-		value >>= 1;
-	}
-	return cnt & 0x1;
+  for (i = 0; i < 16; i++) {
+    if (value & 0x1)
+      cnt++;
+    value >>= 1;
+  }
+  return cnt & 0x1;
 }
 
-  /*
-  * Read a register from the sensor
-  * Takes the address of the register as a 16 bit word
-  * Returns the value of the register
-  */
-word MagneticSensorSPI::read(word angle_register){
+/*
+ * Read a register from the sensor
+ * Takes the address of the register as a 16 bit word
+ * Returns the value of the register
+ */
+word MagneticSensorSPI::read(word angle_register) {
 
   word command = angle_register;
 
@@ -163,46 +167,52 @@ word MagneticSensorSPI::read(word angle_register){
     command = angle_register | (1 << command_rw_bit);
   }
   if (command_parity_bit > 0) {
-   	//Add a parity bit on the the MSB
-  	command |= ((word)spiCalcEvenParity(command) << command_parity_bit);
+    // Add a parity bit on the the MSB
+    command |= ((word)spiCalcEvenParity(command) << command_parity_bit);
   }
 
-  //SPI - begin transaction
+  // SPI - begin transaction
   spi->beginTransaction(settings);
 
-  //Send the command
+  // Send the command
   digitalWrite(chip_select_pin, LOW);
   spi->transfer16(command);
-  digitalWrite(chip_select_pin,HIGH);
-  
-#if defined( ESP_H ) // if ESP32 board
-  delayMicroseconds(50); // why do we need to delay 50us on ESP32? In my experience no extra delays are needed, on any of the architectures I've tested...
+  digitalWrite(chip_select_pin, HIGH);
+
+#if defined(ESP_H) // if ESP32 board
+  delayMicroseconds(
+      50); // why do we need to delay 50us on ESP32? In my experience no extra
+           // delays are needed, on any of the architectures I've tested...
 #else
-  delayMicroseconds(1); // delay 1us, the minimum time possible in plain arduino. 350ns is the required time for AMS sensors, 80ns for MA730, MA702
+  delayMicroseconds(
+      1); // delay 1us, the minimum time possible in plain arduino. 350ns is the
+          // required time for AMS sensors, 80ns for MA730, MA702
 #endif
-  
-  //Now read the response
+
+  // Now read the response
   digitalWrite(chip_select_pin, LOW);
   word register_value = spi->transfer16(0x00);
   digitalWrite(chip_select_pin, HIGH);
 
-  //SPI - end transaction
+  // SPI - end transaction
   spi->endTransaction();
-  
-  register_value = register_value >> (1 + data_start_bit - bit_resolution);  //this should shift data to the rightmost bits of the word
+
+  register_value =
+      register_value >>
+      (1 + data_start_bit - bit_resolution); // this should shift data to the
+                                             // rightmost bits of the word
 
   const static word data_mask = 0xFFFF >> (16 - bit_resolution);
 
-	return register_value & data_mask;  // Return the data, stripping the non data (e.g parity) bits
+  return register_value &
+         data_mask; // Return the data, stripping the non data (e.g parity) bits
 }
 
 /**
  * Closes the SPI connection
- * SPI has an internal SPI-device counter, for each init()-call the close() function must be called exactly 1 time
+ * SPI has an internal SPI-device counter, for each init()-call the close()
+ * function must be called exactly 1 time
  */
-void MagneticSensorSPI::close(){
-	spi->end();
-}
-
+void MagneticSensorSPI::close() { spi->end(); }
 
 #endif

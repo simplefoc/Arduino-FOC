@@ -3,8 +3,8 @@
 
 #include "foc_utils.h"
 
-/** 
- * Function implementing delay() function in milliseconds 
+/**
+ * Function implementing delay() function in milliseconds
  * - blocking function
  * - hardware specific
 
@@ -12,11 +12,10 @@
  */
 void _delay(unsigned long ms);
 
-/** 
+/**
  * Function implementing timestamp getting function in microseconds
  * hardware specific
  */
 unsigned long _micros();
-
 
 #endif
