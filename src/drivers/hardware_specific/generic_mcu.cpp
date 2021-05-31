@@ -53,34 +53,34 @@ __attribute__((weak)) int _configure6PWM(long pwm_frequency, float dead_zone, co
 }
 
 
-// function setting the pwm duty cycle to the hardware 
+// function setting the pwm duty cycle to the hardware
 // - Stepper motor - 2PWM setting
 // - hardware speciffic
 __attribute__((weak)) void _writeDutyCycle2PWM(float dc_a,  float dc_b, int pinA, int pinB){
   // transform duty cycle from [0,1] to [0,255]
-  analogWrite(pinA, 255.0*dc_a);
-  analogWrite(pinB, 255.0*dc_b);
+  analogWrite(pinA, 255.0f*dc_a);
+  analogWrite(pinB, 255.0f*dc_b);
 }
 
-// function setting the pwm duty cycle to the hardware 
+// function setting the pwm duty cycle to the hardware
 // - BLDC motor - 3PWM setting
 // - hardware speciffic
 __attribute__((weak)) void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC){
   // transform duty cycle from [0,1] to [0,255]
-  analogWrite(pinA, 255.0*dc_a);
-  analogWrite(pinB, 255.0*dc_b);
-  analogWrite(pinC, 255.0*dc_c);
+  analogWrite(pinA, 255.0f*dc_a);
+  analogWrite(pinB, 255.0f*dc_b);
+  analogWrite(pinC, 255.0f*dc_c);
 }
 
-// function setting the pwm duty cycle to the hardware  
+// function setting the pwm duty cycle to the hardware
 // - Stepper motor - 4PWM setting
 // - hardware speciffic
 __attribute__((weak)) void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, int pin1A, int pin1B, int pin2A, int pin2B){
   // transform duty cycle from [0,1] to [0,255]
-  analogWrite(pin1A, 255.0*dc_1a);
-  analogWrite(pin1B, 255.0*dc_1b);
-  analogWrite(pin2A, 255.0*dc_2a);
-  analogWrite(pin2B, 255.0*dc_2b);
+  analogWrite(pin1A, 255.0f*dc_1a);
+  analogWrite(pin1B, 255.0f*dc_1b);
+  analogWrite(pin2A, 255.0f*dc_2a);
+  analogWrite(pin2B, 255.0f*dc_2b);
 }
 
 
@@ -100,4 +100,3 @@ __attribute__((weak)) void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc
   _UNUSED(pinC_l);
   return;
 }
-

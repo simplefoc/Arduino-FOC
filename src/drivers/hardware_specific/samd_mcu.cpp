@@ -704,7 +704,7 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, i
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
 		// low-side on a different pin of same TCC - do dead-time in software...
 		float ls = dc_a+(dead_zone*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1));
-		if (ls>1.0) ls = 1.0; // no off-time is better than too-short dead-time
+		if (ls>1.0) ls = 1.0f; // no off-time is better than too-short dead-time
 		writeSAMDDutyCycle(tcc1->tcc.chaninfo, dc_a);
 		writeSAMDDutyCycle(tcc2->tcc.chaninfo, ls);
 	}
@@ -715,7 +715,7 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, i
 	tcc2 = getTccPinConfiguration(pinB_l);
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
 		float ls = dc_b+(dead_zone*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1));
-		if (ls>1.0) ls = 1.0; // no off-time is better than too-short dead-time
+		if (ls>1.0) ls = 1.0f; // no off-time is better than too-short dead-time
 		writeSAMDDutyCycle(tcc1->tcc.chaninfo, dc_b);
 		writeSAMDDutyCycle(tcc2->tcc.chaninfo, ls);
 	}
@@ -726,7 +726,7 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, i
 	tcc2 = getTccPinConfiguration(pinC_l);
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
 		float ls = dc_c+(dead_zone*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1));
-		if (ls>1.0) ls = 1.0; // no off-time is better than too-short dead-time
+		if (ls>1.0) ls = 1.0f; // no off-time is better than too-short dead-time
 		writeSAMDDutyCycle(tcc1->tcc.chaninfo, dc_c);
 		writeSAMDDutyCycle(tcc2->tcc.chaninfo, ls);
 	}
@@ -866,5 +866,3 @@ void printTCCConfiguration(tccConfiguration& info) {
 #endif
 
 #endif
-
-

@@ -1,13 +1,13 @@
 /**
  * Comprehensive BLDC motor control example using magnetic sensor
- * 
+ *
  * Using serial terminal user can send motor commands and configure the motor and FOC in real-time:
  * - configure PID controller constants
  * - change motion control loops
  * - monitor motor variabels
  * - set target values
- * - check all the configuration values 
- * 
+ * - check all the configuration values
+ *
  * See more info in docs.simplefoc.com/commander_interface
  */
 #include <SimpleFOC.h>
@@ -51,15 +51,15 @@ void setup() {
   // set control loop type to be used
   motor.controller = MotionControlType::torque;
 
-  // contoller configuration based on the control type 
-  motor.PID_velocity.P = 0.2;
+  // contoller configuration based on the control type
+  motor.PID_velocity.P = 0.2f;
   motor.PID_velocity.I = 20;
   motor.PID_velocity.D = 0;
   // default voltage_power_supply
   motor.voltage_limit = 12;
 
   // velocity low pass filtering time constant
-  motor.LPF_velocity.Tf = 0.01;
+  motor.LPF_velocity.Tf = 0.01f;
 
   // angle loop controller
   motor.P_angle.P = 20;
@@ -85,7 +85,7 @@ void setup() {
 
   // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)
   Serial.println(F("Motor commands sketch | Initial motion control > torque/voltage : target 2V."));
-  
+
   _delay(1000);
 }
 
@@ -98,8 +98,7 @@ void loop() {
   // velocity, position or voltage
   // if tatget not set in parameter uses motor.target variable
   motor.move();
-  
+
   // user communication
   command.run();
 }
-

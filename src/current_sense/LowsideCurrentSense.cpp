@@ -12,7 +12,7 @@ LowsideCurrentSense::LowsideCurrentSense(float _shunt_resistor, float _gain, int
 
     shunt_resistor = _shunt_resistor;
     amp_gain  = _gain;
-    volts_to_amps_ratio = 1.0 /_shunt_resistor / _gain; // volts to amps
+    volts_to_amps_ratio = 1.0f /_shunt_resistor / _gain; // volts to amps
     // gains for each phase
     gain_a = volts_to_amps_ratio;
     gain_b = volts_to_amps_ratio;
@@ -41,9 +41,9 @@ void LowsideCurrentSense::calibrateOffsets(){
         _delay(1);
     }
     // calculate the mean offsets
-    offset_ia = offset_ia / 1000.0;
-    offset_ib = offset_ib / 1000.0;
-    if(_isset(pinC)) offset_ic = offset_ic / 1000.0;
+    offset_ia = offset_ia / 1000.0f;
+    offset_ib = offset_ib / 1000.0f;
+    if(_isset(pinC)) offset_ic = offset_ic / 1000.0f;
 }
 
 // read all three phase currents (if possible 2 or 3)
@@ -86,25 +86,25 @@ int LowsideCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
     // read the current 100 times ( arbitrary number )
     for (int i = 0; i < 100; i++) {
         PhaseCurrent_s c1 = getPhaseCurrents();
-        c.a = c.a*0.6 + 0.4*c1.a;
-        c.b = c.b*0.6 + 0.4*c1.b;
-        c.c = c.c*0.6 + 0.4*c1.c;
+        c.a = c.a*0.6 + 0.4f*c1.a;
+        c.b = c.b*0.6 + 0.4f*c1.b;
+        c.c = c.c*0.6 + 0.4f*c1.c;
         _delay(3);
     }
     driver->setPwm(0, 0, 0);
     // align phase A
     float ab_ratio = fabs(c.a / c.b);
     float ac_ratio = c.c ? fabs(c.a / c.c) : 0;
-    if( ab_ratio > 1.5 ){ // should be ~2
+    if( ab_ratio > 1.5f ){ // should be ~2
         gain_a *= _sign(c.a);
-    }else if( ab_ratio < 0.7 ){ // should be ~0.5
+    }else if( ab_ratio < 0.7f ){ // should be ~0.5
         // switch phase A and B
         int tmp_pinA = pinA;
         pinA = pinB;
         pinB = tmp_pinA;
         gain_a *= _sign(c.b);
         exit_flag = 2; // signal that pins have been switched
-    }else if(_isset(pinC) &&  ac_ratio < 0.7 ){ // should be ~0.5
+    }else if(_isset(pinC) &&  ac_ratio < 0.7f ){ // should be ~0.5
         // switch phase A and C
         int tmp_pinA = pinA;
         pinA = pinC;
@@ -123,24 +123,24 @@ int LowsideCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
     // read the current 50 times
     for (int i = 0; i < 100; i++) {
         PhaseCurrent_s c1 = getPhaseCurrents();
-        c.a = c.a*0.6 + 0.4*c1.a;
-        c.b = c.b*0.6 + 0.4*c1.b;
-        c.c = c.c*0.6 + 0.4*c1.c;
+        c.a = c.a*0.6 + 0.4f*c1.a;
+        c.b = c.b*0.6 + 0.4f*c1.b;
+        c.c = c.c*0.6 + 0.4f*c1.c;
         _delay(3);
     }
     driver->setPwm(0, 0, 0);
     float ba_ratio = fabs(c.b/c.a);
     float bc_ratio = c.c ? fabs(c.b / c.c) : 0;
-     if( ba_ratio > 1.5 ){ // should be ~2
+     if( ba_ratio > 1.5f ){ // should be ~2
         gain_b *= _sign(c.b);
-    }else if( ba_ratio < 0.7 ){ // it should be ~0.5
+    }else if( ba_ratio < 0.7f ){ // it should be ~0.5
         // switch phase A and B
         int tmp_pinB = pinB;
         pinB = pinA;
         pinA = tmp_pinB;
         gain_b *= _sign(c.a);
         exit_flag = 2; // signal that pins have been switched
-    }else if(_isset(pinC) && bc_ratio < 0.7 ){ // should be ~0.5
+    }else if(_isset(pinC) && bc_ratio < 0.7f ){ // should be ~0.5
         // switch phase A and C
         int tmp_pinB = pinB;
         pinB = pinC;

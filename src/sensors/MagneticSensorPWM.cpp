@@ -13,7 +13,7 @@ MagneticSensorPWM::MagneticSensorPWM(uint8_t _pinPWM, int _min_raw_count, int _m
     cpr = _max_raw_count - _min_raw_count;
     min_raw_count = _min_raw_count;
     max_raw_count = _max_raw_count;
-    
+
     // define if the sensor uses interrupts
     is_interrupt_based = false;
 
@@ -23,7 +23,7 @@ MagneticSensorPWM::MagneticSensorPWM(uint8_t _pinPWM, int _min_raw_count, int _m
 
 
 void MagneticSensorPWM::init(){
-    
+
     // initial hardware
     pinMode(pinPWM, INPUT);
 
@@ -36,23 +36,23 @@ void MagneticSensorPWM::init(){
     raw_count_prev = getRawCount();
 }
 
-// get current angle (rad) 
+// get current angle (rad)
 float MagneticSensorPWM::getAngle(){
 
     // raw data from sensor
     raw_count = getRawCount();
-    
+
     int delta = raw_count - raw_count_prev;
     // if overflow happened track it as full rotation
-    if(abs(delta) > (0.8*cpr) ) full_rotation_offset += delta > 0 ? -_2PI : _2PI;
+    if(abs(delta) > (0.8f*cpr) ) full_rotation_offset += delta > 0 ? -_2PI : _2PI;
 
     float angle = full_rotation_offset + ( (float) (raw_count) / (float)cpr) * _2PI;
 
     // calculate velocity here
     long now = _micros();
-    float Ts = (now - velocity_calc_timestamp)*1e-6;
+    float Ts = (now - velocity_calc_timestamp)*1e-6f;
     // quick fix for strange cases (micros overflow)
-    if(Ts <= 0 || Ts > 0.5) Ts = 1e-3;
+    if(Ts <= 0 || Ts > 0.5f) Ts = 1e-3f;
     velocity = (angle - angle_prev)/Ts;
 
     // save variables for future pass
@@ -80,7 +80,7 @@ int MagneticSensorPWM::getRawCount(){
 void MagneticSensorPWM::handlePWM() {
     //  unsigned long now_us = ticks();
     unsigned long now_us = _micros();
-    
+
     // if falling edge, calculate the pulse length
     if (!digitalRead(pinPWM)) pulse_length_us = now_us - last_call_us;
 

@@ -6,8 +6,8 @@
 #include "soc/mcpwm_reg.h"
 #include "soc/mcpwm_struct.h"
 
-#define _ADC_VOLTAGE 3.3
-#define _ADC_RESOLUTION 4095.0
+#define _ADC_VOLTAGE 3.3f
+#define _ADC_RESOLUTION 4095.0f
 
 static mcpwm_dev_t *MCPWM[2] = {&MCPWM0, &MCPWM1};
 int a1, a2, a3;         //Current readings from internal current sensor amplifiers
@@ -31,7 +31,7 @@ float _readADCVoltageLowSide(const int pin){
 }
 
 void _startADC3PinConversionLowSide(){
-  
+
 }
 
 // function reading an ADC value and returning the read voltage

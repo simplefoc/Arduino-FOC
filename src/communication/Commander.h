@@ -24,14 +24,14 @@ typedef void (* CommandCallback)(char*); //!< command callback function pointer
 
 /**
  * Commander class implementing string communication protocol based on IDvalue (ex AB5.321 - command id `A`, sub-command id `B`,value `5.321`)
- * 
- *  - This class can be used in combination with HardwareSerial instance which it would read and write 
+ *
+ *  - This class can be used in combination with HardwareSerial instance which it would read and write
  *    or it can be used to parse strings that have been received from the user outside this library
  *  - Commander class implements command protocol for few standard components of the SimpleFOC library
  *     - FOCMotor
  *     - PIDController
  *     - LowPassFilter
- *  - Commander also provides a very simple command > callback interface that enables user to 
+ *  - Commander also provides a very simple command > callback interface that enables user to
  *    attach a callback function to certain command id - see function add()
  */
 class Commander
@@ -40,7 +40,7 @@ class Commander
     /**
      * Default constructor receiving a serial interface that it uses to output the values to
      * Also if the function run() is used it uses this serial instance to read the serial for user commands
-     * 
+     *
      * @param serial - Serial com port instance
      * @param eol - the end of line sentinel character
      * @param echo - echo last typed character (for command line feedback)
@@ -49,45 +49,45 @@ class Commander
     Commander(char eol = '\n', bool echo = false);
 
     /**
-     * Function reading the serial port and firing callbacks that have been added to the commander 
-     * once the user has requested them - when he sends the command  
-     * 
+     * Function reading the serial port and firing callbacks that have been added to the commander
+     * once the user has requested them - when he sends the command
+     *
      *  - It has default commands (the letters can be changed in the commands.h file)
-     *    '@' - Verbose mode        
+     *    '@' - Verbose mode
      *    '#' - Number of decimal places
-     *    '?' - Scan command - displays all the labels of attached nodes 
-     */ 
+     *    '?' - Scan command - displays all the labels of attached nodes
+     */
     void run();
     /**
-     * Function reading the string of user input and firing callbacks that have been added to the commander 
-     * once the user has requested them - when he sends the command  
-     * 
+     * Function reading the string of user input and firing callbacks that have been added to the commander
+     * once the user has requested them - when he sends the command
+     *
      *  - It has default commands (the letters can be changed in the commands.h file)
-     *    '@' - Verbose mode        
+     *    '@' - Verbose mode
      *    '#' - Number of decimal places
      *    '?' - Scan command - displays all the labels of attached nodes
-     * 
+     *
      * @param reader - temporary stream to read user input
      * @param eol - temporary end of line sentinel
-     */ 
+     */
     void run(Stream &reader, char eol = '\n');
     /**
-     * Function reading the string of user input and firing callbacks that have been added to the commander 
-     * once the user has requested them - when he sends the command  
-     * 
+     * Function reading the string of user input and firing callbacks that have been added to the commander
+     * once the user has requested them - when he sends the command
+     *
      *  - It has default commands (the letters can be changed in the commands.h file)
-     *    '@' - Verbose mode        
+     *    '@' - Verbose mode
      *    '#' - Number of decimal places
      *    '?' - Scan command - displays all the labels of attached nodes
-     * 
+     *
      * @param user_input - string of user inputs
-     */ 
+     */
     void run(char* user_input);
 
     /**
      *  Function adding a callback to the coomander withe the command id
      * @param id         - char command letter
-     * @param onCommand  - function pointer void function(char*) 
+     * @param onCommand  - function pointer void function(char*)
      * @param label      - string label to be displayed when scan command sent
      */
     void add(char id , CommandCallback onCommand, char* label = nullptr);
@@ -101,48 +101,48 @@ class Commander
     char eol = '\n'; //!< end of line sentinel character
     bool echo = false; //!< echo last typed character (for command line feedback)
     /**
-     * 
+     *
      * FOC motor (StepperMotor and BLDCMotor) command interface
      *  - It has several paramters (the letters can be changed in the commands.h file)
      *    'Q' - Q current PID controller & LPF (see function pid and lpf for commands)
-     *    'D' - D current PID controller & LPF (see function pid and lpf for commands)  
-     *    'V' - Velocity PID controller & LPF  (see function pid and lpf for commands)  
-     *    'A' - Angle PID controller & LPF     (see function pid and lpf for commands) 
-     *    'L' - Limits                         
+     *    'D' - D current PID controller & LPF (see function pid and lpf for commands)
+     *    'V' - Velocity PID controller & LPF  (see function pid and lpf for commands)
+     *    'A' - Angle PID controller & LPF     (see function pid and lpf for commands)
+     *    'L' - Limits
      *           sub-commands:
-     *           'C' - Current  
-     *           'U' - Voltage   
-     *           'V' - Velocity  
-     *    'C' - Motion control type config   
+     *           'C' - Current
+     *           'U' - Voltage
+     *           'V' - Velocity
+     *    'C' - Motion control type config
      *          sub-commands:
-     *          'D' - downsample motiron loop 
-     *          '0' - torque    
-     *          '1' - velocity 
-     *          '2' - angle    
-     *    'T' - Torque control type        
+     *          'D' - downsample motiron loop
+     *          '0' - torque
+     *          '1' - velocity
+     *          '2' - angle
+     *    'T' - Torque control type
      *          sub-commands:
-     *          '0' - voltage      
-     *          '1' - current     
-     *          '2' - foc_current 
-     *    'E' - Motor status (enable/disable)  
+     *          '0' - voltage
+     *          '1' - current
+     *          '2' - foc_current
+     *    'E' - Motor status (enable/disable)
      *          sub-commands:
-     *          '0' - enable    
-     *          '1' - disable  
-     *    'R' - Motor resistance               
-     *    'S' - Sensor offsets                 
+     *          '0' - enable
+     *          '1' - disable
+     *    'R' - Motor resistance
+     *    'S' - Sensor offsets
      *          sub-commands:
-     *          'M' - sensor offset          
-     *          'E' - sensor electrical zero 
-     *    'M' - Monitoring control             
+     *          'M' - sensor offset
+     *          'E' - sensor electrical zero
+     *    'M' - Monitoring control
      *          sub-commands:
-     *          'D' - downsample monitoring     
-     *          'C' - clear monitor             
-     *          'S' - set monitoring variables  
-     *          'G' - get variable value        
-     *    '' - Target get/set                  
-     *  
+     *          'D' - downsample monitoring
+     *          'C' - clear monitor
+     *          'S' - set monitoring variables
+     *          'G' - get variable value
+     *    '' - Target get/set
+     *
      *  - Each of them can be get by sening the command letter -(ex. 'R' - to get the phase resistance)
-     *  - Each of them can be set by sending 'IdSubidValue' - (ex. SM1.5 for setting sensor zero offset to 1.5)
+     *  - Each of them can be set by sending 'IdSubidValue' - (ex. SM1.5 for setting sensor zero offset to 1.5f)
      *
      */
     void motor(FOCMotor* motor, char* user_cmd);
@@ -170,7 +170,7 @@ class Commander
      * Float variable scalar command interface
      *  - It only has one property - one float value
      *  - It can be get by sending an empty string '\n'
-     *  - It can be set by sending 'value' - (ex. 0.01 for settin *value=0.01)
+     *  - It can be set by sending 'value' - (ex. 0.01f for settin *value=0.01)
      */
     void scalar(float* value, char* user_cmd);
 
@@ -184,19 +184,19 @@ class Commander
     // helping variable for serial communication reading
     char received_chars[MAX_COMMAND_LENGTH] = {0}; //!< so far received user message - waiting for newline
     int rec_cnt = 0; //!< number of characters receives
-        
+
     // serial printing functions
     /**
      *  print the string message only if verbose mode on
      *  @param message - message to be printed
      */
-    void printVerbose(const char* message); 
+    void printVerbose(const char* message);
     /**
-     *  Print the string message only if verbose mode on 
+     *  Print the string message only if verbose mode on
      *  - Function handling the case for strings defined by F macro
      *  @param message - message to be printed
      */
-    void printVerbose(const __FlashStringHelper *message);  
+    void printVerbose(const __FlashStringHelper *message);
     /**
      *  print the numbers to the serial with desired decimal point number
      *  @param message - number to be printed

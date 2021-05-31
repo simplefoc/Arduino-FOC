@@ -37,7 +37,7 @@ void StepperDriver4PWM::disable()
 
 }
 
-// init hardware pins   
+// init hardware pins
 int StepperDriver4PWM::init() {
 
   // PWM pins
@@ -59,17 +59,17 @@ int StepperDriver4PWM::init() {
 
 
 // Set voltage to the pwm pin
-void StepperDriver4PWM::setPwm(float Ualpha, float Ubeta) {  
-  float duty_cycle1A(0.0),duty_cycle1B(0.0),duty_cycle2A(0.0),duty_cycle2B(0.0);
+void StepperDriver4PWM::setPwm(float Ualpha, float Ubeta) {
+  float duty_cycle1A(0.0f),duty_cycle1B(0.0f),duty_cycle2A(0.0f),duty_cycle2B(0.0f);
   // limit the voltage in driver
   Ualpha = _constrain(Ualpha, -voltage_limit, voltage_limit);
   Ubeta = _constrain(Ubeta, -voltage_limit, voltage_limit);
   // hardware specific writing
   if( Ualpha > 0 )
     duty_cycle1B = _constrain(abs(Ualpha)/voltage_power_supply,0.0,1.0);
-  else 
+  else
     duty_cycle1A = _constrain(abs(Ualpha)/voltage_power_supply,0.0,1.0);
-    
+
   if( Ubeta > 0 )
     duty_cycle2B = _constrain(abs(Ubeta)/voltage_power_supply,0.0,1.0);
   else
