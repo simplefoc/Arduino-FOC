@@ -1,3 +1,4 @@
+#ifdef _SAMD21_
 
 #include "samd21_mcu.h"
 #include "../hardware_api.h"
@@ -302,3 +303,6 @@ void DMAC_Handler() {
   DMAC->CHINTFLAG.reg = DMAC_CHINTENCLR_SUSP;
 
 }
+
+
+#endif
