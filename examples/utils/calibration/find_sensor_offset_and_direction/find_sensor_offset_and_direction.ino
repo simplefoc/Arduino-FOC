@@ -15,7 +15,7 @@
 // magnetic sensor instance - SPI
 //MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
 // magnetic sensor instance - I2C
-//MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
+//MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0X0C, 4);
 // magnetic sensor instance - analog output
 MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
 

@@ -1,3 +1,5 @@
+#ifndef TARGET_RP2040
+
 #include "MagneticSensorSPI.h"
 
 /** Typical configuration for the 14bit AMS AS5147 magnetic sensor over SPI interface */
@@ -212,3 +214,6 @@ word MagneticSensorSPI::read(word angle_register){
 void MagneticSensorSPI::close(){
 	spi->end();
 }
+
+
+#endif

@@ -15,6 +15,7 @@
  #define CMD_SENSOR    'S' //!< sensor offsets
  #define CMD_MONITOR   'M' //!< monitoring
  #define CMD_RESIST    'R' //!< motor phase resistance
+ #define CMD_PWMMOD   'W' //!< pwm modulation
 
  // commander configuration
  #define CMD_SCAN    '?' //!< command scaning the network - only for commander
@@ -41,5 +42,9 @@
  #define SCMD_CLEAR      'C' //!< Clear all monitored variables
  #define SCMD_GET        'G' //!< Get variable only one value
  #define SCMD_SET        'S' //!< Set variables to be monitored
- 
+
+ #define SCMD_PWMMOD_TYPE   'T'  //!<< Pwm modulation type
+ #define SCMD_PWMMOD_CENTER 'C'  //!<< Pwm modulation center flag
+
+
 #endif

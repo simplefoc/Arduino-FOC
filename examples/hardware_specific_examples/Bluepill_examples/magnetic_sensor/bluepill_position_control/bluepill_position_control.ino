@@ -17,7 +17,7 @@ MagneticSensorSPI sensor = MagneticSensorSPI(PA4, 14, 0x3FFF);
 // make sure to use the pull-ups!!
 // SDA PB7
 // SCL PB6
-//MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
+//MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0X0C, 4);
 
 // Motor instance
 BLDCMotor motor = BLDCMotor(11);

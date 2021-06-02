@@ -20,6 +20,9 @@
 #define _PWM_RES_MIN 1500
 // max resolution
 #define _PWM_RES_MAX 3000
+// pwm frequency
+#define _PWM_FREQUENCY 25000 // default
+#define _PWM_FREQUENCY_MAX 50000 // mqx
 
 // structure containing motor slot configuration
 // this library supports up to 4 motors
@@ -102,9 +105,10 @@ void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm
   mcpwm_config_t pwm_config;
   pwm_config.counter_mode = MCPWM_UP_DOWN_COUNTER; // Up-down counter (triangle wave)
   pwm_config.duty_mode = MCPWM_DUTY_MODE_0; // Active HIGH
+  pwm_config.frequency  = 2*pwm_frequency; // set the desired freq - just a placeholder for now https://github.com/simplefoc/Arduino-FOC/issues/76
   mcpwm_init(mcpwm_unit, MCPWM_TIMER_0, &pwm_config);    //Configure PWM0A & PWM0B with above settings
-  mcpwm_init(mcpwm_unit, MCPWM_TIMER_1, &pwm_config);    //Configure PWM0A & PWM0B with above settings
-  mcpwm_init(mcpwm_unit, MCPWM_TIMER_2, &pwm_config);    //Configure PWM0A & PWM0B with above settings
+  mcpwm_init(mcpwm_unit, MCPWM_TIMER_1, &pwm_config);    //Configure PWM1A & PWM1B with above settings
+  mcpwm_init(mcpwm_unit, MCPWM_TIMER_2, &pwm_config);    //Configure PWM2A & PWM2B with above settings
   
   if (_isset(dead_zone)){
     // dead zone is configured  
@@ -149,15 +153,18 @@ void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm
   mcpwm_num->timer[1].period.upmethod = 0;
   mcpwm_num->timer[2].period.upmethod = 0;
   _delay(1); 
+  // _delay(1); 
   //restart the timers
   mcpwm_start(mcpwm_unit, MCPWM_TIMER_0);
   mcpwm_start(mcpwm_unit, MCPWM_TIMER_1);
   mcpwm_start(mcpwm_unit, MCPWM_TIMER_2);
   _delay(1); 
-
-  mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_0, MCPWM_SELECT_SYNC_INT0, 0);
-  mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_1, MCPWM_SELECT_SYNC_INT0, 0);
-  mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_2, MCPWM_SELECT_SYNC_INT0, 0);
+  // Cast here because MCPWM_SELECT_SYNC_INT0 (1) is not defined
+  // in the default Espressif MCPWM headers. The correct const may be used
+  // when https://github.com/espressif/esp-idf/issues/5429 is resolved.
+  mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_0, (mcpwm_sync_signal_t)1, 0);
+  mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_1, (mcpwm_sync_signal_t)1, 0);
+  mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_2, (mcpwm_sync_signal_t)1, 0);
   _delay(1);
   mcpwm_num->timer[0].sync.out_sel = 1;
   _delay(1);
@@ -169,9 +176,8 @@ void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm
 // - hardware speciffic
 // supports Arudino/ATmega328, STM32 and ESP32 
 void _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
-
-  if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = 20000; // default frequency 20khz - centered pwm has twice lower frequency
-  else pwm_frequency = _constrain(pwm_frequency, 0, 40000); // constrain to 40kHz max - centered pwm has twice lower frequency
+  if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25hz
+  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 40kHz max 
 
   stepper_2pwm_motor_slots_t m_slot = {};
 
@@ -215,9 +221,8 @@ void _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
 // - hardware speciffic
 // supports Arudino/ATmega328, STM32 and ESP32 
 void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
-
-  if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = 20000; // default frequency 20khz - centered pwm has twice lower frequency
-  else pwm_frequency = _constrain(pwm_frequency, 0, 40000); // constrain to 40kHz max - centered pwm has twice lower frequency
+  if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25hz
+  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 40kHz max 
 
   bldc_3pwm_motor_slots_t m_slot = {};
 
@@ -260,9 +265,8 @@ void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int
 // - Stepper motor - 4PWM setting
 // - hardware speciffic
 void _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
-
-  if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = 20000; // default frequency 20khz - centered pwm has twice lower frequency
-  else pwm_frequency = _constrain(pwm_frequency, 0, 40000); // constrain to 50kHz max - centered pwm has twice lower frequency
+  if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25hz
+  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 40kHz max 
   stepper_4pwm_motor_slots_t m_slot = {};
   // determine which motor are we connecting
   // and set the appropriate configuration parameters 
@@ -365,7 +369,7 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, in
 int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
   
   if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = 20000; // default frequency 20khz - centered pwm has twice lower frequency
-  else pwm_frequency = _constrain(pwm_frequency, 0, 40000); // constrain to 40kHz max - centered pwm has twice lower frequency
+  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 40kHz max - centered pwm has twice lower frequency
   bldc_6pwm_motor_slots_t m_slot = {};
   // determine which motor are we connecting
   // and set the appropriate configuration parameters 

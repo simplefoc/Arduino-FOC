@@ -5,7 +5,7 @@ BLDCMotor motor = BLDCMotor(11);
 BLDCDriver3PWM driver = BLDCDriver3PWM(9, 10, 11, 8);
 //StepperMotor motor = StepperMotor(50);
 //StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
-MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0x0E, 4);
+MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0X0C, 4);
 
 
 /**

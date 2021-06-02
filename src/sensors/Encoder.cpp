@@ -32,7 +32,7 @@ Encoder::Encoder(int _encA, int _encB , float _ppr, int _index){
   prev_timestamp_us = _micros();
 
   // extern pullup as default
-  pullup = Pullup::EXTERN;
+  pullup = Pullup::USE_EXTERN;
   // enable quadrature encoder by default
   quadrature = Quadrature::ON;
 }
@@ -160,7 +160,7 @@ int Encoder::hasIndex(){
 void Encoder::init(){
 
   // Encoder - check if pullup needed for your encoder
-  if(pullup == Pullup::INTERN){
+  if(pullup == Pullup::USE_INTERN){
     pinMode(pinA, INPUT_PULLUP);
     pinMode(pinB, INPUT_PULLUP);
     if(hasIndex()) pinMode(index_pin,INPUT_PULLUP);

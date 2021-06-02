@@ -24,7 +24,7 @@ BLDCDriver6PWM::BLDCDriver6PWM(int phA_h,int phA_l,int phB_h,int phB_l,int phC_h
 // enable motor driver
 void  BLDCDriver6PWM::enable(){
     // enable_pin the driver - if enable_pin pin available
-    if ( _isset(enable_pin) ) digitalWrite(enable_pin, HIGH);
+    if ( _isset(enable_pin) ) digitalWrite(enable_pin, enable_active_high);
     // set zero to PWM
     setPwm(0, 0, 0);
 }
@@ -35,15 +35,13 @@ void BLDCDriver6PWM::disable()
   // set zero to PWM
   setPwm(0, 0, 0);
   // disable the driver - if enable_pin pin available
-  if ( _isset(enable_pin) ) digitalWrite(enable_pin, LOW);
+  if ( _isset(enable_pin) ) digitalWrite(enable_pin, !enable_active_high);
 
 }
 
 // init hardware pins   
 int BLDCDriver6PWM::init() {
-  // a bit of separation
-  _delay(1000);
-
+  
   // PWM pins
   pinMode(pwmA_h, OUTPUT);
   pinMode(pwmB_h, OUTPUT);

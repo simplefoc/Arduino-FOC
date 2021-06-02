@@ -17,7 +17,7 @@ HallSensor::HallSensor(int _hallA, int _hallB, int _hallC, int _pp){
   cpr = _pp * 6; 
 
   // extern pullup as default
-  pullup = Pullup::EXTERN;
+  pullup = Pullup::USE_EXTERN;
 }
 
 //  HallSensor interrupt callback functions
@@ -119,7 +119,7 @@ void HallSensor::init(){
   electric_rotations = 0;
 
   // HallSensor - check if pullup needed for your HallSensor
-  if(pullup == Pullup::INTERN){
+  if(pullup == Pullup::USE_INTERN){
     pinMode(pinA, INPUT_PULLUP);
     pinMode(pinB, INPUT_PULLUP);
     pinMode(pinC, INPUT_PULLUP);

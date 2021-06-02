@@ -96,8 +96,11 @@ int  StepperMotor::initFOC( float zero_electric_offset, Direction _sensor_direct
   // sensor and motor alignment - can be skipped
   // by setting motor.sensor_direction and motor.zero_electric_angle
   _delay(500);
-  if(sensor) exit_flag = alignSensor();
-  else if(monitor_port) monitor_port->println(F("MOT: No sensor."));
+  if(sensor){
+    exit_flag *= alignSensor();
+    // added the shaft_angle update
+    shaft_angle = sensor->getAngle();
+  }else if(monitor_port) monitor_port->println(F("MOT: No sensor."));
   
   if(exit_flag){
     if(monitor_port) monitor_port->println(F("MOT: Ready."));
@@ -213,13 +216,14 @@ int StepperMotor::absoluteZeroSearch() {
 // Iterative function looping FOC algorithm, setting Uq on the Motor
 // The faster it can be run the better
 void StepperMotor::loopFOC() {
-  // if disabled do nothing
-  if(!enabled) return; 
   // if open-loop do nothing
   if( controller==MotionControlType::angle_openloop || controller==MotionControlType::velocity_openloop ) return;
-
   // shaft angle 
   shaft_angle = shaftAngle();
+  
+  // if disabled do nothing
+  if(!enabled) return; 
+
   electrical_angle = electricalAngle();
 
   // set the phase voltage - FOC heart function :) 
@@ -232,6 +236,8 @@ void StepperMotor::loopFOC() {
 // - needs to be called iteratively it is asynchronous function
 // - if target is not set it uses motor.target value
 void StepperMotor::move(float new_target) {
+  // get angular velocity
+  shaft_velocity = shaftVelocity();
   // if disabled do nothing
   if(!enabled) return; 
   // downsampling (optional)
@@ -239,8 +245,6 @@ void StepperMotor::move(float new_target) {
   motion_cnt = 0;
   // set internal target variable
   if(_isset(new_target) ) target = new_target;
-  // get angular velocity
-  shaft_velocity = shaftVelocity();
   // choose control loop
   switch (controller) {
     case MotionControlType::torque:

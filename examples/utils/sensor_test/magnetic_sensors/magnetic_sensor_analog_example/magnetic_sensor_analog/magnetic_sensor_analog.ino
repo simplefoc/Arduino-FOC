@@ -1,6 +1,7 @@
 #include <SimpleFOC.h>
 
 
+
 /**
  * Magnetic sensor reading analog voltage on pin A1.  This voltage is proportional to rotation position.
  * Tested on AS5600 magnetic sensor running in 'analog mode'.  Note AS5600 works better in 'i2C mode' (less noise) but only supports one sensor per i2c bus. 

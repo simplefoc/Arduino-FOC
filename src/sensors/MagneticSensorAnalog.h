@@ -33,10 +33,10 @@ class MagneticSensorAnalog: public Sensor{
     /** get current angular velocity (rad/s) **/
     float getVelocity() override;
  
-
-  private:
     /** raw count (typically in range of 0-1023), useful for debugging resolution issues */
     int raw_count;
+
+  private:
     int min_raw_count;
     int max_raw_count;
     int cpr;
