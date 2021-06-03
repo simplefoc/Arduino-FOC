@@ -30,6 +30,19 @@ float Sensor::getVelocity() {
     return vel;
 }
 
+void Sensor::init() {
+    // initialize all the internal variables of Sensor to ensure a "smooth" startup (without a 'jump' from zero)
+    getSensorAngle(); // call once
+    delayMicroseconds(1);
+    vel_angle_prev = getSensorAngle(); // call again
+    vel_angle_prev_ts = _micros();
+    delay(1);
+    getSensorAngle(); // call once
+    delayMicroseconds(1);
+    angle_prev = getSensorAngle(); // call again
+    angle_prev_ts = _micros();
+}
+
 
 float Sensor::getShaftAngle() {
     return angle_prev;

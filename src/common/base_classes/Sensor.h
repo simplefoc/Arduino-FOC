@@ -113,6 +113,13 @@ class Sensor{
          * Use updateSensor() when calling from outside code.
          */
         virtual float getSensorAngle()=0;
+        /**
+         * Call Sensor::init() from your sensor subclass's init method if you want smoother startup
+         * The base class init() method calls getSensorAngle() several times to initialize the internal fields
+         * to current values, ensuring there is no discontinuity ("jump from zero") during the first calls
+         * to sensor.getAngle() and sensor.getVelocity()
+         */
+        virtual void init();
 
         // velocity calculation variables
         float angle_prev=0; // result of last call to getSensorAngle(), used for full rotations and velocity
