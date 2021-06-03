@@ -410,7 +410,7 @@ void SAMDCurrentSenseADCDMA::initEVSYS()
   // event generator (source)
 	EVSYS_CHANNEL_Type channel_0;
 	channel_0.bit.EDGSEL = EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val;
-	channel_0.bit.PATH = EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val;
+	channel_0.bit.PATH = EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val; //--> EVSYS_ID_USER_ADC_SYNC: Asynchronous path only
 	channel_0.bit.EVGEN = this->EVSYS_ID_GEN_TCC_OVF; /* TCCO Timer OVF */
 	channel_0.bit.SWEVT = 0b0;   /* no software trigger */
 	channel_0.bit.CHANNEL = user_0.bit.CHANNEL - 1; /* use channel 0 */
@@ -419,7 +419,7 @@ void SAMDCurrentSenseADCDMA::initEVSYS()
   // event generator (source)
   EVSYS_CHANNEL_Type channel_1{.reg = 0};
   channel_1.bit.EDGSEL = EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val;
-  channel_1.bit.PATH = EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val;
+  channel_1.bit.PATH = EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val; //--> EVSYS_ID_USER_ADC_START: Asynchronous path only
   switch(channelDMA)
   {
     case 0: channel_1.bit.EVGEN = EVSYS_ID_GEN_DMAC_CH_0; break;

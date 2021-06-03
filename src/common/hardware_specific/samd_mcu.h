@@ -164,15 +164,15 @@ extern const SamdPinDefinition g_SamdPinDefinitions[];
 
 #ifdef SIMPLEFOC_SAMD_DEBUG
 template <typename T>
-void debugPrint(T message)
-{
-    SIMPLEFOC_SAMD_DEBUG_SERIAL.print(message);
-}
+void debugPrint(T message){ SIMPLEFOC_SAMD_DEBUG_SERIAL.print(message);}
+template <typename T>
+void debugPrintln(T message){ SIMPLEFOC_SAMD_DEBUG_SERIAL.println(message);}
 static char buffer[1000];
-#define debugPrintf(args...) buffer[999] = '\0'; sprintf(buffer, args); debugPrint(buffer);
+#define debugPrintf(args...) sprintf(buffer, args); debugPrint(buffer);
 #else
 #define debugPrintf(args...) ;
 #define debugPrint(arg) ;
+#define debugPrintln(arg) ;
 #endif
 
 SercomSpiClockMode from_SPI_MODE(int spi_mode);

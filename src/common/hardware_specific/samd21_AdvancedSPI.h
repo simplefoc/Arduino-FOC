@@ -22,7 +22,7 @@ class SAMDAdvancedSPI
 
         void close();
 
-    private:
+    // private:
 
         
         SercomChannel sercomChannel;
