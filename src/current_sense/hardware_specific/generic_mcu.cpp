@@ -28,6 +28,8 @@
   #define _ADC_RESOLUTION 1024.0
 #endif
 
+#if !defined(STM32G4xx)
+
 // adc counts to voltage conversion ratio
 // some optimizing for faster execution
 #define _ADC_CONV ( (_ADC_VOLTAGE) / (_ADC_RESOLUTION) )
@@ -54,3 +56,5 @@ void _configureADCInline(const int pinA,const int pinB,const int pinC){
     sbi(ADCSRA, ADPS0);
   #endif
 }
+
+#endif
