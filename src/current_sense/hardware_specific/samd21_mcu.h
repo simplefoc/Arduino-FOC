@@ -17,7 +17,7 @@ public:
   static SAMDCurrentSenseADCDMA * getHardwareAPIInstance();
   SAMDCurrentSenseADCDMA();
   void init(int pinA, int pinB, int pinC, int EVSYS_ID_GEN_TCC_OVF = -1, int pinAREF = -1, float voltageAREF = 3.3, uint32_t adcBits = 12, uint32_t channelDMA = 3);
-  bool readResults(uint16_t & a, uint16_t & b, uint16_t & c);
+  uint32_t readResults(uint16_t & a, uint16_t & b, uint16_t & c);
   float toVolts(uint16_t counts);
   uint16_t adcBuffer[20];
   int adc_i = 0;
@@ -30,19 +30,23 @@ private:
   void initADC();
   void initDMA();
   void initDMAChannel();
-  void initEVSYS();
+  int initEVSYS();
  
 
   uint32_t oneBeforeFirstAIN; // hack to discard first noisy readout
   uint32_t firstAIN;
   uint32_t lastAIN; 
+  uint32_t ainA;
+  uint32_t ainB;
+  uint32_t ainC;
+  uint32_t refsel;
   uint32_t bufferSize = 0;
 
 
-  uint32_t pinA;
-  uint32_t pinB;
-  uint32_t pinC;
-  uint32_t pinAREF;
+  int pinA;
+  int pinB;
+  int pinC;
+  int pinAREF;
   uint32_t channelDMA;  // DMA channel
   bool freeRunning;
 

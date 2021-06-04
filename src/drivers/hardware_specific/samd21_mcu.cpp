@@ -195,60 +195,6 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 									   GCLK_CLKCTRL_ID_ofthistcc;   // Feed GCLK4 to tcc
 		while (GCLK->STATUS.bit.SYNCBUSY);              			// Wait for synchronization
 
-
-		static bool isOVFEOConfigured = false;
-		if(enableOVFEO)
-		{
-			if(isOVFEOConfigured)
-			{
-				debugPrintln("Fatal error! OVFEO already configured, you can only configure it once.");
-			}
-			else
-			{
-				
-				debugPrintf("Configuring EVSYS for TCC channel %d\n\r", tccConfig.tcc.tccn);
-
-				uint8_t evgen_tcc = 0;
-				switch (tccConfig.tcc.tccn){
-				case 0: evgen_tcc = EVSYS_ID_GEN_TCC0_OVF; break;
-				case 1: evgen_tcc = EVSYS_ID_GEN_TCC1_OVF; break;
-				case 2: evgen_tcc = EVSYS_ID_GEN_TCC2_OVF; break;
-				// case 3: channel.bit.EVGEN = EVSYS_ID_GEN_TC3_OVF; break; // TODO: we need the TC equivalent of TCC_WAVEB_WAVEGENB_DSBOTTOM 
-				// case 4: channel.bit.EVGEN = EVSYS_ID_GEN_TC4_OVF; break; // TODO: we need the TC equivalent of TCC_WAVEB_WAVEGENB_DSBOTTOM
-				// case 5: channel.bit.EVGEN = EVSYS_ID_GEN_TC5_OVF; break; // TODO: we need the TC equivalent of TCC_WAVEB_WAVEGENB_DSBOTTOM
-				default: 
-					debugPrintf("Error in configureTCC() [EVSYS] Bad tccn number: %d\n\r", tccConfig.tcc.tccn);
-					return;
-				}
-
-				EVSYS_USER_Type userADC;
-				userADC.bit.CHANNEL = tccConfig.tcc.tccn + 1; /* use channel tccn p421: "Note that to select channel n, the value (n+1) must be written to the USER.CHANNEL bit group." */
-				userADC.bit.USER = EVSYS_ID_USER_ADC_SYNC; /* ADC Start*/
-				EVSYS->USER.reg = userADC.reg;
-				// configuration of the event system so that it triggers an "EVSYS_ID_USER_ADC_SYNC" at each timer overflow (underflow)
-				EVSYS_CHANNEL_Type channelTCC_ADC;
-				channelTCC_ADC.bit.EVGEN = evgen_tcc;
-				channelTCC_ADC.bit.EDGSEL = EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val;
-				channelTCC_ADC.bit.PATH = EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val; //EVSYS_ID_USER_ADC_SYNC is asynchronous only
-				channelTCC_ADC.bit.SWEVT = 0;   /* no software trigger */
-				channelTCC_ADC.bit.CHANNEL = userADC.bit.CHANNEL - 1;
-				EVSYS->CHANNEL.reg = channelTCC_ADC.reg;
-
-				EVSYS_USER_Type userDMA3;
-				userDMA3.bit.CHANNEL = tccConfig.tcc.tccn + 6 + 1; /* use channel tccn p421: "Note that to select channel n, the value (n+1) must be written to the USER.CHANNEL bit group." */
-				userDMA3.bit.USER = EVSYS_ID_USER_DMAC_CH_3; /* DMA_Start*/
-				EVSYS->USER.reg = userDMA3.reg;
-
-				EVSYS_CHANNEL_Type channelTCC_DMA3;
-				channelTCC_DMA3.bit.EVGEN = evgen_tcc;
-				channelTCC_DMA3.bit.EDGSEL = EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val;
-				channelTCC_DMA3.bit.PATH = EVSYS_CHANNEL_PATH_RESYNCHRONIZED_Val; //DMA and TCC use different clocks (I think?)
-				channelTCC_DMA3.bit.SWEVT = 0;   /* no software trigger */
-				channelTCC_DMA3.bit.CHANNEL = userDMA3.bit.CHANNEL - 1;
-				EVSYS->CHANNEL.reg = channelTCC_DMA3.reg;
-			}
-		}
-
 		tccConfigured[tccConfig.tcc.tccn] = true;
 
 
@@ -372,12 +318,6 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 
 }
 
-void EVSYS_Init(int chaninfo)
-{
-
-
-
-}
 
 
 

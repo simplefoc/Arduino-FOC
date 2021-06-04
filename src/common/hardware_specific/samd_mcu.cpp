@@ -19,6 +19,25 @@ SercomSpiClockMode from_SPI_MODE(int spi_mode)
     }
 }
 
+uint32_t computeDSTADDR(uint8_t * startAddress, uint32_t STEPSEL, uint32_t STEPSIZE, uint32_t BEATSIZE, uint32_t BTCNT)
+{
+    /*
+    p.283 When destination address incrementation is configured (BTCTRL.DSTINC is one), SRCADDR must be set to the 
+    destination address of the last beat transfer in the block transfer. The destination address should be calculated as 
+    follows: 
+    DSTADDR = DSTADDRSTART + BTCNT ⋅ ( BEATSIZE + 1 ) ⋅ 2 STEPSIZE , where BTCTRL.STEPSEL is zero 
+    DSTADDR = DSTADDRSTART + BTCNT ⋅ ( BEATSIZE + 1 ) , where BTCTRL.STEPSEL is one 
+    -  DSTADDRSTART is the destination address of the first beat transfer in the block transfer 
+    -  BTCNT is the initial number of beats remaining in the block transfer 
+    -  BEATSIZE is the configured number of bytes in a beat 
+    -  STEPSIZE is the configured number of beats for each incrementation 
+    */
+    uint32_t factor  = STEPSEL == 0 ? (1 << STEPSIZE) /*2^STEPSIZE*/: 1;
+
+    return (uint32_t)(startAddress + BTCNT * (BEATSIZE + 1) * factor);   // end address
+}
+
+
 const SamdPinDefinition * getSamdPinDefinition(int arduinoPin)
 {
     if(arduinoPin < 0)
@@ -26,7 +45,7 @@ const SamdPinDefinition * getSamdPinDefinition(int arduinoPin)
         debugPrint(F("getSamdPinDefinition() : pin < 0"));
         return nullptr;
     }
-    if(arduinoPin > PINS_COUNT-1)
+    if((uint32_t)arduinoPin > (PINS_COUNT-1))
     {
         debugPrintf("getSamdPinDefinition() : arduino pin %d above %d", arduinoPin, PINS_COUNT-1);
         return nullptr;
@@ -61,3 +80,4 @@ const SamdPinDefinition * getSamdPinDefinition(int arduinoPin)
 
     return rv;
 }
+
