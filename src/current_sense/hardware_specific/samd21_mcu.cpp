@@ -19,23 +19,24 @@ void _configureADCLowSide(const int pinA,const int pinB,const int pinC)
 {
   _pinA = pinA;
   _pinB = pinB; 
+  _pinC = pinC;
+  freeRunning = true;
+  instance.init(pinA, pinB, pinC);
+
+}
 void _startADC3PinConversionLowSide()
 {
   instance.startADCScan();
 }
 /**
  *  function reading an ADC value and returning the read voltage
-<<<<<<< HEAD
- *
-=======
  * 
+ * @param pinA - the arduino pin to be read (it has to be ADC pin)
+ */
 float _readADCVoltageLowSide(const int pinA)
+{
   instance.readResults(a, b, c);
-<<<<<<< HEAD
-
-=======
   
->>>>>>> dev
   if(pinA == _pinA)
     return instance.toVolts(a);
   if(pinA == _pinB)

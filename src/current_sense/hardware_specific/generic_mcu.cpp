@@ -3,7 +3,7 @@
 // function reading an ADC value and returning the read voltage
 __attribute__((weak))  float _readADCVoltageInline(const int pinA){
   uint32_t raw_adc = analogRead(pinA);
-  return raw_adc * 5.0/1024;
+  return raw_adc * 5.0f/1024.0f;
 }
 
 // function reading an ADC value and returning the read voltage

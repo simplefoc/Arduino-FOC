@@ -43,12 +43,13 @@ void LowsideCurrentSense::calibrateOffsets(){
         _delay(1);
     }
     // calculate the mean offsets
-    offset_ia = offset_ia / 1000.0f;
-    offset_ib = offset_ib / 1000.0f;
-    if(_isset(pinC)) offset_ic = offset_ic / 1000.0f;
+    offset_ia = offset_ia / calibration_rounds;
+    offset_ib = offset_ib / calibration_rounds;
+    if(_isset(pinC)) offset_ic = offset_ic / calibration_rounds;
 }
 
 // read all three phase currents (if possible 2 or 3)
+PhaseCurrent_s LowsideCurrentSense::getPhaseCurrents(){
     PhaseCurrent_s current;
     _startADC3PinConversionLowSide();
     current.a = lpf_a(_readADCVoltageLowSide(pinA) - offset_ia)*gain_a;// amps
