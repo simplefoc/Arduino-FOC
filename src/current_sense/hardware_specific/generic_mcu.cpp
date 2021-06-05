@@ -1,7 +1,9 @@
 #include "../hardware_api.h"
 
 // if the mcu doen't have defiend analogRead
-// __attribute__((weak)) int analogRead(uint8_t pin){ return 0;};
+#if defined(ESP_H)
+  __attribute__((weak)) int analogRead(uint8_t pin){ return 0;};
+#endif
 
 // function reading an ADC value and returning the read voltage
 __attribute__((weak))  float _readADCVoltageInline(const int pinA){
@@ -32,5 +34,4 @@ __attribute__((weak))  void _configureADCLowSide(const int pinA,const int pinB,c
 
 // sync driver and the adc
 __attribute__((weak)) void _driverSyncLowSide(){ }
-
 __attribute__((weak)) void _startADC3PinConversionLowSide(){ }
