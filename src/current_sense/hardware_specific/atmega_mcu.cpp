@@ -2,8 +2,8 @@
 
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega328PB__) 
 
-#define _ADC_VOLTAGE 5.0
-#define _ADC_RESOLUTION 1024.0
+#define _ADC_VOLTAGE 5.0f
+#define _ADC_RESOLUTION 1024.0f
 
 // adc counts to voltage conversion ratio
 // some optimizing for faster execution

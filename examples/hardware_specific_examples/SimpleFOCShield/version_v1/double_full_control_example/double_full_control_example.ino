@@ -4,7 +4,7 @@
 // BLDC motor & driver instance
 BLDCMotor motor1 = BLDCMotor(11);
 BLDCDriver3PWM driver1 = BLDCDriver3PWM(9, 5, 6, 8);
-  
+
 // BLDC motor & driver instance
 BLDCMotor motor2 = BLDCMotor(11);
 BLDCDriver3PWM driver2  = BLDCDriver3PWM(3, 10, 11, 7);
@@ -30,14 +30,14 @@ void setup() {
 
   // initialize encoder sensor hardware
   encoder1.init();
-  encoder1.enableInterrupts(doA1, doB1); 
+  encoder1.enableInterrupts(doA1, doB1);
   // initialize encoder sensor hardware
   encoder2.init();
-  encoder2.enableInterrupts(doA2, doB2); 
+  encoder2.enableInterrupts(doA2, doB2);
   // link the motor to the sensor
   motor1.linkSensor(&encoder1);
   motor2.linkSensor(&encoder2);
-  
+
 
   // driver config
   // power supply voltage [V]
@@ -55,14 +55,14 @@ void setup() {
   motor1.controller = MotionControlType::torque;
   motor2.controller = MotionControlType::torque;
 
-  // contoller configuration based on the controll type 
-  motor1.PID_velocity.P = 0.05;
+  // contoller configuration based on the controll type
+  motor1.PID_velocity.P = 0.05f;
   motor1.PID_velocity.I = 1;
   motor1.PID_velocity.D = 0;
   // default voltage_power_supply
   motor1.voltage_limit = 12;
-  // contoller configuration based on the controll type 
-  motor2.PID_velocity.P = 0.05;
+  // contoller configuration based on the controll type
+  motor2.PID_velocity.P = 0.05f;
   motor2.PID_velocity.I = 1;
   motor2.PID_velocity.D = 0;
   // default voltage_power_supply
@@ -78,16 +78,16 @@ void setup() {
   // comment out if not needed
   motor1.useMonitoring(Serial);
   motor2.useMonitoring(Serial);
-  
+
   // initialise motor
   motor1.init();
   // align encoder and start FOC
-  motor1.initFOC(); 
-  
+  motor1.initFOC();
+
   // initialise motor
   motor2.init();
   // align encoder and start FOC
-  motor2.initFOC(); 
+  motor2.initFOC();
 
   // set the inital target value
   motor1.target = 2;
@@ -99,7 +99,7 @@ void setup() {
 
   // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)
   Serial.println(F("Double motor sketch ready."));
-  
+
   _delay(1000);
 }
 

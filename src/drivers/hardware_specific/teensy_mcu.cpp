@@ -1,4 +1,4 @@
-#include "../hardware_api.h" 
+#include "../hardware_api.h"
 
 #if defined(__arm__) && defined(CORE_TEENSY)
 
@@ -8,7 +8,7 @@
 //  configure High PWM frequency
 void _setHighFrequency(const long freq, const int pin){
   analogWrite(pin, 0);
-  analogWriteFrequency(pin, freq); 
+  analogWriteFrequency(pin, freq);
 }
 
 
@@ -42,25 +42,25 @@ void _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int
   _setHighFrequency(pwm_frequency, pinA);
   _setHighFrequency(pwm_frequency, pinB);
   _setHighFrequency(pwm_frequency, pinC);
-  _setHighFrequency(pwm_frequency, pinD); 
+  _setHighFrequency(pwm_frequency, pinD);
 }
 
-// function setting the pwm duty cycle to the hardware 
+// function setting the pwm duty cycle to the hardware
 // - Stepper motor - 2PWM setting
 // - hardware speciffic
 void _writeDutyCycle2PWM(float dc_a,  float dc_b, int pinA, int pinB){
   // transform duty cycle from [0,1] to [0,255]
-  analogWrite(pinA, 255.0*dc_a);
-  analogWrite(pinB, 255.0*dc_b);
+  analogWrite(pinA, 255.0f*dc_a);
+  analogWrite(pinB, 255.0f*dc_b);
 }
 // function setting the pwm duty cycle to the hardware
 // - BLDC motor - 3PWM setting
 // - hardware speciffic
 void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC){
   // transform duty cycle from [0,1] to [0,255]
-  analogWrite(pinA, 255.0*dc_a);
-  analogWrite(pinB, 255.0*dc_b);
-  analogWrite(pinC, 255.0*dc_c);
+  analogWrite(pinA, 255.0f*dc_a);
+  analogWrite(pinB, 255.0f*dc_b);
+  analogWrite(pinC, 255.0f*dc_c);
 }
 
 // function setting the pwm duty cycle to the hardware
@@ -68,10 +68,10 @@ void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, int pinA, int pinB
 // - hardware speciffic
 void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, int pin1A, int pin1B, int pin2A, int pin2B){
   // transform duty cycle from [0,1] to [0,255]
-  analogWrite(pin1A, 255.0*dc_1a);
-  analogWrite(pin1B, 255.0*dc_1b);
-  analogWrite(pin2A, 255.0*dc_2a);
-  analogWrite(pin2B, 255.0*dc_2b);
+  analogWrite(pin1A, 255.0f*dc_1a);
+  analogWrite(pin1B, 255.0f*dc_1b);
+  analogWrite(pin2A, 255.0f*dc_2a);
+  analogWrite(pin2B, 255.0f*dc_2b);
 }
 
 #endif

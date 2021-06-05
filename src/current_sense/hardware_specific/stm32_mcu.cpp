@@ -3,8 +3,8 @@
 
 #if defined(_STM32_DEF_)
 
-#define _ADC_VOLTAGE 3.3
-#define _ADC_RESOLUTION 1024.0
+#define _ADC_VOLTAGE 3.3f
+#define _ADC_RESOLUTION 1024.0f
 
 // adc counts to voltage conversion ratio
 // some optimizing for faster execution

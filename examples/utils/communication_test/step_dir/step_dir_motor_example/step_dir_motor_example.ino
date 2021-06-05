@@ -19,7 +19,7 @@ void doA() { encoder.handleA(); }
 void doB() { encoder.handleB(); }
 
 // StepDirListener( step_pin, dir_pin, counter_to_value)
-StepDirListener step_dir = StepDirListener(A4, A5, 2.0*_PI/200.0);
+StepDirListener step_dir = StepDirListener(A4, A5, 2.0f*_PI/200.0);
 void onStep() { step_dir.handle(); }
 
 void setup() {
@@ -48,7 +48,7 @@ void setup() {
   // contoller configuration
   // default parameters in defaults.h
   // velocity PI controller parameters
-  motor.PID_velocity.P = 0.2;
+  motor.PID_velocity.P = 0.2f;
   motor.PID_velocity.I = 20;
   motor.PID_velocity.D = 0;
   // default voltage_power_supply
@@ -58,7 +58,7 @@ void setup() {
   motor.PID_velocity.output_ramp = 1000;
 
   // velocity low pass filtering time constant
-  motor.LPF_velocity.Tf = 0.01;
+  motor.LPF_velocity.Tf = 0.01f;
 
   // angle P controller
   motor.P_angle.P = 10;
@@ -77,12 +77,12 @@ void setup() {
 
   // init step and dir pins
   step_dir.init();
-  // enable interrupts 
+  // enable interrupts
   step_dir.enableInterrupt(onStep);
-  // attach the variable to be updated on each step (optional) 
+  // attach the variable to be updated on each step (optional)
   // the same can be done asynchronously by caling motor.move(step_dir.getValue());
   step_dir.attach(&motor.target);
-    
+
   Serial.println(F("Motor ready."));
   Serial.println(F("Listening to step/dir commands!"));
   _delay(1000);
