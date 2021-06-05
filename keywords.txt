@@ -49,6 +49,9 @@ LPF_current_q	KEYWORD2
 LPF_current_d	KEYWORD2
 P_angle	KEYWORD2
 LPF_angle	KEYWORD2
+lpf_a	KEYWORD2
+lpf_b	KEYWORD2
+lpf_c	KEYWORD2
 
 MotionControlType	KEYWORD1
 TorqueControlType	KEYWORD1

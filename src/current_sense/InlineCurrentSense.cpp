@@ -50,9 +50,9 @@ void InlineCurrentSense::calibrateOffsets(){
 // read all three phase currents (if possible 2 or 3)
 PhaseCurrent_s InlineCurrentSense::getPhaseCurrents(){
     PhaseCurrent_s current;
-    current.a = (_readADCVoltageInline(pinA) - offset_ia)*gain_a;// amps
-    current.b = (_readADCVoltageInline(pinB) - offset_ib)*gain_b;// amps
-    current.c = (!_isset(pinC)) ? 0 : (_readADCVoltageInline(pinC) - offset_ic)*gain_c; // amps
+    current.a = lpf_a(_readADCVoltageInline(pinA) - offset_ia)*gain_a;// amps
+    current.b = lpf_b(_readADCVoltageInline(pinB) - offset_ib)*gain_b;// amps
+    current.c = (!_isset(pinC)) ? 0 : lpf_c(_readADCVoltageInline(pinC) - offset_ic)*gain_c; // amps
     return current;
 }
 // Function synchronizing current sense with motor driver.

@@ -1,10 +1,5 @@
 #include "../hardware_api.h"
 
-// if the mcu doen't have defiend analogRead
-#if defined(ESP_H)
-  __attribute__((weak)) int analogRead(uint8_t pin){ return 0;};
-#endif
-
 // function reading an ADC value and returning the read voltage
 __attribute__((weak))  float _readADCVoltageInline(const int pinA){
   uint32_t raw_adc = analogRead(pinA);

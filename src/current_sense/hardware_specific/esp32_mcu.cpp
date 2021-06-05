@@ -1,6 +1,6 @@
 #include "../hardware_api.h"
 
-#if defined(ESP_H)
+#ifdef ESP_H
 
 #include "driver/mcpwm.h"
 #include "soc/mcpwm_reg.h"
@@ -11,8 +11,8 @@
 
 #include "esp32_adc_driver.h"
 
-#define _ADC_VOLTAGE 3.3
-#define _ADC_RESOLUTION 4095.0
+#define _ADC_VOLTAGE 3.3f
+#define _ADC_RESOLUTION 4095.0f
 
 static mcpwm_dev_t *MCPWM[2] = {&MCPWM0, &MCPWM1};
 int a1, a2, a3;         //Current readings from internal current sensor amplifiers
@@ -98,8 +98,9 @@ float _readADCVoltageInline(const int pinA){
   // uint32_t raw_adc = analogRead(pinA);
   return raw_adc * _ADC_CONV;
 }
+
 // function reading an ADC value and returning the read voltage
-void _configureADCInline(const int pinA,const int pinB,const int pinC){
+void _configureADCInline(const int pinA,const int pinB, const int pinC){
   pinMode(pinA, INPUT);
   pinMode(pinB, INPUT);
   if( _isset(pinC) ) pinMode(pinC, INPUT);

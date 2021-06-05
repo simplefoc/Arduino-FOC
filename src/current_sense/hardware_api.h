@@ -28,9 +28,6 @@ void _configureADCInline(const int pinA,const int pinB,const int pinC = NOT_SET)
  * @param pinC - adc pin C
  */
 void _configureADCLowSide(const int pinA,const int pinB,const int pinC = NOT_SET);
-
-void _startADC3PinConversionLowSide();
-
 /**
  *  function reading an ADC value and returning the read voltage
  * 
@@ -42,4 +39,8 @@ float _readADCVoltageLowSide(const int pinA);
  *  function syncing the Driver with the ADC  for the LowSide Sensing
  */
 void _driverSyncLowSide();
+
+
+void _startADC3PinConversionLowSide();
+
 #endif

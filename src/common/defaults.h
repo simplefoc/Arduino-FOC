@@ -44,3 +44,6 @@
 #define DEF_VOLTAGE_SENSOR_ALIGN 3.0 //!< default voltage for sensor and motor zero alignemt
 // low pass filter velocity
 #define DEF_VEL_FILTER_Tf 0.005 //!< default velocity filter time constant
+
+// current sense default parameters
+#define DEF_LPF_PER_PHASE_CURRENT_SENSE_Tf 0.0f  //!< default currnet sense per phase low pass filter time constant 

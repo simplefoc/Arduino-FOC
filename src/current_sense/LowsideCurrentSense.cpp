@@ -52,9 +52,9 @@ void LowsideCurrentSense::calibrateOffsets(){
 PhaseCurrent_s LowsideCurrentSense::getPhaseCurrents(){
     PhaseCurrent_s current;
     _startADC3PinConversionLowSide();
-    current.a = (_readADCVoltageLowSide(pinA) - offset_ia)*gain_a;// amps
-    current.b = (_readADCVoltageLowSide(pinB) - offset_ib)*gain_b;// amps
-    current.c = (!_isset(pinC)) ? 0 : (_readADCVoltageLowSide(pinC) - offset_ic)*gain_c; // amps
+    current.a = lpf_a(_readADCVoltageLowSide(pinA) - offset_ia)*gain_a;// amps
+    current.b = lpf_b(_readADCVoltageLowSide(pinB) - offset_ib)*gain_b;// amps
+    current.c = (!_isset(pinC)) ? 0 : lpf_b(_readADCVoltageLowSide(pinC) - offset_ic)*gain_c; // amps
     return current;
 }
 // Function synchronizing current sense with motor driver.
