@@ -188,7 +188,7 @@ void configureSAMDClock() {
 		while (GCLK->SYNCBUSY.vec.GENCTRL&(0x1<<PWM_CLOCK_NUM));
 
 #ifdef SIMPLEFOC_SAMD_DEBUG
-		Serial.println("Configured clock...");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured clock...");
 #endif
 	}
 }
@@ -248,13 +248,13 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 		while ( tcc->SYNCBUSY.bit.ENABLE == 1 ); // wait for sync
 
 #ifdef SIMPLEFOC_SAMD_DEBUG
-		Serial.print("(Re-)Initialized TCC ");
-		Serial.print(tccConfig.tcc.tccn);
-		Serial.print("-");
-		Serial.print(tccConfig.tcc.chan);
-		Serial.print("[");
-		Serial.print(tccConfig.wo);
-		Serial.println("]");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("(Re-)Initialized TCC ");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.tcc.tccn);
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("-");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.tcc.chan);
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("[");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.wo);
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("]");
 #endif
 	}
 	else if (tccConfig.tcc.tccn>=TCC_INST_NUM) {
@@ -280,8 +280,8 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 		// while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
 
 	#ifdef SIMPLEFOC_SAMD_DEBUG
-		Serial.print("Initialized TC ");
-		Serial.println(tccConfig.tcc.tccn);
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("Initialized TC ");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.println(tccConfig.tcc.tccn);
 	#endif
 	}
 

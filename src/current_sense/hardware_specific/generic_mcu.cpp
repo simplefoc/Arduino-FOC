@@ -32,3 +32,5 @@ __attribute__((weak))  void _configureADCLowSide(const int pinA,const int pinB,c
 
 // sync driver and the adc
 __attribute__((weak)) void _driverSyncLowSide(){ }
+
+__attribute__((weak)) void _startADC3PinConversionLowSide(){ }
