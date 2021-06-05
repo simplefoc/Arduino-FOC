@@ -27,13 +27,15 @@ void LowsideCurrentSense::init(){
     calibrateOffsets();
 }
 // Function finding zero offsets of the ADC
-void LowsideCurrentSense::calibrateOffsets(){
+void LowsideCurrentSense::calibrateOffsets(){    
+    const int calibration_rounds = 1000;
+
     // find adc offset = zero current voltage
-    offset_ia =0;
-    offset_ib= 0;
-    offset_ic= 0;
+    offset_ia = 0;
+    offset_ib = 0;
+    offset_ic = 0;
     // read the adc voltage 1000 times ( arbitrary number )
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < calibration_rounds; i++) {
         _startADC3PinConversionLowSide();
         offset_ia += _readADCVoltageLowSide(pinA);
         offset_ib += _readADCVoltageLowSide(pinB);
@@ -47,12 +49,11 @@ void LowsideCurrentSense::calibrateOffsets(){
 }
 
 // read all three phase currents (if possible 2 or 3)
-PhaseCurrent_s LowsideCurrentSense::getPhaseCurrents(){
     PhaseCurrent_s current;
     _startADC3PinConversionLowSide();
-    current.a = (_readADCVoltageLowSide(pinA) - offset_ia)*gain_a;// amps
-    current.b = (_readADCVoltageLowSide(pinB) - offset_ib)*gain_b;// amps
-    current.c = (!_isset(pinC)) ? 0 : (_readADCVoltageLowSide(pinC) - offset_ic)*gain_c; // amps
+    current.a = lpf_a(_readADCVoltageLowSide(pinA) - offset_ia)*gain_a;// amps
+    current.b = lpf_b(_readADCVoltageLowSide(pinB) - offset_ib)*gain_b;// amps
+    current.c = (!_isset(pinC)) ? 0 : lpf_b(_readADCVoltageLowSide(pinC) - offset_ic)*gain_c; // amps
     return current;
 }
 // Function synchronizing current sense with motor driver.

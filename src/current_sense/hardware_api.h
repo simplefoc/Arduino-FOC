@@ -42,4 +42,8 @@ float _readADCVoltageLowSide(const int pinA);
  *  function syncing the Driver with the ADC  for the LowSide Sensing
  */
 void _driverSyncLowSide();
+
+
+void _startADC3PinConversionLowSide();
+
 #endif

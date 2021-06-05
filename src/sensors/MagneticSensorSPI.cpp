@@ -174,7 +174,6 @@ word MagneticSensorSPI::read(word angle_register){
   digitalWrite(chip_select_pin, LOW);
   spi->transfer16(command);
   digitalWrite(chip_select_pin,HIGH);
-
 #if defined( ESP_H ) // if ESP32 board
   delayMicroseconds(50); // why do we need to delay 50us on ESP32? In my experience no extra delays are needed, on any of the architectures I've tested...
 #else
@@ -188,7 +187,6 @@ word MagneticSensorSPI::read(word angle_register){
 
   //SPI - end transaction
   spi->endTransaction();
-
   register_value = register_value >> (1 + data_start_bit - bit_resolution);  //this should shift data to the rightmost bits of the word
 
   const static word data_mask = 0xFFFF >> (16 - bit_resolution);

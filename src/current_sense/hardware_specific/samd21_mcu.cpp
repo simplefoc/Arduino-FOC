@@ -9,8 +9,8 @@ static int _pinA, _pinB, _pinC;
 static uint16_t a = 0xFFFF, b = 0xFFFF, c = 0xFFFF; // updated by adcStopWithDMA when configured in freerunning mode
 static SAMDCurrentSenseADCDMA instance;
 /**
- *  function reading an ADC value and returning the read voltage
- *
+ *  function reading an ADC value and returning the read voltage 
+ * 
  * @param pinA - adc pin A
  * @param pinB - adc pin B
  * @param pinC - adc pin C
@@ -18,25 +18,24 @@ static SAMDCurrentSenseADCDMA instance;
 void _configureADCLowSide(const int pinA,const int pinB,const int pinC)
 {
   _pinA = pinA;
-  _pinB = pinB;
-  _pinC = pinC;
-  freeRunning = true;
-  instance.init(pinA, pinB, pinC);
-
-}
+  _pinB = pinB; 
 void _startADC3PinConversionLowSide()
 {
   instance.startADCScan();
 }
 /**
  *  function reading an ADC value and returning the read voltage
+<<<<<<< HEAD
  *
- * @param pinA - the arduino pin to be read (it has to be ADC pin)
- */
+=======
+ * 
 float _readADCVoltageLowSide(const int pinA)
-{
   instance.readResults(a, b, c);
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> dev
   if(pinA == _pinA)
     return instance.toVolts(a);
   if(pinA == _pinB)
@@ -72,7 +71,11 @@ static void adcStopWithDMA(void);
 static void adcStartWithDMA(void);
 
 /**
+<<<<<<< HEAD
  * @brief  ADC sync wait
+=======
+ * @brief  ADC sync wait 
+>>>>>>> dev
  * @retval void
  */
 static __inline__ void ADCsync() __attribute__((always_inline, unused));
@@ -82,9 +85,15 @@ static void   ADCsync() {
 
 //  ADC DMA sequential free running (6) with Interrupts /////////////////
 
+<<<<<<< HEAD
 SAMDCurrentSenseADCDMA * SAMDCurrentSenseADCDMA::getHardwareAPIInstance()
 {
 
+=======
+SAMDCurrentSenseADCDMA * SAMDCurrentSenseADCDMA::getHardwareAPIInstance() 
+{
+  
+>>>>>>> dev
   return &instance;
 }
 
@@ -136,7 +145,11 @@ float SAMDCurrentSenseADCDMA::toVolts(uint16_t counts) {
 }
 
 void SAMDCurrentSenseADCDMA::initPins(){
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> dev
   pinMode(pinAREF, INPUT);
   pinMode(pinA, INPUT);
   pinMode(pinB, INPUT);
@@ -145,7 +158,11 @@ void SAMDCurrentSenseADCDMA::initPins(){
   uint32_t ainB = g_APinDescription[pinB].ulADCChannelNumber;
   firstAIN = min(ainA, ainB);
   lastAIN = max(ainA, ainB);
+<<<<<<< HEAD
   if( _isset(pinC) )
+=======
+  if( _isset(pinC) ) 
+>>>>>>> dev
   {
     uint32_t ainC = g_APinDescription[pinC].ulADCChannelNumber;
     pinMode(pinC, INPUT);
@@ -160,6 +177,7 @@ void SAMDCurrentSenseADCDMA::initPins(){
 
 void SAMDCurrentSenseADCDMA::initADC(){
 
+<<<<<<< HEAD
   analogRead(pinA);  // do some pin init  pinPeripheral()
   analogRead(pinB);  // do some pin init  pinPeripheral()
   analogRead(pinC);  // do some pin init  pinPeripheral()
@@ -167,6 +185,15 @@ void SAMDCurrentSenseADCDMA::initADC(){
   ADC->CTRLA.bit.ENABLE = 0x00; // Disable ADC
   ADCsync();
   //ADC->REFCTRL.bit.REFSEL = ADC_REFCTRL_REFSEL_INTVCC0_Val; //  2.2297f V Supply VDDANA
+=======
+  analogRead(pinA);  // do some pin init  pinPeripheral() 
+  analogRead(pinB);  // do some pin init  pinPeripheral() 
+  analogRead(pinC);  // do some pin init  pinPeripheral() 
+
+  ADC->CTRLA.bit.ENABLE = 0x00; // Disable ADC
+  ADCsync();
+  //ADC->REFCTRL.bit.REFSEL = ADC_REFCTRL_REFSEL_INTVCC0_Val; //  2.2297 V Supply VDDANA
+>>>>>>> dev
   ADC->INPUTCTRL.bit.GAIN = ADC_INPUTCTRL_GAIN_1X_Val; // Gain select as 1X
   // ADC->INPUTCTRL.bit.GAIN = ADC_INPUTCTRL_GAIN_DIV2_Val;  // default
   ADC->REFCTRL.bit.REFSEL = ADC_REFCTRL_REFSEL_AREFA;
@@ -215,7 +242,11 @@ void SAMDCurrentSenseADCDMA::initADC(){
   */
   ADC->INPUTCTRL.bit.MUXPOS = oneBeforeFirstAIN;
   ADCsync();
+<<<<<<< HEAD
   ADC->INPUTCTRL.bit.INPUTSCAN = lastAIN; // so the adc will scan from oneBeforeFirstAIN to lastAIN (inclusive)
+=======
+  ADC->INPUTCTRL.bit.INPUTSCAN = lastAIN; // so the adc will scan from oneBeforeFirstAIN to lastAIN (inclusive) 
+>>>>>>> dev
   ADCsync();
   ADC->INPUTCTRL.bit.INPUTOFFSET = 0; //input scan cursor
   ADCsync();
@@ -246,9 +277,15 @@ void SAMDCurrentSenseADCDMA::adcToDMATransfer(void *rxdata,  uint32_t hwords) {
   DMAC->CHCTRLA.reg &= ~DMAC_CHCTRLA_ENABLE;
   DMAC->CHCTRLA.reg = DMAC_CHCTRLA_SWRST;
   DMAC->SWTRIGCTRL.reg &= (uint32_t)(~(1 << channelDMA));
+<<<<<<< HEAD
 
   DMAC->CHCTRLB.reg = DMAC_CHCTRLB_LVL(0)
   | DMAC_CHCTRLB_TRIGSRC(ADC_DMAC_ID_RESRDY)
+=======
+  
+  DMAC->CHCTRLB.reg = DMAC_CHCTRLB_LVL(0) 
+  | DMAC_CHCTRLB_TRIGSRC(ADC_DMAC_ID_RESRDY) 
+>>>>>>> dev
   | DMAC_CHCTRLB_TRIGACT_BEAT;
   DMAC->CHINTENSET.reg = DMAC_CHINTENSET_MASK ; // enable all 3 interrupts
   descriptor.descaddr = 0;
@@ -289,7 +326,11 @@ void adcStartWithDMA(void){
   ADCsync();
   ADC->SWTRIG.bit.FLUSH = 1;
   ADCsync();
+<<<<<<< HEAD
   ADC->CTRLA.bit.ENABLE = 0x01;
+=======
+  ADC->CTRLA.bit.ENABLE = 0x01; 
+>>>>>>> dev
   ADCsync();
 }
 
