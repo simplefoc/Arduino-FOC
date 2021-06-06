@@ -101,7 +101,8 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction _sensor_direction
   if(sensor){
     exit_flag *= alignSensor();
     // added the shaft_angle update
-    shaft_angle = sensor->updateSensor();
+    sensor->updateSensor();
+    shaft_angle = sensor->getAngle();
   }else if(monitor_port) monitor_port->println(F("MOT: No sensor."));
 
   // aligning the current sensor - can be skipped
@@ -164,14 +165,16 @@ int BLDCMotor::alignSensor() {
       _delay(2);
     }
     // take and angle in the middle
-    float mid_angle = sensor->updateSensor();
+    sensor->updateSensor();
+    float mid_angle = sensor->getAngle();
     // move one electrical revolution backwards
     for (int i = 500; i >=0; i-- ) {
       float angle = _3PI_2 + _2PI * i / 500.0f ;
       setPhaseVoltage(voltage_sensor_align, 0,  angle);
       _delay(2);
     }
-    float end_angle = sensor->updateSensor();
+    sensor->updateSensor();
+    float end_angle = sensor->getAngle();
     setPhaseVoltage(0, 0, 0);
     _delay(200);
     // determine the direction the sensor moved
@@ -201,7 +204,8 @@ int BLDCMotor::alignSensor() {
     // set angle -90(270 = 3PI/2) degrees
     setPhaseVoltage(voltage_sensor_align, 0,  _3PI_2);
     _delay(700);
-    zero_electric_angle = _normalizeAngle(_electricalAngle(sensor_direction*sensor->updateSensor(), pole_pairs));
+    sensor->updateSensor();
+    zero_electric_angle = _normalizeAngle(_electricalAngle(sensor_direction*sensor->getAngle(), pole_pairs));
     _delay(20);
     if(monitor_port){
       monitor_port->print(F("MOT: Zero elec. angle: "));

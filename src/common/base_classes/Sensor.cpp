@@ -4,14 +4,13 @@
 
 // TODO add an init method to make the startup smoother by initializing internal variables to current values rather than 0
 
-float Sensor::updateSensor() {
+void Sensor::updateSensor() {
     float val = getSensorAngle();
     angle_prev_ts = _micros();
     float d_angle = val - angle_prev;
     // if overflow happened track it as full rotation
     if(abs(d_angle) > (0.8f*_2PI) ) full_rotations += ( d_angle > 0 ) ? -1 : 1; 
     angle_prev = val;
-    return getAngle();
 }
 
 

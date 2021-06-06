@@ -95,7 +95,7 @@ class Sensor{
          * 
          * Returns the same value as getAngle() as its result
          */
-        virtual float updateSensor();
+        virtual void updateSensor();
 
         /** 
          * returns 0 if it does need search for absolute zero
