@@ -313,11 +313,13 @@ void BLDCMotor::move(float new_target) {
 
   switch (controller) {
     case MotionControlType::torque:
-      if(torque_controller == TorqueControlType::voltage) // if voltage torque control
+      if(torque_controller == TorqueControlType::voltage){ // if voltage torque control
         if(!_isset(phase_resistance))  voltage.q = target;
         else voltage.q =  target*phase_resistance;
-      else
+        voltage.d = 0;
+      }else{
         current_sp = target; // if current/foc_current torque control
+      }
       break;
     case MotionControlType::angle:
       // angle set point
