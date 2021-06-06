@@ -8,7 +8,7 @@ MagneticSensorSPIConfig_s AS5147_SPI = {
   .clock_speed = 1000000,
   .bit_resolution = 14,
   .angle_register = 0x3FFF,
-  .data_start_bit = 13, 
+  .data_start_bit = 13,
   .command_rw_bit = 14,
   .command_parity_bit = 15
 };
@@ -22,19 +22,19 @@ MagneticSensorSPIConfig_s MA730_SPI = {
   .clock_speed = 1000000,
   .bit_resolution = 14,
   .angle_register = 0x0000,
-  .data_start_bit = 15, 
+  .data_start_bit = 15,
   .command_rw_bit = 0,  // not required
   .command_parity_bit = 0 // parity not implemented
 };
 
 
 // MagneticSensorSPI(int cs, float _bit_resolution, int _angle_register)
-//  cs              - SPI chip select pin 
+//  cs              - SPI chip select pin
 //  _bit_resolution   sensor resolution bit number
 // _angle_register  - (optional) angle read register - default 0x3FFF
 MagneticSensorSPI::MagneticSensorSPI(int cs, float _bit_resolution, int _angle_register){
-  
-  chip_select_pin = cs; 
+
+  chip_select_pin = cs;
   // angle read register of the magnetic sensor
   angle_register = _angle_register ? _angle_register : DEF_ANGLE_REGISTER;
   // register maximum value (counts per revolution)
@@ -42,14 +42,14 @@ MagneticSensorSPI::MagneticSensorSPI(int cs, float _bit_resolution, int _angle_r
   spi_mode = SPI_MODE1;
   clock_speed = 1000000;
   bit_resolution = _bit_resolution;
-  
+
   command_parity_bit = 15; // for backwards compatibilty
   command_rw_bit = 14; // for backwards compatibilty
   data_start_bit = 13; // for backwards compatibilty
 }
 
 MagneticSensorSPI::MagneticSensorSPI(MagneticSensorSPIConfig_s config, int cs){
-  chip_select_pin = cs; 
+  chip_select_pin = cs;
   // angle read register of the magnetic sensor
   angle_register = config.angle_register ? config.angle_register : DEF_ANGLE_REGISTER;
   // register maximum value (counts per revolution)
@@ -57,7 +57,7 @@ MagneticSensorSPI::MagneticSensorSPI(MagneticSensorSPIConfig_s config, int cs){
   spi_mode = config.spi_mode;
   clock_speed = config.clock_speed;
   bit_resolution = config.bit_resolution;
-  
+
   command_parity_bit = config.command_parity_bit; // for backwards compatibilty
   command_rw_bit = config.command_rw_bit; // for backwards compatibilty
   data_start_bit = config.data_start_bit; // for backwards compatibilty
@@ -133,7 +133,7 @@ word MagneticSensorSPI::read(word angle_register){
 #else
   delayMicroseconds(1); // delay 1us, the minimum time possible in plain arduino. 350ns is the required time for AMS sensors, 80ns for MA730, MA702
 #endif
-  
+
   //Now read the response
   digitalWrite(chip_select_pin, LOW);
   word register_value = spi->transfer16(0x00);
@@ -141,7 +141,7 @@ word MagneticSensorSPI::read(word angle_register){
 
   //SPI - end transaction
   spi->endTransaction();
-  
+
   register_value = register_value >> (1 + data_start_bit - bit_resolution);  //this should shift data to the rightmost bits of the word
 
   const static word data_mask = 0xFFFF >> (16 - bit_resolution);

@@ -1,15 +1,15 @@
 /**
- * 
+ *
  * HMBGC position motion control example with encoder
- * 
+ *
  * - Motor is connected the MOT1 connector (MOT1 9,10,11; MOT2 3,5,6)
  * - Encoder is connected to A0 and A1
- * 
- * This board doesn't have any interrupt pins so we need to run all the encoder channels with the software interrupt library 
+ *
+ * This board doesn't have any interrupt pins so we need to run all the encoder channels with the software interrupt library
  * - For this example we use: PciManager library : https://github.com/prampec/arduino-pcimanager
- * 
+ *
  * See docs.simplefoc.com for more info.
- * 
+ *
  */
 #include <SimpleFOC.h>
 // software interrupt library
@@ -49,7 +49,7 @@ void setup() {
   PciManager.registerListener(&listenerB);
   // link the motor to the sensor
   motor.linkSensor(&encoder);
-  
+
   // driver config
   // power supply voltage [V]
   driver.voltage_power_supply = 12;
@@ -65,20 +65,20 @@ void setup() {
   // set motion control loop to be used
   motor.controller = MotionControlType::angle;
 
-  // contoller configuration 
+  // contoller configuration
   // default parameters in defaults.h
 
   // velocity PI controller parameters
-  motor.PID_velocity.P = 0.2;
+  motor.PID_velocity.P = 0.2f;
   motor.PID_velocity.I = 20;
   // default voltage_power_supply
   motor.voltage_limit = 6;
   // jerk control using voltage voltage ramp
   // default value is 300 volts per sec  ~ 0.3V per millisecond
   motor.PID_velocity.output_ramp = 1000;
- 
+
   // velocity low pass filtering time constant
-  motor.LPF_velocity.Tf = 0.01;
+  motor.LPF_velocity.Tf = 0.01f;
 
   // angle P controller
   motor.P_angle.P = 20;
@@ -86,11 +86,11 @@ void setup() {
   motor.velocity_limit = 4;
 
 
-  // use monitoring with serial 
+  // use monitoring with serial
   Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
-  
+
   // initialize motor
   motor.init();
   // align encoder and start FOC
@@ -109,7 +109,7 @@ void loop() {
   // main FOC algorithm function
   // the faster you run this function the better
   // Arduino UNO loop  ~1kHz
-  // Bluepill loop ~10kHz 
+  // Bluepill loop ~10kHz
   motor.loopFOC();
 
   // Motion control function
@@ -121,7 +121,7 @@ void loop() {
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
   // motor.monitor();
-  
+
   // user communication
   command.run();
 }

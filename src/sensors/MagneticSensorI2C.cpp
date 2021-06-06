@@ -19,21 +19,21 @@ MagneticSensorI2CConfig_s AS5048_I2C = {
 
 // MagneticSensorI2C(uint8_t _chip_address, float _cpr, uint8_t _angle_register_msb)
 //  @param _chip_address  I2C chip address
-//  @param _bit_resolution  bit resolution of the sensor  
+//  @param _bit_resolution  bit resolution of the sensor
 //  @param _angle_register_msb  angle read register
 //  @param _bits_used_msb number of used bits in msb
 MagneticSensorI2C::MagneticSensorI2C(uint8_t _chip_address, int _bit_resolution, uint8_t _angle_register_msb, int _bits_used_msb){
   // chip I2C address
-  chip_address = _chip_address; 
+  chip_address = _chip_address;
   // angle read register of the magnetic sensor
   angle_register_msb = _angle_register_msb;
   // register maximum value (counts per revolution)
   cpr = pow(2, _bit_resolution);
-  
+
   // depending on the sensor architecture there are different combinations of
   // LSB and MSB register used bits
   // AS5600 uses 0..7 LSB and 8..11 MSB
-  // AS5048 uses 0..5 LSB and 6..13 MSB 
+  // AS5048 uses 0..5 LSB and 6..13 MSB
   // used bits in LSB
   lsb_used = _bit_resolution - _bits_used_msb;
   // extraction masks
@@ -49,7 +49,7 @@ MagneticSensorI2C::MagneticSensorI2C(MagneticSensorI2CConfig_s config){
   angle_register_msb = config.angle_register;
   // register maximum value (counts per revolution)
   cpr = pow(2, config.bit_resolution);
-  
+
   int bits_used_msb = config.data_start_bit - 7;
   lsb_used = config.bit_resolution - bits_used_msb;
   // extraction masks
@@ -61,7 +61,7 @@ MagneticSensorI2C::MagneticSensorI2C(MagneticSensorI2CConfig_s config){
 void MagneticSensorI2C::init(TwoWire* _wire){
 
   wire = _wire;
-  
+
   // I2C communication begin
   wire->begin();
 }
@@ -80,7 +80,7 @@ int MagneticSensorI2C::getRawCount(){
 	return (int)MagneticSensorI2C::read(angle_register_msb);
 }
 
-// I2C functions 
+// I2C functions
 /*
 * Read a register from the sensor
 * Takes the address of the register as a uint8_t
@@ -94,14 +94,14 @@ int MagneticSensorI2C::read(uint8_t angle_reg_msb) {
 	wire->beginTransmission(chip_address);
 	wire->write(angle_reg_msb);
   wire->endTransmission(false);
-  
+
   // read the data msb and lsb
 	wire->requestFrom(chip_address, (uint8_t)2);
 	for (byte i=0; i < 2; i++) {
 		readArray[i] = wire->read();
 	}
 
-  // depending on the sensor architecture there are different combinations of 
+  // depending on the sensor architecture there are different combinations of
   // LSB and MSB register used bits
   // AS5600 uses 0..7 LSB and 8..11 MSB
   // AS5048 uses 0..5 LSB and 6..13 MSB
@@ -112,7 +112,7 @@ int MagneticSensorI2C::read(uint8_t angle_reg_msb) {
 
 /*
 * Checks whether other devices have locked the bus. Can clear SDA locks.
-* This should be called before sensor.init() on devices that suffer i2c slaves locking sda 
+* This should be called before sensor.init() on devices that suffer i2c slaves locking sda
 * e.g some stm32 boards with AS5600 chips
 * Takes the sda_pin and scl_pin
 * Returns 0 for OK, 1 for other master and 2 for unfixable sda locked LOW
@@ -121,7 +121,7 @@ int MagneticSensorI2C::checkBus(byte sda_pin, byte scl_pin) {
 
   pinMode(scl_pin, INPUT_PULLUP);
   pinMode(sda_pin, INPUT_PULLUP);
-  delay(250);  
+  delay(250);
 
   if (digitalRead(scl_pin) == LOW) {
     // Someone else has claimed master!");
@@ -140,15 +140,15 @@ int MagneticSensorI2C::checkBus(byte sda_pin, byte scl_pin) {
     }
     pinMode(sda_pin, INPUT);
     delayMicroseconds(20);
-    if (digitalRead(sda_pin) == LOW) { 
+    if (digitalRead(sda_pin) == LOW) {
       // SDA still blocked
-      return 2; 
-    } 
+      return 2;
+    }
     _delay(1000);
   }
   // SDA is clear (HIGH)
   pinMode(sda_pin, INPUT);
   pinMode(scl_pin, INPUT);
-  
-  return 0; 
+
+  return 0;
 }

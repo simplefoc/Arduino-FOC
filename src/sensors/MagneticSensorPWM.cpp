@@ -13,7 +13,7 @@ MagneticSensorPWM::MagneticSensorPWM(uint8_t _pinPWM, int _min_raw_count, int _m
     cpr = _max_raw_count - _min_raw_count;
     min_raw_count = _min_raw_count;
     max_raw_count = _max_raw_count;
-    
+
     // define if the sensor uses interrupts
     is_interrupt_based = false;
 
@@ -23,13 +23,13 @@ MagneticSensorPWM::MagneticSensorPWM(uint8_t _pinPWM, int _min_raw_count, int _m
 
 
 void MagneticSensorPWM::init(){
-    
+
     // initial hardware
     pinMode(pinPWM, INPUT);
     raw_count = getRawCount();
 }
 
-// get current angle (rad) 
+// get current angle (rad)
 float MagneticSensorPWM::getSensorAngle(){
     // raw data from sensor
     raw_count = getRawCount();
@@ -49,7 +49,7 @@ int MagneticSensorPWM::getRawCount(){
 void MagneticSensorPWM::handlePWM() {
     //  unsigned long now_us = ticks();
     unsigned long now_us = _micros();
-    
+
     // if falling edge, calculate the pulse length
     if (!digitalRead(pinPWM)) pulse_length_us = now_us - last_call_us;
 

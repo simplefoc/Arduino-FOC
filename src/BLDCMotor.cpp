@@ -159,7 +159,7 @@ int BLDCMotor::alignSensor() {
     // find natural direction
     // move one electrical revolution forward
     for (int i = 0; i <=500; i++ ) {
-      float angle = _3PI_2 + _2PI * i / 500.0;
+      float angle = _3PI_2 + _2PI * i / 500.0f;
       setPhaseVoltage(voltage_sensor_align, 0,  angle);
       _delay(2);
     }
@@ -167,7 +167,7 @@ int BLDCMotor::alignSensor() {
     float mid_angle = sensor->updateSensor();
     // move one electrical revolution backwards
     for (int i = 500; i >=0; i-- ) {
-      float angle = _3PI_2 + _2PI * i / 500.0 ;
+      float angle = _3PI_2 + _2PI * i / 500.0f ;
       setPhaseVoltage(voltage_sensor_align, 0,  angle);
       _delay(2);
     }
@@ -188,7 +188,7 @@ int BLDCMotor::alignSensor() {
     // check pole pair number
     if(monitor_port) monitor_port->print(F("MOT: PP check: "));
     float moved =  fabs(mid_angle - end_angle);
-    if( fabs(moved*pole_pairs - _2PI) > 0.5 ) { // 0.5 is arbitrary number it can be lower or higher!
+    if( fabs(moved*pole_pairs - _2PI) > 0.5f ) { // 0.5f is arbitrary number it can be lower or higher!
       if(monitor_port) monitor_port->print(F("fail - estimated pp:"));
       if(monitor_port) monitor_port->println(_2PI/moved,4);
     }else if(monitor_port) monitor_port->println(F("OK!"));
@@ -227,7 +227,7 @@ int BLDCMotor::absoluteZeroSearch() {
   voltage_limit = voltage_sensor_align;
   shaft_angle = 0;
   while(sensor->needsSearch() && shaft_angle < _2PI){
-    angleOpenloop(1.5*_2PI);
+    angleOpenloop(1.5f*_2PI);
     // call important for some sensors not to loose count
     // not needed for the search
     sensor->updateSensor();
@@ -585,9 +585,9 @@ float BLDCMotor::velocityOpenloop(float target_velocity){
   // get current timestamp
   unsigned long now_us = _micros();
   // calculate the sample time from last call
-  float Ts = (now_us - open_loop_timestamp) * 1e-6;
+  float Ts = (now_us - open_loop_timestamp) * 1e-6f;
   // quick fix for strange cases (micros overflow + timestamp not defined)
-  if(Ts <= 0 || Ts > 0.5) Ts = 1e-3;
+  if(Ts <= 0 || Ts > 0.5f) Ts = 1e-3f;
 
   // sensor precision: this calculation is numerically precise since we re-normalize
   //                   the shaft-angle to the range 0-2PI
@@ -618,9 +618,9 @@ float BLDCMotor::angleOpenloop(float target_angle){
   // get current timestamp
   unsigned long now_us = _micros();
   // calculate the sample time from last call
-  float Ts = (now_us - open_loop_timestamp) * 1e-6;
+  float Ts = (now_us - open_loop_timestamp) * 1e-6f;
   // quick fix for strange cases (micros overflow + timestamp not defined)
-  if(Ts <= 0 || Ts > 0.5) Ts = 1e-3;
+  if(Ts <= 0 || Ts > 0.5f) Ts = 1e-3f;
 
   // calculate the necessary angle to move from current position towards target angle
   // with maximal velocity (velocity_limit)

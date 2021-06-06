@@ -93,11 +93,11 @@ void setup() {
 	driver.init();
 	motor.linkDriver(&driver);
 	motor.controller = MotionControlType::velocity;
-	motor.PID_velocity.P = 0.2;
+	motor.PID_velocity.P = 0.2f;
 	motor.PID_velocity.I = 20;
-	motor.PID_velocity.D = 0.001;
+	motor.PID_velocity.D = 0.001f;
 	motor.PID_velocity.output_ramp = 1000;
-	motor.LPF_velocity.Tf = 0.01;
+	motor.LPF_velocity.Tf = 0.01f;
 	motor.voltage_limit = 8;
 	//motor.P_angle.P = 20;
 	motor.init();
@@ -107,9 +107,9 @@ void setup() {
 }
 
 // velocity set point variable
-float target_velocity = 2.0;
+float target_velocity = 2.0f;
 // angle set point variable
-float target_angle = 1.0;
+float target_angle = 1.0f;
 
 
 void motorControl(OSCMessage &msg){

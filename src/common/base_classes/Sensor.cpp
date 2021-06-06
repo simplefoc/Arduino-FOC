@@ -9,7 +9,7 @@ float Sensor::updateSensor() {
     angle_prev_ts = _micros();
     float d_angle = val - angle_prev;
     // if overflow happened track it as full rotation
-    if(abs(d_angle) > (0.8*_2PI) ) full_rotations += ( d_angle > 0 ) ? -1 : 1; 
+    if(abs(d_angle) > (0.8f*_2PI) ) full_rotations += ( d_angle > 0 ) ? -1 : 1; 
     angle_prev = val;
     return getAngle();
 }
@@ -20,9 +20,9 @@ float Sensor::getVelocity() {
     // calculate sample time
     float Ts = (angle_prev_ts - vel_angle_prev_ts)*1e-6;
     // quick fix for strange cases (micros overflow)
-    if(Ts <= 0 || Ts > 0.5) Ts = 1e-3;
+    if(Ts <= 0 || Ts > 0.5f) Ts = 1e-3f;
     // velocity calculation
-    float vel = ( (full_rotations - vel_full_rotations)*_2PI + (angle_prev - vel_angle_prev) ) / Ts;    
+    float vel = ( (float)(full_rotations - vel_full_rotations)*_2PI + (angle_prev - vel_angle_prev) ) / Ts;    
     // save variables for future pass
     vel_angle_prev = angle_prev;
     vel_full_rotations = full_rotations;

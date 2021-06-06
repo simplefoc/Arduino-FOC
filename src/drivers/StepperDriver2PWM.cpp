@@ -27,7 +27,7 @@ StepperDriver2PWM::StepperDriver2PWM(int _pwm1, int _dir1, int _pwm2, int _dir2,
   dir2a = _dir2; // phase 2 direction pin
   // these pins are not used
   dir1b = NOT_SET;
-  dir2b = NOT_SET; 
+  dir2b = NOT_SET;
 
   // enable_pin pin
   enable_pin1 = en1;
@@ -59,7 +59,7 @@ void StepperDriver2PWM::disable()
 
 }
 
-// init hardware pins   
+// init hardware pins
 int StepperDriver2PWM::init() {
   // PWM pins
   pinMode(pwm1, OUTPUT);
@@ -83,22 +83,22 @@ int StepperDriver2PWM::init() {
 
 
 // Set voltage to the pwm pin
-void StepperDriver2PWM::setPwm(float Ua, float Ub) {  
-  float duty_cycle1(0.0),duty_cycle2(0.0);
+void StepperDriver2PWM::setPwm(float Ua, float Ub) {
+  float duty_cycle1(0.0f),duty_cycle2(0.0f);
   // limit the voltage in driver
   Ua = _constrain(Ua, -voltage_limit, voltage_limit);
   Ub = _constrain(Ub, -voltage_limit, voltage_limit);
   // hardware specific writing
   duty_cycle1 = _constrain(abs(Ua)/voltage_power_supply,0.0,1.0);
   duty_cycle2 = _constrain(abs(Ub)/voltage_power_supply,0.0,1.0);
-  
+
   // phase 1 direction
   digitalWrite(dir1a, Ua >= 0 ? LOW : HIGH);
   if( _isset(dir1b) ) digitalWrite(dir1b, Ua <= 0 ? LOW : HIGH);
   // phase 2 direction
   digitalWrite(dir2a, Ub >= 0 ? LOW : HIGH);
   if( _isset(dir2b) ) digitalWrite(dir2b, Ub <= 0 ? LOW : HIGH);
-  
+
   // write to hardware
   _writeDutyCycle2PWM(duty_cycle1, duty_cycle2, pwm1, pwm2);
 }

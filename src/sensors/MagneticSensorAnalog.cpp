@@ -6,7 +6,7 @@
  * @param _max_raw_count  the largest value read.  whilst you might expect it to be 2^10 = 1023 it is often ~ 1020. Note: For ESP32 (with 12bit ADC the value will be nearer 4096)
  */
 MagneticSensorAnalog::MagneticSensorAnalog(uint8_t _pinAnalog, int _min_raw_count, int _max_raw_count){
-  
+
   pinAnalog = _pinAnalog;
 
   cpr = _max_raw_count - _min_raw_count;
@@ -23,7 +23,7 @@ MagneticSensorAnalog::MagneticSensorAnalog(uint8_t _pinAnalog, int _min_raw_coun
 
 
 void MagneticSensorAnalog::init(){
-	raw_count = getRawCount();  
+	raw_count = getRawCount();
 }
 
 //  Shaft angle calculation
