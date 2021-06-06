@@ -1,9 +1,7 @@
 #pragma once
-
 #include <Arduino.h>
 
 #ifdef _SAMD21_
-
 #include "samd_mcu.h"
 
 class SAMDAdvancedSPI

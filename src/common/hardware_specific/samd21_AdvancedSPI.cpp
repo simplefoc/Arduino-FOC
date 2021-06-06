@@ -1,7 +1,4 @@
 #include "samd21_AdvancedSPI.h"
-
-#ifdef _SAMD21_
-
 #include <wiring_private.h>
 
 
@@ -198,6 +195,19 @@ int SAMDAdvancedSPI::init(SercomSpiClockMode spi_mode, uint32_t clock_speed)
     
 }
 
+byte SAMDAdvancedSPI::spiCalcEvenParity(word value)
+{
+    byte cnt = 0;
+    byte i;
+
+    for (i = 0; i < 16; i++)
+    {
+        if (value & 0x1) cnt++;
+        value >>= 1;
+    }
+    return cnt & 0x1;
+}
+
 
 uint8_t SAMDAdvancedSPI::transfer(uint8_t data)
 {
@@ -241,5 +251,3 @@ void SAMDAdvancedSPI::close(){
     //Wait both bits Software Reset from CTRLA and SYNCBUSY are equal to 0
     while(sercomCfg.sercom->SPI.CTRLA.bit.SWRST || sercomCfg.sercom->SPI.SYNCBUSY.bit.SWRST);
 }
-
-#endif

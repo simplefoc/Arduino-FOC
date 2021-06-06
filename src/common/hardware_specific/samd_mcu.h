@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Arduino.h>
 
 
@@ -177,15 +178,35 @@ static char buffer[1000];
 #define debugPrintln(arg) ;
 #endif
 
+//SPI
 SercomSpiClockMode from_SPI_MODE(int spi_mode);
 
 
+//EVSYS
 extern bool g_EVSYSChannelInitialized[];
 int initEVSYS(uint8_t evsysChannel, uint16_t EVSYS_ID_USER, uint16_t EVSYS_ID_GEN, uint16_t EVSYS_CHANNEL_PATH, uint16_t EVSYS_CHANNEL_EDGSEL, bool force = false);
 
 
+//DMA
 extern bool g_DMACChannelInitialized[];
 void initDMAC();
-int initDMAChannel(uint8_t channel, DMAC_CHINTENSET_Type chintset, DMAC_CHCTRLB_Type chctrlb, const DmacDescriptor & descriptor, void (*interrupt_handler)(volatile DMAC_CHINTFLAG_Type &, volatile DMAC_CHCTRLA_Type &), bool force = false);
+class DMACInterruptCallback
+{
+    public:
+    virtual void operator()(volatile DMAC_CHINTFLAG_Type &, volatile DMAC_CHCTRLA_Type &) = 0;
+};
+
+int initDMAChannel(uint8_t channel, DMAC_CHINTENSET_Type chintset, DMAC_CHCTRLB_Type chctrlb, const DmacDescriptor & descriptor, DMACInterruptCallback * interrupt_handler, bool force = false);
 void trigDMACChannel(uint8_t channel);
 uint32_t computeDSTADDR(uint8_t * startAddress, uint32_t STEPSEL, uint32_t STEPSIZE, uint32_t BEATSIZE, uint32_t BTCNT);
+
+
+//TC/TCC
+#define MAX_HANDLERS 12
+class TccInterruptCallback
+{
+    public:
+    virtual void operator()(Tcc * tcc) = 0;
+};
+
+Tcc * addTCCHandler(uint8_t tccn, TccInterruptCallback * interrupt_handler);

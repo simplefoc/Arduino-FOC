@@ -231,11 +231,11 @@ void initDMAC()
     NVIC_EnableIRQ( DMAC_IRQn ) ;
 }
 
-bool g_DMACChannelInitialized[] = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false};
+bool g_DMACChannelInitialized[] = {false, false, false, false, false, false, false, false, false, false, false, false};
 
-static void (*DMAC_Handlers[12])(volatile DMAC_CHINTFLAG_Type & flags, volatile DMAC_CHCTRLA_Type & chctrla);
+static DMACInterruptCallback * DMAC_Handlers[12] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 
-int initDMAChannel(uint8_t channel, DMAC_CHINTENSET_Type chintset, DMAC_CHCTRLB_Type chctrlb, const DmacDescriptor & descriptor, void (*interrupt_handler)(volatile DMAC_CHINTFLAG_Type &, volatile DMAC_CHCTRLA_Type &), bool force) 
+int initDMAChannel(uint8_t channel, DMAC_CHINTENSET_Type chintset, DMAC_CHCTRLB_Type chctrlb, const DmacDescriptor & descriptor, DMACInterruptCallback * interrupt_handler, bool force) 
 {
 
     if(channel > 11)
@@ -297,16 +297,66 @@ void trigDMACChannel(uint8_t channel)
 }
 
 
-void DMAC_Handler() __attribute__((weak));
 void DMAC_Handler() {
 
   DMAC->CHID.bit.ID = DMAC->INTPEND.bit.ID;
 
-  void (*interrupt_handler)(volatile DMAC_CHINTFLAG_Type &, volatile DMAC_CHCTRLA_Type &) = DMAC_Handlers[DMAC->CHID.bit.ID];
+  DMACInterruptCallback *interrupt_handler = DMAC_Handlers[DMAC->CHID.bit.ID];
 
   if(interrupt_handler != nullptr)
-    interrupt_handler(DMAC->CHINTFLAG, DMAC->CHCTRLA);
-
-  
+    (*interrupt_handler)(DMAC->CHINTFLAG, DMAC->CHCTRLA);
 }
+
+typedef struct _InerruptHandlers
+{
+    uint8_t count = 0;
+    TccInterruptCallback* handlers[MAX_HANDLERS];
+} InerruptHandlers;
+
+static InerruptHandlers TCC_Handlers[TCC_INST_NUM];
+
+
+Tcc * addTCCHandler(uint8_t tccn, TccInterruptCallback * interrupt_handler)
+{
+
+    if(interrupt_handler == nullptr)
+    {
+        debugPrintln("initTCCHandler() Error: illegal nullptr handler");
+        return nullptr;
+    }
+
+    if(tccn >= TCC_INST_NUM)
+    {
+        debugPrintf("initTCCHandler() Error: tccn %d is out of bounds (only &d TCC units)", tccn, TCC_INST_NUM);
+        return nullptr;
+    }
+
+    if(TCC_Handlers[tccn].count < MAX_HANDLERS)
+    {
+
+        TCC_Handlers[tccn].handlers[TCC_Handlers[0].count] = interrupt_handler;
+        TCC_Handlers[tccn].count++;
+        switch(tccn)
+        {
+            case 0: if(TCC_Handlers[tccn].count == 0) NVIC_EnableIRQ( TCC0_IRQn ) ; return TCC0;
+            case 1: if(TCC_Handlers[tccn].count == 0) NVIC_EnableIRQ( TCC1_IRQn ) ; return TCC1;
+            case 2: if(TCC_Handlers[tccn].count == 0) NVIC_EnableIRQ( TCC2_IRQn ) ; return TCC2;
+            default: return nullptr;
+        }
+        return 0;
+    }
+    // else
+    debugPrintf("initTCCHandler() Error: maximum number of handlers (%d) reached for TCC (%d)", MAX_HANDLERS, tccn);
+    return nullptr;
+}
+
+#define TCCN_Handler(tccn, tcc)\ 
+    for(int i = 0; i < TCC_Handlers[tccn].count; i++)\
+        (*TCC_Handlers[tccn].handlers[i])(tcc);
+
+
+void TCC0_Handler() { TCCN_Handler(0, TCC0); }
+void TCC1_Handler() { TCCN_Handler(1, TCC1); }
+void TCC2_Handler() { TCCN_Handler(2, TCC2); }
+
 #endif //_SAMD21_

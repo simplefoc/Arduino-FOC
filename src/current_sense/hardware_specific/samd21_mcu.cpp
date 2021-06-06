@@ -289,10 +289,7 @@ DmacDescriptor descriptors[20] __attribute__ ((aligned (16)));
 
 void dmac_adc_Handler(volatile DMAC_CHINTFLAG_Type & flags, volatile DMAC_CHCTRLA_Type & chctrla) 
 {
-  chctrla.bit.ENABLE = 0b1;
-  flags.bit.TCMPL = 0b1;
-  ADC->INPUTCTRL.bit.INPUTOFFSET = 0;
-  instance.dma_i++;
+
 }
 
 void SAMDCurrentSenseADCDMA::initDMAChannel() {
@@ -337,8 +334,16 @@ void SAMDCurrentSenseADCDMA::initDMAChannel() {
 
 
   
-  ::initDMAChannel(channelDMA, chinset, chctrlb, descriptors[firstAIN], dmac_adc_Handler);
+  ::initDMAChannel(channelDMA, chinset, chctrlb, descriptors[firstAIN], this);
   
+}
+
+void SAMDCurrentSenseADCDMA::operator()(volatile DMAC_CHINTFLAG_Type & flags, volatile DMAC_CHCTRLA_Type & chctrla) 
+{
+  chctrla.bit.ENABLE = 0b1;
+  flags.bit.TCMPL = 0b1;
+  ADC->INPUTCTRL.bit.INPUTOFFSET = 0;
+  dma_i++;
 }
 
 int SAMDCurrentSenseADCDMA::initEVSYS()
