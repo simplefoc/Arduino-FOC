@@ -95,8 +95,6 @@ void MagneticSensorPWM::enableInterrupt(void (*doPWM)()){
     // declare it's interrupt based
     is_interrupt_based  = true;
 
-    #if !defined(__AVR_ATmega328P__) && !defined(__AVR_ATmega168__) && !defined(__AVR_ATmega328PB__)  && !defined(__AVR_ATmega2560__) // if mcu is not atmega328 && if mcu is not atmega2560
-        // enable interrupts on pwm input pin
-        attachInterrupt(digitalPinToInterrupt(pinPWM), doPWM, CHANGE);
-    #endif
+    // enable interrupts on pwm input pin
+    attachInterrupt(digitalPinToInterrupt(pinPWM), doPWM, CHANGE);
 }
