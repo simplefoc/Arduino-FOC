@@ -20,9 +20,9 @@ BLDCDriver3PWM::BLDCDriver3PWM(int phA, int phB, int phC, int en1, int en2, int 
 // enable motor driver
 void  BLDCDriver3PWM::enable(){
     // enable_pin the driver - if enable_pin pin available
-    if ( _isset(enableA_pin) ) digitalWrite(enableA_pin, HIGH);
-    if ( _isset(enableB_pin) ) digitalWrite(enableB_pin, HIGH);
-    if ( _isset(enableC_pin) ) digitalWrite(enableC_pin, HIGH);
+    if ( _isset(enableA_pin) ) digitalWrite(enableA_pin, enable_active_high);
+    if ( _isset(enableB_pin) ) digitalWrite(enableB_pin, enable_active_high);
+    if ( _isset(enableC_pin) ) digitalWrite(enableC_pin, enable_active_high);
     // set zero to PWM
     setPwm(0,0,0);
 }
@@ -33,9 +33,9 @@ void BLDCDriver3PWM::disable()
   // set zero to PWM
   setPwm(0, 0, 0);
   // disable the driver - if enable_pin pin available
-  if ( _isset(enableA_pin) ) digitalWrite(enableA_pin, LOW);
-  if ( _isset(enableB_pin) ) digitalWrite(enableB_pin, LOW);
-  if ( _isset(enableC_pin) ) digitalWrite(enableC_pin, LOW);
+  if ( _isset(enableA_pin) ) digitalWrite(enableA_pin, !enable_active_high);
+  if ( _isset(enableB_pin) ) digitalWrite(enableB_pin, !enable_active_high);
+  if ( _isset(enableC_pin) ) digitalWrite(enableC_pin, !enable_active_high);
 
 }
 
