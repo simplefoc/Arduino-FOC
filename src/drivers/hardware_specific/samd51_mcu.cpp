@@ -31,8 +31,8 @@ struct wo_association WO_associations[] = {
 		{ PORTA,   9, TC0_CH1, 		1, TCC0_CH1,     	1, TCC1_CH1, 		5},
 		{ PORTA,  10, TC1_CH0, 		0, TCC0_CH2,     	2, TCC1_CH2, 		6},
 		{ PORTA,  11, TC1_CH1, 		1, TCC0_CH3,     	3, TCC1_CH3, 		7},
-		{ PORTB,  10, TC5_CH0, 		0, TCC0_CH4, 		4, TCC1_CH0, 		0}, //?
-		{ PORTB,  11, TC5_CH1, 		1, TCC0_CH5,  		5, TCC1_CH1, 		1}, //?
+		{ PORTB,  10, TC5_CH0, 		0, TCC0_CH4, 		4, TCC1_CH0, 		0},
+		{ PORTB,  11, TC5_CH1, 		1, TCC0_CH5,  		5, TCC1_CH1, 		1},
 		{ PORTB,  12, TC4_CH0, 		0, TCC3_CH0, 		0, TCC0_CH0, 		0},
 		{ PORTB,  13, TC4_CH1, 		1, TCC3_CH1, 		1, TCC0_CH1, 		1},
 		{ PORTB,  14, TC5_CH0, 		0, TCC4_CH0, 		0, TCC0_CH2, 		2},
@@ -40,18 +40,18 @@ struct wo_association WO_associations[] = {
 		{ PORTD,   8, NOT_ON_TIMER,	0, TCC0_CH1,     	1, NOT_ON_TIMER, 	0},
 		{ PORTD,   9, NOT_ON_TIMER,	0, TCC0_CH2,     	2, NOT_ON_TIMER, 	0},
 		{ PORTD,  10, NOT_ON_TIMER,	0, TCC0_CH3,     	3, NOT_ON_TIMER, 	0},
-		{ PORTD,  11, NOT_ON_TIMER,	0, TCC0_CH4, 		4, NOT_ON_TIMER, 	0}, //?
-		{ PORTD,  12, NOT_ON_TIMER,	0, TCC0_CH5,  		5, NOT_ON_TIMER, 	0}, //?
+		{ PORTD,  11, NOT_ON_TIMER,	0, TCC0_CH4, 		4, NOT_ON_TIMER, 	0},
+		{ PORTD,  12, NOT_ON_TIMER,	0, TCC0_CH5,  		5, NOT_ON_TIMER, 	0},
 		{ PORTC,  10, NOT_ON_TIMER,	0, TCC0_CH0,     	0, TCC1_CH0, 		4},
 		{ PORTC,  11, NOT_ON_TIMER,	0, TCC0_CH1,     	1, TCC1_CH1, 		5},
 		{ PORTC,  12, NOT_ON_TIMER,	0, TCC0_CH2, 		2, TCC1_CH2, 		6},
 		{ PORTC,  13, NOT_ON_TIMER,	0, TCC0_CH3, 		3, TCC1_CH3, 		7},
-		{ PORTC,  14, NOT_ON_TIMER,	0, TCC0_CH4, 		4, TCC1_CH0, 		0}, //?
-		{ PORTC,  15, NOT_ON_TIMER,	0, TCC0_CH5, 		5, TCC1_CH1, 		1}, //?
+		{ PORTC,  14, NOT_ON_TIMER,	0, TCC0_CH4, 		4, TCC1_CH0, 		0},
+		{ PORTC,  15, NOT_ON_TIMER,	0, TCC0_CH5, 		5, TCC1_CH1, 		1},
 		{ PORTA,  12, TC2_CH0,		0, TCC0_CH0, 		6, TCC1_CH2, 		2},
 		{ PORTA,  13, TC2_CH1,		1, TCC0_CH1, 		7, TCC1_CH3, 		3},
-		{ PORTA,  14, TC3_CH0,		0, TCC2_CH0, 		0, TCC1_CH2, 		2}, //?
-		{ PORTA,  15, TC3_CH1,		1, TCC1_CH1, 		1, TCC1_CH3, 		3}, //?
+		{ PORTA,  14, TC3_CH0,		0, TCC2_CH0, 		0, TCC1_CH2, 		2},
+		{ PORTA,  15, TC3_CH1,		1, TCC1_CH1, 		1, TCC1_CH3, 		3},
 		{ PORTA,  16, TC2_CH0,		0, TCC1_CH0, 		0, TCC0_CH4, 		4},
 		{ PORTA,  17, TC2_CH1,		1, TCC1_CH1, 		1, TCC0_CH5, 		5},
 		{ PORTA,  18, TC3_CH0,		0, TCC1_CH2, 		2, TCC0_CH0, 		6},
