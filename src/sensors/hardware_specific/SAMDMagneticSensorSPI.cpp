@@ -2,66 +2,100 @@
 #include "../../common/hardware_specific/samd_mcu.h"
 
 SAMDMagneticSensorSPI::SAMDMagneticSensorSPI(MagneticSensorSPIConfig_s config, int8_t tccN, int8_t dmaTX, int8_t dmaRX) 
-: MagneticSensor(1 << config.bit_resolution), config(config), tccN(tccN), dmaTX(dmaTX), dmaRX(dmaRX), SPItransmitBuffer{0xFF, 0xFF}
+: MagneticSensor(1 << config.bit_resolution), config(config), tccN(tccN), dmaTX(dmaTX), dmaRX(dmaRX), pinLow(false)
 {
-    if(tccN > 0)
-    {
-      Tcc * tcc = addTCCHandler(tccN, this);
-      tcc->INTENSET.bit.OVF = 0b1;
-    }
-}
-
-void SAMDMagneticSensorSPI::tccHandler(Tcc * tcc)
-{
-
+    
 }
 
 void SAMDMagneticSensorSPI::operator()(Tcc * tcc)
 {
-    digitalWrite(this->spi->pinSS, LOW);
-    
-    trigDMACChannel(dmaTX);
-    DMAC->CHID.reg = DMAC_CHID_ID(dmaTX);
-    DMAC->CHCTRLA.bit.ENABLE = 0b1;
-    DMAC->CHID.reg = DMAC_CHID_ID(dmaRX);
-    DMAC->CHCTRLA.bit.ENABLE = 0b1;
-
     tcc->INTFLAG.bit.OVF = 0b1;
+    // debugPrintln("\n\r*low*");
+    if(!pinLow)
+    {
+      pinLow = true;
+      digitalWrite(this->spi->pinSS, LOW);
+      trigDMACChannel(dmaTX);    
+      DMAC->CHID.bit.ID = dmaTX;
+      DMAC->CHCTRLA.bit.ENABLE = 0b1;
+      DMAC->CHID.bit.ID = dmaRX;
+      DMAC->CHCTRLA.bit.ENABLE = 0b1;
+
+    }
+
 }
 
-void SAMDMagneticSensorSPI::operator()(volatile DMAC_CHINTFLAG_Type &, volatile DMAC_CHCTRLA_Type &)
+void SAMDMagneticSensorSPI::operator()(uint8_t channel, volatile DMAC_CHINTFLAG_Type & chintflag, volatile DMAC_CHCTRLA_Type & chctrla)
 {
-  if(DMAC->CHID.bit.ID == dmaTX)
-    DMAC->CHCTRLA.bit.ENABLE = 0b0;
+  chintflag.bit.TCMPL = 0b1;
 
-  if(DMAC->CHID.bit.ID == dmaRX)
+  if(pinLow)
   {
-    DMAC->CHCTRLA.bit.ENABLE = 0b0;
-    digitalWrite(this->spi->pinSS, HIGH);
+    chctrla.bit.ENABLE = 0b0;
+
+    if(channel == dmaRX)
+    {
+      digitalWrite(this->spi->pinSS, HIGH);
+      pinLow = false;
+      last_timestamp_us = _micros();
+    }
+
   }
 }
 
-void SAMDMagneticSensorSPI::init(SAMDAdvancedSPI* _spi)
+word SAMDMagneticSensorSPI::makeSPICommand()
 {
-
-    spi = _spi;
-    spi->init(from_SPI_MODE(config.spi_mode), config.clock_speed);
-    MagneticSensor::init();
-    if(tccN > 0)
-    {
-      initDMA();
-    }
-}
-
-// function reading the raw counter of the magnetic sensor
-uint32_t SAMDMagneticSensorSPI::getRawCount(uint64_t & timestamp_us){
   word command = config.angle_register;
 
   if (config.command_rw_bit > 0) 
     command |= (1 << config.command_rw_bit);
 
   if (config.command_parity_bit > 0) 
-  	command |= ((word)spi->spiCalcEvenParity(command) << config.command_parity_bit); //Add a parity bit on the the MSB
+    command |= ((word)spi->spiCalcEvenParity(command) << config.command_parity_bit); //Add a parity bit on the the MSB
+
+  return command;
+}
+
+word SAMDMagneticSensorSPI::extractResult(word register_value)
+{
+  register_value = register_value >> (1 + config.data_start_bit - config.bit_resolution);  //this should shift data to the rightmost bits of the word
+
+  const static word data_mask = 0xFFFF >> (16 - config.bit_resolution);
+
+  return register_value & data_mask;  // Return the data, stripping the non data (e.g parity) bits
+
+}
+
+void SAMDMagneticSensorSPI::init(SAMDAdvancedSPI* _spi)
+{
+
+  spi = _spi;
+  command = makeSPICommand();
+  spi->init(from_SPI_MODE(config.spi_mode), config.clock_speed);
+  MagneticSensor::init();
+  if(tccN >= 0)
+  {
+    for(int i = 0; i < bufferSize; i++)
+      transmitBuffer[i] = command;
+
+    ::initDMAC();
+    initDMA();
+    Tcc * tcc = addTCCHandler(tccN, this);
+    tcc->INTENSET.bit.OVF = 0b1;
+  }
+}
+
+// function reading the raw counter of the magnetic sensor
+uint32_t SAMDMagneticSensorSPI::getRawCount(uint64_t & timestamp_us)
+{
+  if(tccN >= 0)
+  {
+    union { uint16_t val; struct { uint8_t lsb; uint8_t msb; }; } t;
+    t.msb = receiveBuffer[0];
+    t.lsb = receiveBuffer[1];
+    timestamp_us = last_timestamp_us;
+    return (uint32_t)extractResult(t.val);
+  }
 
   spi->transfer16(command);
   timestamp_us = _micros();
@@ -69,11 +103,7 @@ uint32_t SAMDMagneticSensorSPI::getRawCount(uint64_t & timestamp_us){
 
   word register_value = spi->transfer16(command);
   
-  register_value = register_value >> (1 + config.data_start_bit - config.bit_resolution);  //this should shift data to the rightmost bits of the word
-
-  const static word data_mask = 0xFFFF >> (16 - config.bit_resolution);
-
-  return register_value & data_mask;  // Return the data, stripping the non data (e.g parity) bits
+  return extractResult(register_value);
 }
 
 
@@ -108,9 +138,9 @@ void SAMDMagneticSensorSPI::initDMA() {
   btctrl_write.bit.STEPSIZE = DMAC_BTCTRL_STEPSIZE_X1_Val;          /*!< bit: 13..15  Address Increment Step Size        */
 
   SPIdescriptors[0].DESCADDR.reg = 0; //next descriptor
-  SPIdescriptors[0].BTCNT.reg    = SPIbufferSize;
+  SPIdescriptors[0].BTCNT.reg    = bufferSize;
   SPIdescriptors[0].DSTADDR.reg  = (uint32_t)&spi->sercomCfg.sercom->SPI.DATA.reg;
-  SPIdescriptors[0].SRCADDR.reg  = ((uint32_t)&SPItransmitBuffer[0]) + SPIbufferSize;
+  SPIdescriptors[0].SRCADDR.reg  = ((uint32_t)&transmitBuffer[0]) + bufferSize;
 
 
   ::initDMAChannel(dmaTX, chinset, chctrlb, SPIdescriptors[0], this);
@@ -141,10 +171,10 @@ void SAMDMagneticSensorSPI::initDMA() {
   btctrl_read.bit.STEPSIZE = DMAC_BTCTRL_STEPSIZE_X1_Val;          /*!< bit: 13..15  Address Increment Step Size        */
 
   SPIdescriptors[1].DESCADDR.reg = 0;
-  SPIdescriptors[1].BTCNT.reg    = SPIbufferSize;
-  SPIdescriptors[1].DSTADDR.reg  = ((uint32_t)&SPIreceiveBuffer[0]) + SPIbufferSize;
+  SPIdescriptors[1].BTCNT.reg    = bufferSize;
+  SPIdescriptors[1].DSTADDR.reg  = ((uint32_t)&receiveBuffer[0]) + bufferSize;
   SPIdescriptors[1].SRCADDR.reg  = (uint32_t) &spi->sercomCfg.sercom->SPI.DATA.reg;
 
-  ::initDMAChannel(dmaTX, chinset, chctrlb, SPIdescriptors[1], this);
+  ::initDMAChannel(dmaRX, chinset, chctrlb, SPIdescriptors[1], this);
 
 }

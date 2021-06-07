@@ -132,7 +132,7 @@ int initEVSYS(uint8_t evsysChannel, uint16_t EVSYS_ID_USER, uint16_t EVSYS_ID_GE
 
     if(g_EVSYSChannelInitialized[evsysChannel] && !force)
     {
-        debugPrintf("initEVSYS() channel %d is already initialized", evsysChannel);
+        debugPrintf_P(PSTR("initEVSYS() channel %d is already initialized"), evsysChannel);
         return -1;
     }
 
@@ -145,24 +145,24 @@ int initEVSYS(uint8_t evsysChannel, uint16_t EVSYS_ID_USER, uint16_t EVSYS_ID_GE
     
     if(evsysChannel > EVSYS_GCLK_ID_SIZE - 1)
     {
-        debugPrintf("initEVSYS() channel %d out of bounds (max %d)", evsysChannel, EVSYS_GCLK_ID_SIZE);
+        debugPrintf_P(PSTR("initEVSYS() channel %d out of bounds (max %d)"), evsysChannel, EVSYS_GCLK_ID_SIZE);
         return -1;
     }
     if(EVSYS_ID_USER > EVSYS_ID_USER_PTC_STCONV)
     {
-        debugPrintf("initEVSYS() EVSYS_ID_USER %d out of bounds (max %d)", EVSYS_ID_USER, EVSYS_ID_USER_PTC_STCONV);
+        debugPrintf_P(PSTR("initEVSYS() EVSYS_ID_USER %d out of bounds (max %d)"), EVSYS_ID_USER, EVSYS_ID_USER_PTC_STCONV);
         return -1;
     }
     if(EVSYS_ID_GEN > EVSYS_ID_GEN_PTC_WCOMP)
     {
-        debugPrintf("initEVSYS() EVSYS_ID_GEN %d out of bounds (max %d)", EVSYS_ID_GEN, EVSYS_ID_GEN_PTC_WCOMP);
+        debugPrintf_P(PSTR("initEVSYS() EVSYS_ID_GEN %d out of bounds (max %d)"), EVSYS_ID_GEN, EVSYS_ID_GEN_PTC_WCOMP);
         return -1;
     }
 
     if(EVSYS_CHANNEL_PATH == EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val && EVSYS_CHANNEL_EDGSEL != EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val)
     {
         EVSYS_CHANNEL_EDGSEL = EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val;
-        debugPrintf("initEVSYS() warning, channel %d is configured with asynchronous path, forcing EDGSEL to 'NO_EVT_OUTPUT', note that interrupts aren't supported with that path", evsysChannel);
+        debugPrintf_P(PSTR("initEVSYS() warning, channel %d is configured with asynchronous path, forcing EDGSEL to 'NO_EVT_OUTPUT', note that interrupts aren't supported with that path"), evsysChannel);
     }
 
     g_EVSYSChannelInitialized[evsysChannel] = true;
@@ -201,6 +201,15 @@ static DmacDescriptor descriptor_section[12] __attribute__ ((aligned (16)));
 static volatile DmacDescriptor write_back[12] __attribute__ ((aligned (16)));
 void initDMAC()
 {
+    static bool initialized = false;
+
+    if(initialized)
+    {
+        debugPrintln(F("initDMA() already initialized, ignoring..."));
+        return;
+    }
+    initialized = true;
+
     // probably on by default
     PM->AHBMASK.reg |= PM_AHBMASK_DMAC ;
     PM->APBBMASK.reg |= PM_APBBMASK_DMAC ;
@@ -240,15 +249,16 @@ int initDMAChannel(uint8_t channel, DMAC_CHINTENSET_Type chintset, DMAC_CHCTRLB_
 
     if(channel > 11)
     {
-        debugPrintf("initDMAChannel() channel %d out of bounds (max %d)", channel, 12);
+        debugPrintf_P(PSTR("FATAL: initDMAChannel() channel %d out of bounds (max %d)\n\r"), channel, 12);
         return -1;
     }
 
     if(g_DMACChannelInitialized[channel] && !force)
     {
-        debugPrintf("initDMAChannel() channel %d is already initialized", channel);
+        debugPrintf_P(PSTR("FATAL: initDMAChannel() channel %d is already initialized\n\r"), channel);
         return -1;
     }
+
 
     g_DMACChannelInitialized[channel] = true;
     //select the channel
@@ -267,8 +277,9 @@ int initDMAChannel(uint8_t channel, DMAC_CHINTENSET_Type chintset, DMAC_CHCTRLB_
 
     // start channel
     DMAC->CHCTRLA.bit.ENABLE = 0b1;
+    debugPrintf_P(PSTR("initDMAChannel() inittializing channel %d\n\r"), channel);
 
-
+    
     return 0;
 }
 
@@ -292,19 +303,26 @@ void trigDMACChannel(uint8_t channel)
   case 11: DMAC->SWTRIGCTRL.bit.SWTRIG11 = 0b1; break;
 
   default:
-    debugPrintf("Error in adcToDMATransfer() [DMAC] Bad channel number %d");
+    debugPrintf_P(PSTR("Error in adcToDMATransfer() [DMAC] Bad channel number %d"), channel);
   }
 }
 
 
 void DMAC_Handler() {
-
-  DMAC->CHID.bit.ID = DMAC->INTPEND.bit.ID;
+  uint8_t channel = DMAC->INTPEND.bit.ID;
+  DMAC->CHID.bit.ID = channel;
+  
 
   DMACInterruptCallback *interrupt_handler = DMAC_Handlers[DMAC->CHID.bit.ID];
 
   if(interrupt_handler != nullptr)
-    (*interrupt_handler)(DMAC->CHINTFLAG, DMAC->CHCTRLA);
+    (*interrupt_handler)(channel, DMAC->CHINTFLAG, DMAC->CHCTRLA);
+  else
+  {
+    debugPrintf_P(PSTR("DMAC_Handler() %d null handler\n\r"),  channel);
+    DMAC->CHINTFLAG.reg = DMAC_CHINTFLAG_MASK; //clear all flag so we don't get trapped here
+
+  }
 }
 
 typedef struct _InerruptHandlers
@@ -321,13 +339,13 @@ Tcc * addTCCHandler(uint8_t tccn, TccInterruptCallback * interrupt_handler)
 
     if(interrupt_handler == nullptr)
     {
-        debugPrintln("initTCCHandler() Error: illegal nullptr handler");
+        debugPrintln(F("initTCCHandler() Error: illegal nullptr handler"));
         return nullptr;
     }
 
     if(tccn >= TCC_INST_NUM)
     {
-        debugPrintf("initTCCHandler() Error: tccn %d is out of bounds (only &d TCC units)", tccn, TCC_INST_NUM);
+        debugPrintf_P(PSTR("initTCCHandler() Error: tccn %d is out of bounds (only %d TCC units)"), tccn, TCC_INST_NUM);
         return nullptr;
     }
 
@@ -335,22 +353,23 @@ Tcc * addTCCHandler(uint8_t tccn, TccInterruptCallback * interrupt_handler)
     {
 
         TCC_Handlers[tccn].handlers[TCC_Handlers[0].count] = interrupt_handler;
+        bool doNVIC = TCC_Handlers[tccn].count == 0;
         TCC_Handlers[tccn].count++;
         switch(tccn)
         {
-            case 0: if(TCC_Handlers[tccn].count == 0) NVIC_EnableIRQ( TCC0_IRQn ) ; return TCC0;
-            case 1: if(TCC_Handlers[tccn].count == 0) NVIC_EnableIRQ( TCC1_IRQn ) ; return TCC1;
-            case 2: if(TCC_Handlers[tccn].count == 0) NVIC_EnableIRQ( TCC2_IRQn ) ; return TCC2;
+            case 0: if(doNVIC) NVIC_EnableIRQ( TCC0_IRQn ) ; return TCC0;
+            case 1: if(doNVIC) NVIC_EnableIRQ( TCC1_IRQn ) ; return TCC1;
+            case 2: if(doNVIC) NVIC_EnableIRQ( TCC2_IRQn ) ; return TCC2;
             default: return nullptr;
         }
         return 0;
     }
     // else
-    debugPrintf("initTCCHandler() Error: maximum number of handlers (%d) reached for TCC (%d)", MAX_HANDLERS, tccn);
+    debugPrintf_P(PSTR("initTCCHandler() Error: maximum number of handlers (%d) reached for TCC (%d)"), MAX_HANDLERS, tccn);
     return nullptr;
 }
 
-#define TCCN_Handler(tccn, tcc)\ 
+#define TCCN_Handler(tccn, tcc) \
     for(int i = 0; i < TCC_Handlers[tccn].count; i++)\
         (*TCC_Handlers[tccn].handlers[i])(tcc);
 

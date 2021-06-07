@@ -47,7 +47,7 @@ const SamdPinDefinition * getSamdPinDefinition(int arduinoPin)
     }
     if((uint32_t)arduinoPin > (PINS_COUNT-1))
     {
-        debugPrintf("getSamdPinDefinition() : arduino pin %d above %d", arduinoPin, PINS_COUNT-1);
+        debugPrintf_P(PSTR("getSamdPinDefinition() : arduino pin %d above %d"), arduinoPin, PINS_COUNT-1);
         return nullptr;
     }
 
@@ -76,7 +76,7 @@ const SamdPinDefinition * getSamdPinDefinition(int arduinoPin)
  
     const SamdPinDefinition * rv = &g_SamdPinDefinitions[index];
 
-    debugPrintf("getSamdPinDefinition(): Arduino pin: %d, PORT%c%d, SERCOM%d:PAD[%d], SERCOM_ALT%d:PAD[%d] \n\r", arduinoPin, 'A' + port, port_pin, rv->sercom, rv->sercom_pad, rv->sercom_alt, rv->sercom_pad_alt);
+    debugPrintf_P(PSTR("getSamdPinDefinition(): Arduino pin: %d, PORT%c%d, SERCOM%d:PAD[%d], SERCOM_ALT%d:PAD[%d] \n\r"), arduinoPin, 'A' + port, port_pin, rv->sercom, rv->sercom_pad, rv->sercom_alt, rv->sercom_pad_alt);
 
     return rv;
 }

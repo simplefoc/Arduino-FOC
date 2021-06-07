@@ -28,14 +28,13 @@ void _configureADCLowSide(const int pinA,const int pinB,const int pinC)
  */
 void _readADCVoltagesLowSide(float & a, float & b, float & c)
 {
-  static int last_read = -1;
+  static uint64_t last_ts = _micros();
 
-  while(last_read == instance.dma_i);
-
-  last_read = instance.dma_i;
-  
-  instance.readResults(a_raw, b_raw, c_raw);
-  
+  if(last_ts != instance.timestamp_us)
+  {
+    last_ts = instance.timestamp_us;
+    instance.readResults(a_raw, b_raw, c_raw);
+  }
   a = instance.toVolts(a_raw);
   b = instance.toVolts(b_raw);
   if(_isset(_pinC))
@@ -87,7 +86,7 @@ SAMDCurrentSenseADCDMA::SAMDCurrentSenseADCDMA()
 
 void SAMDCurrentSenseADCDMA::init(int pinA, int pinB, int pinC,
 int EVSYS_ID_GEN_TCC_OVF, int pinAREF, float voltageAREF
-, uint32_t adcBits, uint32_t channelDMA)
+, uint8_t adcBits, uint8_t channelDMA)
 {
   this->pinA = pinA;
   this->pinB = pinB;
@@ -104,13 +103,13 @@ int EVSYS_ID_GEN_TCC_OVF, int pinAREF, float voltageAREF
   initPins();
   if(this->EVSYS_ID_GEN_TCC_OVF != -1)
   {
-    debugPrintf("Configuring EVSYS for ADC with EVSYS_ID_GEN #%d", this->EVSYS_ID_GEN_TCC_OVF);
+    debugPrintf(PSTR("Configuring EVSYS for ADC with EVSYS_ID_GEN #%d, DMA %d\n\r"), this->EVSYS_ID_GEN_TCC_OVF, channelDMA);
 
+    
     if(initEVSYS() != 0)
       return;
-
-    debugPrintln("a");
     initDMA();
+
     initDMAChannel();
   }
   initADC();
@@ -137,7 +136,7 @@ void SAMDCurrentSenseADCDMA::initPins(){
   refsel = ADC_REFCTRL_REFSEL_INTVCC1_Val;
   if(pinAREF != -1)
   {
-    debugPrintf("Using AREF pin %d", pinAREF);
+    debugPrintf(PSTR("Using AREF pin %d"), pinAREF);
     switch(getSamdPinDefinition(pinAREF)->vref)
     {
       case VRef::VREFA:
@@ -147,7 +146,7 @@ void SAMDCurrentSenseADCDMA::initPins(){
         refsel = ADC_REFCTRL_REFSEL_AREFB_Val;
         break;
       default:
-        debugPrintf("Error: pin %d is not a valid AREF pin, falling back to 'INTVCC1'", pinAREF);
+        debugPrintf(PSTR("Error: pin %d is not a valid AREF pin, falling back to 'INTVCC1'"), pinAREF);
     }
   }
 
@@ -270,27 +269,15 @@ void SAMDCurrentSenseADCDMA::initADC(){
 	adc_evctrl.bit.STARTEI = 1;
 	ADC->EVCTRL.reg = adc_evctrl.reg;
 
-  //not evsys + dma driven
-  // ADC->INTENSET.bit.RESRDY = 1;
-  // NVIC_EnableIRQ( ADC_IRQn );
-
   ADC->CTRLA.bit.ENABLE = 0x01;
   ADCsync();
 }
-
-// DmacDescriptor descriptor_section[12] __attribute__ ((aligned (16)));
-// volatile DmacDescriptor write_back[12] __attribute__ ((aligned (16)));
 
 void SAMDCurrentSenseADCDMA::initDMA() {
   ::initDMAC();
 }
 
 DmacDescriptor descriptors[20] __attribute__ ((aligned (16)));
-
-void dmac_adc_Handler(volatile DMAC_CHINTFLAG_Type & flags, volatile DMAC_CHCTRLA_Type & chctrla) 
-{
-
-}
 
 void SAMDCurrentSenseADCDMA::initDMAChannel() {
 
@@ -331,19 +318,16 @@ void SAMDCurrentSenseADCDMA::initDMAChannel() {
     descriptors[i].DSTADDR.reg  = computeDSTADDR((uint8_t*)&adcBuffer[i], btctrl.bit.STEPSEL, btctrl.bit.STEPSIZE, btctrl.bit.BEATSIZE, descriptors[i].BTCNT.reg);
   }
 
-
-
-  
   ::initDMAChannel(channelDMA, chinset, chctrlb, descriptors[firstAIN], this);
   
 }
 
-void SAMDCurrentSenseADCDMA::operator()(volatile DMAC_CHINTFLAG_Type & flags, volatile DMAC_CHCTRLA_Type & chctrla) 
+void SAMDCurrentSenseADCDMA::operator()(uint8_t channel, volatile DMAC_CHINTFLAG_Type & flags, volatile DMAC_CHCTRLA_Type & chctrla) 
 {
   chctrla.bit.ENABLE = 0b1;
   flags.bit.TCMPL = 0b1;
   ADC->INPUTCTRL.bit.INPUTOFFSET = 0;
-  dma_i++;
+  timestamp_us = _micros();
 }
 
 int SAMDCurrentSenseADCDMA::initEVSYS()
@@ -359,7 +343,7 @@ int SAMDCurrentSenseADCDMA::initEVSYS()
     case 2: EVGEN_DMAC = EVSYS_ID_GEN_DMAC_CH_2; break;
     case 3: EVGEN_DMAC = EVSYS_ID_GEN_DMAC_CH_3; break;
     default:
-      debugPrintf("initEVSYS(): Bad dma channel %d. Only 0,1,2 or 3 are supported.", channelDMA);
+      debugPrintf(PSTR("initEVSYS(): Bad dma channel %u. Only 0,1,2 or 3 are supported."), channelDMA);
       break;
   }
   if(::initEVSYS(1, EVSYS_ID_USER_ADC_START, EVGEN_DMAC, EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val, EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val) != 0)
@@ -368,17 +352,4 @@ int SAMDCurrentSenseADCDMA::initEVSYS()
   return 0;
 }
 
-void ADC_Handler() __attribute__((weak));
-void ADC_Handler()
-{
-  instance.adc_i++;
-  // only used if event system is not used
-  if(instance.EVSYS_ID_GEN_TCC_OVF == -1)
-  {
-    uint16_t offset = ADC->INPUTCTRL.bit.INPUTOFFSET;
-    instance.adcBuffer[ADC->INPUTCTRL.bit.MUXPOS + (offset > 0 ? offset - 1 : ADC->INPUTCTRL.bit.INPUTSCAN)] = ADC->RESULT.reg;
-  }
-  ADC->INTFLAG.bit.RESRDY = 0b1;
-  ADC->INTFLAG.bit.SYNCRDY = 0b1;
-}
 

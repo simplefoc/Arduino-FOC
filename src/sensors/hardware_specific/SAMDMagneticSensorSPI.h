@@ -5,7 +5,6 @@
 #include "../MagneticSensorSPI.h"
 #include "../../common/hardware_specific/samd21_AdvancedSPI.h"
 
-#define SPIbufferSize 2
 class SAMDMagneticSensorSPI: public MagneticSensor, public TccInterruptCallback, public DMACInterruptCallback{
  public:
     /**
@@ -21,19 +20,24 @@ class SAMDMagneticSensorSPI: public MagneticSensor, public TccInterruptCallback,
 
     void operator()(Tcc * tcc) override;
 
-    void operator()(volatile DMAC_CHINTFLAG_Type &, volatile DMAC_CHCTRLA_Type &) override;
+    void operator()(uint8_t channel, volatile DMAC_CHINTFLAG_Type &, volatile DMAC_CHCTRLA_Type &) override;
 
   private:
-    void tccHandler(Tcc * tcc);
     void initDMA();
+    word makeSPICommand();
+    word extractResult(word register_value);
     MagneticSensorSPIConfig_s config;
 
     SAMDAdvancedSPI* spi;
+    word command;
     int8_t tccN, dmaTX, dmaRX;
-
+    bool pinLow;
     
-    uint8_t SPIreceiveBuffer[SPIbufferSize];
-    uint8_t SPItransmitBuffer[SPIbufferSize];
+    static const uint8_t bufferSize = 2;
+    uint8_t receiveBuffer[bufferSize];
+    uint8_t transmitBuffer[bufferSize];
+    uint64_t last_timestamp_us;
+
 
     DmacDescriptor SPIdescriptors[2] __attribute__ ((aligned (16)));
 };

@@ -172,6 +172,7 @@ template <typename T>
 void debugPrintln(T message){ SIMPLEFOC_SAMD_DEBUG_SERIAL.println(message);}
 static char buffer[1000];
 #define debugPrintf(args...) sprintf(buffer, args); debugPrint(buffer);
+#define debugPrintf_P(args...) sprintf_P(buffer, args); debugPrint(buffer);
 #else
 #define debugPrintf(args...) ;
 #define debugPrint(arg) ;
@@ -193,7 +194,7 @@ void initDMAC();
 class DMACInterruptCallback
 {
     public:
-    virtual void operator()(volatile DMAC_CHINTFLAG_Type &, volatile DMAC_CHCTRLA_Type &) = 0;
+    virtual void operator()(uint8_t channel, volatile DMAC_CHINTFLAG_Type &, volatile DMAC_CHCTRLA_Type &) = 0;
 };
 
 int initDMAChannel(uint8_t channel, DMAC_CHINTENSET_Type chintset, DMAC_CHCTRLB_Type chctrlb, const DmacDescriptor & descriptor, DMACInterruptCallback * interrupt_handler, bool force = false);

@@ -37,13 +37,13 @@ SAMDAdvancedSPI::SAMDAdvancedSPI(SercomChannel sercomChannel, uint8_t pinMOSI, u
 
 int SAMDAdvancedSPI::init(SercomSpiClockMode spi_mode, uint32_t clock_speed)
 {
-    debugPrintf("MOSI: ");
+    debugPrint(F("MOSI: "));
     defMOSI = getSamdPinDefinition(pinMOSI);
-    debugPrintf("MISO: ");
+    debugPrint(F("MISO: "));
     defMISO = getSamdPinDefinition(pinMISO);
-    debugPrintf("SCK : ");
+    debugPrint(F("SCK : "));
     defSCK  = getSamdPinDefinition(pinSCK);
-    debugPrintf("SS  : ");
+    debugPrint(F("SS  : "));
     defSS   = getSamdPinDefinition(pinSS);
 
     if(defMOSI == nullptr || defMISO == nullptr || defSCK == nullptr || (hardwareSS && defSS == nullptr))
@@ -109,7 +109,7 @@ int SAMDAdvancedSPI::init(SercomSpiClockMode spi_mode, uint32_t clock_speed)
             ctrla.bit.CPHA = 0b1; 
             break;
         default:
-            debugPrint("SPI sercom CLOCK configuration error!");
+            debugPrint(F("SPI sercom CLOCK configuration error!"));
             return -1;
     }
 
@@ -124,7 +124,7 @@ int SAMDAdvancedSPI::init(SercomSpiClockMode spi_mode, uint32_t clock_speed)
         SS_pad = defSS->sercom_pad;
         peripheral = EPioType::PIO_SERCOM;
 
-        debugPrintf("Using sercom %d\n\r", defMOSI->sercom);
+        debugPrintf_P(PSTR("Using sercom %d\n\r"), defMOSI->sercom);
     }
     else if(defMOSI->sercom_alt == sercomChannel && defMISO->sercom_alt == sercomChannel && defSCK->sercom_alt == sercomChannel && (ctrlb.bit.MSSEN == 0 || defSS->sercom_alt == sercomChannel))
     {
@@ -134,11 +134,11 @@ int SAMDAdvancedSPI::init(SercomSpiClockMode spi_mode, uint32_t clock_speed)
         SS_pad = defSS->sercom_pad_alt;
         peripheral = EPioType::PIO_SERCOM_ALT;
 
-        debugPrintf("Using sercom alt %d\n\r", defMOSI->sercom_alt);
+        debugPrintf_P(PSTR("Using sercom alt %d\n\r"), defMOSI->sercom_alt);
     } 
     else
     {
-        debugPrint("SPI sercom CHANNEL configuration error!");
+        debugPrint(F("SPI sercom CHANNEL configuration error!"));
         return -1;
     }
 
@@ -147,7 +147,7 @@ int SAMDAdvancedSPI::init(SercomSpiClockMode spi_mode, uint32_t clock_speed)
     pinPeripheral(pinSCK, peripheral);
     pinPeripheral(pinSS, ctrlb.bit.MSSEN ? peripheral : EPioType::PIO_OUTPUT); 
 
-    debugPrintf("Using sercom pads MOSI[%d], MISO[%d], SCK[%d], SS[%d]\n\r", MOSI_pad, MISO_pad, SCK_pad, ctrlb.bit.MSSEN ? SS_pad : -1);
+    debugPrintf_P(PSTR("Using sercom pads MOSI[%d], MISO[%d], SCK[%d], SS[%d]\n\r"), MOSI_pad, MISO_pad, SCK_pad, ctrlb.bit.MSSEN ? SS_pad : -1);
 
     if(MOSI_pad == PAD_0 && SCK_pad == PAD_1  
     && (ctrlb.bit.MSSEN ? (SS_pad == PAD_2 && MISO_pad == PAD_3) : (MISO_pad == PAD_3 || MISO_pad == PAD_2)))
@@ -175,11 +175,11 @@ int SAMDAdvancedSPI::init(SercomSpiClockMode spi_mode, uint32_t clock_speed)
     }
     else
     {
-        debugPrint("SPI sercom PADS configuration invalid!");
+        debugPrint(F("SPI sercom PADS configuration invalid!"));
         return -1;
     }
 
-    debugPrintf("Using sercom DOPO %d and DIPO %d\n\r", ctrla.bit.DOPO, ctrla.bit.DIPO);
+    debugPrintf_P(PSTR("Using sercom DOPO %d and DIPO %d\n\r"), ctrla.bit.DOPO, ctrla.bit.DIPO);
 
     ctrla.bit.MODE = SERCOM_SPI_CTRLA_MODE_SPI_MASTER_Val;
     ctrla.bit.DORD = SercomDataOrder::MSB_FIRST;
