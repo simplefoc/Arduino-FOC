@@ -298,7 +298,6 @@ void SAMD21AsyncCurrentSense::initDMAChannel() {
   chctrlb.bit.EVACT = DMAC_CHCTRLB_EVACT_NOACT_Val; //only used if EVIE is set
   chctrlb.bit.TRIGSRC = ADC_DMAC_ID_RESRDY;
   chctrlb.bit.TRIGACT = DMAC_CHCTRLB_TRIGACT_BEAT_Val; //block, beat or transaction
-  DMAC->CHCTRLB.reg = chctrlb.reg;
 
   for(uint32_t i = firstAIN; i < lastAIN + 1; i++)
   {
