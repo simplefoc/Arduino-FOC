@@ -38,3 +38,4 @@ bool _readADCVoltagesLowSide(float & a, float & b, float & c);
  */
 void _driverSyncLowSide();
 
+
