@@ -30,7 +30,7 @@ WiFiUDP Udp;
 IPAddress outIp(192,168,1,13);        		// remote IP (not needed for receive)
 const unsigned int outPort = 8000;          // remote port (not needed for receive)
 const unsigned int inPort = 8000;        	// local port to listen for UDP packets (here's where we send the packets)
-#define POWER_SUPPLY 7.4
+#define POWER_SUPPLY 7.4f
 
 
 
@@ -46,8 +46,8 @@ String m2Prefix("/M2");
 
 
 // we store seperate set-points for each motor, of course
-float set_point1 = 0.0;
-float set_point2 = 0.0;
+float set_point1 = 0.0f;
+float set_point2 = 0.0f;
 
 
 OSCErrorCode error;
@@ -135,11 +135,11 @@ void setup() {
 	motor1.linkDriver(&driver1);
 	motor1.foc_modulation = FOCModulationType::SpaceVectorPWM;
 	motor1.controller = MotionControlType::velocity;
-	motor1.PID_velocity.P = 0.2;
+	motor1.PID_velocity.P = 0.2f;
 	motor1.PID_velocity.I = 20;
-	motor1.PID_velocity.D = 0.001;
+	motor1.PID_velocity.D = 0.001f;
 	motor1.PID_velocity.output_ramp = 1000;
-	motor1.LPF_velocity.Tf = 0.01;
+	motor1.LPF_velocity.Tf = 0.01f;
 	motor1.voltage_limit = POWER_SUPPLY;
 	motor1.P_angle.P = 20;
 	motor1.init();
@@ -152,11 +152,11 @@ void setup() {
 	motor2.linkDriver(&driver2);
 	motor2.foc_modulation = FOCModulationType::SpaceVectorPWM;
 	motor2.controller = MotionControlType::velocity;
-	motor2.PID_velocity.P = 0.2;
+	motor2.PID_velocity.P = 0.2f;
 	motor2.PID_velocity.I = 20;
-	motor2.PID_velocity.D = 0.001;
+	motor2.PID_velocity.D = 0.001f;
 	motor2.PID_velocity.output_ramp = 1000;
-	motor2.LPF_velocity.Tf = 0.01;
+	motor2.LPF_velocity.Tf = 0.01f;
 	motor2.voltage_limit = POWER_SUPPLY;
 	motor2.P_angle.P = 20;
 	motor2.init();

@@ -1,9 +1,10 @@
-#ifndef CURRENT_SENSE_SAMD21_H
-#define CURRENT_SENSE_SAMD21_H
+#pragma once
 
+#include <Arduino.h>
+
+#if defined(_SAMD21_) && defined(_SAMD21_ASYNC_)
 
 #include <stdint.h>
-#include <Arduino.h>
 #include "../../common/hardware_specific/samd_mcu.h"
 // #define SIMPLEFOC_SAMD_DEBUG
 #if !defined(SIMPLEFOC_SAMD_DEBUG_SERIAL)
@@ -11,12 +12,12 @@
 #endif
 
 
-class SAMDCurrentSenseADCDMA : public DMACInterruptCallback
+class SAMD21AsyncCurrentSense : public DMACInterruptCallback
 {
 
 public:
-  static SAMDCurrentSenseADCDMA * getHardwareAPIInstance();
-  SAMDCurrentSenseADCDMA();
+  static SAMD21AsyncCurrentSense * getHardwareAPIInstance();
+  SAMD21AsyncCurrentSense();
   
   void init(int pinA, int pinB, int pinC, int EVSYS_ID_GEN_TCC_OVF = -1, int pinAREF = -1, float voltageAREF = 3.3, uint8_t adcBits = 12, uint8_t channelDMA = 0);
   

@@ -1,11 +1,14 @@
+#include "../hardware_api.h"
+
+#if defined(_SAMD21_ASYNC_)
 
 #include "samd21_mcu.h"
-#include "../hardware_api.h"
+
 #include "../../common/hardware_specific/samd_mcu.h"
 #include <wiring_private.h>
 static int _pinA, _pinB, _pinC;
 static uint16_t a_raw = 0xFFFF, b_raw = 0xFFFF, c_raw = 0xFFFF; // updated by adcStopWithDMA when configured in freerunning mode
-static SAMDCurrentSenseADCDMA instance;
+static SAMD21AsyncCurrentSense instance;
 /**
  *  function reading an ADC value and returning the read voltage 
  * 
@@ -26,20 +29,22 @@ void _configureADCLowSide(const int pinA,const int pinB,const int pinC)
  * 
  * @param pinA - the arduino pin to be read (it has to be ADC pin)
  */
-void _readADCVoltagesLowSide(float & a, float & b, float & c)
+bool _readADCVoltagesLowSide(float & a, float & b, float & c)
 {
   static uint64_t last_ts = _micros();
-
+  bool isNew = false;
   if(last_ts != instance.timestamp_us)
   {
     last_ts = instance.timestamp_us;
     instance.readResults(a_raw, b_raw, c_raw);
+    isNew = true;
   }
   a = instance.toVolts(a_raw);
   b = instance.toVolts(b_raw);
   if(_isset(_pinC))
     c = instance.toVolts(c_raw);
 
+  return isNew;
 }
 
 /**
@@ -47,7 +52,7 @@ void _readADCVoltagesLowSide(float & a, float & b, float & c)
  */
 void _driverSyncLowSide()
 {
-  SIMPLEFOC_SAMD_DEBUG_SERIAL.println(F("TODO! _driverSyncLowSide() is not untested, but if you use EVSYS_ID_GEN_TCC_OVF != -1 you are in sync"));
+  debugPrintln(F("TODO! _driverSyncLowSide() is not untested, but if you use EVSYS_ID_GEN_TCC_OVF != -1 you are in sync"));
   //TODO: hook with PWM interrupts
 }
 
@@ -74,17 +79,17 @@ static void   ADCsync() {
 
 //  ADC DMA sequential free running (6) with Interrupts /////////////////
 
-SAMDCurrentSenseADCDMA * SAMDCurrentSenseADCDMA::getHardwareAPIInstance() 
+SAMD21AsyncCurrentSense * SAMD21AsyncCurrentSense::getHardwareAPIInstance() 
 {
   
   return &instance;
 }
 
-SAMDCurrentSenseADCDMA::SAMDCurrentSenseADCDMA()
+SAMD21AsyncCurrentSense::SAMD21AsyncCurrentSense()
 {
 }
 
-void SAMDCurrentSenseADCDMA::init(int pinA, int pinB, int pinC,
+void SAMD21AsyncCurrentSense::init(int pinA, int pinB, int pinC,
 int EVSYS_ID_GEN_TCC_OVF, int pinAREF, float voltageAREF
 , uint8_t adcBits, uint8_t channelDMA)
 {
@@ -117,7 +122,7 @@ int EVSYS_ID_GEN_TCC_OVF, int pinAREF, float voltageAREF
 }
 
 
-uint32_t SAMDCurrentSenseADCDMA::readResults(uint16_t & a, uint16_t & b, uint16_t & c){
+uint32_t SAMD21AsyncCurrentSense::readResults(uint16_t & a, uint16_t & b, uint16_t & c){
 
   a = adcBuffer[ainA];
   b = adcBuffer[ainB];
@@ -127,11 +132,11 @@ uint32_t SAMDCurrentSenseADCDMA::readResults(uint16_t & a, uint16_t & b, uint16_
 }
 
 
-float SAMDCurrentSenseADCDMA::toVolts(uint16_t counts) {
+float SAMD21AsyncCurrentSense::toVolts(uint16_t counts) {
   return counts * countsToVolts;
 }
 
-void SAMDCurrentSenseADCDMA::initPins(){
+void SAMD21AsyncCurrentSense::initPins(){
   
   refsel = ADC_REFCTRL_REFSEL_INTVCC1_Val;
   if(pinAREF != -1)
@@ -170,7 +175,7 @@ void SAMDCurrentSenseADCDMA::initPins(){
 
 }
 
-void SAMDCurrentSenseADCDMA::initADC(){
+void SAMD21AsyncCurrentSense::initADC(){
 
   pinPeripheral(pinA, PIO_ANALOG); 
   pinPeripheral(pinB, PIO_ANALOG); 
@@ -273,13 +278,13 @@ void SAMDCurrentSenseADCDMA::initADC(){
   ADCsync();
 }
 
-void SAMDCurrentSenseADCDMA::initDMA() {
+void SAMD21AsyncCurrentSense::initDMA() {
   ::initDMAC();
 }
 
 DmacDescriptor descriptors[20] __attribute__ ((aligned (16)));
 
-void SAMDCurrentSenseADCDMA::initDMAChannel() {
+void SAMD21AsyncCurrentSense::initDMAChannel() {
 
   DMAC_CHINTENSET_Type chinset{.reg = 0};
 
@@ -322,7 +327,7 @@ void SAMDCurrentSenseADCDMA::initDMAChannel() {
   
 }
 
-void SAMDCurrentSenseADCDMA::operator()(uint8_t channel, volatile DMAC_CHINTFLAG_Type & flags, volatile DMAC_CHCTRLA_Type & chctrla) 
+void SAMD21AsyncCurrentSense::operator()(uint8_t channel, volatile DMAC_CHINTFLAG_Type & flags, volatile DMAC_CHCTRLA_Type & chctrla) 
 {
   chctrla.bit.ENABLE = 0b1;
   flags.bit.TCMPL = 0b1;
@@ -330,7 +335,7 @@ void SAMDCurrentSenseADCDMA::operator()(uint8_t channel, volatile DMAC_CHINTFLAG
   timestamp_us = _micros();
 }
 
-int SAMDCurrentSenseADCDMA::initEVSYS()
+int SAMD21AsyncCurrentSense::initEVSYS()
 {
   if(::initEVSYS(0, EVSYS_ID_USER_ADC_SYNC, this->EVSYS_ID_GEN_TCC_OVF, EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val, EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val) != 0)
     return -1;
@@ -353,3 +358,4 @@ int SAMDCurrentSenseADCDMA::initEVSYS()
 }
 
 
+#endif

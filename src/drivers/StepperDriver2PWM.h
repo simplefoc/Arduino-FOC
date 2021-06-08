@@ -16,15 +16,13 @@ class StepperDriver2PWM: public StepperDriver
     /**
       StepperMotor class constructor
       @param pwm1  PWM1 phase pwm pin
-      @param in1a  IN1A phase dir pin
-      @param in1b  IN1B phase dir pin
+      @param in1   IN1A phase dir pin
       @param pwm2  PWM2 phase pwm pin
-      @param in2a  IN2A phase dir pin
-      @param in2b  IN2B phase dir pin
+      @param in2   IN2A phase dir 
       @param en1 enable pin phase 1 (optional input)
       @param en2 enable pin phase 2 (optional input)
     */
-    StepperDriver2PWM(int pwm1, int in1a, int in1b, int pwm2, int in2a, int in2b, int en1 = NOT_SET, int en2 = NOT_SET);
+    StepperDriver2PWM(int pwm1, int* in1, int pwm2, int* in2, int en1 = NOT_SET, int en2 = NOT_SET);
     
     /**
       StepperMotor class constructor

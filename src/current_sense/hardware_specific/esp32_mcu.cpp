@@ -11,7 +11,7 @@
 
 static mcpwm_dev_t *MCPWM[2] = {&MCPWM0, &MCPWM1};
 int a1, a2, a3;         //Current readings from internal current sensor amplifiers
-int _pinA, _pinB, _pinC;
+int _pinA, _pinB, _pinC = NOT_SET;
 static void IRAM_ATTR isr_handler(void*);
 byte currentState = 1;
 
@@ -19,15 +19,14 @@ byte currentState = 1;
 // some optimizing for faster execution
 #define _ADC_CONV ( (_ADC_VOLTAGE) / (_ADC_RESOLUTION) )
 
-// function reading an ADC value and returning the read voltage
-void _readADCVoltagesLowSide(float & a, float & b, float & c){
-
-  a = _ADC_CONV * a1;
-  b = _ADC_CONV * a2;
-  if(_isset(_pinC))
-    c = _ADC_CONV * a3;
+bool _readADCVoltagesLowSide( float & a, float & b, float & c)
+{
+  a = a1 * _ADC_CONV;
+  b = a2 * _ADC_CONV;
+  if( _isset(pinC) )
+    c = a3 * _ADC_CONV;
+  return true;
 }
-
 
 // function reading an ADC value and returning the read voltage
 void _configureADCLowSide(const int pinA,const int pinB,const int pinC){

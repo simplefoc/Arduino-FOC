@@ -12,7 +12,7 @@ LowsideCurrentSense::LowsideCurrentSense(float _shunt_resistor, float _gain, int
 
     shunt_resistor = _shunt_resistor;
     amp_gain  = _gain;
-    volts_to_amps_ratio = 1.0 /_shunt_resistor / _gain; // volts to amps
+    volts_to_amps_ratio = 1.0f /_shunt_resistor / _gain; // volts to amps
     // gains for each phase
     gain_a = volts_to_amps_ratio;
     gain_b = volts_to_amps_ratio;
@@ -27,30 +27,40 @@ void LowsideCurrentSense::init(){
     calibrateOffsets();
 }
 // Function finding zero offsets of the ADC
-void LowsideCurrentSense::calibrateOffsets(){
+uint32_t LowsideCurrentSense::calibrateOffsets(const uint32_t calibration_rounds){
+    
+    
     // find adc offset = zero current voltage
     offset_ia =0;
     offset_ib= 0;
     offset_ic= 0;
+    uint32_t effective_rounds = 0;
     float a, b, c;
     // read the adc voltage 1000 times ( arbitrary number )
-    for (int i = 0; i < 1000; i++) {
-        _readADCVoltagesLowSide(a, b, c);
-        offset_ia += a;
-        offset_ib += b;
-        if(_isset(pinC)) offset_ic += c;
-        _delay(1);
+    for (int i = 0; i < calibration_rounds; i++) 
+    {
+        if(_readADCVoltagesLowSide(a, b, c))
+        {
+            offset_ia += a;
+            offset_ib += b;
+            if(_isset(pinC)) offset_ic += c;
+            effective_rounds++;
+        }
     }
-    // calculate the mean offsets
-    offset_ia = offset_ia / 1000.0f;
-    offset_ib = offset_ib / 1000.0f;
-    if(_isset(pinC)) offset_ic = offset_ic / 1000.0f;
+    if(effective_rounds > 0)
+    {
+        // calculate the mean offsets
+        offset_ia = offset_ia / effective_rounds;
+        offset_ib = offset_ib / effective_rounds;
+        if(_isset(pinC)) offset_ic = offset_ic / effective_rounds;
+    }
+
+    return effective_rounds;
 }
 
 // read all three phase currents (if possible 2 or 3)
 PhaseCurrent_s LowsideCurrentSense::getPhaseCurrents(){
     PhaseCurrent_s current;
-
     _readADCVoltagesLowSide(current.a, current.b, current.c);
     current.a = (current.a - offset_ia)*gain_a;// amps
     current.b = (current.b - offset_ib)*gain_b;// amps

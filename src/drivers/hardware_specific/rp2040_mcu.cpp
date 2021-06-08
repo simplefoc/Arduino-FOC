@@ -147,7 +147,7 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, in
 
 inline float swDti(float val, float dt) {
 	float ret = dt+val;
-	if (ret>1.0) ret = 1.0;
+	if (ret>1.0) ret = 1.0f;
 	return ret;
 }
 

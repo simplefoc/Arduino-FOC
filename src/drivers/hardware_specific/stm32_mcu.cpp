@@ -27,12 +27,12 @@ void _setPwm(int ulPin, uint32_t value, int resolution)
 }
 
 
-// init pin pwm 
+// init pin pwm
 HardwareTimer* _initPinPWM(uint32_t PWM_freq, int ulPin)
 {
   PinName pin = digitalPinToPinName(ulPin);
   TIM_TypeDef *Instance = (TIM_TypeDef *)pinmap_peripheral(pin, PinMap_PWM);
-  
+
   uint32_t index = get_timer_index(Instance);
   if (HardwareTimer_Handle[index] == NULL) {
     HardwareTimer_Handle[index]->__this = new HardwareTimer((TIM_TypeDef *)pinmap_peripheral(pin, PinMap_PWM));
@@ -61,7 +61,7 @@ HardwareTimer* _initPinPWMLow(uint32_t PWM_freq, int ulPin)
   PinName pin = digitalPinToPinName(ulPin);
   TIM_TypeDef *Instance = (TIM_TypeDef *)pinmap_peripheral(pin, PinMap_PWM);
   uint32_t index = get_timer_index(Instance);
-    
+
   if (HardwareTimer_Handle[index] == NULL) {
     HardwareTimer_Handle[index]->__this = new HardwareTimer((TIM_TypeDef *)pinmap_peripheral(pin, PinMap_PWM));
     HardwareTimer_Handle[index]->handle.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
@@ -129,17 +129,17 @@ HardwareTimer* _initHardware6PWMInterface(uint32_t PWM_freq, float dead_zone, in
   PinName wlPinName = digitalPinToPinName(pinC_l);
 
   TIM_TypeDef *Instance = (TIM_TypeDef *)pinmap_peripheral(uhPinName, PinMap_PWM);
- 
+
   uint32_t index = get_timer_index(Instance);
-  
+
   if (HardwareTimer_Handle[index] == NULL) {
     HardwareTimer_Handle[index]->__this = new HardwareTimer((TIM_TypeDef *)pinmap_peripheral(uhPinName, PinMap_PWM));
     HardwareTimer_Handle[index]->handle.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
     HAL_TIM_Base_Init(&(HardwareTimer_Handle[index]->handle));
-    ((HardwareTimer *)HardwareTimer_Handle[index]->__this)->setOverflow(PWM_freq, HERTZ_FORMAT);  
+    ((HardwareTimer *)HardwareTimer_Handle[index]->__this)->setOverflow(PWM_freq, HERTZ_FORMAT);
   }
   HardwareTimer *HT = (HardwareTimer *)(HardwareTimer_Handle[index]->__this);
-     
+
   HT->setMode(STM_PIN_CHANNEL(pinmap_function(uhPinName, PinMap_PWM)), TIMER_OUTPUT_COMPARE_PWM1, uhPinName);
   HT->setMode(STM_PIN_CHANNEL(pinmap_function(ulPinName, PinMap_PWM)), TIMER_OUTPUT_COMPARE_PWM1, ulPinName);
   HT->setMode(STM_PIN_CHANNEL(pinmap_function(vhPinName, PinMap_PWM)), TIMER_OUTPUT_COMPARE_PWM1, vhPinName);
@@ -148,20 +148,20 @@ HardwareTimer* _initHardware6PWMInterface(uint32_t PWM_freq, float dead_zone, in
   HT->setMode(STM_PIN_CHANNEL(pinmap_function(wlPinName, PinMap_PWM)), TIMER_OUTPUT_COMPARE_PWM1, wlPinName);
 
   // dead time is set in nanoseconds
-  uint32_t dead_time_ns = (float)(1e9/PWM_freq)*dead_zone;
+  uint32_t dead_time_ns = (float)(1e9f/PWM_freq)*dead_zone;
   uint32_t dead_time = __LL_TIM_CALC_DEADTIME(SystemCoreClock, LL_TIM_GetClockDivision(HT->getHandle()->Instance), dead_time_ns);
   LL_TIM_OC_SetDeadTime(HT->getHandle()->Instance, dead_time); // deadtime is non linear!
   LL_TIM_CC_EnableChannel(HT->getHandle()->Instance, LL_TIM_CHANNEL_CH1 | LL_TIM_CHANNEL_CH1N | LL_TIM_CHANNEL_CH2 | LL_TIM_CHANNEL_CH2N | LL_TIM_CHANNEL_CH3 | LL_TIM_CHANNEL_CH3N);
 
   HT->pause();
   HT->refresh();
-  HT->resume();  
+  HT->resume();
   return HT;
 }
 
 
 // returns 0 if each pair of pwm channels has same channel
-// returns 1 all the channels belong to the same timer - hardware inverted channels 
+// returns 1 all the channels belong to the same timer - hardware inverted channels
 // returns -1 if neither - avoid configuring - error!!!
 int _interfaceType(const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
   PinName nameAH = digitalPinToPinName(pinA_h);
@@ -177,7 +177,7 @@ int _interfaceType(const int pinA_h, const int pinA_l,  const int pinB_h, const 
   int tim5 = get_timer_index((TIM_TypeDef *)pinmap_peripheral(nameCH, PinMap_PWM));
   int tim6 = get_timer_index((TIM_TypeDef *)pinmap_peripheral(nameCL, PinMap_PWM));
   if(tim1 == tim2 && tim2==tim3 && tim3==tim4  && tim4==tim5 && tim5==tim6)
-    return _HARDWARE_6PWM; // hardware 6pwm interface - only on timer 
+    return _HARDWARE_6PWM; // hardware 6pwm interface - only on timer
   else if(tim1 == tim2 && tim3==tim4  && tim5==tim6)
     return _SOFTWARE_6PWM; // software 6pwm interface - each pair of high-low side same timer
   else
@@ -230,7 +230,7 @@ void _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int
   HardwareTimer* HT1 = _initPinPWM(pwm_frequency, pinA);
   HardwareTimer* HT2 = _initPinPWM(pwm_frequency, pinB);
   HardwareTimer* HT3 = _initPinPWM(pwm_frequency, pinC);
-  HardwareTimer* HT4 = _initPinPWM(pwm_frequency, pinD); 
+  HardwareTimer* HT4 = _initPinPWM(pwm_frequency, pinD);
   // allign the timers
   _alignPWMTimers(HT1, HT2, HT3, HT4);
 }
@@ -315,11 +315,11 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, i
       _setPwm(pinC_h, _PWM_RANGE*dc_c, _PWM_RESOLUTION);
       break;
     case _SOFTWARE_6PWM:
-      _setPwm(pinA_l, _constrain(dc_a + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION); 
+      _setPwm(pinA_l, _constrain(dc_a + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
       _setPwm(pinA_h, _constrain(dc_a - dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(pinB_l, _constrain(dc_b + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION); 
+      _setPwm(pinB_l, _constrain(dc_b + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
       _setPwm(pinB_h, _constrain(dc_b - dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(pinC_l, _constrain(dc_c + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION); 
+      _setPwm(pinC_l, _constrain(dc_c + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
       _setPwm(pinC_h, _constrain(dc_c - dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
       break;
   }
