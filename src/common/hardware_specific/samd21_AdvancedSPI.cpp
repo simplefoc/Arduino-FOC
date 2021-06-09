@@ -35,6 +35,22 @@ SAMDAdvancedSPI::SAMDAdvancedSPI(SercomChannel sercomChannel, uint8_t pinMOSI, u
 
 }
 
+bool getPad(const SamdPinDefinition * pinDef, SercomChannel sercomChannel, SercomPad & pad, EPioType & peripheral)
+{
+    if(pinDef->sercom == sercomChannel)
+    {
+       pad = pinDef->sercom_pad;
+       peripheral = EPioType::PIO_SERCOM;
+       return true;
+    }
+    if(pinDef->sercom_alt == sercomChannel)
+    {
+        pad = pinDef->sercom_pad_alt;
+        peripheral = EPioType::PIO_SERCOM_ALT;
+        return true;
+    }
+    return false;
+}
 int SAMDAdvancedSPI::init(SercomSpiClockMode spi_mode, uint32_t clock_speed)
 {
     debugPrint(F("MOSI: "));
@@ -72,6 +88,7 @@ int SAMDAdvancedSPI::init(SercomSpiClockMode spi_mode, uint32_t clock_speed)
     if(!hardwareSS)
     {
         pinMode(pinSS, OUTPUT);
+        pinPeripheral(pinSS, EPioType::PIO_OUTPUT);
         digitalWrite(pinSS, HIGH);
         isSoftwareSSLow = false;
     }
@@ -113,41 +130,32 @@ int SAMDAdvancedSPI::init(SercomSpiClockMode spi_mode, uint32_t clock_speed)
             return -1;
     }
 
-    SercomPad MOSI_pad, MISO_pad, SCK_pad, SS_pad;
-    EPioType peripheral;
+    SercomPad MOSI_pad, MISO_pad, SCK_pad, SS_pad = NO_PAD;
+    EPioType peripheralMOSI, peripheralMISO, peripheralSCK, peripheralSS;
     
-    if(defMOSI->sercom == sercomChannel && defMISO->sercom == sercomChannel && defSCK->sercom  == sercomChannel && (ctrlb.bit.MSSEN == 0 || defSS->sercom == sercomChannel))
+    
+    if(    getPad(defMOSI, sercomChannel, MOSI_pad, peripheralMOSI )
+        && getPad(defMISO, sercomChannel, MISO_pad, peripheralMISO )
+        && getPad(defSCK,  sercomChannel, SCK_pad , peripheralSCK )
+        && (ctrlb.bit.MSSEN == 0 || getPad(defSS, sercomChannel, SS_pad , peripheralSS )))
     {
-        MOSI_pad = defMOSI->sercom_pad;
-        MISO_pad = defMISO->sercom_pad;
-        SCK_pad = defSCK->sercom_pad;
-        SS_pad = defSS->sercom_pad;
-        peripheral = EPioType::PIO_SERCOM;
 
-        debugPrintf_P(PSTR("Using sercom %d\n\r"), defMOSI->sercom);
+        pinPeripheral(pinMOSI, peripheralMOSI);
+        pinPeripheral(pinMISO, peripheralMISO);
+        pinPeripheral(pinSCK,  peripheralSCK);
+        if(ctrlb.bit.MSSEN)
+            pinPeripheral(pinSS, peripheralSS); 
     }
-    else if(defMOSI->sercom_alt == sercomChannel && defMISO->sercom_alt == sercomChannel && defSCK->sercom_alt == sercomChannel && (ctrlb.bit.MSSEN == 0 || defSS->sercom_alt == sercomChannel))
-    {
-        MOSI_pad = defMOSI->sercom_pad_alt;
-        MISO_pad = defMISO->sercom_pad_alt;
-        SCK_pad = defSCK->sercom_pad_alt;
-        SS_pad = defSS->sercom_pad_alt;
-        peripheral = EPioType::PIO_SERCOM_ALT;
-
-        debugPrintf_P(PSTR("Using sercom alt %d\n\r"), defMOSI->sercom_alt);
-    } 
     else
     {
         debugPrint(F("SPI sercom CHANNEL configuration error!"));
+        debugPrintf_P(PSTR("desired sercom %d, got [peripheral, pad]:  MOSI [%d, %d], MISO [%d, %d], SCK [%d, %d], SS [%d, %d]\n\r"), sercomChannel, peripheralMOSI, MOSI_pad, peripheralMISO, MISO_pad, peripheralSCK, SCK_pad, peripheralSS, SS_pad);
+
         return -1;
     }
 
-    pinPeripheral(pinMOSI, peripheral);
-    pinPeripheral(pinMISO, peripheral);
-    pinPeripheral(pinSCK, peripheral);
-    pinPeripheral(pinSS, ctrlb.bit.MSSEN ? peripheral : EPioType::PIO_OUTPUT); 
 
-    debugPrintf_P(PSTR("Using sercom pads MOSI[%d], MISO[%d], SCK[%d], SS[%d]\n\r"), MOSI_pad, MISO_pad, SCK_pad, ctrlb.bit.MSSEN ? SS_pad : -1);
+    debugPrintf_P(PSTR("Using sercom [peripheral, pad]:  MOSI [%d, %d], MISO [%d, %d], SCK [%d, %d], SS [%d, %d]\n\r"), peripheralMOSI, MOSI_pad, peripheralMISO, MISO_pad, peripheralSCK, SCK_pad, peripheralSS, SS_pad);
 
     if(MOSI_pad == PAD_0 && SCK_pad == PAD_1  
     && (ctrlb.bit.MSSEN ? (SS_pad == PAD_2 && MISO_pad == PAD_3) : (MISO_pad == PAD_3 || MISO_pad == PAD_2)))
