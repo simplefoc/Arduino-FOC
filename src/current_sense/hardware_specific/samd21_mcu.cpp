@@ -157,29 +157,33 @@ void SAMD21AsyncCurrentSense::initPins(){
 
   pinMode(pinA, INPUT);
   pinMode(pinB, INPUT);
-
+  pinPeripheral(pinA, PIO_ANALOG); 
+  pinPeripheral(pinB, PIO_ANALOG); 
   ainA = getSamdPinDefinition(pinA)->adc_channel;
-  ainB = getSamdPinDefinition(pinB)->adc_channel;
+  ainC = ainB = getSamdPinDefinition(pinB)->adc_channel;
   firstAIN = min(ainA, ainB);
   lastAIN = max(ainA, ainB);
   if( _isset(pinC) ) 
   {
     ainC = getSamdPinDefinition(pinC)->adc_channel;
     pinMode(pinC, INPUT);
+    pinPeripheral(pinC, PIO_ANALOG);
     firstAIN = min(firstAIN, ainC);
     lastAIN = max(lastAIN, ainC);
   }
+  
 
   oneBeforeFirstAIN = firstAIN - 1; //hack to discard noisy first readout
   bufferSize = lastAIN - oneBeforeFirstAIN + 1;
+
+  debugPrintf(PSTR("initPins() Using pin%d -> ain%d, pin%d -> ain%d, pin%d -> ain%d\n\r"), pinA, ainA, pinB, ainB, pinC, ainC);
 
 }
 
 void SAMD21AsyncCurrentSense::initADC(){
 
-  pinPeripheral(pinA, PIO_ANALOG); 
-  pinPeripheral(pinB, PIO_ANALOG); 
-  pinPeripheral(pinC, PIO_ANALOG); 
+
+  
 
   ADC->CTRLA.bit.ENABLE = 0x00;             // Disable ADC
 
@@ -206,13 +210,13 @@ void SAMD21AsyncCurrentSense::initADC(){
   uint32_t linearity = (*((uint32_t *) ADC_FUSES_LINEARITY_0_ADDR) & ADC_FUSES_LINEARITY_0_Msk) >> ADC_FUSES_LINEARITY_0_Pos;
   linearity |= ((*((uint32_t *) ADC_FUSES_LINEARITY_1_ADDR) & ADC_FUSES_LINEARITY_1_Msk) >> ADC_FUSES_LINEARITY_1_Pos) << 5;
   ADC->CALIB.reg = ADC_CALIB_BIAS_CAL(bias) | ADC_CALIB_LINEARITY_CAL(linearity);
-
+  ADCsync();
 	/* Configure reference */
 	ADC_REFCTRL_Type refctrl{.reg = 0};
   // refctrl.bit.REFCOMP = 1; /* enable reference compensation */
   refctrl.bit.REFSEL = refsel;
 	ADC->REFCTRL.reg = refctrl.reg;
-
+  ADCsync();
   /*
   Bits 19:16 – INPUTSCAN[3:0]: Number of Input Channels Included in Scan
   This register gives the number of input sources included in the pin scan. The number of input sources included is
@@ -257,7 +261,7 @@ void SAMD21AsyncCurrentSense::initADC(){
   
   ADC_CTRLB_Type ctrlb{.reg = 0};
   /* ADC clock is 8MHz / 4 = 2MHz */
-  ctrlb.bit.PRESCALER = ADC_CTRLB_PRESCALER_DIV4_Val;
+  ctrlb.bit.PRESCALER = ADC_CTRLB_PRESCALER_DIV8_Val;
   ctrlb.bit.RESSEL =  ADC_CTRLB_RESSEL_12BIT_Val;
   ctrlb.bit.CORREN = 0;
   ctrlb.bit.FREERUN = 0;
