@@ -15,6 +15,7 @@ jobs:
           - STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
           - STM32:stm32:Nucleo_64:pnum=NUCLEO_F411RE 
           - arduino:mbed_rp2040:pico
+          - adafruit:samd:adafruit_metro_m4
           
         include:
           - arduino-boards-fqbn: arduino:avr:uno
@@ -30,6 +31,10 @@ jobs:
             
           - arduino-boards-fqbn: arduino:mbed_rp2040:pico
             sketch-names: open_loop_position_example.ino
+            
+          - arduino-boards-fqbn: adafruit:samd:adafruit_metro_m4
+            platform-url: https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+            sketch-names: single_full_control_example.ino
           
           - arduino-boards-fqbn: esp32:esp32:esp32doit-devkit-v1
             platform-url: https://dl.espressif.com/dl/package_esp32_index.json
