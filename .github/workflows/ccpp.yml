@@ -10,25 +10,27 @@ jobs:
         arduino-boards-fqbn:
           - arduino:avr:uno
           - arduino:sam:arduino_due_x
-#           - esp32:esp32:featheresp32:FlashFreq=80
+          - esp32:esp32:featheresp32:FlashFreq=80
           #- STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
           
         include:
           - arduino-boards-fqbn: arduino:avr:uno
             sketch-names: '**.ino'
+            required-libraries: PciManager
             sketches-exclude: bluepill_position_control, esp32_position_control, esp32_i2c_dual_bus_example, stm32_i2c_dual_bus_example, magnetic_sensor_spi_alt_example, osc_esp32_3pwm, osc_esp32_fullcontrol, nano33IoT_velocity_control, smartstepper_control
 
           - arduino-boards-fqbn: arduino:sam:arduino_due_x
             sketch-names: single_full_control_example.ino
-
+          
+          - arduino-boards-fqbn: esp32:esp32:featheresp32:FlashFreq=80
+           platform-url: https://dl.espressif.com/dl/package_esp32_index.json
+           sketch-names: esp32_position_control, esp32_i2c_dual_bus_example
 
          # - arduino-boards-fqbn: STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
           #  platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json 
          #   sketch-names: bluepill_position_control, stm32_i2c_dual_bus_example, magnetic_sensor_spi_alt_example,
             
-        #  - arduino-boards-fqbn: esp32:esp32:featheresp32:FlashFreq=80
-        #    platform-url: https://dl.espressif.com/dl/package_esp32_index.json
-        #    sketch-names: esp32_position_control, esp32_i2c_dual_bus_example
+        
 
       # Do not cancel all jobs / architectures if one job fails
       fail-fast: false
@@ -39,7 +41,7 @@ jobs:
       uses: ArminJo/arduino-test-compile@master
       with:
           arduino-board-fqbn: ${{ matrix.arduino-boards-fqbn }}
-          required-libraries: PciManager
+          required-libraries: ${{ matrix.required-libraries }}
           platform-url: ${{ matrix.platform-url }}
           sketch-names: ${{ matrix.sketch-names }}
           sketches-exclude: ${{ matrix.sketches-exclude }}
