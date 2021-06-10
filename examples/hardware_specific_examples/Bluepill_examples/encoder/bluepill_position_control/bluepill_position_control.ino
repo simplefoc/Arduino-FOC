@@ -89,7 +89,7 @@ void setup() {
   command.add('T', doTarget, "target angle");
 
   Serial.println(F("Motor ready."));
-  Serial.println(F(("Set the target angle using serial terminal:"));
+  Serial.println(F("Set the target angle using serial terminal:"));
   _delay(1000);
 }
 
