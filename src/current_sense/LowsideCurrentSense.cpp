@@ -23,6 +23,8 @@ LowsideCurrentSense::LowsideCurrentSense(float _shunt_resistor, float _gain, int
 void LowsideCurrentSense::init(){
     // configure ADC variables
     _configureADCLowSide(pinA,pinB,pinC);
+    // sync the driver
+    _driverSyncLowSide();
     // calibrate zero offsets
     calibrateOffsets();
 }
