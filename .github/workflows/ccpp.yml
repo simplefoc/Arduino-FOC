@@ -33,6 +33,6 @@ jobs:
       uses: ArminJo/arduino-test-compile@v1.0.0
       with:
           arduino-board-fqbn: ${{ matrix.arduino-boards-fqbn }}
-          required-libraries: PciManager
+          libraries: PciManager
           platform-url: ${{ matrix.platform-url }}
           sketches-exclude: ${{ matrix.sketches-exclude }}
