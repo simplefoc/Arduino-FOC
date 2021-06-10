@@ -6,7 +6,6 @@
 #include "Arduino.h"
 #include <Wire.h>
 #include <SimpleFOC.h>
-#include <Math.h>
 
 // this is for an AS5048B absolute magnetic encoder on I2C address 0x41
 MagneticSensorI2C sensor = MagneticSensorI2C(0x41, 14, 0xFE, 8);
