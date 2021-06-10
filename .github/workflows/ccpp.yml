@@ -10,9 +10,10 @@ jobs:
         arduino-boards-fqbn:
           - arduino:avr:uno
           - arduino:sam:arduino_due_x
+          - arduino:samd:nano_33_iot 
           - esp32:esp32:esp32doit-devkit-v1
           - STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
-#           - STM32:stm32:Nucleo_64:pnum=NUCLEO_F411RE 
+          - STM32:stm32:Nucleo_64:pnum=NUCLEO_F411RE 
           
         include:
           - arduino-boards-fqbn: arduino:avr:uno
@@ -22,6 +23,9 @@ jobs:
 
           - arduino-boards-fqbn: arduino:sam:arduino_due_x
             sketch-names: single_full_control_example.ino
+            
+          - arduino-boards-fqbn: arduino:samd:nano_33_iot 
+            sketch-names: nano33IoT_velocity_control.ino, smartstepper_control.ino
           
           - arduino-boards-fqbn: esp32:esp32:esp32doit-devkit-v1
             platform-url: https://dl.espressif.com/dl/package_esp32_index.json
@@ -31,9 +35,9 @@ jobs:
             platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json 
             sketch-names: bluepill_position_control.ino, stm32_i2c_dual_bus_example.ino, magnetic_sensor_spi_alt_example.ino
             
-          - arduino-boards-fqbn: STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
+          - arduino-boards-fqbn: STM32:stm32:Nucleo_64:pnum=NUCLEO_F411RE
             platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json 
-            sketch-names: bluepill_position_control.ino, stm32_i2c_dual_bus_example.ino, magnetic_sensor_spi_alt_example.ino
+            sketch-names: single_full_control_example.ino
             
         
 
