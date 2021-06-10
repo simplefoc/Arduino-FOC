@@ -30,9 +30,9 @@ jobs:
     - name: Checkout
       uses: actions/checkout@master
     - name: Compile all examples
-      uses: ArminJo/arduino-test-compile@v1.0.0
+      uses: ArminJo/arduino-test-compile@master
       with:
           arduino-board-fqbn: ${{ matrix.arduino-boards-fqbn }}
-          libraries: PciManager
+          required-libraries: PciManager
           platform-url: ${{ matrix.platform-url }}
           sketches-exclude: ${{ matrix.sketches-exclude }}
