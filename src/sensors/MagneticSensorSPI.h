@@ -44,9 +44,7 @@ class MagneticSensorSPI: public Sensor{
 
     // implementation of abstract functions of the Sensor class
     /** get current angle (rad) */
-    float getAngle() override;
-    /** get current angular velocity (rad/s) **/
-    float getVelocity() override;
+    float getSensorAngle() override;
 
     // returns the spi mode (phase/polarity of read/writes) i.e one of SPI_MODE0 | SPI_MODE1 | SPI_MODE2 | SPI_MODE3
     int spi_mode;
@@ -74,14 +72,6 @@ class MagneticSensorSPI: public Sensor{
      * it uses angle_register variable
      */
     int getRawCount();
-
-    // total angle tracking variables
-    float full_rotation_offset; //!<number of full rotations made
-    float angle_data_prev; //!< angle in previous position calculation step
-
-    // velocity calculation variables
-    float angle_prev; //!< angle in previous velocity calculation step
-    long velocity_calc_timestamp; //!< last velocity calculation timestamp
     
     int bit_resolution; //!< the number of bites of angle data
     int command_parity_bit; //!< the bit where parity flag is stored in command

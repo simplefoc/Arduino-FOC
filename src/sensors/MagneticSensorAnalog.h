@@ -29,10 +29,7 @@ class MagneticSensorAnalog: public Sensor{
     
     // implementation of abstract functions of the Sensor class
     /** get current angle (rad) */
-    float getAngle() override;
-    /** get current angular velocity (rad/s) **/
-    float getVelocity() override;
- 
+    float getSensorAngle() override;
     /** raw count (typically in range of 0-1023), useful for debugging resolution issues */
     int raw_count;
 
@@ -47,16 +44,6 @@ class MagneticSensorAnalog: public Sensor{
      * it uses angle_register variable
      */
     int getRawCount();
-
-    // total angle tracking variables
-    float full_rotation_offset; //!<number of full rotations made
-    int raw_count_prev; //!< angle in previous position calculation step
-
-    // velocity calculation variables
-    float angle_prev; //!< angle in previous velocity calculation step
-    long velocity_calc_timestamp; //!< last velocity calculation timestamp
-    float velocity;
-    
 
 };
 

@@ -101,6 +101,7 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction _sensor_direction
   if(sensor){
     exit_flag *= alignSensor();
     // added the shaft_angle update
+    sensor->updateSensor();
     shaft_angle = sensor->getAngle();
   }else if(monitor_port) monitor_port->println(F("MOT: No sensor."));
 
@@ -164,6 +165,7 @@ int BLDCMotor::alignSensor() {
       _delay(2);
     }
     // take and angle in the middle
+    sensor->updateSensor();
     float mid_angle = sensor->getAngle();
     // move one electrical revolution backwards
     for (int i = 500; i >=0; i-- ) {
@@ -171,6 +173,7 @@ int BLDCMotor::alignSensor() {
       setPhaseVoltage(voltage_sensor_align, 0,  angle);
       _delay(2);
     }
+    sensor->updateSensor();
     float end_angle = sensor->getAngle();
     setPhaseVoltage(0, 0, 0);
     _delay(200);
@@ -201,6 +204,7 @@ int BLDCMotor::alignSensor() {
     // set angle -90(270 = 3PI/2) degrees
     setPhaseVoltage(voltage_sensor_align, 0,  _3PI_2);
     _delay(700);
+    sensor->updateSensor();
     zero_electric_angle = _normalizeAngle(_electricalAngle(sensor_direction*sensor->getAngle(), pole_pairs));
     _delay(20);
     if(monitor_port){
@@ -217,7 +221,8 @@ int BLDCMotor::alignSensor() {
 // Encoder alignment the absolute zero angle
 // - to the index
 int BLDCMotor::absoluteZeroSearch() {
-
+  // sensor precision: this is all ok, as the search happens near the 0-angle, where the precision
+  //                    of float is sufficient.
   if(monitor_port) monitor_port->println(F("MOT: Index search..."));
   // search the absolute zero with small velocity
   float limit_vel = velocity_limit;
@@ -229,7 +234,7 @@ int BLDCMotor::absoluteZeroSearch() {
     angleOpenloop(1.5f*_2PI);
     // call important for some sensors not to loose count
     // not needed for the search
-    sensor->getAngle();
+    sensor->updateSensor();
   }
   // disable motor
   setPhaseVoltage(0, 0, 0);
@@ -247,15 +252,25 @@ int BLDCMotor::absoluteZeroSearch() {
 // Iterative function looping FOC algorithm, setting Uq on the Motor
 // The faster it can be run the better
 void BLDCMotor::loopFOC() {
+  // update sensor - do this even in open-loop mode, as user may be switching between modes and we could lose track
+  //                 of full rotations otherwise.
+  if (sensor) sensor->updateSensor();
+
   // if open-loop do nothing
   if( controller==MotionControlType::angle_openloop || controller==MotionControlType::velocity_openloop ) return;
+  
   // shaft angle
+  // TODO sensor precision: the shaft_angle actually stores the complete position, including full rotations, as a float
+  //                        For this reason it is NOT precise when the angles become large.
+  //                        Additionally, the way LPF works on angle is a precision issue, and the angle-LPF is a problem
+  //                        when switching to a 2-component representation.
   shaft_angle = shaftAngle(); // read value even if motor is disabled to keep the monitoring updated
 
   // if disabled do nothing
   if(!enabled) return;
 
   // electrical angle - need shaftAngle to be called first
+  // TODO sensor precision: this will have precision issues because the shaft_angle does...
   electrical_angle = electricalAngle();
 
   switch (torque_controller) {
@@ -300,14 +315,14 @@ void BLDCMotor::loopFOC() {
 // - if target is not set it uses motor.target value
 void BLDCMotor::move(float new_target) {
 
-  // get angular velocity
+  // downsampling (optional)
+  if(motion_cnt++ < motion_downsample) return;
+  motion_cnt = 0;
+  // get angular velocity - sensor precision: this value is numerically precise. It is filtered by Velocity LPF, and downsamling (depending on sensor)
   shaft_velocity = shaftVelocity(); // read value even if motor is disabled to keep the monitoring updated
 
   // if disabled do nothing
   if(!enabled) return;
-  // downsampling (optional)
-  if(motion_cnt++ < motion_downsample) return;
-  motion_cnt = 0;
   // set internal target variable
   if(_isset(new_target)) target = new_target;
 
@@ -322,11 +337,14 @@ void BLDCMotor::move(float new_target) {
       }
       break;
     case MotionControlType::angle:
+      // TODO sensor precision: this calculation is not numerically precise. The target value cannot express precise positions when
+      //                        the angles are large. This results in not being able to command small changes at high position values.
+      //                        to solve this, the delta-angle has to be calculated in a numerically precise way.
       // angle set point
       shaft_angle_sp = target;
       // calculate velocity set point
       shaft_velocity_sp = P_angle( shaft_angle_sp - shaft_angle );
-      // calculate the torque command
+      // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
       current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
       // if torque controlled through voltage
       if(torque_controller == TorqueControlType::voltage){
@@ -337,7 +355,7 @@ void BLDCMotor::move(float new_target) {
       }
       break;
     case MotionControlType::velocity:
-      // velocity set point
+      // velocity set point - sensor precision: this calculation is numerically precise.
       shaft_velocity_sp = target;
       // calculate the torque command
       current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if current/foc_current torque control
@@ -350,13 +368,16 @@ void BLDCMotor::move(float new_target) {
       }
       break;
     case MotionControlType::velocity_openloop:
-      // velocity control in open loop
+      // velocity control in open loop - sensor precision: this calculation is numerically precise.
       shaft_velocity_sp = target;
       voltage.q = velocityOpenloop(shaft_velocity_sp); // returns the voltage that is set to the motor
       voltage.d = 0;
       break;
     case MotionControlType::angle_openloop:
-      // angle control in open loop
+      // angle control in open loop - 
+      // TODO sensor precision: this calculation NOT numerically precise, and subject
+      //                        to the same problems in small set-point changes at high angles 
+      //                        as the closed loop version.
       shaft_angle_sp = target;
       voltage.q = angleOpenloop(shaft_angle_sp); // returns the voltage that is set to the motor
       voltage.d = 0;
@@ -574,6 +595,8 @@ float BLDCMotor::velocityOpenloop(float target_velocity){
   // quick fix for strange cases (micros overflow + timestamp not defined)
   if(Ts <= 0 || Ts > 0.5f) Ts = 1e-3f;
 
+  // sensor precision: this calculation is numerically precise since we re-normalize
+  //                   the shaft-angle to the range 0-2PI
   // calculate the necessary angle to achieve target velocity
   shaft_angle = _normalizeAngle(shaft_angle + target_velocity*Ts);
   // for display purposes
@@ -583,6 +606,8 @@ float BLDCMotor::velocityOpenloop(float target_velocity){
   float Uq = voltage_limit;
   if(_isset(phase_resistance)) Uq =  current_limit*phase_resistance;
 
+  // sensor precision: this calculation is numerically precise, since shaft_angle is
+  //                   in the range 0-2PI
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
   setPhaseVoltage(Uq,  0, _electricalAngle(shaft_angle, pole_pairs));
 
@@ -605,6 +630,9 @@ float BLDCMotor::angleOpenloop(float target_angle){
 
   // calculate the necessary angle to move from current position towards target angle
   // with maximal velocity (velocity_limit)
+  // TODO sensor precision: this calculation is not numerically precise. The angle can grow to the point
+  //                        where small position changes are no longer captured by the precision of floats
+  //                        when the total position is large.
   if(abs( target_angle - shaft_angle ) > abs(velocity_limit*Ts)){
     shaft_angle += _sign(target_angle - shaft_angle) * abs( velocity_limit )*Ts;
     shaft_velocity = velocity_limit;
@@ -618,6 +646,10 @@ float BLDCMotor::angleOpenloop(float target_angle){
   float Uq = voltage_limit;
   if(_isset(phase_resistance)) Uq =  current_limit*phase_resistance;
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
+  // TODO sensor precision: this calculation is not numerically precise. The angle is not constrained,
+  //                        and can grow large. It first gets multiplied by the number of pole-pairs (in _electrocalAngle()),
+  //                        and then gets normalized to 0-2PI (before it gets used in setPhaseVoltage()). At large angles,
+  //                        the precision can mean the range 0-2PI is not well represented at the end of that calculation.
   setPhaseVoltage(Uq,  0, _electricalAngle(shaft_angle, pole_pairs));
 
   // save timestamp for next call

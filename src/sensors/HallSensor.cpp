@@ -92,11 +92,19 @@ void HallSensor::attachSectorCallback(void (*_onSectorChange)(int sector)) {
   onSectorChange = _onSectorChange;
 }
 
+
+
+float HallSensor::getSensorAngle() {
+  return getShaftAngle();
+}
+
+
+
 /*
 	Shaft angle calculation
 */
-float HallSensor::getAngle() {
-  return ((electric_rotations * 6 + electric_sector) / cpr) * _2PI ;
+float HallSensor::getShaftAngle() {
+  return (float)((electric_rotations * 6 + electric_sector) % cpr) * _2PI ;
 }
 
 /*
@@ -104,15 +112,35 @@ float HallSensor::getAngle() {
   function using mixed time and frequency measurement technique
 */
 float HallSensor::getVelocity(){
-  if (pulse_diff == 0 || ((_micros() - pulse_timestamp) > pulse_diff) ) { // last velocity isn't accurate if too old
+  if (pulse_diff == 0 || ((long)(_micros() - pulse_timestamp) > pulse_diff) ) { // last velocity isn't accurate if too old
     return 0;
   } else {
-    return direction * (_2PI / cpr) / (pulse_diff / 1000000.0f);
+    return direction * (_2PI / (float)cpr) / (pulse_diff / 1000000.0f);
   }
 
 }
 
-// HallSensor initialisation of the hardware pins
+
+
+float HallSensor::getAngle() {
+  return ((float)(electric_rotations * 6 + electric_sector) / (float)cpr) * _2PI ;
+}
+
+
+double HallSensor::getPreciseAngle() {
+  return ((double)(electric_rotations * 6 + electric_sector) / (double)cpr) * (double)_2PI ;
+}
+
+
+int32_t HallSensor::getFullRotations() {
+  return (int32_t)((electric_rotations * 6 + electric_sector) / cpr);
+}
+
+
+
+
+
+// HallSensor initialisation of the hardware pins 
 // and calculation variables
 void HallSensor::init(){
   // initialise the electrical rotations to 0
