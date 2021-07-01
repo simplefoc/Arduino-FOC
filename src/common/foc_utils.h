@@ -5,7 +5,7 @@
 
 // sign function
 #define _sign(a) ( ( (a) < 0 )  ?  -1   : ( (a) > 0 ) )
-#define _round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
+#define _round(x) ((x)>=0?(long)((x)+0.5f):(long)((x)-0.5f))
 #define _constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 #define _sqrt(a) (_sqrtApprox(a))
 #define _isset(a) ( (a) != (NOT_SET) )
@@ -25,7 +25,7 @@
 #define _3PI_2 4.71238898038f
 #define _PI_6 0.52359877559f
 
-#define NOT_SET -12345.0
+#define NOT_SET -12345.0f
 #define _HIGH_IMPEDANCE 0
 #define _HIGH_Z _HIGH_IMPEDANCE
 #define _ACTIVE 1
