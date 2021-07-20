@@ -16,24 +16,8 @@ Therefore this is an attempt to:
    - ***NEW*** 📢: *Medium-power* BLDC driver (<30Amps): [Arduino <span class="simple">Simple<b>FOC</b>PowerShield</span> ](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
-##### <b> Release notes be:</b> <i>Simple<b>FOC</b>library</i> v2.1.1
-> - bugfixes commander
-> - bugfix `voltage_limit` when provided `phase_resistance`
-> - bugfix `hall_sensor` examples 
-> - added examples fot the PowerShield
-> - added initial support for `MagneticSensorPWM`
-> - SAMD51 support 
-> - **initial support for Raspberry pi Pico**
-> - added examples to find the raw max and min of the analog and pwm sensor
-> - extension of the `Commander` interface
->   - added pwm centering option `WC`
->   - added pwm modulation cmd `WT`
-> - improved esp32 implementation to avoid the need for mcpwm.h changes by @tschundler 
-> - issue #62: motor.shaft_angle setting in the motor.initFOC() 
-> - issue #76: esp32 division by zero  
-> - issue #46: commander end of line character - by @maxlem
-> - [community fix](https://community.simplefoc.com/t/as5600-dead-spot-around-0/208) AS5600 register value
-> - renamed `Pullup::EXTERN` and `Pullup::INTERN` to `Pullup::USE_EXTERN` and `Pullup::USE_INTERN`
+##### <b> Release notes be:</b> <i>Simple<b>FOC</b>library</i> v2.1.2
+> - Sensor floating point error bugfux #83 
 
 ## Arduino *SimpleFOClibrary* v2.1
 
