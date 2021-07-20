@@ -32,8 +32,10 @@ InlineCurrentSense current_sense2 = InlineCurrentSense(0.01, 50.0, A1, A3);
 
 // commander communication instance
 Commander command = Commander(Serial);
-void doMotor1(char* cmd){ command.motor(&motor1, cmd); }
-void doMotor2(char* cmd){ command.motor(&motor2, cmd); }
+// void doMotor1(char* cmd){ command.motor(&motor1, cmd); }
+// void doMotor2(char* cmd){ command.motor(&motor2, cmd); }
+void doTarget1(char* cmd){ command.scalar(&motor1.target, cmd); }
+void doTarget2(char* cmd){ command.scalar(&motor2.target, cmd); }
 
 void setup() {
 
@@ -111,8 +113,10 @@ void setup() {
   motor2.target = 2;
 
   // subscribe motor to the commander
-  command.add('A', doMotor1, "motor 1");
-  command.add('B', doMotor2, "motor 2");
+  // command.add('A', doMotor1, "motor 1");
+  // command.add('B', doMotor2, "motor 2");
+  command.add('A', doTarget1, "target motor 1");
+  command.add('B', doTarget2, "target motor 2");
 
   // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)
   Serial.println("Double motor sketch ready.");
