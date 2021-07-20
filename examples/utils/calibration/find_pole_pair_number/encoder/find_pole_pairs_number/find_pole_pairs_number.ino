@@ -64,6 +64,7 @@ void setup() {
   motor.move(0);
   _delay(1000);
   // read the encoder angle
+  encoder.update(); 
   float angle_begin = encoder.getAngle();
   _delay(50);
 
@@ -75,6 +76,7 @@ void setup() {
   }
   _delay(1000);
   // read the encoder value for 180
+  encoder.update(); 
   float angle_end = encoder.getAngle();
   _delay(50);
   // turn off the motor

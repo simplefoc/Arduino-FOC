@@ -95,16 +95,17 @@ void HallSensor::attachSectorCallback(void (*_onSectorChange)(int sector)) {
 
 
 float HallSensor::getSensorAngle() {
-  return getShaftAngle();
+  return getAngle();
 }
 
 
 
 /*
 	Shaft angle calculation
+  TODO: numerical precision issue here if the electrical rotation overflows the angle will be lost
 */
-float HallSensor::getShaftAngle() {
-  return (float)((electric_rotations * 6 + electric_sector) % cpr) * _2PI ;
+float HallSensor::getMechanicalAngle() {
+  return ((float)((electric_rotations * 6 + electric_sector) % cpr) / (float)cpr) * _2PI ;
 }
 
 /*

@@ -102,10 +102,11 @@ void Encoder::handleIndex() {
 	Shaft angle calculation
 */
 float Encoder::getSensorAngle(){
-  return getShaftAngle();
+  return getAngle();
 }
-float Encoder::getShaftAngle(){
-  return  _2PI * (pulse_counter % (int)cpr);
+// TODO: numerical precision issue here if the pulse_counter overflows the angle will be lost
+float Encoder::getMechanicalAngle(){
+  return  _2PI * ((pulse_counter) % ((int)cpr)) / ((float)cpr);
 }
 
 float Encoder::getAngle(){

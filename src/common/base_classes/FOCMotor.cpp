@@ -66,7 +66,9 @@ float FOCMotor::shaftVelocity() {
 }
 
 float FOCMotor::electricalAngle(){
-  return _normalizeAngle((shaft_angle + sensor_offset) * pole_pairs - zero_electric_angle);
+  // if no sensor linked return previous value ( for open loop )
+  if(!sensor) return electrical_angle;
+  return sensor_direction * _normalizeAngle(sensor->getMechanicalAngle() * pole_pairs - zero_electric_angle);
 }
 
 /**

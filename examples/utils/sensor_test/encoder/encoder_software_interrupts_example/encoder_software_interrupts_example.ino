@@ -46,6 +46,10 @@ void setup() {
 }
 
 void loop() {
+  // iterative function updating the sensor internal variables
+  // it is usually called in motor.loopFOC()
+  // not doing much for the encoder though
+  encoder.update();
   // display the angle and the angular velocity to the terminal
   Serial.print(encoder.getAngle());
   Serial.print("\t");

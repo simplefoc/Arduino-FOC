@@ -4,7 +4,7 @@
 
 // TODO add an init method to make the startup smoother by initializing internal variables to current values rather than 0
 
-void Sensor::updateSensor() {
+void Sensor::update() {
     float val = getSensorAngle();
     angle_prev_ts = _micros();
     float d_angle = val - angle_prev;
@@ -14,7 +14,7 @@ void Sensor::updateSensor() {
 }
 
 
- /** get current angular velocity (rad/s)*/
+ /** get current angular velocity (rad/s) */
 float Sensor::getVelocity() {
     // calculate sample time
     float Ts = (angle_prev_ts - vel_angle_prev_ts)*1e-6;
@@ -43,7 +43,7 @@ void Sensor::init() {
 }
 
 
-float Sensor::getShaftAngle() {
+float Sensor::getMechanicalAngle() {
     return angle_prev;
 }
 

@@ -33,6 +33,11 @@ int max_count = 0;
 int min_count = 100000; 
 
 void loop() {
+  // iterative function updating the sensor internal variables
+  // it is usually called in motor.loopFOC()
+  // this function reads the sensor hardware and 
+  // has to be called before getAngle nad getVelocity
+  sensor.update();
 
   // keep track of min and max
   if(sensor.raw_count > max_count) max_count = sensor.raw_count;
