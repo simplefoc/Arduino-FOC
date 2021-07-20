@@ -76,7 +76,7 @@ void setup() {
   command.add('M', doMotor, "motor");
 
   // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)
-  Serial.println(F("Motor commands sketch | Initial motion control > torque/voltage : target 2V."));
+  Serial.println("Motor commands sketch | Initial motion control > torque/voltage : target 2V.");
 
   _delay(1000);
 }

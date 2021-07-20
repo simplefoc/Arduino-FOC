@@ -115,7 +115,7 @@ void setup() {
   command.add('B', doMotor2, "motor 2");
 
   // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)
-  Serial.println(F("Double motor sketch ready."));
+  Serial.println("Double motor sketch ready.");
 
   _delay(1000);
 }
