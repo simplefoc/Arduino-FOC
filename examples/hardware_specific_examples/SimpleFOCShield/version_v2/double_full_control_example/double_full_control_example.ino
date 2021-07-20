@@ -115,11 +115,11 @@ void setup() {
   // subscribe motor to the commander
   // command.add('A', doMotor1, "motor 1");
   // command.add('B', doMotor2, "motor 2");
-  command.add('A', doTarget1, "target motor 1");
-  command.add('B', doTarget2, "target motor 2");
+  command.add('A', doTarget1, "target 1");
+  command.add('B', doTarget2, "target 2");
 
   // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)
-  Serial.println("Double motor sketch ready.");
+  Serial.println("Motors ready.");
 
   _delay(1000);
 }
