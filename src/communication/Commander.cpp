@@ -90,7 +90,7 @@ void Commander::run(char* user_input){
     default:
       for(int i=0; i < call_count; i++){
         if(id == call_ids[i]){
-          call_list[i](&user_input[1]);
+          call_list[i](&user_input[0]);
           break;
         }
       }
