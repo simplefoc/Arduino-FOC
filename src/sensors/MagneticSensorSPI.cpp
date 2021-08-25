@@ -128,7 +128,7 @@ word MagneticSensorSPI::read(word angle_register){
   spi->transfer16(command);
   digitalWrite(chip_select_pin,HIGH);
   
-#if defined( ESP_H ) // if ESP32 board
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) // if ESP32 board
   delayMicroseconds(50); // why do we need to delay 50us on ESP32? In my experience no extra delays are needed, on any of the architectures I've tested...
 #else
   delayMicroseconds(1); // delay 1us, the minimum time possible in plain arduino. 350ns is the required time for AMS sensors, 80ns for MA730, MA702
