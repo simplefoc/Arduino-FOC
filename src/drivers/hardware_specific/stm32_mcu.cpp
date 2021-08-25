@@ -72,11 +72,11 @@ HardwareTimer* _initPinPWMLow(uint32_t PWM_freq, int ulPin)
     sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
     sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
 #if defined(TIM_OCIDLESTATE_SET)
-    sConfig.OCIdleState  = TIM_OCIDLESTATE_SET;
+    sConfigOC.OCIdleState  = TIM_OCIDLESTATE_SET;
 #endif
 #if defined(TIM_OCNIDLESTATE_RESET)
-    sConfig.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
-    sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+    sConfigOC.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
+    sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
 #endif
     uint32_t channel = STM_PIN_CHANNEL(pinmap_function(pin, PinMap_PWM));
     HAL_TIM_PWM_ConfigChannel(&(HardwareTimer_Handle[index]->handle), &sConfigOC, channel);
