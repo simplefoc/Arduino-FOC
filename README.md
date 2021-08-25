@@ -16,8 +16,13 @@ Therefore this is an attempt to:
    - ***NEW*** 📢: *Medium-power* BLDC driver (<30Amps): [Arduino <span class="simple">Simple<b>FOC</b>PowerShield</span> ](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
-##### <b> Release notes:</b> <i>Simple<b>FOC</b>library</i> v2.1.2
+##### <b> Release notes:</b> <i>Simple<b>FOC</b>library</i> v2.2
 > - Sensor floating point error bugfux #83 
+> - Support for portenta h7 board
+> - Support for arduino leonardo #108
+> - Support for esp8266
+> - Low side current sensing support for esp32
+> - Restructured the generic code and simplified adding new mcus
 
 ## Arduino *SimpleFOClibrary* v2.1
 
