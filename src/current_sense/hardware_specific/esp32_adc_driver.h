@@ -5,7 +5,7 @@
 
 #include "Arduino.h"
 
-#ifdef ESP_H
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32)
 /*
  * Get ADC value for pin
  * */

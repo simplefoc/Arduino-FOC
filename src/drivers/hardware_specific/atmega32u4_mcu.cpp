@@ -17,7 +17,7 @@ void _pinHighFrequency(const int pin){
     TCCR3B = ((TCCR3B & 0b11111000) | 0x01);     // set prescaler to 1
   else if ( pin == 6 || pin == 13 ) {  // a bit more complicated 10 bit timer
     // PLL Configuration
-    PLLFRQ= ((PLLFRQ & 0b11001111) | 0x20) // Use 96MHz / 1.5 = 64MHz
+    PLLFRQ= ((PLLFRQ & 0b11001111) | 0x20); // Use 96MHz / 1.5 = 64MHz
     TCCR4B = ((TCCR4B & 0b11110000) | 0xB); // configure prescaler to get 64M/2/1024 = 31.25 kHz
     TCCR4D = ((TCCR4D & 0b11111100) | 0x01); // configure the pwm phase-corrected mode
     
@@ -93,11 +93,8 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, in
 
 
 
-// Configuring PWM frequency, resolution and alignment
-// - BLDC driver - 6PWM setting
-// - hardware specific
-int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l) {
-  
+// function configuring pair of high-low side pwm channels, 32khz frequency and center aligned pwm
+int _configureComplementaryPair(int pinH, int pinL) {
   if( (pinH == 3 && pinL == 11 ) || (pinH == 11 && pinL == 3 ) ){
     // configure the pwm phase-corrected mode
     TCCR0A = ((TCCR0A & 0b11111100) | 0x01);
@@ -114,7 +111,7 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
     else TCCR1A = 0b11100000 | (TCCR1A & 0b00001111) ;
   }else if((pinH == 6 && pinL == 13 ) || (pinH == 13 && pinL == 6 ) ){
     // PLL Configuration
-    PLLFRQ= ((PLLFRQ & 0b11001111) | 0x20) // Use 96MHz / 1.5 = 64MHz
+    PLLFRQ= ((PLLFRQ & 0b11001111) | 0x20); // Use 96MHz / 1.5 = 64MHz
     TCCR4B = ((TCCR4B & 0b11110000) | 0xB); // configure prescaler to get 64M/2/1024 = 31.25 kHz
     TCCR4D = ((TCCR4D & 0b11111100) | 0x01); // configure the pwm phase-corrected mode
 
@@ -130,6 +127,22 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
     return -1;
   }
   return 0;
+}
+
+
+// Configuring PWM frequency, resolution and alignment
+// - BLDC driver - 6PWM setting
+// - hardware specific
+int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l) {
+  _UNUSED(pwm_frequency);
+  _UNUSED(dead_zone);
+  //  High PWM frequency
+  // - always max 32kHz
+  int ret_flag = 0;
+  ret_flag += _configureComplementaryPair(pinA_h, pinA_l);
+  ret_flag += _configureComplementaryPair(pinB_h, pinB_l);
+  ret_flag += _configureComplementaryPair(pinC_h, pinC_l);
+  return ret_flag; // returns -1 if not well configured
 }
 
 // function setting the 

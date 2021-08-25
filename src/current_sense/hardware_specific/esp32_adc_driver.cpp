@@ -1,6 +1,6 @@
 #include "esp32_adc_driver.h"
 
-#ifdef ESP_H
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32)
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"

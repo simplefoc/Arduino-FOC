@@ -1,6 +1,6 @@
 #include "../hardware_api.h"
 
-#if defined(ESP_H)
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32)
 
 #include "driver/mcpwm.h"
 #include "soc/mcpwm_reg.h"
