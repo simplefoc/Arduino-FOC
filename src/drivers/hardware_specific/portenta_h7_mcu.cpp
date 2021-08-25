@@ -1,7 +1,7 @@
 
 #include "../hardware_api.h"
 
-#if 1 //defined(TARGET_PORTENTA_H7)
+#if defined(TARGET_PORTENTA_H7)
 
 #include "pwmout_api.h"
 #include "pinDefinitions.h"
