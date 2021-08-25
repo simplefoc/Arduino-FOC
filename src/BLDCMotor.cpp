@@ -485,8 +485,8 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
       center = driver->voltage_limit/2;
       // Clarke transform
       Ua = Ualpha + center;
-      Ub = -0.5 * Ualpha  + _SQRT3_2 * Ubeta + center;
-      Uc = -0.5 * Ualpha - _SQRT3_2 * Ubeta + center;
+      Ub = -0.5f * Ualpha  + _SQRT3_2 * Ubeta + center;
+      Uc = -0.5f * Ualpha - _SQRT3_2 * Ubeta + center;
 
       if (!modulation_centered) {
         float Umin = min(Ua, min(Ub, Uc));
@@ -529,7 +529,7 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
       sector = floor(angle_el / _PI_3) + 1;
       // calculate the duty cycles
       float T1 = _SQRT3*_sin(sector*_PI_3 - angle_el) * Uout;
-      float T2 = _SQRT3*_sin(angle_el - (sector-1.0)*_PI_3) * Uout;
+      float T2 = _SQRT3*_sin(angle_el - (sector-1.0f)*_PI_3) * Uout;
       // two versions possible
       float T0 = 0; // pulled to 0 - better for low power supply voltage
       if (modulation_centered) {

@@ -93,6 +93,7 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, in
 
 
 
+
 // function configuring pair of high-low side pwm channels, 32khz frequency and center aligned pwm
 int _configureComplementaryPair(int pinH, int pinL) {
   if( (pinH == 3 && pinL == 11 ) || (pinH == 11 && pinL == 3 ) ){
@@ -143,7 +144,7 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
   ret_flag += _configureComplementaryPair(pinB_h, pinB_l);
   ret_flag += _configureComplementaryPair(pinC_h, pinC_l);
   return ret_flag; // returns -1 if not well configured
-}
+
 
 // function setting the 
 void _setPwmPair(int pinH, int pinL, float val, int dead_time)

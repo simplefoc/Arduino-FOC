@@ -23,11 +23,11 @@ float _sin(float a){
   }else if(a < _3PI_2){
     // return -sine_array[(int)(199.0f*((a - _PI) / (_PI/2.0)))];
     //return -sine_array[-398 + (int)(126.6873f*a)];           // float array optimized
-    return -0.0001*sine_array[-398 + _round(126.6873f*a)];      // int array optimized
+    return -0.0001f*sine_array[-398 + _round(126.6873f*a)];      // int array optimized
   } else {
     // return -sine_array[(int)(199.0f*(1.0f - (a - 3*_PI/2) / (_PI/2.0)))];
     //return -sine_array[796 - (int)(126.6873f*a)];           // float array optimized
-    return -0.0001*sine_array[796 - _round(126.6873f*a)];      // int array optimized
+    return -0.0001f*sine_array[796 - _round(126.6873f*a)];      // int array optimized
   }
 }
 
