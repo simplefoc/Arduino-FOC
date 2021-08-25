@@ -36,6 +36,7 @@ StepperDriver2PWM::StepperDriver2PWM(int _pwm1, int _dir1, int _pwm2, int _dir2,
   // default power-supply value
   voltage_power_supply = DEF_POWER_SUPPLY;
   voltage_limit = NOT_SET;
+  pwm_frequency = NOT_SET;
 
 }
 

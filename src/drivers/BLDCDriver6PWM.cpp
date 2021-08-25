@@ -15,6 +15,7 @@ BLDCDriver6PWM::BLDCDriver6PWM(int phA_h,int phA_l,int phB_h,int phB_l,int phC_h
   // default power-supply value
   voltage_power_supply = DEF_POWER_SUPPLY;
   voltage_limit = NOT_SET;
+  pwm_frequency = NOT_SET;
 
   // dead zone initial - 2%
   dead_zone = 0.02f;
