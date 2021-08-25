@@ -209,6 +209,7 @@ int BLDCMotor::alignSensor() {
     // get the current zero electric angle
     zero_electric_angle = 0;
     zero_electric_angle = electricalAngle();
+    //zero_electric_angle =  _normalizeAngle(_electricalAngle(sensor_direction*sensor->getAngle(), pole_pairs));
     _delay(20);
     if(monitor_port){
       monitor_port->print(F("MOT: Zero elec. angle: "));

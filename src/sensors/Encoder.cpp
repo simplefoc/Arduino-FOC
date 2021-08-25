@@ -98,6 +98,11 @@ void Encoder::handleIndex() {
   }
 }
 
+
+void Encoder::update() {
+    // do nothing for Encoder
+}
+
 /*
 	Shaft angle calculation
 */
