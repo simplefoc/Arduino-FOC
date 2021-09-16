@@ -30,10 +30,10 @@ public:
     float output_ramp; //!< Maximum speed of change of the output value
     float limit; //!< Maximum output value
 
+protected:
+
     float output_prev;  //!< last pid output value
     float integral_prev; //!< last integral component value
-
-protected:
     float integral_antiwindup_prev; //!< last integral antiwindup component value
     float error_prev; //!< last tracking error value
     unsigned long timestamp_prev; //!< Last execution timestamp
