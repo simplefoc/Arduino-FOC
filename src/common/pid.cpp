@@ -28,9 +28,11 @@ float PIDController::operator() (float error){
     float proportional = P * error;
     // Tustin transform of the integral part
     // u_ik = u_ik_1  + I*Ts/2*(ek + ek_1)
-    float integral = integral_prev + I*Ts*0.5f*(error + error_prev);
+    // method uses the antiwindup Foxboro method : https://core.ac.uk/download/pdf/289952713.pdf
+    float integral = integral_prev + I*Ts*0.5f*(error + error_prev) + integral_antiwindup_prev*I;
     // antiwindup - limit the output
-    integral = _constrain(integral, -limit, limit);
+    float integral_constrained = _constrain(integral, -limit, limit);
+    integral_antiwindup_prev = integral - integral_constrained;
     // Discrete derivation
     // u_dk = D(ek - ek_1)/Ts
     float derivative = D*(error - error_prev)/Ts;
