@@ -102,7 +102,7 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction _sensor_direction
     exit_flag *= alignSensor();
     // added the shaft_angle update
     sensor->update();
-    shaft_angle = sensor->getAngle();
+    shaft_angle = shaftAngle();
   }else if(monitor_port) monitor_port->println(F("MOT: No sensor."));
 
   // aligning the current sensor - can be skipped
@@ -270,7 +270,6 @@ void BLDCMotor::loopFOC() {
   // This function will not have numerical issues because it uses Sensor::getMechanicalAngle() 
   // which is in range 0-2PI
   electrical_angle = electricalAngle();
-
   switch (torque_controller) {
     case TorqueControlType::voltage:
       // no need to do anything really
