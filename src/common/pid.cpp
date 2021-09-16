@@ -9,6 +9,7 @@ PIDController::PIDController(float P, float I, float D, float ramp, float limit)
     , integral_prev(0.0f)
     , error_prev(0.0f)
     , output_prev(0.0f)
+    , integral_antiwindup_prev(0.0f)
 {
     timestamp_prev = _micros();
 }
