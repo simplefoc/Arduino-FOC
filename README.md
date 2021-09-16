@@ -17,12 +17,13 @@ Therefore this is an attempt to:
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
 ##### <b> Release notes:</b> <i>Simple<b>FOC</b>library</i> v2.2
-> - Sensor floating point error bugfux #83 
+> - Sensor floating point error bugfux #83
 > - Support for portenta h7 board
 > - Support for arduino leonardo #108
 > - Support for esp8266
 > - Low side current sensing support for esp32
 > - Restructured the generic code and simplified adding new mcus
+> - Awesome :smiley: Low side current sening support for B_G431B_ESC1 by [@sDessens](https://github.com/sDessens): PR #73 
 
 ## Arduino *SimpleFOClibrary* v2.1
 
