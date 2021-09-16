@@ -108,15 +108,19 @@ void FOCMotor::monitor() {
     DQCurrent_s c{0,0};
     if(current_sense){
       if(torque_controller == TorqueControlType::foc_current) c = current;
-      else c = current_sense->getFOCCurrents(electrical_angle);
+      else{
+    	  c = current_sense->getFOCCurrents(electrical_angle);
+        c.q = LPF_current_q(c.q);
+        c.d = LPF_current_d(c.d);
+      }
     }
     if(monitor_variables & _MON_CURR_Q) {
-      monitor_port->print(c.q*1000,2); // mAmps
+      monitor_port->print(c.q*1000, 2); // mAmps
       monitor_port->print("\t");
       printed= true;
     }
     if(monitor_variables & _MON_CURR_D) {
-      monitor_port->print(c.d*1000,2); // mAmps
+      monitor_port->print(c.d*1000, 2); // mAmps
       monitor_port->print("\t");
       printed= true;
     }
