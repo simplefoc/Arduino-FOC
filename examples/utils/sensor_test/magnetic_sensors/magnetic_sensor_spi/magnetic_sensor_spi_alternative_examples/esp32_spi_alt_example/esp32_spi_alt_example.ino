@@ -13,7 +13,7 @@ MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, HSPI_SS);
 
 // for esp 32, it has 2 spi interfaces VSPI (default) and HPSI as the second one
 // to enable it instatiate the object
-SPIClass SPI_2(HSPI)
+SPIClass SPI_2(HSPI);
 
 void setup() {
   // monitoring port
