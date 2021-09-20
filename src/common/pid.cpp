@@ -6,9 +6,9 @@ PIDController::PIDController(float P, float I, float D, float ramp, float limit)
     , D(D)
     , output_ramp(ramp)    // output derivative limit [volts/second]
     , limit(limit)         // output supply limit     [volts]
-    , integral_prev(0.0f)
     , error_prev(0.0f)
     , output_prev(0.0f)
+    , integral_prev(0.0f)
     , integral_antiwindup_prev(0.0f)
 {
     timestamp_prev = _micros();
