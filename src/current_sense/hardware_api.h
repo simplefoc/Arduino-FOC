@@ -1,5 +1,5 @@
-#ifndef HARDWARE_UTILS_H
-#define HARDWARE_UTILS_H
+#ifndef HARDWARE_UTILS_CURRENT_H
+#define HARDWARE_UTILS_CURRENT_H
 
 #include "../common/foc_utils.h"
 #include "../common/time_utils.h"
