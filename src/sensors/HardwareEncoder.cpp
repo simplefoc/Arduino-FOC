@@ -10,6 +10,7 @@ HardwareEncoder::HardwareEncoder(unsigned int _ppr) {
     overflow_count = 0;
     count = 0;
     prev_count = 0;
+    prev_overflow_count = 0;
     pulse_timestamp = 0;
 
     cpr = _ppr;
@@ -29,6 +30,7 @@ void HardwareEncoder::update() {
     prev_timestamp = pulse_timestamp;
     pulse_timestamp = getCurrentMicros();
 
+    prev_overflow_count = overflow_count;
     if (prev_count > (ticks_per_overflow - overflow_margin) &&
         prev_count <= ticks_per_overflow && count < overflow_margin)
         ++overflow_count;
@@ -69,7 +71,8 @@ float HardwareEncoder::getVelocity() {
         dt = 1e-3f;
 
     // time from last impulse
-    int32_t dN = count - prev_count;
+    int32_t overflow_diff = overflow_count - prev_overflow_count;
+    int32_t dN = (count - prev_count) + (ticks_per_overflow * overflow_diff);
 
     float pulse_per_second = dN / dt;
 
@@ -78,8 +81,7 @@ float HardwareEncoder::getVelocity() {
 }
 
 // getter for index pin
-// return -1 if no index
-int HardwareEncoder::needsSearch() { return -1; }
+int HardwareEncoder::needsSearch() { return false; }
 
 // private function used to determine if encoder has index
 int HardwareEncoder::hasIndex() { return 0; }
@@ -144,6 +146,7 @@ void HardwareEncoder::init() {
     overflow_count = 0;
     count = 0;
     prev_count = 0;
+    prev_overflow_count = 0;
 
     prev_timestamp = getCurrentMicros();
     pulse_timestamp = getCurrentMicros();

@@ -54,6 +54,7 @@ class HardwareEncoder : public Sensor {
     volatile int32_t overflow_count;
     volatile u_int16_t count;  //!< current pulse counter
     volatile u_int16_t prev_count;
+    volatile int32_t prev_overflow_count;
 
     // velocity calculation variables
     volatile int32_t pulse_timestamp, prev_timestamp;
