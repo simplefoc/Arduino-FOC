@@ -24,6 +24,7 @@ Therefore this is an attempt to:
 > - Low side current sensing support for esp32
 > - Restructured the generic code and simplified adding new mcus
 > - Awesome :smiley: Low side current sening support for B_G431B_ESC1 by [@sDessens](https://github.com/sDessens): PR #73 
+> - **The release will be mande as soon as the docs are ready**
 
 ## Arduino *SimpleFOClibrary* v2.1
 
