@@ -34,7 +34,6 @@ protected:
     float error_prev; //!< last tracking error value
     float output_prev;  //!< last pid output value
     float integral_prev; //!< last integral component value
-    float integral_antiwindup_prev; //!< last integral antiwindup component value
     unsigned long timestamp_prev; //!< Last execution timestamp
 };
 
