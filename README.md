@@ -26,11 +26,11 @@ Therefore this is an attempt to:
    <li>Removed initial jump #110, #111</li>
    <li>Double to float transformation of the code - performance increase by <a href="https://github.com/sDessens">@sDessens</a> (#100), <a href="https://github.com/KaSroka">@KaSroka</a> (#100)  </li>
    <li> <a href="https://docs.simplefoc.com/docs_chinese"><b>Docs webiste translated to Chinese!</b></a> 🎉: Awesome work 😃 by <a href="https://github.com/MINQING1101">@MINQING1101</a>, <a href="https://github.com/Deng-ge-open-source">@Deng-ge-open-source</a> and <a href="https://github.com/mingggggggg">@mingggggggg</a></li>
-   <li>New MCU support
+   <li>New MCU support - <a href="https://docs.simplefoc.com/microcontrollers">docs</a>
       <ul>
-         <li>Support for arduino leonardo #108 - <a href="https://docs.simplefoc.com/microcontrollers">docs</a></li>
-         <li>Initial support for portenta h7 board in collaboration with <img src="extras/Images/arduino.png" style="height:15px"><a href="https://www.arduino.cc/">Arduino</a> - <a href="https://docs.simplefoc.com/microcontrollers">docs</a></li>
-         <li>Initial support for esp8266 - <a href="https://docs.simplefoc.com/microcontrollers">docs</a></li>
+         <li>Support for arduino leonardo #108 </li>
+         <li>Initial support for portenta h7 board in collaboration with <img src="https://docs.simplefoc.com/extras/Images/arduino.png" height="15px"><a href="https://www.arduino.cc/">Arduino</a></li>
+         <li>Initial support for esp8266</li>
       </ul>
    </li>
    <li>Low side current sensing initial support - <a href="https://docs.simplefoc.com/current_sense">docs</a>
