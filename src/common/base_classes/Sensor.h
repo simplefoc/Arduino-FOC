@@ -28,8 +28,8 @@ enum Pullup{
  * Encoders, Magnetic Encoders and Hall Sensor implementations. This base class extracts the
  * most basic common features so that a FOC driver can obtain the data it needs for operation.
  * 
- * To implement your own sensors, create a sub-class of this class, and implement the getAngle()
- * method. getAngle() returns a float value, in radians, representing the current shaft angle in the
+ * To implement your own sensors, create a sub-class of this class, and implement the getSensorAngle()
+ * method. getSensorAngle() returns a float value, in radians, representing the current shaft angle in the
  * range 0 to 2*PI (one full turn). 
  * 
  * To function correctly, the sensor class update() method has to be called sufficiently quickly. Normally,
