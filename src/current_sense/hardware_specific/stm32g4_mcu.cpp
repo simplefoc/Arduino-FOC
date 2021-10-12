@@ -34,6 +34,10 @@ float _readADCVoltageInline(const int pin){
 
   return raw_adc * _ADC_CONV;
 }
+// do the same for low side sensing
+float _readADCVoltageLowSide(const int pin){
+  return _readADCVoltageInline(pin);
+}
 
 void _configureOPAMP(OPAMP_HandleTypeDef *hopamp, OPAMP_TypeDef *OPAMPx_Def){
   // could this be replaced with LL_OPAMP calls??
@@ -107,6 +111,10 @@ void _configureADCInline(const int pinA,const int pinB,const int pinC){
   if (adcBuffer1[0] == 0 || adcBuffer1[1] == 0 || adcBuffer2[0] == 0) {
     Error_Handler();
   }
+}
+// do the same for low side
+void _configureADCLowSide(const int pinA,const int pinB,const int pinC){
+  _configureADCInline(pinA, pinB, pinC);
 }
 
 extern "C" {

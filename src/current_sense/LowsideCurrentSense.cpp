@@ -75,11 +75,7 @@ int LowsideCurrentSense::driverSync(BLDCDriver *driver){
 // 3 - success but gains inverted
 // 4 - success but pins reconfigured and gains inverted
 int LowsideCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
-    //gain_a *= -1;
-    //gain_b *= -1;
-    //gain_c *= -1;
-
-    /*
+    
     int exit_flag = 1;
     if(skip_align) return exit_flag;
 
@@ -90,9 +86,9 @@ int LowsideCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
     // read the current 100 times ( arbitrary number )
     for (int i = 0; i < 100; i++) {
         PhaseCurrent_s c1 = getPhaseCurrents();
-        c.a = c.a*0.6 + 0.4f*c1.a;
-        c.b = c.b*0.6 + 0.4f*c1.b;
-        c.c = c.c*0.6 + 0.4f*c1.c;
+        c.a = c.a*0.6f + 0.4f*c1.a;
+        c.b = c.b*0.6f + 0.4f*c1.b;
+        c.c = c.c*0.6f + 0.4f*c1.c;
         _delay(3);
     }
     driver->setPwm(0, 0, 0);
@@ -165,7 +161,7 @@ int LowsideCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
         // read the adc voltage 500 times ( arbitrary number )
         for (int i = 0; i < 50; i++) {
             PhaseCurrent_s c1 = getPhaseCurrents();
-            c.c = (c.c+c1.c)/50.0;
+            c.c = (c.c+c1.c)/50.0f;
         }
         driver->setPwm(0, 0, 0);
         gain_c *= _sign(c.c);
@@ -180,6 +176,4 @@ int LowsideCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
     // 4 - success but pins reconfigured and gains inverted
 
     return exit_flag;
-    */
-    return 1;
 }

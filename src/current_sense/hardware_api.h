@@ -43,7 +43,4 @@ float _readADCVoltageLowSide(const int pinA);
  */
 void _driverSyncLowSide();
 
-
-void _startADC3PinConversionLowSide();
-
 #endif

@@ -7,7 +7,7 @@
 // Motor instance
 BLDCMotor motor = BLDCMotor(11);
 BLDCDriver6PWM driver = BLDCDriver6PWM(PHASE_UH, PHASE_UL, PHASE_VH, PHASE_VL, PHASE_WH, PHASE_WL);
-InlineCurrentSense currentSense = InlineCurrentSense(0.003, -64.0/7.0, OP1_OUT, OP2_OUT, OP3_OUT);
+LowsideCurrentSense currentSense = LowsideCurrentSense(0.003, -64.0/7.0, OP1_OUT, OP2_OUT, OP3_OUT);
 
 
 // encoder instance
@@ -43,6 +43,8 @@ void setup() {
 
   // current sensing
   currentSense.init();
+  // no need for aligning
+  currentSense.skip_align = true;
   motor.linkCurrentSense(&currentSense);
 
   // aligning voltage [V]
@@ -97,15 +99,8 @@ float target_angle = 0;
 
 void loop() {
   // main FOC algorithm function
-  // the faster you run this function the better
-  // Arduino UNO loop  ~1kHz
-  // Bluepill loop ~10kHz 
-  motor.loopFOC();
 
   // Motion control function
-  // velocity, position or voltage (defined in motor.controller)
-  // this function can be run at much lower frequency than loopFOC() function
-  // You can also use motor.move() and set the motor.target in the code
   motor.move(target_angle);
 
   // function intended to be used with serial plotter to monitor motor variables
