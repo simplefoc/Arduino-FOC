@@ -12,7 +12,7 @@ InlineCurrentSense::InlineCurrentSense(float _shunt_resistor, float _gain, int _
 
     shunt_resistor = _shunt_resistor;
     amp_gain  = _gain;
-    volts_to_amps_ratio = 1.0 /_shunt_resistor / _gain; // volts to amps
+    volts_to_amps_ratio = 1.0f /_shunt_resistor / _gain; // volts to amps
     // gains for each phase
     gain_a = volts_to_amps_ratio;
     gain_b = volts_to_amps_ratio;
@@ -22,7 +22,7 @@ InlineCurrentSense::InlineCurrentSense(float _shunt_resistor, float _gain, int _
 // Inline sensor init function
 void InlineCurrentSense::init(){
     // configure ADC variables
-    _configureADC(pinA,pinB,pinC);
+    _configureADCInline(pinA,pinB,pinC);
     // calibrate zero offsets
     calibrateOffsets();
 }
@@ -36,9 +36,9 @@ void InlineCurrentSense::calibrateOffsets(){
     offset_ic = 0;
     // read the adc voltage 1000 times ( arbitrary number )
     for (int i = 0; i < calibration_rounds; i++) {
-        offset_ia += _readADCVoltage(pinA);
-        offset_ib += _readADCVoltage(pinB);
-        if(_isset(pinC)) offset_ic += _readADCVoltage(pinC);
+        offset_ia += _readADCVoltageInline(pinA);
+        offset_ib += _readADCVoltageInline(pinB);
+        if(_isset(pinC)) offset_ic += _readADCVoltageInline(pinC);
         _delay(1);
     }
     // calculate the mean offsets
@@ -50,9 +50,9 @@ void InlineCurrentSense::calibrateOffsets(){
 // read all three phase currents (if possible 2 or 3)
 PhaseCurrent_s InlineCurrentSense::getPhaseCurrents(){
     PhaseCurrent_s current;
-    current.a = (_readADCVoltage(pinA) - offset_ia)*gain_a;// amps
-    current.b = (_readADCVoltage(pinB) - offset_ib)*gain_b;// amps
-    current.c = (!_isset(pinC)) ? 0 : (_readADCVoltage(pinC) - offset_ic)*gain_c; // amps
+    current.a = (_readADCVoltageInline(pinA) - offset_ia)*gain_a;// amps
+    current.b = (_readADCVoltageInline(pinB) - offset_ib)*gain_b;// amps
+    current.c = (!_isset(pinC)) ? 0 : (_readADCVoltageInline(pinC) - offset_ic)*gain_c; // amps
     return current;
 }
 // Function synchronizing current sense with motor driver.
@@ -72,36 +72,36 @@ int InlineCurrentSense::driverSync(BLDCDriver *driver){
 int InlineCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
     int exit_flag = 1;
     if(skip_align) return exit_flag;
-    
+
     // set phase A active and phases B and C down
     driver->setPwm(voltage, 0, 0);
-    _delay(200); 
+    _delay(200);
     PhaseCurrent_s c = getPhaseCurrents();
     // read the current 100 times ( arbitrary number )
     for (int i = 0; i < 100; i++) {
         PhaseCurrent_s c1 = getPhaseCurrents();
-        c.a = c.a*0.6 + 0.4*c1.a;
-        c.b = c.b*0.6 + 0.4*c1.b;
-        c.c = c.c*0.6 + 0.4*c1.c;
+        c.a = c.a*0.6f + 0.4f*c1.a;
+        c.b = c.b*0.6f + 0.4f*c1.b;
+        c.c = c.c*0.6f + 0.4f*c1.c;
         _delay(3);
     }
     driver->setPwm(0, 0, 0);
     // align phase A
     float ab_ratio = fabs(c.a / c.b);
     float ac_ratio = c.c ? fabs(c.a / c.c) : 0;
-    if( ab_ratio > 1.5 ){ // should be ~2    
+    if( ab_ratio > 1.5f ){ // should be ~2
         gain_a *= _sign(c.a);
-    }else if( ab_ratio < 0.7 ){ // should be ~0.5
+    }else if( ab_ratio < 0.7f ){ // should be ~0.5
         // switch phase A and B
         int tmp_pinA = pinA;
-        pinA = pinB; 
+        pinA = pinB;
         pinB = tmp_pinA;
         gain_a *= _sign(c.b);
         exit_flag = 2; // signal that pins have been switched
-    }else if(_isset(pinC) &&  ac_ratio < 0.7 ){ // should be ~0.5
+    }else if(_isset(pinC) &&  ac_ratio < 0.7f ){ // should be ~0.5
         // switch phase A and C
         int tmp_pinA = pinA;
-        pinA = pinC; 
+        pinA = pinC;
         pinC= tmp_pinA;
         gain_a *= _sign(c.c);
         exit_flag = 2;// signal that pins have been switched
@@ -109,35 +109,35 @@ int InlineCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
         // error in current sense - phase either not measured or bad connection
         return 0;
     }
-    
+
     // set phase B active and phases A and C down
     driver->setPwm(0, voltage, 0);
-    _delay(200); 
+    _delay(200);
     c = getPhaseCurrents();
     // read the current 50 times
     for (int i = 0; i < 100; i++) {
         PhaseCurrent_s c1 = getPhaseCurrents();
-        c.a = c.a*0.6 + 0.4*c1.a;
-        c.b = c.b*0.6 + 0.4*c1.b;
-        c.c = c.c*0.6 + 0.4*c1.c;
+        c.a = c.a*0.6f + 0.4f*c1.a;
+        c.b = c.b*0.6f + 0.4f*c1.b;
+        c.c = c.c*0.6f + 0.4f*c1.c;
         _delay(3);
     }
     driver->setPwm(0, 0, 0);
     float ba_ratio = fabs(c.b/c.a);
     float bc_ratio = c.c ? fabs(c.b / c.c) : 0;
-     if( ba_ratio > 1.5 ){ // should be ~2
+     if( ba_ratio > 1.5f ){ // should be ~2
         gain_b *= _sign(c.b);
-    }else if( ba_ratio < 0.7 ){ // it should be ~0.5
+    }else if( ba_ratio < 0.7f ){ // it should be ~0.5
         // switch phase A and B
         int tmp_pinB = pinB;
-        pinB = pinA; 
+        pinB = pinA;
         pinA = tmp_pinB;
         gain_b *= _sign(c.a);
         exit_flag = 2; // signal that pins have been switched
-    }else if(_isset(pinC) && bc_ratio < 0.7 ){ // should be ~0.5
+    }else if(_isset(pinC) && bc_ratio < 0.7f ){ // should be ~0.5
         // switch phase A and C
         int tmp_pinB = pinB;
-        pinB = pinC; 
+        pinB = pinC;
         pinC = tmp_pinB;
         gain_b *= _sign(c.c);
         exit_flag = 2; // signal that pins have been switched
@@ -150,12 +150,12 @@ int InlineCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
     if(_isset(pinC)){
         // set phase B active and phases A and C down
         driver->setPwm(0, 0, voltage);
-        _delay(200); 
+        _delay(200);
         c = getPhaseCurrents();
         // read the adc voltage 500 times ( arbitrary number )
         for (int i = 0; i < 50; i++) {
             PhaseCurrent_s c1 = getPhaseCurrents();
-            c.c = (c.c+c1.c)/50.0;
+            c.c = (c.c+c1.c)/50.0f;
         }
         driver->setPwm(0, 0, 0);
         gain_c *= _sign(c.c);
@@ -170,4 +170,3 @@ int InlineCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
     // 4 - success but pins reconfigured and gains inverted
     return exit_flag;
 }
-

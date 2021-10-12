@@ -31,8 +31,8 @@ struct wo_association WO_associations[] = {
 		{ PORTA,   9, TC0_CH1, 		1, TCC0_CH1,     	1, TCC1_CH1, 		5},
 		{ PORTA,  10, TC1_CH0, 		0, TCC0_CH2,     	2, TCC1_CH2, 		6},
 		{ PORTA,  11, TC1_CH1, 		1, TCC0_CH3,     	3, TCC1_CH3, 		7},
-		{ PORTB,  10, TC5_CH0, 		0, TCC0_CH0, 		4, TCC1_CH0, 		0}, //?
-		{ PORTB,  11, TC5_CH1, 		1, TCC0_CH1,  		5, TCC1_CH1, 		1}, //?
+		{ PORTB,  10, TC5_CH0, 		0, TCC0_CH4, 		4, TCC1_CH0, 		0},
+		{ PORTB,  11, TC5_CH1, 		1, TCC0_CH5,  		5, TCC1_CH1, 		1},
 		{ PORTB,  12, TC4_CH0, 		0, TCC3_CH0, 		0, TCC0_CH0, 		0},
 		{ PORTB,  13, TC4_CH1, 		1, TCC3_CH1, 		1, TCC0_CH1, 		1},
 		{ PORTB,  14, TC5_CH0, 		0, TCC4_CH0, 		0, TCC0_CH2, 		2},
@@ -40,34 +40,34 @@ struct wo_association WO_associations[] = {
 		{ PORTD,   8, NOT_ON_TIMER,	0, TCC0_CH1,     	1, NOT_ON_TIMER, 	0},
 		{ PORTD,   9, NOT_ON_TIMER,	0, TCC0_CH2,     	2, NOT_ON_TIMER, 	0},
 		{ PORTD,  10, NOT_ON_TIMER,	0, TCC0_CH3,     	3, NOT_ON_TIMER, 	0},
-		{ PORTD,  11, NOT_ON_TIMER,	0, TCC0_CH0, 		4, NOT_ON_TIMER, 	0}, //?
-		{ PORTD,  12, NOT_ON_TIMER,	0, TCC0_CH1,  		5, NOT_ON_TIMER, 	0}, //?
+		{ PORTD,  11, NOT_ON_TIMER,	0, TCC0_CH4, 		4, NOT_ON_TIMER, 	0},
+		{ PORTD,  12, NOT_ON_TIMER,	0, TCC0_CH5,  		5, NOT_ON_TIMER, 	0},
 		{ PORTC,  10, NOT_ON_TIMER,	0, TCC0_CH0,     	0, TCC1_CH0, 		4},
 		{ PORTC,  11, NOT_ON_TIMER,	0, TCC0_CH1,     	1, TCC1_CH1, 		5},
 		{ PORTC,  12, NOT_ON_TIMER,	0, TCC0_CH2, 		2, TCC1_CH2, 		6},
 		{ PORTC,  13, NOT_ON_TIMER,	0, TCC0_CH3, 		3, TCC1_CH3, 		7},
-		{ PORTC,  14, NOT_ON_TIMER,	0, TCC0_CH0, 		4, TCC1_CH0, 		0}, //?
-		{ PORTC,  15, NOT_ON_TIMER,	0, TCC0_CH1, 		5, TCC1_CH1, 		1}, //?
-		{ PORTA,  12, TC2_CH0,		0, TCC0_CH2, 		6, TCC1_CH2, 		2},
-		{ PORTA,  13, TC2_CH1,		1, TCC0_CH3, 		7, TCC1_CH3, 		3},
-		{ PORTA,  14, TC3_CH0,		0, TCC2_CH0, 		0, TCC1_CH2, 		2}, //?
-		{ PORTA,  15, TC3_CH1,		1, TCC1_CH1, 		1, TCC1_CH3, 		3}, //?
-		{ PORTA,  16, TC2_CH0,		0, TCC1_CH0, 		0, TCC0_CH0, 		4},
-		{ PORTA,  17, TC2_CH1,		1, TCC1_CH1, 		1, TCC0_CH1, 		5},
-		{ PORTA,  18, TC3_CH0,		0, TCC1_CH2, 		2, TCC0_CH2, 		6},
-		{ PORTA,  19, TC3_CH1,		1, TCC1_CH3, 		3, TCC0_CH3, 		7},
+		{ PORTC,  14, NOT_ON_TIMER,	0, TCC0_CH4, 		4, TCC1_CH0, 		0},
+		{ PORTC,  15, NOT_ON_TIMER,	0, TCC0_CH5, 		5, TCC1_CH1, 		1},
+		{ PORTA,  12, TC2_CH0,		0, TCC0_CH0, 		6, TCC1_CH2, 		2},
+		{ PORTA,  13, TC2_CH1,		1, TCC0_CH1, 		7, TCC1_CH3, 		3},
+		{ PORTA,  14, TC3_CH0,		0, TCC2_CH0, 		0, TCC1_CH2, 		2},
+		{ PORTA,  15, TC3_CH1,		1, TCC1_CH1, 		1, TCC1_CH3, 		3},
+		{ PORTA,  16, TC2_CH0,		0, TCC1_CH0, 		0, TCC0_CH4, 		4},
+		{ PORTA,  17, TC2_CH1,		1, TCC1_CH1, 		1, TCC0_CH5, 		5},
+		{ PORTA,  18, TC3_CH0,		0, TCC1_CH2, 		2, TCC0_CH0, 		6},
+		{ PORTA,  19, TC3_CH1,		1, TCC1_CH3, 		3, TCC0_CH1, 		7},
 		{ PORTC,  16, NOT_ON_TIMER,	0, TCC0_CH0, 		0, NOT_ON_TIMER, 	0}, // PDEC0
 		{ PORTC,  17, NOT_ON_TIMER,	0, TCC0_CH1, 		1, NOT_ON_TIMER, 	0}, // PDEC1
 		{ PORTC,  18, NOT_ON_TIMER,	0, TCC0_CH2, 		2, NOT_ON_TIMER, 	0}, // PDEC2
 		{ PORTC,  19, NOT_ON_TIMER,	0, TCC0_CH3, 		3, NOT_ON_TIMER, 	0},
-		{ PORTC,  20, NOT_ON_TIMER,	0, TCC0_CH0, 		4, NOT_ON_TIMER, 	0},
-		{ PORTC,  21, NOT_ON_TIMER,	0, TCC0_CH1, 		5, NOT_ON_TIMER, 	0},
-		{ PORTC,  22, NOT_ON_TIMER,	0, TCC0_CH2, 		6, NOT_ON_TIMER, 	0},
-		{ PORTC,  23, NOT_ON_TIMER,	0, TCC0_CH3, 		7, NOT_ON_TIMER, 	0},
+		{ PORTC,  20, NOT_ON_TIMER,	0, TCC0_CH4, 		4, NOT_ON_TIMER, 	0},
+		{ PORTC,  21, NOT_ON_TIMER,	0, TCC0_CH5, 		5, NOT_ON_TIMER, 	0},
+		{ PORTC,  22, NOT_ON_TIMER,	0, TCC0_CH0, 		6, NOT_ON_TIMER, 	0},
+		{ PORTC,  23, NOT_ON_TIMER,	0, TCC0_CH1, 		7, NOT_ON_TIMER, 	0},
 		{ PORTD,  20, NOT_ON_TIMER,	0, TCC1_CH0, 		0, NOT_ON_TIMER, 	0},
 		{ PORTD,  21, NOT_ON_TIMER,	0, TCC1_CH1, 		1, NOT_ON_TIMER, 	0},
-		{ PORTB,  16, TC6_CH0,		0, TCC3_CH0, 		0, TCC0_CH0, 		4},
-		{ PORTB,  17, TC6_CH1,		1, TCC3_CH1, 		1, TCC0_CH1,	 	5},
+		{ PORTB,  16, TC6_CH0,		0, TCC3_CH0, 		0, TCC0_CH4, 		4},
+		{ PORTB,  17, TC6_CH1,		1, TCC3_CH1, 		1, TCC0_CH5,	 	5},
 		{ PORTB,  18, NOT_ON_TIMER,	0, TCC1_CH0, 		0, NOT_ON_TIMER, 	0}, // PDEC0
 		{ PORTB,  19, NOT_ON_TIMER,	0, TCC1_CH1, 		1, NOT_ON_TIMER, 	0}, // PDEC1
 		{ PORTB,  20, NOT_ON_TIMER,	0, TCC1_CH2, 		2, NOT_ON_TIMER, 	0}, // PDEC2
@@ -89,8 +89,8 @@ struct wo_association WO_associations[] = {
 		// PC24-PC28, PA27, RESET -> no TC/TCC peripherals
 		{ PORTA,  30, TC6_CH0,		0, TCC2_CH0, 		0, NOT_ON_TIMER, 	0},
 		{ PORTA,  31, TC6_CH1,		1, TCC2_CH1, 		1, NOT_ON_TIMER, 	0},
-		{ PORTB,  30, TC0_CH0,		0, TCC4_CH0, 		0, TCC0_CH2, 		6},
-		{ PORTB,  31, TC0_CH1,		1, TCC4_CH1, 		1, TCC0_CH3, 		7},
+		{ PORTB,  30, TC0_CH0,		0, TCC4_CH0, 		0, TCC0_CH0, 		6},
+		{ PORTB,  31, TC0_CH1,		1, TCC4_CH1, 		1, TCC0_CH1, 		7},
 		// PC30, PC31 -> no TC/TCC peripherals
 		{ PORTB,   0, TC7_CH0,		0, NOT_ON_TIMER, 	0, NOT_ON_TIMER, 	0},
 		{ PORTB,   1, TC7_CH1,		1, NOT_ON_TIMER, 	0, NOT_ON_TIMER,	0},
@@ -188,7 +188,7 @@ void configureSAMDClock() {
 		while (GCLK->SYNCBUSY.vec.GENCTRL&(0x1<<PWM_CLOCK_NUM));
 
 #ifdef SIMPLEFOC_SAMD_DEBUG
-		Serial.println("Configured clock...");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured clock...");
 #endif
 	}
 }
@@ -248,13 +248,13 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 		while ( tcc->SYNCBUSY.bit.ENABLE == 1 ); // wait for sync
 
 #ifdef SIMPLEFOC_SAMD_DEBUG
-		Serial.print("(Re-)Initialized TCC ");
-		Serial.print(tccConfig.tcc.tccn);
-		Serial.print("-");
-		Serial.print(tccConfig.tcc.chan);
-		Serial.print("[");
-		Serial.print(tccConfig.wo);
-		Serial.println("]");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("(Re-)Initialized TCC ");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.tcc.tccn);
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("-");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.tcc.chan);
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("[");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.wo);
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("]");
 #endif
 	}
 	else if (tccConfig.tcc.tccn>=TCC_INST_NUM) {
@@ -280,8 +280,8 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 		// while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
 
 	#ifdef SIMPLEFOC_SAMD_DEBUG
-		Serial.print("Initialized TC ");
-		Serial.println(tccConfig.tcc.tccn);
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("Initialized TC ");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.println(tccConfig.tcc.tccn);
 	#endif
 	}
 

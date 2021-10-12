@@ -98,12 +98,34 @@ void Encoder::handleIndex() {
   }
 }
 
+
+void Encoder::update() {
+    // do nothing for Encoder
+}
+
 /*
 	Shaft angle calculation
 */
+float Encoder::getSensorAngle(){
+  return getAngle();
+}
+// TODO: numerical precision issue here if the pulse_counter overflows the angle will be lost
+float Encoder::getMechanicalAngle(){
+  return  _2PI * ((pulse_counter) % ((int)cpr)) / ((float)cpr);
+}
+
 float Encoder::getAngle(){
   return  _2PI * (pulse_counter) / ((float)cpr);
 }
+double Encoder::getPreciseAngle(){
+  return  _2PI * (pulse_counter) / ((double)cpr);
+}
+int32_t Encoder::getFullRotations(){
+  return  pulse_counter / (int)cpr;
+}
+
+
+
 /*
   Shaft velocity calculation
   function using mixed time and frequency measurement technique
@@ -112,12 +134,12 @@ float Encoder::getVelocity(){
   // timestamp
   long timestamp_us = _micros();
   // sampling time calculation
-  float Ts = (timestamp_us - prev_timestamp_us) * 1e-6;
+  float Ts = (timestamp_us - prev_timestamp_us) * 1e-6f;
   // quick fix for strange cases (micros overflow)
-  if(Ts <= 0 || Ts > 0.5) Ts = 1e-3;
+  if(Ts <= 0 || Ts > 0.5f) Ts = 1e-3f;
 
   // time from last impulse
-  float Th = (timestamp_us - pulse_timestamp) * 1e-6;
+  float Th = (timestamp_us - pulse_timestamp) * 1e-6f;
   long dN = pulse_counter - prev_pulse_counter;
 
   // Pulse per second calculation (Eq.3.)
@@ -129,8 +151,8 @@ float Encoder::getVelocity(){
   float dt = Ts + prev_Th - Th;
   pulse_per_second = (dN != 0 && dt > Ts/2) ? dN / dt : pulse_per_second;
 
-  // if more than 0.05 passed in between impulses
-  if ( Th > 0.1) pulse_per_second = 0;
+  // if more than 0.05f passed in between impulses
+  if ( Th > 0.1f) pulse_per_second = 0;
 
   // velocity calculation
   float velocity = pulse_per_second / ((float)cpr) * (_2PI);

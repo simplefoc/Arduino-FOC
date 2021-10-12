@@ -18,6 +18,7 @@ StepperDriver	KEYWORD1
 PIDController	KEYWORD1    
 LowPassFilter	KEYWORD1   
 InlineCurrentSense	KEYWORD1   
+LowsideCurrentSense	KEYWORD1   
 CurrentSense	KEYWORD1   
 Commander	KEYWORD1   
 StepDirListener	KEYWORD1   
@@ -48,6 +49,9 @@ LPF_current_q	KEYWORD2
 LPF_current_d	KEYWORD2
 P_angle	KEYWORD2
 LPF_angle	KEYWORD2
+lpf_a	KEYWORD2
+lpf_b	KEYWORD2
+lpf_c	KEYWORD2
 
 MotionControlType	KEYWORD1
 TorqueControlType	KEYWORD1
@@ -73,6 +77,9 @@ ISR	KEYWORD2
 getVelocity	KEYWORD2
 setPhaseVoltage	KEYWORD2
 getAngle	KEYWORD2
+getMechanicalAngle	KEYWORD2
+getSensorAngle	KEYWORD2
+update	KEYWORD2
 needsSearch	KEYWORD2
 useMonitoring	KEYWORD2
 angleOpenloop	KEYWORD2

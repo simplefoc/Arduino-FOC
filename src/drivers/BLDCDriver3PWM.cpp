@@ -14,15 +14,16 @@ BLDCDriver3PWM::BLDCDriver3PWM(int phA, int phB, int phC, int en1, int en2, int 
   // default power-supply value
   voltage_power_supply = DEF_POWER_SUPPLY;
   voltage_limit = NOT_SET;
+  pwm_frequency = NOT_SET;
 
 }
 
 // enable motor driver
 void  BLDCDriver3PWM::enable(){
     // enable_pin the driver - if enable_pin pin available
-    if ( _isset(enableA_pin) ) digitalWrite(enableA_pin, HIGH);
-    if ( _isset(enableB_pin) ) digitalWrite(enableB_pin, HIGH);
-    if ( _isset(enableC_pin) ) digitalWrite(enableC_pin, HIGH);
+    if ( _isset(enableA_pin) ) digitalWrite(enableA_pin, enable_active_high);
+    if ( _isset(enableB_pin) ) digitalWrite(enableB_pin, enable_active_high);
+    if ( _isset(enableC_pin) ) digitalWrite(enableC_pin, enable_active_high);
     // set zero to PWM
     setPwm(0,0,0);
 }
@@ -33,13 +34,13 @@ void BLDCDriver3PWM::disable()
   // set zero to PWM
   setPwm(0, 0, 0);
   // disable the driver - if enable_pin pin available
-  if ( _isset(enableA_pin) ) digitalWrite(enableA_pin, LOW);
-  if ( _isset(enableB_pin) ) digitalWrite(enableB_pin, LOW);
-  if ( _isset(enableC_pin) ) digitalWrite(enableC_pin, LOW);
+  if ( _isset(enableA_pin) ) digitalWrite(enableA_pin, !enable_active_high);
+  if ( _isset(enableB_pin) ) digitalWrite(enableB_pin, !enable_active_high);
+  if ( _isset(enableC_pin) ) digitalWrite(enableC_pin, !enable_active_high);
 
 }
 
-// init hardware pins   
+// init hardware pins
 int BLDCDriver3PWM::init() {
   // PWM pins
   pinMode(pwmA, OUTPUT);
@@ -62,7 +63,7 @@ int BLDCDriver3PWM::init() {
 
 
 // Set voltage to the pwm pin
-void BLDCDriver3PWM::setPhaseState(int sa, int sb, int sc) {  
+void BLDCDriver3PWM::setPhaseState(int sa, int sb, int sc) {
   // disable if needed
   if( _isset(enableA_pin) &&  _isset(enableB_pin)  && _isset(enableC_pin) ){
     digitalWrite(enableA_pin, sa == _HIGH_IMPEDANCE ? LOW : HIGH);
@@ -73,16 +74,16 @@ void BLDCDriver3PWM::setPhaseState(int sa, int sb, int sc) {
 
 // Set voltage to the pwm pin
 void BLDCDriver3PWM::setPwm(float Ua, float Ub, float Uc) {
-  
+
   // limit the voltage in driver
-  Ua = _constrain(Ua, 0.0, voltage_limit);
-  Ub = _constrain(Ub, 0.0, voltage_limit);
-  Uc = _constrain(Uc, 0.0, voltage_limit);    
+  Ua = _constrain(Ua, 0.0f, voltage_limit);
+  Ub = _constrain(Ub, 0.0f, voltage_limit);
+  Uc = _constrain(Uc, 0.0f, voltage_limit);
   // calculate duty cycle
   // limited in [0,1]
-  dc_a = _constrain(Ua / voltage_power_supply, 0.0 , 1.0 );
-  dc_b = _constrain(Ub / voltage_power_supply, 0.0 , 1.0 );
-  dc_c = _constrain(Uc / voltage_power_supply, 0.0 , 1.0 );
+  dc_a = _constrain(Ua / voltage_power_supply, 0.0f , 1.0f );
+  dc_b = _constrain(Ub / voltage_power_supply, 0.0f , 1.0f );
+  dc_c = _constrain(Uc / voltage_power_supply, 0.0f , 1.0f );
 
   // hardware specific writing
   // hardware specific function - depending on driver and mcu

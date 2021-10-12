@@ -23,9 +23,7 @@ class MagneticSensorPWM: public Sensor{
     int pinPWM;
 
     // get current angle (rad)
-    float getAngle() override;
-    // get current angular velocity (rad/s)
-    float getVelocity() override;
+    float getSensorAngle() override;
   
     // pwm handler
     void handlePWM();
@@ -49,15 +47,6 @@ class MagneticSensorPWM: public Sensor{
      * it uses angle_register variable
      */
     int getRawCount();
-
-    // total angle tracking variables
-    float full_rotation_offset; //!<number of full rotations made
-    int raw_count_prev; //!< angle in previous position calculation step
-
-    // velocity calculation variables
-    float angle_prev; //!< angle in previous velocity calculation step
-    long velocity_calc_timestamp; //!< last velocity calculation timestamp
-    float velocity;
 
     // time tracking variables
     unsigned long last_call_us;

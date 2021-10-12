@@ -4,11 +4,62 @@ jobs:
   build:
     name: Test compiling 
     runs-on: ubuntu-latest
+   
+    strategy:
+      matrix:
+        arduino-boards-fqbn:
+          - arduino:avr:uno                          # arudino uno
+          - arduino:sam:arduino_due_x                # arduino due
+          - arduino:samd:nano_33_iot                 # samd21
+          - adafruit:samd:adafruit_metro_m4          # samd51
+          - esp32:esp32:esp32doit-devkit-v1          # esm32
+          - STM32:stm32:GenF1:pnum=BLUEPILL_F103C8   # stm32 bluepill
+          - STM32:stm32:Nucleo_64:pnum=NUCLEO_F411RE # stm32 nucleo
+          - arduino:mbed_rp2040:pico                 # rpi pico
+          
+        include:
+          - arduino-boards-fqbn: arduino:avr:uno # arudino uno - compiling almost all examples
+            sketch-names: '**.ino'
+            required-libraries: PciManager
+            sketches-exclude: bluepill_position_control, esp32_position_control, esp32_i2c_dual_bus_example, stm32_i2c_dual_bus_example, magnetic_sensor_spi_alt_example, osc_esp32_3pwm, osc_esp32_fullcontrol, nano33IoT_velocity_control, smartstepper_control,esp32_current_control_low_side, stm32_spi_alt_example, esp32_spi_alt_example, B_G431B_ESC1_position_control
+
+          - arduino-boards-fqbn: arduino:sam:arduino_due_x # arduino due - one full example
+            sketch-names: single_full_control_example.ino
+            
+          - arduino-boards-fqbn: arduino:samd:nano_33_iot  # samd21 
+            sketch-names: nano33IoT_velocity_control.ino, smartstepper_control.ino
+            
+          - arduino-boards-fqbn: arduino:mbed_rp2040:pico # raspberry pi pico - one example
+            sketch-names: open_loop_position_example.ino
+            
+          - arduino-boards-fqbn: adafruit:samd:adafruit_metro_m4 # samd51 - one full example
+            platform-url: https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+            sketch-names: single_full_control_example.ino
+          
+          - arduino-boards-fqbn: esp32:esp32:esp32doit-devkit-v1 # esp32 
+            platform-url: https://dl.espressif.com/dl/package_esp32_index.json
+            sketch-names: esp32_position_control.ino, esp32_i2c_dual_bus_example.ino, esp32_current_control_low_side.ino, esp32_spi_alt_example.ino
+
+          - arduino-boards-fqbn: STM32:stm32:GenF1:pnum=BLUEPILL_F103C8 # bluepill - hs examples
+            platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json 
+            sketch-names: bluepill_position_control.ino, stm32_i2c_dual_bus_example.ino, stm32_spi_alt_example.ino
+            
+          - arduino-boards-fqbn: STM32:stm32:Nucleo_64:pnum=NUCLEO_F411RE # one full example
+            platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json 
+            sketch-names: single_full_control_example.ino, stm32_spi_alt_example.ino
+            
+        
+
+      # Do not cancel all jobs / architectures if one job fails
+      fail-fast: false
     steps:
     - name: Checkout
       uses: actions/checkout@master
     - name: Compile all examples
-      uses: ArminJo/arduino-test-compile@v1.0.0
+      uses: ArminJo/arduino-test-compile@master
       with:
-        libraries:  PciManager 
-        examples-exclude: bluepill_position_control, esp32_position_control, esp32_i2c_dual_bus_example, stm32_i2c_dual_bus_example, magnetic_sensor_spi_alt_example, osc_esp32_3pwm, osc_esp32_fullcontrol, nano33IoT_velocity_control
+          arduino-board-fqbn: ${{ matrix.arduino-boards-fqbn }}
+          required-libraries: ${{ matrix.required-libraries }}
+          platform-url: ${{ matrix.platform-url }}
+          sketch-names: ${{ matrix.sketch-names }}
+          sketches-exclude: ${{ matrix.sketches-exclude }}

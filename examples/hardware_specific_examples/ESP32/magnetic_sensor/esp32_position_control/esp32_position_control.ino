@@ -8,7 +8,7 @@
 // MOSI 9
 // SCK 14
 // magnetic sensor instance - SPI
-MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, 10);
+MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, 15);
 
 // I2C Magnetic sensor instance (AS5600 example)
 // make sure to use the pull-ups!!
@@ -44,37 +44,37 @@ void setup() {
   driver.init();
   // link the motor and the driver
   motor.linkDriver(&driver);
-  
+
   // choose FOC modulation (optional)
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
 
   // set motion control loop to be used
   motor.controller = MotionControlType::angle;
 
-  // contoller configuration 
+  // contoller configuration
   // default parameters in defaults.h
 
   // velocity PI controller parameters
-  motor.PID_velocity.P = 0.2;
+  motor.PID_velocity.P = 0.2f;
   motor.PID_velocity.I = 20;
   // maximal voltage to be set to the motor
   motor.voltage_limit = 6;
-  
+
   // velocity low pass filtering time constant
   // the lower the less filtered
-  motor.LPF_velocity.Tf = 0.01;
+  motor.LPF_velocity.Tf = 0.01f;
 
-  // angle P controller 
+  // angle P controller
   motor.P_angle.P = 20;
   // maximal velocity of the position control
   motor.velocity_limit = 40;
 
-  // use monitoring with serial 
+  // use monitoring with serial
   Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
 
-  
+
   // initialize motor
   motor.init();
   // align sensor and start FOC
@@ -88,15 +88,12 @@ void setup() {
   _delay(1000);
 }
 
-// angle set point variable
-float target_angle = 0;
-
 void loop() {
 
   // main FOC algorithm function
   // the faster you run this function the better
   // Arduino UNO loop  ~1kHz
-  // Bluepill loop ~10kHz 
+  // Bluepill loop ~10kHz
   motor.loopFOC();
 
   // Motion control function
@@ -109,7 +106,7 @@ void loop() {
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
   // motor.monitor();
-  
+
   // user communication
   command.run();
 }

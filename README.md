@@ -16,24 +16,32 @@ Therefore this is an attempt to:
    - ***NEW*** 📢: *Medium-power* BLDC driver (<30Amps): [Arduino <span class="simple">Simple<b>FOC</b>PowerShield</span> ](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
-##### <b> Release notes be:</b> <i>Simple<b>FOC</b>library</i> v2.1.1
-> - bugfixes commander
-> - bugfix `voltage_limit` when provided `phase_resistance`
-> - bugfix `hall_sensor` examples 
-> - added examples fot the PowerShield
-> - added initial support for `MagneticSensorPWM`
-> - SAMD51 support 
-> - **initial support for Raspberry pi Pico**
-> - added examples to find the raw max and min of the analog and pwm sensor
-> - extension of the `Commander` interface
->   - added pwm centering option `WC`
->   - added pwm modulation cmd `WT`
-> - improved esp32 implementation to avoid the need for mcpwm.h changes by @tschundler 
-> - issue #62: motor.shaft_angle setting in the motor.initFOC() 
-> - issue #76: esp32 division by zero  
-> - issue #46: commander end of line character - by @maxlem
-> - [community fix](https://community.simplefoc.com/t/as5600-dead-spot-around-0/208) AS5600 register value
-> - renamed `Pullup::EXTERN` and `Pullup::INTERN` to `Pullup::USE_EXTERN` and `Pullup::USE_INTERN`
+
+<blockquote class="info">
+   <p class="heading">NEW RELEASE 📢: <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2 - <a href="https://github.com/simplefoc/Arduino-FOC/releases/tag/v2.2">see release</a></p>
+   <ul>
+   <li>Sensor floating point error bugfix (initial solution) #83, #37</li>
+   <li>Sensor class restructuring - <b>slight API change</b> - <a href="https://docs.simplefoc.com/sensors">docs</a></li>
+   <li>Restructured the generic code and simplified adding new mcus: <b>IMPORTANT: an additional compiler flag needed for PlatformIO</b> see <a href="https://github.com/simplefoc/Arduino-FOC/issues/99">issue</a> and <a href="https://docs.simplefoc.com/library_platformio">PlatformIO docs</a></li>
+   <li>Removed initial jump #110, #111</li>
+   <li>Double to float transformation of the code - performance increase by <a href="https://github.com/sDessens">@sDessens</a> (#100), <a href="https://github.com/KaSroka">@KaSroka</a> (#100)  </li>
+   <li> <a href="https://docs.simplefoc.com/docs_chinese"><b>Docs webiste translated to Chinese!</b></a> 🎉: Awesome work 😃 by <a href="https://github.com/MINQING1101">@MINQING1101</a>, <a href="https://github.com/Deng-ge-open-source">@Deng-ge-open-source</a> and <a href="https://github.com/mingggggggg">@mingggggggg</a></li>
+   <li>New MCU support - <a href="https://docs.simplefoc.com/microcontrollers">docs</a>
+      <ul>
+         <li>Support for arduino leonardo #108 </li>
+         <li>Initial support for portenta h7 board in collaboration with <img src="https://docs.simplefoc.com/extras/Images/arduino.png" height="15px"><a href="https://www.arduino.cc/">Arduino</a></li>
+         <li>Initial support for esp8266</li>
+      </ul>
+   </li>
+   <li>Low side current sensing initial support - <a href="https://docs.simplefoc.com/current_sense">docs</a>
+      <ul>
+         <li>Initial support for stm32 B_G431B_ESC1 by <a href="https://github.com/sDessens">@sDessens</a>: PR #73</li>
+         <li>Initial support for samd21 by <a href="https://github.com/maxlem">@maxlem</a>: PR #79</li>
+         <li>Initial support for esp32 by <a href="https://github.com/maxlem">@byDagor</a></li>
+      </ul> 
+   </li>
+   </ul>
+</blockquote>
 
 ## Arduino *SimpleFOClibrary* v2.1
 

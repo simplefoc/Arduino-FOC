@@ -1,13 +1,13 @@
 #include "StepperDriver2PWM.h"
 
-StepperDriver2PWM::StepperDriver2PWM(int _pwm1, int _in1a, int _in1b, int _pwm2, int _in2a, int _in2b, int en1, int en2){
+StepperDriver2PWM::StepperDriver2PWM(int _pwm1, int* _in1, int _pwm2, int* _in2, int en1, int en2){
   // Pin initialization
   pwm1 = _pwm1; // phase 1 pwm pin number
-  dir1a = _in1a; // phase 1 INA pin number
-  dir1b = _in1b; // phase 1 INB pin number
+  dir1a = _in1[0]; // phase 1 INA pin number
+  dir1b = _in1[1]; // phase 1 INB pin number
   pwm2 = _pwm2; // phase 2 pwm pin number
-  dir2a = _in2a; // phase 2 INA pin number
-  dir2b = _in2b; // phase 2 INB pin number
+  dir2a = _in2[0]; // phase 2 INA pin number
+  dir2b = _in2[1]; // phase 2 INB pin number
 
   // enable_pin pin
   enable_pin1 = en1;
@@ -16,6 +16,7 @@ StepperDriver2PWM::StepperDriver2PWM(int _pwm1, int _in1a, int _in1b, int _pwm2,
   // default power-supply value
   voltage_power_supply = DEF_POWER_SUPPLY;
   voltage_limit = NOT_SET;
+  pwm_frequency = NOT_SET;
 
 }
 
@@ -27,7 +28,7 @@ StepperDriver2PWM::StepperDriver2PWM(int _pwm1, int _dir1, int _pwm2, int _dir2,
   dir2a = _dir2; // phase 2 direction pin
   // these pins are not used
   dir1b = NOT_SET;
-  dir2b = NOT_SET; 
+  dir2b = NOT_SET;
 
   // enable_pin pin
   enable_pin1 = en1;
@@ -36,6 +37,7 @@ StepperDriver2PWM::StepperDriver2PWM(int _pwm1, int _dir1, int _pwm2, int _dir2,
   // default power-supply value
   voltage_power_supply = DEF_POWER_SUPPLY;
   voltage_limit = NOT_SET;
+  pwm_frequency = NOT_SET;
 
 }
 
@@ -59,7 +61,7 @@ void StepperDriver2PWM::disable()
 
 }
 
-// init hardware pins   
+// init hardware pins
 int StepperDriver2PWM::init() {
   // PWM pins
   pinMode(pwm1, OUTPUT);
@@ -83,22 +85,22 @@ int StepperDriver2PWM::init() {
 
 
 // Set voltage to the pwm pin
-void StepperDriver2PWM::setPwm(float Ua, float Ub) {  
-  float duty_cycle1(0.0),duty_cycle2(0.0);
+void StepperDriver2PWM::setPwm(float Ua, float Ub) {
+  float duty_cycle1(0.0f),duty_cycle2(0.0f);
   // limit the voltage in driver
   Ua = _constrain(Ua, -voltage_limit, voltage_limit);
   Ub = _constrain(Ub, -voltage_limit, voltage_limit);
   // hardware specific writing
-  duty_cycle1 = _constrain(abs(Ua)/voltage_power_supply,0.0,1.0);
-  duty_cycle2 = _constrain(abs(Ub)/voltage_power_supply,0.0,1.0);
-  
+  duty_cycle1 = _constrain(abs(Ua)/voltage_power_supply,0.0f,1.0f);
+  duty_cycle2 = _constrain(abs(Ub)/voltage_power_supply,0.0f,1.0f);
+
   // phase 1 direction
   digitalWrite(dir1a, Ua >= 0 ? LOW : HIGH);
-  if( _isset(dir1b) ) digitalWrite(dir1b, Ua <= 0 ? LOW : HIGH);
+  if( _isset(dir1b) ) digitalWrite(dir1b, Ua >= 0 ? HIGH : LOW );
   // phase 2 direction
   digitalWrite(dir2a, Ub >= 0 ? LOW : HIGH);
-  if( _isset(dir2b) ) digitalWrite(dir2b, Ub <= 0 ? LOW : HIGH);
-  
+  if( _isset(dir2b) ) digitalWrite(dir2b, Ub >= 0 ? HIGH : LOW );
+
   // write to hardware
   _writeDutyCycle2PWM(duty_cycle1, duty_cycle2, pwm1, pwm2);
 }

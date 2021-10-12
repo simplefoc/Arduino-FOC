@@ -7,14 +7,14 @@
   - pp           - pole pairs
 */
 HallSensor::HallSensor(int _hallA, int _hallB, int _hallC, int _pp){
-  
+
   // hardware pins
   pinA = _hallA;
   pinB = _hallB;
   pinC = _hallC;
 
   // hall has 6 segments per electrical revolution
-  cpr = _pp * 6; 
+  cpr = _pp * 6;
 
   // extern pullup as default
   pullup = Pullup::USE_EXTERN;
@@ -40,12 +40,12 @@ void HallSensor::handleC() {
 
 /**
  * Updates the state and sector following an interrupt
- */ 
+ */
 void HallSensor::updateState() {
   long new_pulse_timestamp = _micros();
 
   int8_t new_hall_state = C_active + (B_active << 1) + (A_active << 2);
-  
+
   // glitch avoidance #1 - sometimes we get an interrupt but pins haven't changed
   if (new_hall_state == hall_state) {
     return;
@@ -74,7 +74,7 @@ void HallSensor::updateState() {
   } else {
     pulse_diff = 0;
   }
-  
+
   pulse_timestamp = new_pulse_timestamp;
   total_interrupts++;
   old_direction = direction;
@@ -87,16 +87,25 @@ void HallSensor::updateState() {
  *  ... // for debug or call driver directly?
  * }
  * sensor.attachSectorCallback(onSectorChange);
- */ 
+ */
 void HallSensor::attachSectorCallback(void (*_onSectorChange)(int sector)) {
   onSectorChange = _onSectorChange;
 }
 
+
+
+float HallSensor::getSensorAngle() {
+  return getAngle();
+}
+
+
+
 /*
 	Shaft angle calculation
+  TODO: numerical precision issue here if the electrical rotation overflows the angle will be lost
 */
-float HallSensor::getAngle() {
-  return ((electric_rotations * 6 + electric_sector) / cpr) * _2PI ;
+float HallSensor::getMechanicalAngle() {
+  return ((float)((electric_rotations * 6 + electric_sector) % cpr) / (float)cpr) * _2PI ;
 }
 
 /*
@@ -104,13 +113,33 @@ float HallSensor::getAngle() {
   function using mixed time and frequency measurement technique
 */
 float HallSensor::getVelocity(){
-  if (pulse_diff == 0 || ((_micros() - pulse_timestamp) > pulse_diff) ) { // last velocity isn't accurate if too old
+  if (pulse_diff == 0 || ((long)(_micros() - pulse_timestamp) > pulse_diff) ) { // last velocity isn't accurate if too old
     return 0;
   } else {
-    return direction * (_2PI / cpr) / (pulse_diff / 1000000.0);
+    return direction * (_2PI / (float)cpr) / (pulse_diff / 1000000.0f);
   }
 
 }
+
+
+
+float HallSensor::getAngle() {
+  return ((float)(electric_rotations * 6 + electric_sector) / (float)cpr) * _2PI ;
+}
+
+
+double HallSensor::getPreciseAngle() {
+  return ((double)(electric_rotations * 6 + electric_sector) / (double)cpr) * (double)_2PI ;
+}
+
+
+int32_t HallSensor::getFullRotations() {
+  return (int32_t)((electric_rotations * 6 + electric_sector) / cpr);
+}
+
+
+
+
 
 // HallSensor initialisation of the hardware pins 
 // and calculation variables
@@ -134,7 +163,7 @@ void HallSensor::init(){
   B_active = digitalRead(pinB);
   C_active = digitalRead(pinC);
   updateState();
-  
+
   pulse_timestamp = _micros();
 
 }
@@ -149,4 +178,3 @@ void HallSensor::enableInterrupts(void (*doA)(), void(*doB)(), void(*doC)()){
   if(doB != nullptr) attachInterrupt(digitalPinToInterrupt(pinB), doB, CHANGE);
   if(doC != nullptr) attachInterrupt(digitalPinToInterrupt(pinC), doC, CHANGE);
 }
-

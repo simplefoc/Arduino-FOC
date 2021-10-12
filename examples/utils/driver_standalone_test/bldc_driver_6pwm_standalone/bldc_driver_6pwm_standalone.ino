@@ -5,7 +5,7 @@
 BLDCDriver6PWM driver = BLDCDriver6PWM(5, 6, 9,10, 3, 11, 8);
 
 void setup() {
-  
+
   // pwm frequency to be used [Hz]
   // for atmega328 fixed to 32kHz
   // esp32/stm32/teensy configurable
@@ -14,8 +14,8 @@ void setup() {
   driver.voltage_power_supply = 12;
   // Max DC voltage allowed - default voltage_power_supply
   driver.voltage_limit = 12;
-  // daad_zone [0,1] - default 0.02 - 2%
-  driver.dead_zone = 0.05;
+  // daad_zone [0,1] - default 0.02f - 2%
+  driver.dead_zone = 0.05f;
 
   // driver init
   driver.init();

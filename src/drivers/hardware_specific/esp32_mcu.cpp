@@ -1,18 +1,18 @@
 #include "../hardware_api.h"
 
-#if defined(ESP_H)
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32)
 
 #include "driver/mcpwm.h"
 #include "soc/mcpwm_reg.h"
 #include "soc/mcpwm_struct.h"
 
-// empty motor slot 
+// empty motor slot
 #define _EMPTY_SLOT -20
 #define _TAKEN_SLOT -21
 
 // ABI bus frequency - would be better to take it from somewhere
 // but I did nto find a good exposed variable
-#define _MCPWM_FREQ 160e6
+#define _MCPWM_FREQ 160e6f
 
 // preferred pwm resolution default
 #define _PWM_RES_DEF 2048
@@ -70,7 +70,7 @@ typedef struct {
 } bldc_6pwm_motor_slots_t;
 
 // define bldc motor slots array
-bldc_3pwm_motor_slots_t esp32_bldc_3pwm_motor_slots[4] =  { 
+bldc_3pwm_motor_slots_t esp32_bldc_3pwm_motor_slots[4] =  {
   {_EMPTY_SLOT, &MCPWM0, MCPWM_UNIT_0, MCPWM_OPR_A, MCPWM0A, MCPWM1A, MCPWM2A}, // 1st motor will be MCPWM0 channel A
   {_EMPTY_SLOT, &MCPWM0, MCPWM_UNIT_0, MCPWM_OPR_B, MCPWM0B, MCPWM1B, MCPWM2B}, // 2nd motor will be MCPWM0 channel B
   {_EMPTY_SLOT, &MCPWM1, MCPWM_UNIT_1, MCPWM_OPR_A, MCPWM0A, MCPWM1A, MCPWM2A}, // 3rd motor will be MCPWM1 channel A
@@ -78,19 +78,19 @@ bldc_3pwm_motor_slots_t esp32_bldc_3pwm_motor_slots[4] =  {
   };
 
 // define stepper motor slots array
-bldc_6pwm_motor_slots_t esp32_bldc_6pwm_motor_slots[2] =  { 
+bldc_6pwm_motor_slots_t esp32_bldc_6pwm_motor_slots[2] =  {
   {_EMPTY_SLOT, &MCPWM0, MCPWM_UNIT_0, MCPWM_OPR_A, MCPWM_OPR_B, MCPWM0A, MCPWM1A, MCPWM2A, MCPWM0B, MCPWM1B, MCPWM2B}, // 1st motor will be on MCPWM0
   {_EMPTY_SLOT, &MCPWM1, MCPWM_UNIT_1, MCPWM_OPR_A, MCPWM_OPR_B, MCPWM0A, MCPWM1A, MCPWM2A, MCPWM0B, MCPWM1B, MCPWM2B}, // 1st motor will be on MCPWM0
-  };  
+  };
 
 // define 4pwm stepper motor slots array
-stepper_4pwm_motor_slots_t esp32_stepper_4pwm_motor_slots[2] =  { 
+stepper_4pwm_motor_slots_t esp32_stepper_4pwm_motor_slots[2] =  {
   {_EMPTY_SLOT, &MCPWM0, MCPWM_UNIT_0, MCPWM_OPR_A, MCPWM_OPR_B, MCPWM0A, MCPWM1A, MCPWM0B, MCPWM1B}, // 1st motor will be on MCPWM0
   {_EMPTY_SLOT, &MCPWM1, MCPWM_UNIT_1, MCPWM_OPR_A, MCPWM_OPR_B, MCPWM0A, MCPWM1A, MCPWM0B, MCPWM1B}, // 1st motor will be on MCPWM1
-  };  
+  };
 
 // define 2pwm stepper motor slots array
-stepper_2pwm_motor_slots_t esp32_stepper_2pwm_motor_slots[4] =  { 
+stepper_2pwm_motor_slots_t esp32_stepper_2pwm_motor_slots[4] =  {
   {_EMPTY_SLOT, &MCPWM0, MCPWM_UNIT_0, MCPWM_OPR_A, MCPWM0A, MCPWM1A}, // 1st motor will be MCPWM0 channel A
   {_EMPTY_SLOT, &MCPWM0, MCPWM_UNIT_0, MCPWM_OPR_B, MCPWM0B, MCPWM1B}, // 2nd motor will be MCPWM0 channel B
   {_EMPTY_SLOT, &MCPWM1, MCPWM_UNIT_1, MCPWM_OPR_A, MCPWM0A, MCPWM1A}, // 3rd motor will be MCPWM1 channel A
@@ -109,12 +109,12 @@ void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm
   mcpwm_init(mcpwm_unit, MCPWM_TIMER_0, &pwm_config);    //Configure PWM0A & PWM0B with above settings
   mcpwm_init(mcpwm_unit, MCPWM_TIMER_1, &pwm_config);    //Configure PWM1A & PWM1B with above settings
   mcpwm_init(mcpwm_unit, MCPWM_TIMER_2, &pwm_config);    //Configure PWM2A & PWM2B with above settings
-  
+
   if (_isset(dead_zone)){
-    // dead zone is configured  
-    float dead_time = (float)(_MCPWM_FREQ / (pwm_frequency)) * dead_zone;  
-    mcpwm_deadtime_enable(mcpwm_unit, MCPWM_TIMER_0, MCPWM_ACTIVE_HIGH_COMPLIMENT_MODE, dead_time/2.0, dead_time/2.0); 
-    mcpwm_deadtime_enable(mcpwm_unit, MCPWM_TIMER_1, MCPWM_ACTIVE_HIGH_COMPLIMENT_MODE, dead_time/2.0, dead_time/2.0);     
+    // dead zone is configured
+    float dead_time = (float)(_MCPWM_FREQ / (pwm_frequency)) * dead_zone;
+    mcpwm_deadtime_enable(mcpwm_unit, MCPWM_TIMER_0, MCPWM_ACTIVE_HIGH_COMPLIMENT_MODE, dead_time/2.0, dead_time/2.0);
+    mcpwm_deadtime_enable(mcpwm_unit, MCPWM_TIMER_1, MCPWM_ACTIVE_HIGH_COMPLIMENT_MODE, dead_time/2.0, dead_time/2.0);
     mcpwm_deadtime_enable(mcpwm_unit, MCPWM_TIMER_2, MCPWM_ACTIVE_HIGH_COMPLIMENT_MODE, dead_time/2.0, dead_time/2.0);
   }
   _delay(100);
@@ -128,21 +128,21 @@ void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm
   // calculate prescaler and period
   // step 1: calculate the prescaler using the default pwm resolution
   // prescaler = bus_freq / (pwm_freq * default_pwm_res) - 1
-  int prescaler = ceil((double)_MCPWM_FREQ / (double)_PWM_RES_DEF / 2.0 / (double)pwm_frequency) - 1;
+  int prescaler = ceil((double)_MCPWM_FREQ / (double)_PWM_RES_DEF / 2.0f / (double)pwm_frequency) - 1;
   // constrain prescaler
-  prescaler = _constrain(prescaler, 0, 128); 
+  prescaler = _constrain(prescaler, 0, 128);
   // now calculate the real resolution timer period necessary (pwm resolution)
   // pwm_res = bus_freq / (pwm_freq * (prescaler + 1))
-  int resolution_corrected = (double)_MCPWM_FREQ / 2.0 / (double)pwm_frequency / (double)(prescaler + 1);
+  int resolution_corrected = (double)_MCPWM_FREQ / 2.0f / (double)pwm_frequency / (double)(prescaler + 1);
   // if pwm resolution too low lower the prescaler
-  if(resolution_corrected < _PWM_RES_MIN && prescaler > 0 ) 
-    resolution_corrected = (double)_MCPWM_FREQ / 2.0 / (double)pwm_frequency / (double)(--prescaler + 1); 
+  if(resolution_corrected < _PWM_RES_MIN && prescaler > 0 )
+    resolution_corrected = (double)_MCPWM_FREQ / 2.0f / (double)pwm_frequency / (double)(--prescaler + 1);
   resolution_corrected = _constrain(resolution_corrected, _PWM_RES_MIN, _PWM_RES_MAX);
 
   // set prescaler
   mcpwm_num->timer[0].period.prescale = prescaler;
   mcpwm_num->timer[1].period.prescale = prescaler;
-  mcpwm_num->timer[2].period.prescale = prescaler;    
+  mcpwm_num->timer[2].period.prescale = prescaler;
   _delay(1);
   //set period
   mcpwm_num->timer[0].period.period = resolution_corrected;
@@ -152,13 +152,13 @@ void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm
   mcpwm_num->timer[0].period.upmethod = 0;
   mcpwm_num->timer[1].period.upmethod = 0;
   mcpwm_num->timer[2].period.upmethod = 0;
-  _delay(1); 
-  // _delay(1); 
+  _delay(1);
+  // _delay(1);
   //restart the timers
   mcpwm_start(mcpwm_unit, MCPWM_TIMER_0);
   mcpwm_start(mcpwm_unit, MCPWM_TIMER_1);
   mcpwm_start(mcpwm_unit, MCPWM_TIMER_2);
-  _delay(1); 
+  _delay(1);
   // Cast here because MCPWM_SELECT_SYNC_INT0 (1) is not defined
   // in the default Espressif MCPWM headers. The correct const may be used
   // when https://github.com/espressif/esp-idf/issues/5429 is resolved.
@@ -174,15 +174,15 @@ void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 2PWM setting
 // - hardware speciffic
-// supports Arudino/ATmega328, STM32 and ESP32 
+// supports Arudino/ATmega328, STM32 and ESP32
 void _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
   if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25hz
-  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 40kHz max 
+  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 40kHz max
 
   stepper_2pwm_motor_slots_t m_slot = {};
 
   // determine which motor are we connecting
-  // and set the appropriate configuration parameters 
+  // and set the appropriate configuration parameters
   int slot_num;
   for(slot_num = 0; slot_num < 4; slot_num++){
     if(esp32_stepper_2pwm_motor_slots[slot_num].pin1pwm == _EMPTY_SLOT){ // put the new motor in the first empty slot
@@ -191,8 +191,8 @@ void _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
       break;
     }
   }
-  
-  // disable all the slots with the same MCPWM 
+
+  // disable all the slots with the same MCPWM
   // disable 3pwm bldc motor which would go in the same slot
   esp32_bldc_3pwm_motor_slots[slot_num].pinA = _TAKEN_SLOT;
   if( slot_num < 2 ){
@@ -219,15 +219,15 @@ void _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
 // - hardware speciffic
-// supports Arudino/ATmega328, STM32 and ESP32 
+// supports Arudino/ATmega328, STM32 and ESP32
 void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
   if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25hz
-  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 40kHz max 
+  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 40kHz max
 
   bldc_3pwm_motor_slots_t m_slot = {};
 
   // determine which motor are we connecting
-  // and set the appropriate configuration parameters 
+  // and set the appropriate configuration parameters
   int slot_num;
   for(slot_num = 0; slot_num < 4; slot_num++){
     if(esp32_bldc_3pwm_motor_slots[slot_num].pinA == _EMPTY_SLOT){ // put the new motor in the first empty slot
@@ -236,7 +236,7 @@ void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int
       break;
     }
   }
-  // disable all the slots with the same MCPWM 
+  // disable all the slots with the same MCPWM
   // disable 2pwm steppr motor which would go in the same slot
   esp32_stepper_2pwm_motor_slots[slot_num].pin1pwm = _TAKEN_SLOT;
   if( slot_num < 2 ){
@@ -266,10 +266,10 @@ void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int
 // - hardware speciffic
 void _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
   if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25hz
-  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 40kHz max 
+  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 40kHz max
   stepper_4pwm_motor_slots_t m_slot = {};
   // determine which motor are we connecting
-  // and set the appropriate configuration parameters 
+  // and set the appropriate configuration parameters
   int slot_num;
   for(slot_num = 0; slot_num < 2; slot_num++){
     if(esp32_stepper_4pwm_motor_slots[slot_num].pin1A == _EMPTY_SLOT){ // put the new motor in the first empty slot
@@ -278,7 +278,7 @@ void _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int
       break;
     }
   }
-  // disable all the slots with the same MCPWM 
+  // disable all the slots with the same MCPWM
   if( slot_num == 0 ){
     // slots 0 and 1 of the 3pwm bldc
     esp32_bldc_3pwm_motor_slots[0].pinA = _TAKEN_SLOT;
@@ -297,7 +297,7 @@ void _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int
     esp32_stepper_2pwm_motor_slots[3].pin1pwm = _TAKEN_SLOT;
     // slot 1 of the 6pwm bldc
     esp32_bldc_6pwm_motor_slots[1].pinAH = _TAKEN_SLOT;
-  } 
+  }
 
   // configure pins
   mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_1a, pinA);
@@ -314,7 +314,7 @@ void _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int
 // - hardware speciffic
 //  ESP32 uses MCPWM
 void _writeDutyCycle2PWM(float dc_a,  float dc_b, int pinA, int pinB){
-  // determine which motor slot is the motor connected to 
+  // determine which motor slot is the motor connected to
   for(int i = 0; i < 4; i++){
     if(esp32_stepper_2pwm_motor_slots[i].pin1pwm == pinA){ // if motor slot found
       // se the PWM on the slot timers
@@ -331,7 +331,7 @@ void _writeDutyCycle2PWM(float dc_a,  float dc_b, int pinA, int pinB){
 // - hardware speciffic
 //  ESP32 uses MCPWM
 void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC){
-  // determine which motor slot is the motor connected to 
+  // determine which motor slot is the motor connected to
   for(int i = 0; i < 4; i++){
     if(esp32_bldc_3pwm_motor_slots[i].pinA == pinA){ // if motor slot found
       // se the PWM on the slot timers
@@ -349,7 +349,7 @@ void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, int pinA, int pinB
 // - hardware speciffic
 //  ESP32 uses MCPWM
 void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, int pin1A, int pin1B, int pin2A, int pin2B){
-  // determine which motor slot is the motor connected to 
+  // determine which motor slot is the motor connected to
   for(int i = 0; i < 2; i++){
     if(esp32_stepper_4pwm_motor_slots[i].pin1A == pin1A){ // if motor slot found
       // se the PWM on the slot timers
@@ -367,12 +367,12 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, in
 // - BLDC driver - 6PWM setting
 // - hardware specific
 int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
-  
+
   if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = 20000; // default frequency 20khz - centered pwm has twice lower frequency
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 40kHz max - centered pwm has twice lower frequency
   bldc_6pwm_motor_slots_t m_slot = {};
   // determine which motor are we connecting
-  // and set the appropriate configuration parameters 
+  // and set the appropriate configuration parameters
   int slot_num;
   for(slot_num = 0; slot_num < 2; slot_num++){
     if(esp32_bldc_6pwm_motor_slots[slot_num].pinAH == _EMPTY_SLOT){ // put the new motor in the first empty slot
@@ -384,7 +384,7 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
   // if no slots available
   if(slot_num >= 2) return -1;
 
-  // disable all the slots with the same MCPWM 
+  // disable all the slots with the same MCPWM
   if( slot_num == 0 ){
     // slots 0 and 1 of the 3pwm bldc
     esp32_bldc_3pwm_motor_slots[0].pinA = _TAKEN_SLOT;
@@ -397,7 +397,7 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
     esp32_bldc_3pwm_motor_slots[3].pinA = _TAKEN_SLOT;
     // slot 1 of the 6pwm bldc
     esp32_stepper_4pwm_motor_slots[1].pin1A = _TAKEN_SLOT;
-  } 
+  }
 
   // configure pins
   mcpwm_gpio_init(m_slot.mcpwm_unit, m_slot.mcpwm_ah, pinA_h);
@@ -409,7 +409,7 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
 
   // configure the timer
   _configureTimerFrequency(pwm_frequency, m_slot.mcpwm_num,  m_slot.mcpwm_unit, dead_zone);
-  // return 
+  // return
   return 0;
 }
 
@@ -417,7 +417,7 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
 // - BLDC driver - 6PWM setting
 // - hardware specific
 void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, int pinA_h, int pinA_l, int pinB_h, int pinB_l, int pinC_h, int pinC_l){
-  // determine which motor slot is the motor connected to 
+  // determine which motor slot is the motor connected to
   for(int i = 0; i < 2; i++){
     if(esp32_bldc_6pwm_motor_slots[i].pinAH == pinA_h){ // if motor slot found
       // se the PWM on the slot timers

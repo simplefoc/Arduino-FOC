@@ -6,7 +6,6 @@
 #include "Arduino.h"
 #include <Wire.h>
 #include <SimpleFOC.h>
-#include <Math.h>
 
 // this is for an AS5048B absolute magnetic encoder on I2C address 0x41
 MagneticSensorI2C sensor = MagneticSensorI2C(0x41, 14, 0xFE, 8);
@@ -17,7 +16,7 @@ BLDCMotor motor = BLDCMotor(7);
 BLDCDriver3PWM driver =  BLDCDriver3PWM(6,5,8);
 
 // velocity set point variable
-float target_velocity = 2.0;
+float target_velocity = 2.0f;
 // instantiate the commander
 Commander command = Commander(SerialUSB);
 void doTarget(char* cmd) { command.scalar(&target_velocity, cmd); }
@@ -35,11 +34,11 @@ void setup() {
 	driver.init();
 	motor.linkDriver(&driver);
 	motor.controller = MotionControlType::velocity;
-	motor.PID_velocity.P = 0.2;
+	motor.PID_velocity.P = 0.2f;
 	motor.PID_velocity.I = 20;
-	motor.PID_velocity.D = 0.001;
+	motor.PID_velocity.D = 0.001f;
 	motor.PID_velocity.output_ramp = 1000;
-	motor.LPF_velocity.Tf = 0.01;
+	motor.LPF_velocity.Tf = 0.01f;
 	motor.voltage_limit = 9;
 	//motor.P_angle.P = 20;
 	motor.init();

@@ -1,6 +1,6 @@
 #include "foc_utils.h"
 
-// int array instead of float array 
+// int array instead of float array
 // 4x200 points per 360 deg
 // 2x storage save (int 2Byte float 4 Byte )
 // sin*10000
@@ -13,21 +13,21 @@ const int sine_array[200] = {0,79,158,237,316,395,473,552,631,710,789,867,946,10
 // it has to receive an angle in between 0 and 2PI
 float _sin(float a){
   if(a < _PI_2){
-    //return sine_array[(int)(199.0*( a / (_PI/2.0)))];
-    //return sine_array[(int)(126.6873* a)];           // float array optimized
-    return 0.0001*sine_array[_round(126.6873* a)];      // int array optimized
+    //return sine_array[(int)(199.0f*( a / (_PI/2.0)))];
+    //return sine_array[(int)(126.6873f* a)];           // float array optimized
+    return 0.0001f*sine_array[_round(126.6873f* a)];      // int array optimized
   }else if(a < _PI){
-    // return sine_array[(int)(199.0*(1.0 - (a-_PI/2.0) / (_PI/2.0)))];
-    //return sine_array[398 - (int)(126.6873*a)];          // float array optimized
-    return 0.0001*sine_array[398 - _round(126.6873*a)];     // int array optimized
+    // return sine_array[(int)(199.0f*(1.0f - (a-_PI/2.0) / (_PI/2.0)))];
+    //return sine_array[398 - (int)(126.6873f*a)];          // float array optimized
+    return 0.0001f*sine_array[398 - _round(126.6873f*a)];     // int array optimized
   }else if(a < _3PI_2){
-    // return -sine_array[(int)(199.0*((a - _PI) / (_PI/2.0)))];
-    //return -sine_array[-398 + (int)(126.6873*a)];           // float array optimized
-    return -0.0001*sine_array[-398 + _round(126.6873*a)];      // int array optimized
+    // return -sine_array[(int)(199.0f*((a - _PI) / (_PI/2.0)))];
+    //return -sine_array[-398 + (int)(126.6873f*a)];           // float array optimized
+    return -0.0001f*sine_array[-398 + _round(126.6873f*a)];      // int array optimized
   } else {
-    // return -sine_array[(int)(199.0*(1.0 - (a - 3*_PI/2) / (_PI/2.0)))];
-    //return -sine_array[796 - (int)(126.6873*a)];           // float array optimized
-    return -0.0001*sine_array[796 - _round(126.6873*a)];      // int array optimized
+    // return -sine_array[(int)(199.0f*(1.0f - (a - 3*_PI/2) / (_PI/2.0)))];
+    //return -sine_array[796 - (int)(126.6873f*a)];           // float array optimized
+    return -0.0001f*sine_array[796 - _round(126.6873f*a)];      // int array optimized
   }
 }
 
@@ -54,7 +54,7 @@ float _electricalAngle(float shaft_angle, int pole_pairs) {
   return (shaft_angle * pole_pairs);
 }
 
-// square root approximation function using 
+// square root approximation function using
 // https://reprap.org/forum/read.php?147,219210
 // https://en.wikipedia.org/wiki/Fast_inverse_square_root
 float _sqrtApprox(float number) {//low in fat
@@ -67,7 +67,7 @@ float _sqrtApprox(float number) {//low in fat
   y = number;
   i = * ( long * ) &y;
   i = 0x5f375a86 - ( i >> 1 );
-  y = * ( float * ) &i; 
+  y = * ( float * ) &i;
   // y = y * ( f - ( x * y * y ) ); // better precision
   return number * y;
 }

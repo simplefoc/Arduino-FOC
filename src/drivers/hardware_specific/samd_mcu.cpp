@@ -287,7 +287,7 @@ void _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 	if (compatibility<0) {
 		// no result!
 #ifdef SIMPLEFOC_SAMD_DEBUG
-		Serial.println("Bad combination!");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Bad combination!");
 #endif
 		return;
 	}
@@ -297,9 +297,9 @@ void _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 
 
 #ifdef SIMPLEFOC_SAMD_DEBUG
-	Serial.print("Found configuration: (score=");
-	Serial.print(scorePermutation(tccConfs, 2));
-	Serial.println(")");
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.print("Found configuration: (score=");
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.print(scorePermutation(tccConfs, 2));
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.println(")");
 	printTCCConfiguration(tccConfs[0]);
 	printTCCConfiguration(tccConfs[1]);
 #endif
@@ -308,7 +308,7 @@ void _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 	attachTCC(tccConfs[0]); // in theory this can fail, but there is no way to signal it...
 	attachTCC(tccConfs[1]);
 #ifdef SIMPLEFOC_SAMD_DEBUG
-	Serial.println("Attached pins...");
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Attached pins...");
 #endif
 
 	// set up clock - Note: if we did this right it should be possible to get all TCC units synchronized?
@@ -319,7 +319,7 @@ void _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 	configureTCC(tccConfs[0], pwm_frequency);
 	configureTCC(tccConfs[1], pwm_frequency);
 #ifdef SIMPLEFOC_SAMD_DEBUG
-	Serial.println("Configured TCCs...");
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured TCCs...");
 #endif
 
 	return; // Someone with a stepper-setup who can test it?
@@ -377,7 +377,7 @@ void _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const in
 	if (compatibility<0) {
 		// no result!
 #ifdef SIMPLEFOC_SAMD_DEBUG
-		Serial.println("Bad combination!");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Bad combination!");
 #endif
 		return;
 	}
@@ -388,9 +388,9 @@ void _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const in
 
 
 #ifdef SIMPLEFOC_SAMD_DEBUG
-	Serial.print("Found configuration: (score=");
-	Serial.print(scorePermutation(tccConfs, 3));
-	Serial.println(")");
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.print("Found configuration: (score=");
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.print(scorePermutation(tccConfs, 3));
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.println(")");
 	printTCCConfiguration(tccConfs[0]);
 	printTCCConfiguration(tccConfs[1]);
 	printTCCConfiguration(tccConfs[2]);
@@ -401,7 +401,7 @@ void _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const in
 	attachTCC(tccConfs[1]);
 	attachTCC(tccConfs[2]);
 #ifdef SIMPLEFOC_SAMD_DEBUG
-	Serial.println("Attached pins...");
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Attached pins...");
 #endif
 
 	// set up clock - Note: if we did this right it should be possible to get all TCC units synchronized?
@@ -413,7 +413,7 @@ void _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const in
 	configureTCC(tccConfs[1], pwm_frequency);
 	configureTCC(tccConfs[2], pwm_frequency);
 #ifdef SIMPLEFOC_SAMD_DEBUG
-	Serial.println("Configured TCCs...");
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured TCCs...");
 #endif
 
 }
@@ -445,7 +445,7 @@ void _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const 
 	if (compatibility<0) {
 		// no result!
 #ifdef SIMPLEFOC_SAMD_DEBUG
-		Serial.println("Bad combination!");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Bad combination!");
 #endif
 		return;
 	}
@@ -457,9 +457,9 @@ void _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const 
 
 
 #ifdef SIMPLEFOC_SAMD_DEBUG
-	Serial.print("Found configuration: (score=");
-	Serial.print(scorePermutation(tccConfs, 4));
-	Serial.println(")");
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.print("Found configuration: (score=");
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.print(scorePermutation(tccConfs, 4));
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.println(")");
 	printTCCConfiguration(tccConfs[0]);
 	printTCCConfiguration(tccConfs[1]);
 	printTCCConfiguration(tccConfs[2]);
@@ -472,7 +472,7 @@ void _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const 
 	attachTCC(tccConfs[2]);
 	attachTCC(tccConfs[3]);
 #ifdef SIMPLEFOC_SAMD_DEBUG
-	Serial.println("Attached pins...");
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Attached pins...");
 #endif
 
 	// set up clock - Note: if we did this right it should be possible to get all TCC units synchronized?
@@ -485,7 +485,7 @@ void _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const 
 	configureTCC(tccConfs[2], pwm_frequency);
 	configureTCC(tccConfs[3], pwm_frequency);
 #ifdef SIMPLEFOC_SAMD_DEBUG
-	Serial.println("Configured TCCs...");
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured TCCs...");
 #endif
 
 	return; // Someone with a stepper-setup who can test it?
@@ -539,7 +539,7 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
 		if (compatibility<0) {
 			// no result!
 #ifdef SIMPLEFOC_SAMD_DEBUG
-			Serial.println("Bad combination!");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Bad combination!");
 #endif
 			return -1;
 		}
@@ -553,7 +553,7 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
 	tccConfiguration pinCl = getTCCChannelNr(pinC_l, getPeripheralOfPermutation(compatibility, 5));
 
 #ifdef SIMPLEFOC_SAMD_DEBUG
-	Serial.println("Found configuration: ");
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Found configuration: ");
 	printTCCConfiguration(pinAh);
 	printTCCConfiguration(pinAl);
 	printTCCConfiguration(pinBh);
@@ -573,7 +573,7 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
 	if (!allAttached)
 		return -1;
 #ifdef SIMPLEFOC_SAMD_DEBUG
-	Serial.println("Attached pins...");
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Attached pins...");
 #endif
 	// set up clock - if we did this right it should be possible to get all TCC units synchronized?
 	// e.g. attach all the timers, start them, and then start the clock... but this would require API changes in SimpleFOC driver API
@@ -590,7 +590,7 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
 	if ((pinCh.tcc.chaninfo!=pinCl.tcc.chaninfo))
 		configureTCC(pinCl, pwm_frequency, true, -1.0);
 #ifdef SIMPLEFOC_SAMD_DEBUG
-	Serial.println("Configured TCCs...");
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured TCCs...");
 #endif
 
 	return 0;
@@ -704,7 +704,7 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, i
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
 		// low-side on a different pin of same TCC - do dead-time in software...
 		float ls = dc_a+(dead_zone*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1));
-		if (ls>1.0) ls = 1.0; // no off-time is better than too-short dead-time
+		if (ls>1.0) ls = 1.0f; // no off-time is better than too-short dead-time
 		writeSAMDDutyCycle(tcc1->tcc.chaninfo, dc_a);
 		writeSAMDDutyCycle(tcc2->tcc.chaninfo, ls);
 	}
@@ -715,7 +715,7 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, i
 	tcc2 = getTccPinConfiguration(pinB_l);
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
 		float ls = dc_b+(dead_zone*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1));
-		if (ls>1.0) ls = 1.0; // no off-time is better than too-short dead-time
+		if (ls>1.0) ls = 1.0f; // no off-time is better than too-short dead-time
 		writeSAMDDutyCycle(tcc1->tcc.chaninfo, dc_b);
 		writeSAMDDutyCycle(tcc2->tcc.chaninfo, ls);
 	}
@@ -726,7 +726,7 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, i
 	tcc2 = getTccPinConfiguration(pinC_l);
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
 		float ls = dc_c+(dead_zone*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1));
-		if (ls>1.0) ls = 1.0; // no off-time is better than too-short dead-time
+		if (ls>1.0) ls = 1.0f; // no off-time is better than too-short dead-time
 		writeSAMDDutyCycle(tcc1->tcc.chaninfo, dc_c);
 		writeSAMDDutyCycle(tcc2->tcc.chaninfo, ls);
 	}
@@ -746,85 +746,85 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, i
  * saves you hours of cross-referencing with the datasheet.
  */
 void printAllPinInfos() {
-	Serial.println();
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.println();
 	for (uint8_t pin=0;pin<PINS_COUNT;pin++) {
 		const PinDescription& pinDesc = g_APinDescription[pin];
 		wo_association& association = getWOAssociation(pinDesc.ulPort, pinDesc.ulPin);
-		Serial.print("Pin ");
-		if (pin<10) Serial.print("0");
-		Serial.print(pin);
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("Pin ");
+		if (pin<10) SIMPLEFOC_SAMD_DEBUG_SERIAL.print("0");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(pin);
 		switch (pinDesc.ulPort) {
-			case NOT_A_PORT: Serial.print("    "); break;
-			case PORTA: Serial.print("  PA"); break;
-			case PORTB: Serial.print("  PB"); break;
-			case PORTC: Serial.print("  PC"); break;
+			case NOT_A_PORT: SIMPLEFOC_SAMD_DEBUG_SERIAL.print("    "); break;
+			case PORTA: SIMPLEFOC_SAMD_DEBUG_SERIAL.print("  PA"); break;
+			case PORTB: SIMPLEFOC_SAMD_DEBUG_SERIAL.print("  PB"); break;
+			case PORTC: SIMPLEFOC_SAMD_DEBUG_SERIAL.print("  PC"); break;
 #if defined(_SAMD51_)||defined(_SAME51_)
-			case PORTD: Serial.print("  PD"); break;
+			case PORTD: SIMPLEFOC_SAMD_DEBUG_SERIAL.print("  PD"); break;
 #endif
 		}
-		if (pinDesc.ulPin <10) Serial.print("0");
-		Serial.print(pinDesc.ulPin);
+		if (pinDesc.ulPin <10) SIMPLEFOC_SAMD_DEBUG_SERIAL.print("0");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(pinDesc.ulPin);
 
-		Serial.print("  E=");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("  E=");
 		if (association.tccE>=0) {
 			int tcn = GetTCNumber(association.tccE);
 			if (tcn>=TCC_INST_NUM)
-				Serial.print(" TC");
+				SIMPLEFOC_SAMD_DEBUG_SERIAL.print(" TC");
 			else
-				Serial.print("TCC");
-			Serial.print(tcn);
-			Serial.print("-");
-			Serial.print(GetTCChannelNumber(association.tccE));
-			Serial.print("[");
-			Serial.print(GetTCChannelNumber(association.woE));
-			Serial.print("]");
+				SIMPLEFOC_SAMD_DEBUG_SERIAL.print("TCC");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tcn);
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("-");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print(GetTCChannelNumber(association.tccE));
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("[");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print(GetTCChannelNumber(association.woE));
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("]");
 			if (tcn<10)
-				Serial.print(" ");
+				SIMPLEFOC_SAMD_DEBUG_SERIAL.print(" ");
 		}
 		else
-			Serial.print("  None    ");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("  None    ");
 
-		Serial.print(" F=");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(" F=");
 		if (association.tccF>=0) {
 			int tcn = GetTCNumber(association.tccF);
 			if (tcn>=TCC_INST_NUM)
-				Serial.print(" TC");
+				SIMPLEFOC_SAMD_DEBUG_SERIAL.print(" TC");
 			else
-				Serial.print("TCC");
-			Serial.print(tcn);
-			Serial.print("-");
-			Serial.print(GetTCChannelNumber(association.tccF));
-			Serial.print("[");
-			Serial.print(GetTCChannelNumber(association.woF));
-			Serial.print("]");
+				SIMPLEFOC_SAMD_DEBUG_SERIAL.print("TCC");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tcn);
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("-");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print(GetTCChannelNumber(association.tccF));
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("[");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print(GetTCChannelNumber(association.woF));
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("]");
 			if (tcn<10)
-				Serial.print(" ");
+				SIMPLEFOC_SAMD_DEBUG_SERIAL.print(" ");
 		}
 		else
-			Serial.print("  None    ");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("  None    ");
 
 #if defined(_SAMD51_)||defined(_SAME51_)
-		Serial.print(" G=");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(" G=");
 		if (association.tccG>=0) {
 			int tcn = GetTCNumber(association.tccG);
-			Serial.print("TCC");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("TCC");
 			if (tcn<10)
-				Serial.print(" ");
-			Serial.print(tcn);
-			Serial.print("-");
-			Serial.print(GetTCChannelNumber(association.tccG));
-			Serial.print("[");
-			Serial.print(GetTCChannelNumber(association.woG));
-			Serial.println("]");
+				SIMPLEFOC_SAMD_DEBUG_SERIAL.print(" ");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tcn);
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("-");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print(GetTCChannelNumber(association.tccG));
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("[");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.print(GetTCChannelNumber(association.woG));
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.println("]");
 		}
 		else
-			Serial.println("  None ");
+			SIMPLEFOC_SAMD_DEBUG_SERIAL.println("  None ");
 #else
-		Serial.println("");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("");
 #endif
 
 	}
-	Serial.println();
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.println();
 }
 
 
@@ -832,33 +832,33 @@ void printAllPinInfos() {
 
 
 void printTCCConfiguration(tccConfiguration& info) {
-	Serial.print(info.pin);
+	SIMPLEFOC_SAMD_DEBUG_SERIAL.print(info.pin);
 	if (info.tcc.tccn>=TCC_INST_NUM)
-		Serial.print(":  TC Peripheral");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(":  TC Peripheral");
 	else
-		Serial.print(": TCC Peripheral");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(": TCC Peripheral");
 	switch (info.peripheral) {
 	case PIO_TIMER:
-		Serial.print(" E "); break;
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(" E "); break;
 	case PIO_TIMER_ALT:
-		Serial.print(" F "); break;
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(" F "); break;
 #if defined(_SAMD51_)||defined(_SAME51_)
 	case PIO_TCC_PDEC:
-		Serial.print(" G "); break;
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(" G "); break;
 #endif
 	default:
-		Serial.print(" ? "); break;
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(" ? "); break;
 	}
 	if (info.tcc.tccn>=0) {
-		Serial.print(info.tcc.tccn);
-		Serial.print("-");
-		Serial.print(info.tcc.chan);
-		Serial.print("[");
-		Serial.print(info.wo);
-		Serial.println("]");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(info.tcc.tccn);
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("-");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(info.tcc.chan);
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("[");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(info.wo);
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("]");
 	}
 	else
-		Serial.println(" None");
+		SIMPLEFOC_SAMD_DEBUG_SERIAL.println(" None");
 }
 
 
@@ -866,5 +866,3 @@ void printTCCConfiguration(tccConfiguration& info) {
 #endif
 
 #endif
-
-

@@ -9,7 +9,7 @@ MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0X0C, 4);
 
 
 /**
- * This measures how closely sensor and electrical angle agree and how much your motor is affected by 'cogging'.  
+ * This measures how closely sensor and electrical angle agree and how much your motor is affected by 'cogging'.
  * It can be used to investigate how much non linearity there is between what we set (electrical angle) and what we read (sensor angle)
  * This non linearity could be down to magnet placement, coil winding differences or simply that the magnetic field when travelling through a pole pair is not linear
  * An alignment error of ~10 degrees and cogging of ~4 degrees is normal for small gimbal.
@@ -21,6 +21,7 @@ void testAlignmentAndCogging(int direction) {
   motor.move(0);
   _delay(200);
 
+  sensor.update();
   float initialAngle = sensor.getAngle();
 
   const int shaft_rotation = 720; // 720 deg test - useful to see repeating cog pattern
@@ -28,9 +29,9 @@ void testAlignmentAndCogging(int direction) {
 
   float stDevSum = 0;
 
-  float mean = 0.0;
-  float prev_mean = 0.0;
-  
+  float mean = 0.0f;
+  float prev_mean = 0.0f;
+
 
   for (int i = 0; i < sample_count; i++) {
 
@@ -39,7 +40,8 @@ void testAlignmentAndCogging(int direction) {
     motor.move(electricAngle * PI / 180);
     _delay(5);
 
-    // measure 
+    // measure
+    sensor.update();
     float sensorAngle = (sensor.getAngle() - initialAngle) * 180 / PI;
     float sensorElectricAngle = sensorAngle * motor.pole_pairs;
     float electricAngleError = electricAngle - sensorElectricAngle;
@@ -87,7 +89,7 @@ void setup() {
 
   motor.voltage_sensor_align = 3;
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
- 
+
   motor.controller = MotionControlType::angle_openloop;
   motor.voltage_limit=motor.voltage_sensor_align;
 

@@ -3,8 +3,10 @@
 
 
 // Stepper driver instance
-// StepperDriver2PWM(pwm1, in1a, in1b, pwm2, in2a, in2b, (en1, en2 optional))
-StepperDriver2PWM driver = StepperDriver2PWM(3, 4, 5, 10 , 9 , 8 , 11, 12);
+// StepperDriver2PWM(pwm1, in1, pwm2, in2, (en1, en2 optional))
+int in1[] = {4,5};
+int in2[] = {9,8};
+StepperDriver2PWM driver = StepperDriver2PWM(3, in1, 10 , in2, 11, 12);
 
 // StepperDriver2PWM(pwm1, dir1, pwm2, dir2,(en1, en2 optional))
 // StepperDriver2PWM driver = StepperDriver2PWM(3, 4, 5, 6, 11, 12);

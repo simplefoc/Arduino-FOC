@@ -4,7 +4,9 @@
 #include "Arduino.h"
 #include "../common/foc_utils.h"
 #include "../common/time_utils.h"
+#include "../common/defaults.h"
 #include "../common/base_classes/CurrentSense.h"
+#include "../common/lowpass_filter.h"
 #include "hardware_api.h"
 
 
@@ -33,25 +35,30 @@ class InlineCurrentSense: public CurrentSense{
     float gain_b; //!< phase B gain
     float gain_c; //!< phase C gain
 
-  private:
+    // // per phase low pass fileters
+    // LowPassFilter lpf_a{DEF_LPF_PER_PHASE_CURRENT_SENSE_Tf}; //!<  current A low pass filter
+    // LowPassFilter lpf_b{DEF_LPF_PER_PHASE_CURRENT_SENSE_Tf}; //!<  current B low pass filter
+    // LowPassFilter lpf_c{DEF_LPF_PER_PHASE_CURRENT_SENSE_Tf}; //!<  current C low pass filter
 
+  private:
+  
     // hardware variables
   	int pinA; //!< pin A analog pin for current measurement
   	int pinB; //!< pin B analog pin for current measurement
   	int pinC; //!< pin C analog pin for current measurement
 
     // gain variables
-    double shunt_resistor; //!< Shunt resistor value 
-    double amp_gain; //!< amp gain value 
-    double volts_to_amps_ratio; //!< Volts to amps ratio
+    float shunt_resistor; //!< Shunt resistor value
+    float amp_gain; //!< amp gain value
+    float volts_to_amps_ratio; //!< Volts to amps ratio
     
     /**
      *  Function finding zero offsets of the ADC
      */
     void calibrateOffsets();
-    double offset_ia; //!< zero current A voltage value (center of the adc reading)
-    double offset_ib; //!< zero current B voltage value (center of the adc reading)
-    double offset_ic; //!< zero current C voltage value (center of the adc reading)
+    float offset_ia; //!< zero current A voltage value (center of the adc reading)
+    float offset_ib; //!< zero current B voltage value (center of the adc reading)
+    float offset_ic; //!< zero current C voltage value (center of the adc reading)
 
 };
 
