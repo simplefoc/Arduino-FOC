@@ -137,7 +137,8 @@ float SAMDCurrentSenseADCDMA::toVolts(uint16_t counts) {
 
 void SAMDCurrentSenseADCDMA::initPins(){
   
-  pinMode(pinAREF, INPUT);
+  if (pinAREF>=0)
+    pinMode(pinAREF, INPUT);
   pinMode(pinA, INPUT);
   pinMode(pinB, INPUT);
 
@@ -169,8 +170,10 @@ void SAMDCurrentSenseADCDMA::initADC(){
   //ADC->REFCTRL.bit.REFSEL = ADC_REFCTRL_REFSEL_INTVCC0_Val; //  2.2297 V Supply VDDANA
   ADC->INPUTCTRL.bit.GAIN = ADC_INPUTCTRL_GAIN_1X_Val; // Gain select as 1X
   // ADC->INPUTCTRL.bit.GAIN = ADC_INPUTCTRL_GAIN_DIV2_Val;  // default
-  ADC->REFCTRL.bit.REFSEL = ADC_REFCTRL_REFSEL_AREFA;
-  // ADC->REFCTRL.bit.REFSEL = ADC_REFCTRL_REFSEL_INTVCC0;
+  if (pinAREF>=0)
+    ADC->REFCTRL.bit.REFSEL = ADC_REFCTRL_REFSEL_AREFA;
+  else
+    ADC->REFCTRL.bit.REFSEL = ADC_REFCTRL_REFSEL_INTVCC0;
   ADCsync();  //  ref 31.6.16
 
   /*
