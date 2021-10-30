@@ -20,6 +20,8 @@
 
 #elif defined(TARGET_RP2040)
 
+#elif defined(NRF52_SERIES)
+
 #else
 
 // function setting the high pwm frequency to the supplied pins
