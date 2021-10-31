@@ -173,7 +173,17 @@ class Commander
      *  - It can be set by sending 'value' - (ex. 0.01f for settin *value=0.01)
      */
     void scalar(float* value, char* user_cmd);
-
+    /**
+     *  Target setting interface, enables setting the target and limiting variables at once. 
+     *  The valeus are sent separated by a space. ex. P2.34 70 2
+     *  `P` is the user defined command, `2.34` is the target angle `70` is the target 
+     *  velocity and `2` is the desired max current.
+     *  It depends of the motion control mode:
+     *  - torque   : torque (ex. P2.5) 
+     *  - velocity : velocity torque (ex.P10 2.5) 
+     *  - angle    : angle velocity torque (ex.P3.5 10 2.5)
+     */
+    void target(FOCMotor* motor, char* user_cmd);
   private:
     // Subscribed command callback variables
     CommandCallback call_list[20];//!< array of command callback pointers - 20 is an arbitrary number
