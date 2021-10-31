@@ -27,6 +27,8 @@ void MagneticSensorPWM::init(){
     // initial hardware
     pinMode(pinPWM, INPUT);
     raw_count = getRawCount();
+    
+    this->Sensor::init(); // call base class init
 }
 
 // get current angle (rad)

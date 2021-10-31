@@ -64,6 +64,8 @@ void MagneticSensorI2C::init(TwoWire* _wire){
 
   // I2C communication begin
   wire->begin();
+
+  this->Sensor::init(); // call base class init
 }
 
 //  Shaft angle calculation
