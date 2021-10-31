@@ -14,6 +14,7 @@ BLDCDriver3PWM::BLDCDriver3PWM(int phA, int phB, int phC, int en1, int en2, int 
   // default power-supply value
   voltage_power_supply = DEF_POWER_SUPPLY;
   voltage_limit = NOT_SET;
+  pwm_frequency = NOT_SET;
 
 }
 
@@ -75,9 +76,9 @@ void BLDCDriver3PWM::setPhaseState(int sa, int sb, int sc) {
 void BLDCDriver3PWM::setPwm(float Ua, float Ub, float Uc) {
 
   // limit the voltage in driver
-  Ua = _constrain(Ua, 0.0, voltage_limit);
-  Ub = _constrain(Ub, 0.0, voltage_limit);
-  Uc = _constrain(Uc, 0.0, voltage_limit);
+  Ua = _constrain(Ua, 0.0f, voltage_limit);
+  Ub = _constrain(Ub, 0.0f, voltage_limit);
+  Uc = _constrain(Uc, 0.0f, voltage_limit);
   // calculate duty cycle
   // limited in [0,1]
   dc_a = _constrain(Ua / voltage_power_supply, 0.0f , 1.0f );

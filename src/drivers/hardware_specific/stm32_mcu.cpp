@@ -4,7 +4,7 @@
 #if defined(_STM32_DEF_)
 // default pwm parameters
 #define _PWM_RESOLUTION 12 // 12bit
-#define _PWM_RANGE 4095.0// 2^12 -1 = 4095
+#define _PWM_RANGE 4095.0 // 2^12 -1 = 4095
 #define _PWM_FREQUENCY 25000 // 25khz
 #define _PWM_FREQUENCY_MAX 50000 // 50khz
 
@@ -70,10 +70,14 @@ HardwareTimer* _initPinPWMLow(uint32_t PWM_freq, int ulPin)
     sConfigOC.OCMode = TIM_OCMODE_PWM2;
     sConfigOC.Pulse = 100;
     sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
-    sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
     sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    sConfigOC.OCIdleState = TIM_OCIDLESTATE_SET;
+#if defined(TIM_OCIDLESTATE_SET)
+    sConfigOC.OCIdleState  = TIM_OCIDLESTATE_SET;
+#endif
+#if defined(TIM_OCNIDLESTATE_RESET)
+    sConfigOC.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
     sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+#endif
     uint32_t channel = STM_PIN_CHANNEL(pinmap_function(pin, PinMap_PWM));
     HAL_TIM_PWM_ConfigChannel(&(HardwareTimer_Handle[index]->handle), &sConfigOC, channel);
   }
@@ -121,6 +125,8 @@ void _alignPWMTimers(HardwareTimer *HT1,HardwareTimer *HT2,HardwareTimer *HT3,Ha
 // configure hardware 6pwm interface only one timer with inverted channels
 HardwareTimer* _initHardware6PWMInterface(uint32_t PWM_freq, float dead_zone, int pinA_h, int pinA_l, int pinB_h, int pinB_l, int pinC_h, int pinC_l)
 {
+  
+#if !defined(STM32L0xx) // L0 boards dont have hardware 6pwm interface 
   PinName uhPinName = digitalPinToPinName(pinA_h);
   PinName ulPinName = digitalPinToPinName(pinA_l);
   PinName vhPinName = digitalPinToPinName(pinB_h);
@@ -135,6 +141,7 @@ HardwareTimer* _initHardware6PWMInterface(uint32_t PWM_freq, float dead_zone, in
   if (HardwareTimer_Handle[index] == NULL) {
     HardwareTimer_Handle[index]->__this = new HardwareTimer((TIM_TypeDef *)pinmap_peripheral(uhPinName, PinMap_PWM));
     HardwareTimer_Handle[index]->handle.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
+    HardwareTimer_Handle[index]->handle.Init.RepetitionCounter = 1;
     HAL_TIM_Base_Init(&(HardwareTimer_Handle[index]->handle));
     ((HardwareTimer *)HardwareTimer_Handle[index]->__this)->setOverflow(PWM_freq, HERTZ_FORMAT);
   }
@@ -153,10 +160,21 @@ HardwareTimer* _initHardware6PWMInterface(uint32_t PWM_freq, float dead_zone, in
   LL_TIM_OC_SetDeadTime(HT->getHandle()->Instance, dead_time); // deadtime is non linear!
   LL_TIM_CC_EnableChannel(HT->getHandle()->Instance, LL_TIM_CHANNEL_CH1 | LL_TIM_CHANNEL_CH1N | LL_TIM_CHANNEL_CH2 | LL_TIM_CHANNEL_CH2N | LL_TIM_CHANNEL_CH3 | LL_TIM_CHANNEL_CH3N);
 
+  // Set Trigger out for DMA transfer
+  LL_TIM_SetTriggerOutput(HT->getHandle()->Instance, LL_TIM_TRGO_UPDATE);
+
   HT->pause();
   HT->refresh();
+
+  // adjust the initial timer state such that the trigger for DMA transfer aligns with the pwm peaks instead of throughs.
+  HT->getHandle()->Instance->CR1 |= TIM_CR1_DIR;
+  HT->getHandle()->Instance->CNT = TIM1->ARR;
+
   HT->resume();
   return HT;
+#else 
+  return nullptr; // return nothing
+#endif
 }
 
 
@@ -176,12 +194,22 @@ int _interfaceType(const int pinA_h, const int pinA_l,  const int pinB_h, const 
   int tim4 = get_timer_index((TIM_TypeDef *)pinmap_peripheral(nameBL, PinMap_PWM));
   int tim5 = get_timer_index((TIM_TypeDef *)pinmap_peripheral(nameCH, PinMap_PWM));
   int tim6 = get_timer_index((TIM_TypeDef *)pinmap_peripheral(nameCL, PinMap_PWM));
+
+#if defined(STM32L0xx) // L0 boards dont have hardware 6pwm interface 
+
+  if(tim1 == tim2 && tim3==tim4  && tim5==tim6)
+    return _SOFTWARE_6PWM; // software 6pwm interface - each pair of high-low side same timer
+  else
+    return _ERROR_6PWM; // might be error avoid configuration
+#else // the rest of stm32 boards
+
   if(tim1 == tim2 && tim2==tim3 && tim3==tim4  && tim4==tim5 && tim5==tim6)
     return _HARDWARE_6PWM; // hardware 6pwm interface - only on timer
   else if(tim1 == tim2 && tim3==tim4  && tim5==tim6)
     return _SOFTWARE_6PWM; // software 6pwm interface - each pair of high-low side same timer
   else
     return _ERROR_6PWM; // might be error avoid configuration
+#endif
 }
 
 

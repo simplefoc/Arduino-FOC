@@ -99,6 +99,7 @@ int  StepperMotor::initFOC( float zero_electric_offset, Direction _sensor_direct
   if(sensor){
     exit_flag *= alignSensor();
     // added the shaft_angle update
+    sensor->update();
     shaft_angle = sensor->getAngle();
   }else if(monitor_port) monitor_port->println(F("MOT: No sensor."));
 
@@ -132,6 +133,7 @@ int StepperMotor::alignSensor() {
       _delay(2);
     }
     // take and angle in the middle
+    sensor->update();
     float mid_angle = sensor->getAngle();
     // move one electrical revolution backwards
     for (int i = 500; i >=0; i-- ) {
@@ -139,6 +141,7 @@ int StepperMotor::alignSensor() {
       setPhaseVoltage(voltage_sensor_align, 0,  angle);
       _delay(2);
     }
+    sensor->update();
     float end_angle = sensor->getAngle();
     setPhaseVoltage(0, 0, 0);
     _delay(200);
@@ -169,7 +172,11 @@ int StepperMotor::alignSensor() {
     // set angle -90(270 = 3PI/2) degrees
     setPhaseVoltage(voltage_sensor_align, 0,  _3PI_2);
     _delay(700);
-    zero_electric_angle = _normalizeAngle(_electricalAngle(sensor_direction*sensor->getAngle(), pole_pairs));
+    // read the sensor
+    sensor->update();
+    // get the current zero electric angle
+    zero_electric_angle = 0;
+    zero_electric_angle = electricalAngle();
     _delay(20);
     if(monitor_port){
       monitor_port->print(F("MOT: Zero elec. angle: "));
@@ -197,7 +204,7 @@ int StepperMotor::absoluteZeroSearch() {
     angleOpenloop(1.5f*_2PI);
     // call important for some sensors not to loose count
     // not needed for the search
-    sensor->getAngle();
+    sensor->update();
   }
   // disable motor
   setPhaseVoltage(0, 0, 0);
@@ -216,6 +223,11 @@ int StepperMotor::absoluteZeroSearch() {
 // Iterative function looping FOC algorithm, setting Uq on the Motor
 // The faster it can be run the better
 void StepperMotor::loopFOC() {
+  
+  // update sensor - do this even in open-loop mode, as user may be switching between modes and we could lose track
+  //                 of full rotations otherwise.
+  if (sensor) sensor->update();
+
   // if open-loop do nothing
   if( controller==MotionControlType::angle_openloop || controller==MotionControlType::velocity_openloop ) return;
   // shaft angle
@@ -224,6 +236,9 @@ void StepperMotor::loopFOC() {
   // if disabled do nothing
   if(!enabled) return;
 
+  // Needs the update() to be called first
+  // This function will not have numerical issues because it uses Sensor::getMechanicalAngle() 
+  // which is in range 0-2PI
   electrical_angle = electricalAngle();
 
   // set the phase voltage - FOC heart function :)
@@ -236,13 +251,25 @@ void StepperMotor::loopFOC() {
 // - needs to be called iteratively it is asynchronous function
 // - if target is not set it uses motor.target value
 void StepperMotor::move(float new_target) {
-  // get angular velocity
-  shaft_velocity = shaftVelocity();
-  // if disabled do nothing
-  if(!enabled) return;
+
   // downsampling (optional)
   if(motion_cnt++ < motion_downsample) return;
   motion_cnt = 0;
+
+  // shaft angle/velocity need the update() to be called first
+  // get shaft angle
+  // TODO sensor precision: the shaft_angle actually stores the complete position, including full rotations, as a float
+  //                        For this reason it is NOT precise when the angles become large.
+  //                        Additionally, the way LPF works on angle is a precision issue, and the angle-LPF is a problem
+  //                        when switching to a 2-component representation.
+  if( controller!=MotionControlType::angle_openloop && controller!=MotionControlType::velocity_openloop ) 
+    shaft_angle = shaftAngle(); // read value even if motor is disabled to keep the monitoring updated but not in openloop mode
+  // get angular velocity 
+  shaft_velocity = shaftVelocity(); // read value even if motor is disabled to keep the monitoring updated
+
+  // if disabled do nothing
+  if(!enabled) return;
+
   // set internal target variable
   if(_isset(new_target) ) target = new_target;
   // choose control loop
@@ -370,7 +397,7 @@ float StepperMotor::angleOpenloop(float target_angle){
   float Uq = voltage_limit;
   if(_isset(phase_resistance)) Uq =  current_limit*phase_resistance;
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
-  setPhaseVoltage(Uq,  0, _electricalAngle(shaft_angle, pole_pairs));
+  setPhaseVoltage(Uq,  0, _electricalAngle((shaft_angle), pole_pairs));
 
   // save timestamp for next call
   open_loop_timestamp = now_us;

@@ -17,7 +17,8 @@ InlineCurrentSense current_sense = InlineCurrentSense(0.01, 50.0, A0, A2);
 
 // commander communication instance
 Commander command = Commander(Serial);
-void doMotor(char* cmd){ command.motor(&motor, cmd); }
+void doTarget(char* cmd){ command.scalar(&motor.target, cmd); }
+// void doMotor(char* cmd){ command.motor(&motor, cmd); }
 
 void setup() {
 
@@ -73,10 +74,11 @@ void setup() {
   motor.target = 2;
 
   // subscribe motor to the commander
-  command.add('M', doMotor, "motor");
-
+  command.add('T', doTarget, "target");
+  // command.add('M', doMotor, "motor");
+  
   // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)
-  Serial.println(F("Motor commands sketch | Initial motion control > torque/voltage : target 2V."));
+  Serial.println("Motor ready.");
 
   _delay(1000);
 }

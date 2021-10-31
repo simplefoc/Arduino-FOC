@@ -21,6 +21,7 @@ void testAlignmentAndCogging(int direction) {
   motor.move(0);
   _delay(200);
 
+  sensor.update();
   float initialAngle = sensor.getAngle();
 
   const int shaft_rotation = 720; // 720 deg test - useful to see repeating cog pattern
@@ -40,6 +41,7 @@ void testAlignmentAndCogging(int direction) {
     _delay(5);
 
     // measure
+    sensor.update();
     float sensorAngle = (sensor.getAngle() - initialAngle) * 180 / PI;
     float sensorElectricAngle = sensorAngle * motor.pole_pairs;
     float electricAngleError = electricAngle - sensorElectricAngle;

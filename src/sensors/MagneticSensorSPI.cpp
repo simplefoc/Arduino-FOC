@@ -64,77 +64,30 @@ MagneticSensorSPI::MagneticSensorSPI(MagneticSensorSPIConfig_s config, int cs){
 }
 
 void MagneticSensorSPI::init(SPIClass* _spi){
-
   spi = _spi;
-
 	// 1MHz clock (AMS should be able to accept up to 10MHz)
 	settings = SPISettings(clock_speed, MSBFIRST, spi_mode);
-
 	//setup pins
 	pinMode(chip_select_pin, OUTPUT);
-
 	//SPI has an internal SPI-device counter, it is possible to call "begin()" from different devices
 	spi->begin();
 	// do any architectures need to set the clock divider for SPI? Why was this in the code?
   //spi->setClockDivider(SPI_CLOCK_DIV8);
-
 	digitalWrite(chip_select_pin, HIGH);
-	// velocity calculation init
-	angle_prev = 0;
-	velocity_calc_timestamp = _micros();
-
-	// full rotations tracking number
-	full_rotation_offset = 0;
-	angle_data_prev = getRawCount();
 }
 
 //  Shaft angle calculation
 //  angle is in radians [rad]
-float MagneticSensorSPI::getAngle(){
-  // raw data from the sensor
-  float angle_data = getRawCount();
-
-  // tracking the number of rotations
-  // in order to expand angle range form [0,2PI]
-  // to basically infinity
-  float d_angle = angle_data - angle_data_prev;
-  // if overflow happened track it as full rotation
-  if(abs(d_angle) > (0.8f*cpr) ) full_rotation_offset += d_angle > 0 ? -_2PI : _2PI;
-  // save the current angle value for the next steps
-  // in order to know if overflow happened
-  angle_data_prev = angle_data;
-
-  // return the full angle
-  // (number of full rotations)*2PI + current sensor angle
-  return full_rotation_offset + ( angle_data / (float)cpr) * _2PI;
+float MagneticSensorSPI::getSensorAngle(){
+  return (getRawCount() / (float)cpr) * _2PI;
 }
-
-// Shaft velocity calculation
-float MagneticSensorSPI::getVelocity(){
-  // calculate sample time
-  unsigned long now_us = _micros();
-  float Ts = (now_us - velocity_calc_timestamp)*1e-6f;
-  // quick fix for strange cases (micros overflow)
-  if(Ts <= 0 || Ts > 0.5f) Ts = 1e-3f;
-
-  // current angle
-  float angle_c = getAngle();
-  // velocity calculation
-  float vel = (angle_c - angle_prev)/Ts;
-
-  // save variables for future pass
-  angle_prev = angle_c;
-  velocity_calc_timestamp = now_us;
-  return vel;
-}
-
 
 // function reading the raw counter of the magnetic sensor
 int MagneticSensorSPI::getRawCount(){
 	return (int)MagneticSensorSPI::read(angle_register);
 }
 
-// SPI functions
+// SPI functions 
 /**
  * Utility function used to calculate even parity of word
  */
@@ -174,7 +127,8 @@ word MagneticSensorSPI::read(word angle_register){
   digitalWrite(chip_select_pin, LOW);
   spi->transfer16(command);
   digitalWrite(chip_select_pin,HIGH);
-#if defined( ESP_H ) // if ESP32 board
+  
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) // if ESP32 board
   delayMicroseconds(50); // why do we need to delay 50us on ESP32? In my experience no extra delays are needed, on any of the architectures I've tested...
 #else
   delayMicroseconds(1); // delay 1us, the minimum time possible in plain arduino. 350ns is the required time for AMS sensors, 80ns for MA730, MA702
@@ -187,6 +141,7 @@ word MagneticSensorSPI::read(word angle_register){
 
   //SPI - end transaction
   spi->endTransaction();
+
   register_value = register_value >> (1 + data_start_bit - bit_resolution);  //this should shift data to the rightmost bits of the word
 
   const static word data_mask = 0xFFFF >> (16 - bit_resolution);

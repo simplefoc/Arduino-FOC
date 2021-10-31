@@ -48,17 +48,17 @@ class InlineCurrentSense: public CurrentSense{
   	int pinC; //!< pin C analog pin for current measurement
 
     // gain variables
-    double shunt_resistor; //!< Shunt resistor value 
-    double amp_gain; //!< amp gain value 
-    double volts_to_amps_ratio; //!< Volts to amps ratio
+    float shunt_resistor; //!< Shunt resistor value
+    float amp_gain; //!< amp gain value
+    float volts_to_amps_ratio; //!< Volts to amps ratio
     
     /**
      *  Function finding zero offsets of the ADC
      */
     void calibrateOffsets();
-    double offset_ia; //!< zero current A voltage value (center of the adc reading)
-    double offset_ib; //!< zero current B voltage value (center of the adc reading)
-    double offset_ic; //!< zero current C voltage value (center of the adc reading)
+    float offset_ia; //!< zero current A voltage value (center of the adc reading)
+    float offset_ib; //!< zero current B voltage value (center of the adc reading)
+    float offset_ic; //!< zero current C voltage value (center of the adc reading)
 
 };
 

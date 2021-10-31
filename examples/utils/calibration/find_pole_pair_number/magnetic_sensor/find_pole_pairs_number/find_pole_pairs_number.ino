@@ -63,6 +63,7 @@ void setup() {
   motor.move(0);
   _delay(1000);
   // read the sensor angle
+  sensor.update();
   float angle_begin = sensor.getAngle();
   _delay(50);
 
@@ -70,11 +71,12 @@ void setup() {
   float motor_angle = 0;
   while(motor_angle <= pp_search_angle){
     motor_angle += 0.01f;
-    sensor.getAngle(); // keep track of the overflow
+    sensor.update(); // keep track of the overflow
     motor.move(motor_angle);
   }
   _delay(1000);
   // read the sensor value for 180
+  sensor.update(); 
   float angle_end = sensor.getAngle();
   _delay(50);
   // turn off the motor

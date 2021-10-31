@@ -80,9 +80,9 @@ int InlineCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
     // read the current 100 times ( arbitrary number )
     for (int i = 0; i < 100; i++) {
         PhaseCurrent_s c1 = getPhaseCurrents();
-        c.a = c.a*0.6 + 0.4f*c1.a;
-        c.b = c.b*0.6 + 0.4f*c1.b;
-        c.c = c.c*0.6 + 0.4f*c1.c;
+        c.a = c.a*0.6f + 0.4f*c1.a;
+        c.b = c.b*0.6f + 0.4f*c1.b;
+        c.c = c.c*0.6f + 0.4f*c1.c;
         _delay(3);
     }
     driver->setPwm(0, 0, 0);
@@ -117,9 +117,9 @@ int InlineCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
     // read the current 50 times
     for (int i = 0; i < 100; i++) {
         PhaseCurrent_s c1 = getPhaseCurrents();
-        c.a = c.a*0.6 + 0.4f*c1.a;
-        c.b = c.b*0.6 + 0.4f*c1.b;
-        c.c = c.c*0.6 + 0.4f*c1.c;
+        c.a = c.a*0.6f + 0.4f*c1.a;
+        c.b = c.b*0.6f + 0.4f*c1.b;
+        c.c = c.c*0.6f + 0.4f*c1.c;
         _delay(3);
     }
     driver->setPwm(0, 0, 0);
@@ -155,7 +155,7 @@ int InlineCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
         // read the adc voltage 500 times ( arbitrary number )
         for (int i = 0; i < 50; i++) {
             PhaseCurrent_s c1 = getPhaseCurrents();
-            c.c = (c.c+c1.c)/50.0;
+            c.c = (c.c+c1.c)/50.0f;
         }
         driver->setPwm(0, 0, 0);
         gain_c *= _sign(c.c);

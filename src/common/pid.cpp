@@ -6,9 +6,9 @@ PIDController::PIDController(float P, float I, float D, float ramp, float limit)
     , D(D)
     , output_ramp(ramp)    // output derivative limit [volts/second]
     , limit(limit)         // output supply limit     [volts]
-    , integral_prev(0.0f)
     , error_prev(0.0f)
     , output_prev(0.0f)
+    , integral_prev(0.0f)
 {
     timestamp_prev = _micros();
 }
@@ -28,7 +28,7 @@ float PIDController::operator() (float error){
     float proportional = P * error;
     // Tustin transform of the integral part
     // u_ik = u_ik_1  + I*Ts/2*(ek + ek_1)
-    float integral = integral_prev + I*Ts*0.5*(error + error_prev);
+    float integral = integral_prev + I*Ts*0.5f*(error + error_prev);
     // antiwindup - limit the output
     integral = _constrain(integral, -limit, limit);
     // Discrete derivation

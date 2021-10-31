@@ -1,5 +1,5 @@
-#ifndef HARDWARE_UTILS_H
-#define HARDWARE_UTILS_H
+#ifndef HARDWARE_UTILS_CURRENT_H
+#define HARDWARE_UTILS_CURRENT_H
 
 #include "../common/foc_utils.h"
 #include "../common/time_utils.h"
@@ -42,8 +42,5 @@ float _readADCVoltageLowSide(const int pinA);
  *  function syncing the Driver with the ADC  for the LowSide Sensing
  */
 void _driverSyncLowSide();
-
-
-void _startADC3PinConversionLowSide();
 
 #endif

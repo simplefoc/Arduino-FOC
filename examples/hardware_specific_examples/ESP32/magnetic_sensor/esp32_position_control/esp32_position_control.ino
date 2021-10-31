@@ -8,7 +8,7 @@
 // MOSI 9
 // SCK 14
 // magnetic sensor instance - SPI
-MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, 10);
+MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, 15);
 
 // I2C Magnetic sensor instance (AS5600 example)
 // make sure to use the pull-ups!!

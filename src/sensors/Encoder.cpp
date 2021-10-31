@@ -98,12 +98,34 @@ void Encoder::handleIndex() {
   }
 }
 
+
+void Encoder::update() {
+    // do nothing for Encoder
+}
+
 /*
 	Shaft angle calculation
 */
+float Encoder::getSensorAngle(){
+  return getAngle();
+}
+// TODO: numerical precision issue here if the pulse_counter overflows the angle will be lost
+float Encoder::getMechanicalAngle(){
+  return  _2PI * ((pulse_counter) % ((int)cpr)) / ((float)cpr);
+}
+
 float Encoder::getAngle(){
   return  _2PI * (pulse_counter) / ((float)cpr);
 }
+double Encoder::getPreciseAngle(){
+  return  _2PI * (pulse_counter) / ((double)cpr);
+}
+int32_t Encoder::getFullRotations(){
+  return  pulse_counter / (int)cpr;
+}
+
+
+
 /*
   Shaft velocity calculation
   function using mixed time and frequency measurement technique

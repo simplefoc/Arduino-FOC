@@ -1,7 +1,7 @@
 #include "../hardware_api.h"
 
 // if the mcu doen't have defiend analogWrite
-#if defined(ESP_H)
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32)
   __attribute__((weak)) void analogWrite(uint8_t pin, int value){ };
 #endif
 

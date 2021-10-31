@@ -26,7 +26,6 @@ __attribute__((weak))  void _configureADCLowSide(const int pinA,const int pinB,c
   if( _isset(pinC) ) pinMode(pinC, INPUT);
 }
 
-
 // sync driver and the adc
 __attribute__((weak)) void _driverSyncLowSide(){ }
 __attribute__((weak)) void _startADC3PinConversionLowSide(){ }

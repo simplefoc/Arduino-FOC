@@ -50,13 +50,17 @@ class HallSensor: public Sensor{
 
     // HallSensor configuration
     Pullup pullup; //!< Configuration parameter internal or external pullups
-    float cpr;//!< HallSensor cpr number
+    int cpr;//!< HallSensor cpr number
 
     // Abstract functions of the Sensor class implementation
     /** get current angle (rad) */
+    float getSensorAngle() override;
+    float getMechanicalAngle() override;
     float getAngle() override;
     /**  get current angular velocity (rad/s) */
     float getVelocity() override;
+    double getPreciseAngle() override;
+    int32_t getFullRotations() override;
 
     // whether last step was CW (+1) or CCW (-1).  
     Direction direction;
@@ -77,7 +81,7 @@ class HallSensor: public Sensor{
     Direction decodeDirection(int oldState, int newState);
     void updateState();
 
-    volatile long pulse_timestamp;//!< last impulse timestamp in us
+    volatile unsigned long pulse_timestamp;//!< last impulse timestamp in us
     volatile int A_active; //!< current active states of A channel
     volatile int B_active; //!< current active states of B channel
     volatile int C_active; //!< current active states of C channel

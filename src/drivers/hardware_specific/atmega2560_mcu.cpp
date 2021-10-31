@@ -7,7 +7,7 @@ void _pinHighFrequency(const int pin){
   //  High PWM frequency
   //  https://sites.google.com/site/qeewiki/books/avr-guide/timers-on-the-atmega328
   //  https://forum.arduino.cc/index.php?topic=72092.0
-   if (pin == 13 || pin == 4  ) {
+  if (pin == 13 || pin == 4  ) {
       TCCR0A = ((TCCR0A & 0b11111100) | 0x01); // configure the pwm phase-corrected mode
       TCCR0B = ((TCCR0B & 0b11110000) | 0x01); // set prescaler to 1
   }

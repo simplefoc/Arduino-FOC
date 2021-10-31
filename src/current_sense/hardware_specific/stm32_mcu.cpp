@@ -1,7 +1,7 @@
 
 #include "../hardware_api.h"
 
-#if defined(_STM32_DEF_)
+#if defined(_STM32_DEF_) and !defined(STM32G4xx)
 
 #define _ADC_VOLTAGE 3.3f
 #define _ADC_RESOLUTION 1024.0f

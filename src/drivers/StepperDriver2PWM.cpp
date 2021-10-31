@@ -16,6 +16,7 @@ StepperDriver2PWM::StepperDriver2PWM(int _pwm1, int* _in1, int _pwm2, int* _in2,
   // default power-supply value
   voltage_power_supply = DEF_POWER_SUPPLY;
   voltage_limit = NOT_SET;
+  pwm_frequency = NOT_SET;
 
 }
 
@@ -36,6 +37,7 @@ StepperDriver2PWM::StepperDriver2PWM(int _pwm1, int _dir1, int _pwm2, int _dir2,
   // default power-supply value
   voltage_power_supply = DEF_POWER_SUPPLY;
   voltage_limit = NOT_SET;
+  pwm_frequency = NOT_SET;
 
 }
 
@@ -89,8 +91,8 @@ void StepperDriver2PWM::setPwm(float Ua, float Ub) {
   Ua = _constrain(Ua, -voltage_limit, voltage_limit);
   Ub = _constrain(Ub, -voltage_limit, voltage_limit);
   // hardware specific writing
-  duty_cycle1 = _constrain(abs(Ua)/voltage_power_supply,0.0,1.0);
-  duty_cycle2 = _constrain(abs(Ub)/voltage_power_supply,0.0,1.0);
+  duty_cycle1 = _constrain(abs(Ua)/voltage_power_supply,0.0f,1.0f);
+  duty_cycle2 = _constrain(abs(Ub)/voltage_power_supply,0.0f,1.0f);
 
   // phase 1 direction
   digitalWrite(dir1a, Ua >= 0 ? LOW : HIGH);
