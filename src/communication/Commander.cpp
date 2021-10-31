@@ -1,5 +1,4 @@
 #include "Commander.h"
-#include <String.h>
 
 Commander::Commander(Stream& serial, char eol, bool echo){
   com_port = &serial;
