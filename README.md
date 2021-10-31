@@ -18,32 +18,16 @@ Therefore this is an attempt to:
 
 
 <blockquote class="info">
-   <p class="heading">NEW RELEASE 📢: <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2 - <a href="https://github.com/simplefoc/Arduino-FOC/releases/tag/v2.2">see release</a></p>
+   <p class="heading">FUTURE RELEASE 📢: <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2.1 </p>
    <ul>
-   <li>Sensor floating point error bugfix (initial solution) #83, #37</li>
-   <li>Sensor class restructuring - <b>slight API change</b> - <a href="https://docs.simplefoc.com/sensors">docs</a></li>
-   <li>Restructured the generic code and simplified adding new mcus: <b>IMPORTANT: an additional compiler flag needed for PlatformIO</b> see <a href="https://github.com/simplefoc/Arduino-FOC/issues/99">issue</a> and <a href="https://docs.simplefoc.com/library_platformio">PlatformIO docs</a></li>
-   <li>Removed initial jump #110, #111</li>
-   <li>Double to float transformation of the code - performance increase by <a href="https://github.com/sDessens">@sDessens</a> (#100), <a href="https://github.com/KaSroka">@KaSroka</a> (#100)  </li>
-   <li> <a href="https://docs.simplefoc.com/docs_chinese"><b>Docs webiste translated to Chinese!</b></a> 🎉: Awesome work 😃 by <a href="https://github.com/MINQING1101">@MINQING1101</a>, <a href="https://github.com/Deng-ge-open-source">@Deng-ge-open-source</a> and <a href="https://github.com/mingggggggg">@mingggggggg</a></li>
-   <li>New MCU support - <a href="https://docs.simplefoc.com/microcontrollers">docs</a>
-      <ul>
-         <li>Support for arduino leonardo #108 </li>
-         <li>Initial support for portenta h7 board in collaboration with <img src="https://docs.simplefoc.com/extras/Images/arduino.png" height="15px"><a href="https://www.arduino.cc/">Arduino</a></li>
-         <li>Initial support for esp8266</li>
-      </ul>
-   </li>
-   <li>Low side current sensing initial support - <a href="https://docs.simplefoc.com/current_sense">docs</a>
-      <ul>
-         <li>Initial support for stm32 B_G431B_ESC1 by <a href="https://github.com/sDessens">@sDessens</a>: PR #73</li>
-         <li>Initial support for samd21 by <a href="https://github.com/maxlem">@maxlem</a>: PR #79</li>
-         <li>Initial support for esp32 by <a href="https://github.com/maxlem">@byDagor</a></li>
-      </ul> 
-   </li>
+      <li>Sensor class init bugfix #121</li>
+      <li>Added the new motion control interface to the commander- possible to set the position, velocity and torque target at once</li>
+      <li>NRF52 series mcus support by <a href="https://github.com/Polyphe">@Polyphe</a></li>
+      <li>Voltage/current limit handling bugs #118</li>
    </ul>
 </blockquote>
 
-## Arduino *SimpleFOClibrary* v2.1
+## Arduino *SimpleFOClibrary* v2.2
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">
@@ -73,7 +57,7 @@ This video demonstrates the *Simple**FOC**library* basic usage, electronic conne
 
 <p align=""> <img src="https://docs.simplefoc.com/extras/Images/uno_l6234.jpg"  height="170px">  <img src="https://docs.simplefoc.com/extras/Images/hmbgc_v22.jpg" height="170px">  <img src="https://docs.simplefoc.com/extras/Images/foc_shield_v13.jpg"  height="170px"></p>
 
-## Arduino *SimpleFOCShield* v2.0.3
+## Arduino *SimpleFOCShield* v2.0.4
 <p align="">
 <a href="https://youtu.be/G5pbo0C6ujE">
 <img src="https://docs.simplefoc.com/extras/Images/foc_shield_video.jpg"  height="320px">
