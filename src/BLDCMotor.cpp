@@ -42,11 +42,12 @@ void BLDCMotor::init() {
     // current control loop controls voltage
     PID_current_q.limit = voltage_limit;
     PID_current_d.limit = voltage_limit;
+  }
+  if(_isset(phase_resistance) || torque_controller != TorqueControlType::voltage){
     // velocity control loop controls current
     PID_velocity.limit = current_limit;
-  }else if(!current_sense && _isset(phase_resistance)){
-    PID_velocity.limit = current_limit;
   }else{
+    // velocity control loop controls the voltage
     PID_velocity.limit = voltage_limit;
   }
   P_angle.limit = velocity_limit;
