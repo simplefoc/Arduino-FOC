@@ -18,7 +18,7 @@ float target_velocity = 0;
 
 // instantiate the commander
 Commander command = Commander(Serial);
-void doTarget(char* cmd) { command.scalar(&target_position, cmd); }
+void doTarget(char* cmd) { command.scalar(&target_velocity, cmd); }
 void doLimit(char* cmd) { command.scalar(&motor.voltage_limit, cmd); }
 
 void setup() {
@@ -47,7 +47,7 @@ void setup() {
   motor.init();
 
   // add target command T
-  command.add('T', doTarget, "target angle");
+  command.add('T', doTarget, "target velocity");
   command.add('L', doLimit, "voltage limit");
 
   Serial.begin(115200);
