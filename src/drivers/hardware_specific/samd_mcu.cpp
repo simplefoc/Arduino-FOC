@@ -315,9 +315,16 @@ void _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 	// e.g. attach all the timers, start them, and then start the clock... but this would require API-changes in SimpleFOC...
 	configureSAMDClock();
 
+	if (pwm_frequency==NOT_SET) {
+		// use default frequency
+		pwm_frequency = SIMPLEFOC_SAMD_DEFAULT_PWM_FREQUENCY_HZ;
+	}
+
 	// configure the TCC (waveform, top-value, pre-scaler = frequency)
 	configureTCC(tccConfs[0], pwm_frequency);
 	configureTCC(tccConfs[1], pwm_frequency);
+	getTccPinConfiguration(pinA)->pwm_res = tccConfs[0].pwm_res;
+	getTccPinConfiguration(pinB)->pwm_res = tccConfs[1].pwm_res;
 #ifdef SIMPLEFOC_SAMD_DEBUG
 	SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured TCCs...");
 #endif
@@ -408,10 +415,18 @@ void _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const in
 	// e.g. attach all the timers, start them, and then start the clock... but this would require API-changes in SimpleFOC...
 	configureSAMDClock();
 
+	if (pwm_frequency==NOT_SET) {
+		// use default frequency
+		pwm_frequency = SIMPLEFOC_SAMD_DEFAULT_PWM_FREQUENCY_HZ;
+	}
+
 	// configure the TCC (waveform, top-value, pre-scaler = frequency)
 	configureTCC(tccConfs[0], pwm_frequency);
 	configureTCC(tccConfs[1], pwm_frequency);
 	configureTCC(tccConfs[2], pwm_frequency);
+	getTccPinConfiguration(pinA)->pwm_res = tccConfs[0].pwm_res;
+	getTccPinConfiguration(pinB)->pwm_res = tccConfs[1].pwm_res;
+	getTccPinConfiguration(pinC)->pwm_res = tccConfs[2].pwm_res;
 #ifdef SIMPLEFOC_SAMD_DEBUG
 	SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured TCCs...");
 #endif
@@ -479,11 +494,20 @@ void _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const 
 	// e.g. attach all the timers, start them, and then start the clock... but this would require API-changes in SimpleFOC...
 	configureSAMDClock();
 
+	if (pwm_frequency==NOT_SET) {
+		// use default frequency
+		pwm_frequency = SIMPLEFOC_SAMD_DEFAULT_PWM_FREQUENCY_HZ;
+	}
+
 	// configure the TCC (waveform, top-value, pre-scaler = frequency)
 	configureTCC(tccConfs[0], pwm_frequency);
 	configureTCC(tccConfs[1], pwm_frequency);
 	configureTCC(tccConfs[2], pwm_frequency);
 	configureTCC(tccConfs[3], pwm_frequency);
+	getTccPinConfiguration(pin1A)->pwm_res = tccConfs[0].pwm_res;
+	getTccPinConfiguration(pin2A)->pwm_res = tccConfs[1].pwm_res;
+	getTccPinConfiguration(pin1B)->pwm_res = tccConfs[2].pwm_res;
+	getTccPinConfiguration(pin2B)->pwm_res = tccConfs[3].pwm_res;
 #ifdef SIMPLEFOC_SAMD_DEBUG
 	SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured TCCs...");
 #endif
@@ -579,6 +603,11 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
 	// e.g. attach all the timers, start them, and then start the clock... but this would require API changes in SimpleFOC driver API
 	configureSAMDClock();
 
+	if (pwm_frequency==NOT_SET) {
+		// use default frequency
+		pwm_frequency = SIMPLEFOC_SAMD_DEFAULT_PWM_FREQUENCY_HZ;
+	}
+
 	// configure the TCC(s)
 	configureTCC(pinAh, pwm_frequency, false, (pinAh.tcc.chaninfo==pinAl.tcc.chaninfo)?dead_zone:-1);
 	if ((pinAh.tcc.chaninfo!=pinAl.tcc.chaninfo))
@@ -589,6 +618,12 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
 	configureTCC(pinCh, pwm_frequency, false, (pinCh.tcc.chaninfo==pinCl.tcc.chaninfo)?dead_zone:-1);
 	if ((pinCh.tcc.chaninfo!=pinCl.tcc.chaninfo))
 		configureTCC(pinCl, pwm_frequency, true, -1.0);
+	getTccPinConfiguration(pinA_h)->pwm_res = pinAh.pwm_res;
+	getTccPinConfiguration(pinA_l)->pwm_res = pinAh.pwm_res; // use the high phase resolution, in case we didn't set it
+	getTccPinConfiguration(pinB_h)->pwm_res = pinBh.pwm_res;
+	getTccPinConfiguration(pinB_l)->pwm_res = pinBh.pwm_res;
+	getTccPinConfiguration(pinC_h)->pwm_res = pinCh.pwm_res;
+	getTccPinConfiguration(pinC_l)->pwm_res = pinCh.pwm_res;
 #ifdef SIMPLEFOC_SAMD_DEBUG
 	SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured TCCs...");
 #endif
@@ -611,9 +646,9 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
  */
 void _writeDutyCycle2PWM(float dc_a,  float dc_b, int pinA, int pinB) {
 	tccConfiguration* tccI = getTccPinConfiguration(pinA);
-	writeSAMDDutyCycle(tccI->tcc.chaninfo, dc_a);
+	writeSAMDDutyCycle(tccI, dc_a);
 	tccI = getTccPinConfiguration(pinB);
-	writeSAMDDutyCycle(tccI->tcc.chaninfo, dc_b);
+	writeSAMDDutyCycle(tccI, dc_b);
 	return;
 }
 
@@ -635,11 +670,11 @@ void _writeDutyCycle2PWM(float dc_a,  float dc_b, int pinA, int pinB) {
  */
 void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC) {
 	tccConfiguration* tccI = getTccPinConfiguration(pinA);
-	writeSAMDDutyCycle(tccI->tcc.chaninfo, dc_a);
+	writeSAMDDutyCycle(tccI, dc_a);
 	tccI = getTccPinConfiguration(pinB);
-	writeSAMDDutyCycle(tccI->tcc.chaninfo, dc_b);
+	writeSAMDDutyCycle(tccI, dc_b);
 	tccI = getTccPinConfiguration(pinC);
-	writeSAMDDutyCycle(tccI->tcc.chaninfo, dc_c);
+	writeSAMDDutyCycle(tccI, dc_c);
 	return;
 }
 
@@ -662,13 +697,13 @@ void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, int pinA, int pinB
  */
 void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, int pin1A, int pin1B, int pin2A, int pin2B){
 	tccConfiguration* tccI = getTccPinConfiguration(pin1A);
-	writeSAMDDutyCycle(tccI->tcc.chaninfo, dc_1a);
+	writeSAMDDutyCycle(tccI, dc_1a);
 	tccI = getTccPinConfiguration(pin2A);
-	writeSAMDDutyCycle(tccI->tcc.chaninfo, dc_2a);
+	writeSAMDDutyCycle(tccI, dc_2a);
 	tccI = getTccPinConfiguration(pin1B);
-	writeSAMDDutyCycle(tccI->tcc.chaninfo, dc_1b);
+	writeSAMDDutyCycle(tccI, dc_1b);
 	tccI = getTccPinConfiguration(pin2B);
-	writeSAMDDutyCycle(tccI->tcc.chaninfo, dc_2b);
+	writeSAMDDutyCycle(tccI, dc_2b);
 	return;
 }
 
@@ -705,33 +740,33 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, i
 		// low-side on a different pin of same TCC - do dead-time in software...
 		float ls = dc_a+(dead_zone*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1));
 		if (ls>1.0) ls = 1.0f; // no off-time is better than too-short dead-time
-		writeSAMDDutyCycle(tcc1->tcc.chaninfo, dc_a);
-		writeSAMDDutyCycle(tcc2->tcc.chaninfo, ls);
+		writeSAMDDutyCycle(tcc1, dc_a);
+		writeSAMDDutyCycle(tcc2, ls);
 	}
 	else
-		writeSAMDDutyCycle(tcc1->tcc.chaninfo, dc_a); // dead-time is done is hardware, no need to set low side pin explicitly
+		writeSAMDDutyCycle(tcc1, dc_a); // dead-time is done is hardware, no need to set low side pin explicitly
 
 	tcc1 = getTccPinConfiguration(pinB_h);
 	tcc2 = getTccPinConfiguration(pinB_l);
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
 		float ls = dc_b+(dead_zone*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1));
 		if (ls>1.0) ls = 1.0f; // no off-time is better than too-short dead-time
-		writeSAMDDutyCycle(tcc1->tcc.chaninfo, dc_b);
-		writeSAMDDutyCycle(tcc2->tcc.chaninfo, ls);
+		writeSAMDDutyCycle(tcc1, dc_b);
+		writeSAMDDutyCycle(tcc2, ls);
 	}
 	else
-		writeSAMDDutyCycle(tcc1->tcc.chaninfo, dc_b);
+		writeSAMDDutyCycle(tcc1, dc_b);
 
 	tcc1 = getTccPinConfiguration(pinC_h);
 	tcc2 = getTccPinConfiguration(pinC_l);
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
 		float ls = dc_c+(dead_zone*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1));
 		if (ls>1.0) ls = 1.0f; // no off-time is better than too-short dead-time
-		writeSAMDDutyCycle(tcc1->tcc.chaninfo, dc_c);
-		writeSAMDDutyCycle(tcc2->tcc.chaninfo, ls);
+		writeSAMDDutyCycle(tcc1, dc_c);
+		writeSAMDDutyCycle(tcc2, ls);
 	}
 	else
-		writeSAMDDutyCycle(tcc1->tcc.chaninfo, dc_c);
+		writeSAMDDutyCycle(tcc1, dc_c);
 	return;
 }
 

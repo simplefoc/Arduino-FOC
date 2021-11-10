@@ -159,6 +159,7 @@ void configureSAMDClock() {
 		REG_GCLK_GENCTRL = GCLK_GENCTRL_IDC |           // Set the duty cycle to 50/50 HIGH/LOW
 						 GCLK_GENCTRL_GENEN |         	// Enable GCLK4
 						 GCLK_GENCTRL_SRC_DFLL48M |   	// Set the 48MHz clock source
+						// GCLK_GENCTRL_SRC_FDPLL |   	// Set the 96MHz clock source
 						 GCLK_GENCTRL_ID(4);          	// Select GCLK4
 		while (GCLK->STATUS.bit.SYNCBUSY);              // Wait for synchronization
 
@@ -305,11 +306,11 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 
 
 
-void writeSAMDDutyCycle(int chaninfo, float dc) {
-	uint8_t tccn = GetTCNumber(chaninfo);
-	uint8_t chan = GetTCChannelNumber(chaninfo);
+void writeSAMDDutyCycle(tccConfiguration* info, float dc) {
+	uint8_t tccn = GetTCNumber(info->tcc.chaninfo);
+	uint8_t chan = GetTCChannelNumber(info->tcc.chaninfo);
 	if (tccn<TCC_INST_NUM) {
-		Tcc* tcc = (Tcc*)GetTC(chaninfo);
+		Tcc* tcc = (Tcc*)GetTC(info->tcc.chaninfo);
 		// set via CC
 //		tcc->CC[chan].reg = (uint32_t)((SIMPLEFOC_SAMD_PWM_RESOLUTION-1) * dc);
 //		uint32_t chanbit = 0x1<<(TCC_SYNCBUSY_CC0_Pos+chan);
@@ -324,7 +325,7 @@ void writeSAMDDutyCycle(int chaninfo, float dc) {
 //		while ( tcc->SYNCBUSY.bit.CTRLB > 0 );
 	}
 	else {
-		Tc* tc = (Tc*)GetTC(chaninfo);
+		Tc* tc = (Tc*)GetTC(info->tcc.chaninfo);
 		tc->COUNT8.CC[chan].reg = (uint8_t)((SIMPLEFOC_SAMD_PWM_TC_RESOLUTION-1) * dc);
 		while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
 	}

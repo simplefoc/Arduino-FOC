@@ -29,8 +29,16 @@
 
 #ifndef SIMPLEFOC_SAMD_PWM_RESOLUTION
 #define SIMPLEFOC_SAMD_PWM_RESOLUTION 1000
-#define SIMPLEFOC_SAMD_PWM_TC_RESOLUTION 250
 #endif
+
+#define SIMPLEFOC_SAMD_DEFAULT_PWM_FREQUENCY_HZ 24000
+// arbitrary maximum. On SAMD51 with 120MHz clock this means 2kHz minimum pwm frequency
+#define SIMPLEFOC_SAMD_MAX_PWM_RESOLUTION 30000
+// lets not go too low - 400 with clock speed of 120MHz on SAMD51 means 150kHz maximum PWM frequency...
+//						 400 with 48MHz clock on SAMD21 means 60kHz maximum PWM frequency...
+#define SIMPLEFOC_SAMD_MIN_PWM_RESOLUTION 400 
+// this is the most we can support on the TC units
+#define SIMPLEFOC_SAMD_PWM_TC_RESOLUTION 250
 
 #ifndef SIMPLEFOC_SAMD_MAX_TCC_PINCONFIGURATIONS
 #define SIMPLEFOC_SAMD_MAX_TCC_PINCONFIGURATIONS 24
@@ -49,6 +57,7 @@ struct tccConfiguration {
 		};
 		uint16_t chaninfo;
 	} tcc;
+	uint16_t pwm_res;
 };
 
 
@@ -92,7 +101,7 @@ extern bool tccConfigured[TCC_INST_NUM+TC_INST_NUM];
 
 
 struct wo_association& getWOAssociation(EPortType port, uint32_t pin);
-void writeSAMDDutyCycle(int chaninfo, float dc);
+void writeSAMDDutyCycle(tccConfiguration* info, float dc);
 void configureSAMDClock();
 void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate=false, float hw6pwm=-1);
 __inline__ void syncTCC(Tcc* TCCx) __attribute__((always_inline, unused));
