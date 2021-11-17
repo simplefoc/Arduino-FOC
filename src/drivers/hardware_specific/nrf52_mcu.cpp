@@ -1,6 +1,8 @@
+
 #include "../hardware_api.h"
 
 #if defined(NRF52_SERIES)
+
 
 #define PWM_CLK (16000000)
 #define PWM_FREQ (40000)
@@ -108,9 +110,9 @@ void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int
 
   pwm_range = (PWM_CLK / pwm_frequency);
   
-  int pA = g_ADigitalPinMap[pinA];
-  int pB = g_ADigitalPinMap[pinB];
-  int pC = g_ADigitalPinMap[pinC];
+  int pA = digitalPinToPinName(pinA); //g_ADigitalPinMap[pinA];
+  int pB = digitalPinToPinName(pinB); //g_ADigitalPinMap[pinB];
+  int pC = digitalPinToPinName(pinC); //g_ADigitalPinMap[pinC];
 
   // determine which motor are we connecting
   // and set the appropriate configuration parameters 
@@ -159,10 +161,10 @@ void _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int
 
   pwm_range = (PWM_CLK / pwm_frequency);
   
-  int pA = g_ADigitalPinMap[pinA];
-  int pB = g_ADigitalPinMap[pinB];
-  int pC = g_ADigitalPinMap[pinC];
-  int pD = g_ADigitalPinMap[pinD];
+  int pA = digitalPinToPinName(pinA); //g_ADigitalPinMap[pinA];
+  int pB = digitalPinToPinName(pinB); //g_ADigitalPinMap[pinB];
+  int pC = digitalPinToPinName(pinC); //g_ADigitalPinMap[pinC];
+  int pD = digitalPinToPinName(pinD); //g_ADigitalPinMap[pinD];
   
   // determine which motor are we connecting
   // and set the appropriate configuration parameters 
@@ -261,12 +263,12 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
     dead_time = DEAD_TIME/2; 
   }
   
-  int pA_l = g_ADigitalPinMap[pinA_l];
-  int pA_h = g_ADigitalPinMap[pinA_h];
-  int pB_l = g_ADigitalPinMap[pinB_l];
-  int pB_h = g_ADigitalPinMap[pinB_h];
-  int pC_l = g_ADigitalPinMap[pinC_l];
-  int pC_h = g_ADigitalPinMap[pinC_h];
+  int pA_l = digitalPinToPinName(pinA_l); //g_ADigitalPinMap[pinA_l];
+  int pA_h = digitalPinToPinName(pinA_h); //g_ADigitalPinMap[pinA_h];
+  int pB_l = digitalPinToPinName(pinB_l); //g_ADigitalPinMap[pinB_l];
+  int pB_h = digitalPinToPinName(pinB_h); //g_ADigitalPinMap[pinB_h];
+  int pC_l = digitalPinToPinName(pinC_l); //g_ADigitalPinMap[pinC_l];
+  int pC_h = digitalPinToPinName(pinC_h); //g_ADigitalPinMap[pinC_h];
 
 
   // determine which motor are we connecting
