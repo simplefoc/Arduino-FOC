@@ -10,9 +10,9 @@
 /**
  *  Quadrature mode configuration structure
  */
-enum Quadrature{
-  ON, //!<  Enable quadrature mode CPR = 4xPPR
-  OFF //!<  Disable quadrature mode / CPR = PPR
+enum Quadrature : uint8_t {
+  ON    = 0x00, //!<  Enable quadrature mode CPR = 4xPPR
+  OFF   = 0x01  //!<  Disable quadrature mode / CPR = PPR
 };
 
 class Encoder: public Sensor{
