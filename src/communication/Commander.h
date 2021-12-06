@@ -12,10 +12,10 @@
 
 
 // Commander verbose display to the user type
-enum VerboseMode{
-  nothing = 0,   // display nothing - good for monitoring
-  on_request,    // display only on user request
-  user_friendly  // display textual messages to the user
+enum VerboseMode : uint8_t {
+  nothing       = 0x00, // display nothing - good for monitoring
+  on_request    = 0x01, // display only on user request
+  user_friendly = 0x02  // display textual messages to the user
 };
 
 
