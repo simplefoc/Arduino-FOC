@@ -22,6 +22,8 @@ class BLDCDriver{
         float dc_b; //!< currently set duty cycle on phaseB
         float dc_c; //!< currently set duty cycle on phaseC
 
+        bool initialized = false; // true if driver was successfully initialized
+
         /**
          * Set phase voltages to the harware
          *

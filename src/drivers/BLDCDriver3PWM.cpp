@@ -57,6 +57,7 @@ int BLDCDriver3PWM::init() {
   // Set the pwm frequency to the pins
   // hardware specific function - depending on driver and mcu
   _configure3PWM(pwm_frequency, pwmA, pwmB, pwmC);
+  initialized = true; // TODO atm the api gives no feedback if initialization succeeded
   return 0;
 }
 

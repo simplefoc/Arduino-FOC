@@ -24,6 +24,11 @@ void BLDCMotor::linkDriver(BLDCDriver* _driver) {
 
 // init hardware pins
 void BLDCMotor::init() {
+  if (!driver || !driver->initialized) {
+    motor_status = FOCMotorStatus::motor_init_failed;
+    if(monitor_port) monitor_port->println(F("MOT: Init not possible, driver not initialized"));
+  }
+  motor_status = FOCMotorStatus::motor_initializing;
   if(monitor_port) monitor_port->println(F("MOT: Init"));
 
   // if no current sensing and the user has set the phase resistance of the motor use current limit to calculate the voltage limit
@@ -57,6 +62,7 @@ void BLDCMotor::init() {
   if(monitor_port) monitor_port->println(F("MOT: Enable driver."));
   enable();
   _delay(500);
+  motor_status = FOCMotorStatus::motor_uncalibrated;
 }
 
 
@@ -87,6 +93,9 @@ void BLDCMotor::enable()
 // FOC initialization function
 int  BLDCMotor::initFOC( float zero_electric_offset, Direction _sensor_direction) {
   int exit_flag = 1;
+
+  motor_status = FOCMotorStatus::motor_calibrating;
+
   // align motor if necessary
   // alignment necessary for encoders!
   if(_isset(zero_electric_offset)){
@@ -117,9 +126,11 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction _sensor_direction
 
   if(exit_flag){
     if(monitor_port) monitor_port->println(F("MOT: Ready."));
+    motor_status = FOCMotorStatus::motor_ready;
   }else{
     if(monitor_port) monitor_port->println(F("MOT: Init FOC failed."));
     disable();
+    motor_status = FOCMotorStatus::motor_calib_failed;
   }
 
   return exit_flag;

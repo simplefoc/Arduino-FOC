@@ -25,6 +25,11 @@ void StepperMotor::linkDriver(StepperDriver* _driver) {
 
 // init hardware pins
 void StepperMotor::init() {
+  if (!driver || !driver->initialized) {
+    motor_status = FOCMotorStatus::motor_init_failed;
+    if(monitor_port) monitor_port->println(F("MOT: Init not possible, driver not initialized"));
+  }
+  motor_status = FOCMotorStatus::motor_initializing;
   if(monitor_port) monitor_port->println(F("MOT: Init"));
 
   // if set the phase resistance of the motor use current limit to calculate the voltage limit
@@ -53,6 +58,7 @@ void StepperMotor::init() {
   enable();
   _delay(500);
 
+  motor_status = FOCMotorStatus::motor_uncalibrated;
 }
 
 
@@ -84,6 +90,9 @@ void StepperMotor::enable()
 // FOC initialization function
 int  StepperMotor::initFOC( float zero_electric_offset, Direction _sensor_direction ) {
   int exit_flag = 1;
+  
+  motor_status = FOCMotorStatus::motor_calibrating;
+
   // align motor if necessary
   // alignment necessary for encoders!
   if(_isset(zero_electric_offset)){
@@ -105,8 +114,10 @@ int  StepperMotor::initFOC( float zero_electric_offset, Direction _sensor_direct
 
   if(exit_flag){
     if(monitor_port) monitor_port->println(F("MOT: Ready."));
+    motor_status = FOCMotorStatus::motor_ready;
   }else{
     if(monitor_port) monitor_port->println(F("MOT: Init FOC failed."));
+    motor_status = FOCMotorStatus::motor_calib_failed;
     disable();
   }
 
