@@ -22,6 +22,8 @@ LowsideCurrentSense	KEYWORD1
 CurrentSense	KEYWORD1   
 Commander	KEYWORD1   
 StepDirListener	KEYWORD1   
+GenericCurrentSense	KEYWORD1   
+GenericSensor	KEYWORD1   
 
 
 initFOC	KEYWORD2
@@ -102,6 +104,8 @@ lpf	KEYWORD2
 motor	KEYWORD2
 handlePWM	KEYWORD2
 enableInterrupt	KEYWORD2
+readCallback	KEYWORD2
+initCallback	KEYWORD2
 
 
 
