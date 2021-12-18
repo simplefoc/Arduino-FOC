@@ -1,4 +1,3 @@
-#ifndef TARGET_RP2040
 
 #include "MagneticSensorSPI.h"
 
@@ -160,4 +159,3 @@ void MagneticSensorSPI::close(){
 }
 
 
-#endif
