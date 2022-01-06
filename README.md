@@ -25,6 +25,7 @@ Therefore this is an attempt to:
       <li>NRF52 series mcus support by <a href="https://github.com/Polyphe">@Polyphe</a></li>
       <li>Voltage/current limit handling bugs #118</li>
       <li>Generic position and current sense classes - to implement a new sensor only implement one function</li>
+      <li>Initial support for esp32s2 and esp32s3 - separation of the esp32 mcpwm and led implementation</li>
    </ul>
 </blockquote>
 
