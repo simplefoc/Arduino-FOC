@@ -161,10 +161,10 @@ void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm
   _delay(1);
 
   mcpwm_sync_config_t sync_conf = {
-        .sync_sig = MCPWM_SELECT_TIMER0_SYNC,
-        .timer_val = 0,
-        .count_direction = MCPWM_TIMER_DIRECTION_UP,
-    };
+    .sync_sig = MCPWM_SELECT_TIMER0_SYNC,
+    .timer_val = 0,
+    .count_direction = MCPWM_TIMER_DIRECTION_UP
+  };
   mcpwm_sync_configure(mcpwm_unit, MCPWM_TIMER_0, &sync_conf);
   mcpwm_sync_configure(mcpwm_unit, MCPWM_TIMER_1, &sync_conf);
   mcpwm_sync_configure(mcpwm_unit, MCPWM_TIMER_2, &sync_conf);
