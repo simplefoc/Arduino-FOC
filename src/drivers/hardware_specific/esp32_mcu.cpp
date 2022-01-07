@@ -124,7 +124,7 @@ void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm
   mcpwm_stop(mcpwm_unit, MCPWM_TIMER_2);
 
   // manual configuration due to the lack of config flexibility in mcpwm_init()
-  mcpwm_num->clk_cfg.prescale = 0;
+  mcpwm_num->clk_cfg.clk_prescale = 0;
   // calculate prescaler and period
   // step 1: calculate the prescaler using the default pwm resolution
   // prescaler = bus_freq / (pwm_freq * default_pwm_res) - 1
@@ -140,18 +140,18 @@ void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm
   resolution_corrected = _constrain(resolution_corrected, _PWM_RES_MIN, _PWM_RES_MAX);
 
   // set prescaler
-  mcpwm_num->timer[0].period.prescale = prescaler;
-  mcpwm_num->timer[1].period.prescale = prescaler;
-  mcpwm_num->timer[2].period.prescale = prescaler;
+  mcpwm_num->timer[0].timer_cfg0.timer_prescale = prescaler;
+  mcpwm_num->timer[1].timer_cfg0.timer_prescale = prescaler;
+  mcpwm_num->timer[2].timer_cfg0.timer_prescale = prescaler;
   _delay(1);
   //set period
-  mcpwm_num->timer[0].period.period = resolution_corrected;
-  mcpwm_num->timer[1].period.period = resolution_corrected;
-  mcpwm_num->timer[2].period.period = resolution_corrected;
+  mcpwm_num->timer[0].timer_cfg0.timer_period = resolution_corrected;
+  mcpwm_num->timer[1].timer_cfg0.timer_period = resolution_corrected;
+  mcpwm_num->timer[2].timer_cfg0.timer_period = resolution_corrected;
   _delay(1);
-  mcpwm_num->timer[0].period.upmethod = 0;
-  mcpwm_num->timer[1].period.upmethod = 0;
-  mcpwm_num->timer[2].period.upmethod = 0;
+  mcpwm_num->timer[0].timer_cfg0.timer_period_upmethod = 0;
+  mcpwm_num->timer[1].timer_cfg0.timer_period_upmethod = 0;
+  mcpwm_num->timer[2].timer_cfg0.timer_period_upmethod = 0;
   _delay(1);
   // _delay(1);
   //restart the timers
@@ -159,16 +159,18 @@ void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm
   mcpwm_start(mcpwm_unit, MCPWM_TIMER_1);
   mcpwm_start(mcpwm_unit, MCPWM_TIMER_2);
   _delay(1);
-  // Cast here because MCPWM_SELECT_SYNC_INT0 (1) is not defined
-  // in the default Espressif MCPWM headers. The correct const may be used
-  // when https://github.com/espressif/esp-idf/issues/5429 is resolved.
-  mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_0, (mcpwm_sync_signal_t)1, 0);
-  mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_1, (mcpwm_sync_signal_t)1, 0);
-  mcpwm_sync_enable(mcpwm_unit, MCPWM_TIMER_2, (mcpwm_sync_signal_t)1, 0);
-  _delay(1);
-  mcpwm_num->timer[0].sync.out_sel = 1;
-  _delay(1);
-  mcpwm_num->timer[0].sync.out_sel = 0;
+
+  mcpwm_sync_config_t sync_conf = {
+        .sync_sig = MCPWM_SELECT_TIMER0_SYNC,
+        .timer_val = 0,
+        .count_direction = MCPWM_TIMER_DIRECTION_UP,
+    };
+  mcpwm_sync_configure(mcpwm_unit, MCPWM_TIMER_0, &sync_conf);
+  mcpwm_sync_configure(mcpwm_unit, MCPWM_TIMER_1, &sync_conf);
+  mcpwm_sync_configure(mcpwm_unit, MCPWM_TIMER_2, &sync_conf);
+
+  // TIMER0 has itself as sync source, route this sync source directly to sync output for the other two
+  mcpwm_set_timer_sync_output(mcpwm_unit, MCPWM_TIMER_0, MCPWM_SWSYNC_SOURCE_SYNCIN);
 }
 
 // function setting the high pwm frequency to the supplied pins
