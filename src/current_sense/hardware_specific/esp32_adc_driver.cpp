@@ -1,6 +1,6 @@
 #include "esp32_adc_driver.h"
 
-#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32)
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) 
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
