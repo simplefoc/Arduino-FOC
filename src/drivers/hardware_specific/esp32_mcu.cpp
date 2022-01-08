@@ -100,6 +100,9 @@ stepper_2pwm_motor_slots_t esp32_stepper_2pwm_motor_slots[4] =  {
 // configuring high frequency pwm timer
 // a lot of help from this post from Paul Gauld
 // https://hackaday.io/project/169905-esp-32-bldc-robot-actuator-controller
+// a short tutorial for v2.0.1+
+// https://kzhead.info/sun/q6uFktWgkYeMeZ8/esp32-arduino.html 
+//
 void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm_unit_t mcpwm_unit, float dead_zone = NOT_SET){
 
   mcpwm_config_t pwm_config;
@@ -169,8 +172,8 @@ void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm
   mcpwm_sync_configure(mcpwm_unit, MCPWM_TIMER_1, &sync_conf);
   mcpwm_sync_configure(mcpwm_unit, MCPWM_TIMER_2, &sync_conf);
 
-  // TIMER0 has itself as sync source, route this sync source directly to sync output for the other two
-  mcpwm_set_timer_sync_output(mcpwm_unit, MCPWM_TIMER_0, MCPWM_SWSYNC_SOURCE_SYNCIN);
+  // Enable sync event for all timers to be the TEZ of timer0
+  mcpwm_set_timer_sync_output(mcpwm_unit, MCPWM_TIMER_0, MCPWM_SWSYNC_SOURCE_TEZ);
 }
 
 // function setting the high pwm frequency to the supplied pins
