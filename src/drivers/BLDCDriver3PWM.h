@@ -58,7 +58,6 @@ class BLDCDriver3PWM: public BLDCDriver
     */
     virtual void setPhaseState(int sa, int sb, int sc) override;
   private:
-        
 };
 
 

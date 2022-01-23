@@ -32,6 +32,12 @@ HardwareTimer* _initPinPWM(uint32_t PWM_freq, int ulPin)
 {
   PinName pin = digitalPinToPinName(ulPin);
   TIM_TypeDef *Instance = (TIM_TypeDef *)pinmap_peripheral(pin, PinMap_PWM);
+  if (Instance == NP) {
+    Serial.print("No timer on pin ");
+    Serial.println(ulPin);
+    delay(1000);
+    return NP;
+  }
 
   uint32_t index = get_timer_index(Instance);
   if (HardwareTimer_Handle[index] == NULL) {

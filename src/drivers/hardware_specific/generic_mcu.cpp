@@ -9,23 +9,26 @@
 // - Stepper motor - 2PWM setting
 // - hardware speciffic
 // in generic case dont do anything
-__attribute__((weak)) void _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
-  _UNUSED(pwm_frequency);
-  _UNUSED(pinA);
-  _UNUSED(pinB);
-  return;
+__attribute__((weak)) HardwareDriverParams _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
+  HardwareDriverParams params = new struct DriverParamsBase {
+    .pins = { pinA, pinB, -1, -1, -1, -1 },
+    .pwm_frequency = pwm_frequency,
+    .initSuccess = true
+  };
+  return params;
 }
 
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
 // - hardware speciffic
 // in generic case dont do anything
-__attribute__((weak)) void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
-  _UNUSED(pwm_frequency);
-  _UNUSED(pinA);
-  _UNUSED(pinB);
-  _UNUSED(pinC);
-  return;
+__attribute__((weak)) HardwareDriverParams _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
+  HardwareDriverParams params = new struct DriverParamsBase {
+    .pins = { pinA, pinB, pinC, -1, -1, -1 },
+    .pwm_frequency = pwm_frequency,
+    .initSuccess = true
+  };
+  return params;
 }
 
 
@@ -33,28 +36,26 @@ __attribute__((weak)) void _configure3PWM(long pwm_frequency,const int pinA, con
 // - Stepper motor - 4PWM setting
 // - hardware speciffic
 // in generic case dont do anything
-__attribute__((weak)) void _configure4PWM(long pwm_frequency,const int pin1A, const int pin1B, const int pin2A, const int pin2B) {
-  _UNUSED(pwm_frequency);
-  _UNUSED(pin1A);
-  _UNUSED(pin1B);
-  _UNUSED(pin2A);
-  _UNUSED(pin2B);
-  return;
+__attribute__((weak)) HardwareDriverParams _configure4PWM(long pwm_frequency,const int pin1A, const int pin1B, const int pin2A, const int pin2B) {
+  HardwareDriverParams params = new struct DriverParamsBase {
+    .pins = { pin1A, pin1B, pin2A, pin2B, -1, -1 },
+    .pwm_frequency = pwm_frequency,
+    .initSuccess = true
+  };
+  return params;
 }
 
 // Configuring PWM frequency, resolution and alignment
 // - BLDC driver - 6PWM setting
 // - hardware specific
-__attribute__((weak)) int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
-  _UNUSED(pwm_frequency);
-  _UNUSED(dead_zone);
-  _UNUSED(pinA_h);
-  _UNUSED(pinB_h);
-  _UNUSED(pinC_h);
-  _UNUSED(pinA_l);
-  _UNUSED(pinB_l);
-  _UNUSED(pinC_l);
-  return -1;
+__attribute__((weak)) HardwareDriverParams _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
+  HardwareDriverParams params = new struct DriverParamsBase {
+    .pins = { pinA_h, pinA_l, pinB_h, pinB_l, pinC_h, pinC_l },
+    .pwm_frequency = pwm_frequency,
+    .dead_zone = dead_zone,
+    .initSuccess = true
+  };
+  return params;
 }
 
 

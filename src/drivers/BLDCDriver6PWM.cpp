@@ -58,9 +58,8 @@ int BLDCDriver6PWM::init() {
 
   // configure 6pwm
   // hardware specific function - depending on driver and mcu
-  int result = _configure6PWM(pwm_frequency, dead_zone, pwmA_h,pwmA_l, pwmB_h,pwmB_l, pwmC_h,pwmC_l);
-  initialized = (result==0);
-  return result;
+  params = _configure6PWM(pwm_frequency, dead_zone, pwmA_h,pwmA_l, pwmB_h,pwmB_l, pwmC_h,pwmC_l);
+  return params!=0 && params->initSuccess;
 }
 
 // Set voltage to the pwm pin
@@ -76,7 +75,7 @@ void BLDCDriver6PWM::setPwm(float Ua, float Ub, float Uc) {
   dc_c = _constrain(Uc / voltage_power_supply, 0.0f , 1.0f );
   // hardware specific writing
   // hardware specific function - depending on driver and mcu
-  _writeDutyCycle6PWM(dc_a, dc_b, dc_c, dead_zone, pwmA_h,pwmA_l, pwmB_h,pwmB_l, pwmC_h,pwmC_l);
+  _writeDutyCycle6PWM(dc_a, dc_b, dc_c, dead_zone, params);
 }
 
 
