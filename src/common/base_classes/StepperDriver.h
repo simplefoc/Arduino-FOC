@@ -18,7 +18,7 @@ class StepperDriver{
         float voltage_limit; //!< limiting voltage set to the motor
         
         bool initialized = false; // true if driver was successfully initialized
-        HardwareDriverParams params = 0;
+        void* params = 0; // pointer to hardware specific parameters of driver
 
         /** 
          * Set phase voltages to the harware 

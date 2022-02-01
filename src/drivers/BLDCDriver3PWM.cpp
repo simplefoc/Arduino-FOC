@@ -57,7 +57,7 @@ int BLDCDriver3PWM::init() {
   // Set the pwm frequency to the pins
   // hardware specific function - depending on driver and mcu
   params = _configure3PWM(pwm_frequency, pwmA, pwmB, pwmC);
-  return params!=0 && params->initSuccess;
+  return params!=SIMPLEFOC_DRIVER_INIT_FAILED;
 }
 
 

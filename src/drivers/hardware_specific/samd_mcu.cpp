@@ -278,7 +278,7 @@ int checkPermutations(uint8_t num, int pins[], bool (*checkFunc)(tccConfiguratio
  * @param pinA pinA bldc driver
  * @param pinB pinB bldc driver
  */
-HardwareDriverParams _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
+void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 #ifdef SIMPLEFOC_SAMD_DEBUG
 	printAllPinInfos();
 #endif
@@ -289,7 +289,7 @@ HardwareDriverParams _configure2PWM(long pwm_frequency, const int pinA, const in
 #ifdef SIMPLEFOC_SAMD_DEBUG
 		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Bad combination!");
 #endif
-		return;
+		return SIMPLEFOC_DRIVER_INIT_FAILED;
 	}
 
 	tccConfiguration tccConfs[2] = { getTCCChannelNr(pinA, getPeripheralOfPermutation(compatibility, 0)),
@@ -329,7 +329,11 @@ HardwareDriverParams _configure2PWM(long pwm_frequency, const int pinA, const in
 	SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured TCCs...");
 #endif
 
-	return; // Someone with a stepper-setup who can test it?
+	SAMDHardwareDriverParams* params = new SAMDHardwareDriverParams {
+		.tccPinConfigurations = { getTccPinConfiguration(pinA), getTccPinConfiguration(pinB) },
+		.pwm_frequency = (uint32_t)pwm_frequency
+	}; // Someone with a stepper-setup who can test it?
+	return params;
 }
 
 
@@ -375,7 +379,7 @@ HardwareDriverParams _configure2PWM(long pwm_frequency, const int pinA, const in
  * @param pinB pinB bldc driver
  * @param pinC pinC bldc driver
  */
-HardwareDriverParams _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const int pinC) {
+void* _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const int pinC) {
 #ifdef SIMPLEFOC_SAMD_DEBUG
 	printAllPinInfos();
 #endif
@@ -386,7 +390,7 @@ HardwareDriverParams _configure3PWM(long pwm_frequency, const int pinA, const in
 #ifdef SIMPLEFOC_SAMD_DEBUG
 		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Bad combination!");
 #endif
-		return;
+		return SIMPLEFOC_DRIVER_INIT_FAILED;
 	}
 
 	tccConfiguration tccConfs[3] = { getTCCChannelNr(pinA, getPeripheralOfPermutation(compatibility, 0)),
@@ -431,6 +435,11 @@ HardwareDriverParams _configure3PWM(long pwm_frequency, const int pinA, const in
 	SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured TCCs...");
 #endif
 
+	return new SAMDHardwareDriverParams {
+		.tccPinConfigurations = { getTccPinConfiguration(pinA), getTccPinConfiguration(pinB), getTccPinConfiguration(pinC) },
+		.pwm_frequency = (uint32_t)pwm_frequency
+	};
+
 }
 
 
@@ -451,7 +460,7 @@ HardwareDriverParams _configure3PWM(long pwm_frequency, const int pinA, const in
  * @param pin2A pin2A stepper driver
  * @param pin2B pin2B stepper driver
  */
-HardwareDriverParams _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const int pin2A, const int pin2B) {
+void* _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const int pin2A, const int pin2B) {
 #ifdef SIMPLEFOC_SAMD_DEBUG
 	printAllPinInfos();
 #endif
@@ -462,7 +471,7 @@ HardwareDriverParams _configure4PWM(long pwm_frequency, const int pin1A, const i
 #ifdef SIMPLEFOC_SAMD_DEBUG
 		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Bad combination!");
 #endif
-		return;
+		return SIMPLEFOC_DRIVER_INIT_FAILED;
 	}
 
 	tccConfiguration tccConfs[4] = { getTCCChannelNr(pin1A, getPeripheralOfPermutation(compatibility, 0)),
@@ -512,7 +521,10 @@ HardwareDriverParams _configure4PWM(long pwm_frequency, const int pin1A, const i
 	SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured TCCs...");
 #endif
 
-	return; // Someone with a stepper-setup who can test it?
+	return new SAMDHardwareDriverParams {
+		.tccPinConfigurations = { getTccPinConfiguration(pin1A), getTccPinConfiguration(pin1B), getTccPinConfiguration(pin2A), getTccPinConfiguration(pin2B) },
+		.pwm_frequency = (uint32_t)pwm_frequency
+	};
 }
 
 
@@ -552,7 +564,7 @@ HardwareDriverParams _configure4PWM(long pwm_frequency, const int pin1A, const i
  *
  * @return 0 if config good, -1 if failed
  */
-HardwareDriverParams _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l) {
+void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l) {
 	// we want to use a TCC channel with 1 non-inverted and 1 inverted output for each phase, with dead-time insertion
 #ifdef SIMPLEFOC_SAMD_DEBUG
 	printAllPinInfos();
@@ -565,7 +577,7 @@ HardwareDriverParams _configure6PWM(long pwm_frequency, float dead_zone, const i
 #ifdef SIMPLEFOC_SAMD_DEBUG
 			SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Bad combination!");
 #endif
-			return -1;
+			return SIMPLEFOC_DRIVER_INIT_FAILED;
 		}
 	}
 
@@ -595,7 +607,7 @@ HardwareDriverParams _configure6PWM(long pwm_frequency, float dead_zone, const i
 	allAttached |= attachTCC(pinCh);
 	allAttached |= attachTCC(pinCl);
 	if (!allAttached)
-		return -1;
+		return SIMPLEFOC_DRIVER_INIT_FAILED;
 #ifdef SIMPLEFOC_SAMD_DEBUG
 	SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Attached pins...");
 #endif
@@ -628,7 +640,11 @@ HardwareDriverParams _configure6PWM(long pwm_frequency, float dead_zone, const i
 	SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured TCCs...");
 #endif
 
-	return 0;
+	return new SAMDHardwareDriverParams {
+		.tccPinConfigurations = { getTccPinConfiguration(pinA_h), getTccPinConfiguration(pinA_l), getTccPinConfiguration(pinB_h), getTccPinConfiguration(pinB_l), getTccPinConfiguration(pinC_h), getTccPinConfiguration(pinC_l) },
+		.pwm_frequency = (uint32_t)pwm_frequency,
+		.dead_zone = dead_zone,
+	};
 }
 
 
@@ -644,11 +660,9 @@ HardwareDriverParams _configure6PWM(long pwm_frequency, float dead_zone, const i
  * @param pinA  phase A hardware pin number
  * @param pinB  phase B hardware pin number
  */
-void _writeDutyCycle2PWM(float dc_a,  float dc_b, HardwareDriverParams params) {
-	tccConfiguration* tccI = getTccPinConfiguration(pinA);
-	writeSAMDDutyCycle(tccI, dc_a);
-	tccI = getTccPinConfiguration(pinB);
-	writeSAMDDutyCycle(tccI, dc_b);
+void _writeDutyCycle2PWM(float dc_a,  float dc_b, void* params) {
+	writeSAMDDutyCycle(((SAMDHardwareDriverParams*)params)->tccPinConfigurations[0], dc_a);
+	writeSAMDDutyCycle(((SAMDHardwareDriverParams*)params)->tccPinConfigurations[1], dc_b);
 	return;
 }
 
@@ -668,13 +682,10 @@ void _writeDutyCycle2PWM(float dc_a,  float dc_b, HardwareDriverParams params) {
  * @param pinB  phase B hardware pin number
  * @param pinC  phase C hardware pin number
  */
-void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, HardwareDriverParams params) {
-	tccConfiguration* tccI = getTccPinConfiguration(pinA);
-	writeSAMDDutyCycle(tccI, dc_a);
-	tccI = getTccPinConfiguration(pinB);
-	writeSAMDDutyCycle(tccI, dc_b);
-	tccI = getTccPinConfiguration(pinC);
-	writeSAMDDutyCycle(tccI, dc_c);
+void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC, void* params) {
+	writeSAMDDutyCycle(((SAMDHardwareDriverParams*)params)->tccPinConfigurations[0], dc_a);
+	writeSAMDDutyCycle(((SAMDHardwareDriverParams*)params)->tccPinConfigurations[1], dc_b);
+	writeSAMDDutyCycle(((SAMDHardwareDriverParams*)params)->tccPinConfigurations[2], dc_c);
 	return;
 }
 
@@ -695,15 +706,11 @@ void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, HardwareDriverPara
  * @param pin2A  phase 2A hardware pin number
  * @param pin2B  phase 2B hardware pin number
  */
-void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, HardwareDriverParams params){
-	tccConfiguration* tccI = getTccPinConfiguration(pin1A);
-	writeSAMDDutyCycle(tccI, dc_1a);
-	tccI = getTccPinConfiguration(pin2A);
-	writeSAMDDutyCycle(tccI, dc_2a);
-	tccI = getTccPinConfiguration(pin1B);
-	writeSAMDDutyCycle(tccI, dc_1b);
-	tccI = getTccPinConfiguration(pin2B);
-	writeSAMDDutyCycle(tccI, dc_2b);
+void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, int pin1A, int pin1B, int pin2A, int pin2B, void* params){
+	writeSAMDDutyCycle(((SAMDHardwareDriverParams*)params)->tccPinConfigurations[0], dc_1a);
+	writeSAMDDutyCycle(((SAMDHardwareDriverParams*)params)->tccPinConfigurations[1], dc_1b);
+	writeSAMDDutyCycle(((SAMDHardwareDriverParams*)params)->tccPinConfigurations[2], dc_2a);
+	writeSAMDDutyCycle(((SAMDHardwareDriverParams*)params)->tccPinConfigurations[3], dc_2b);
 	return;
 }
 
@@ -733,12 +740,13 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, Ha
  * @param pinC_l  phase C low-side hardware pin number
  *
  */
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, HardwareDriverParams params){
-	tccConfiguration* tcc1 = getTccPinConfiguration(pinA_h);
-	tccConfiguration* tcc2 = getTccPinConfiguration(pinA_l);
+void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, int pinA_h, int pinA_l, int pinB_h, int pinB_l, int pinC_h, int pinC_l, float dead_zone, void* params){
+	tccConfiguration* tcc1 = ((SAMDHardwareDriverParams*)params)->tccPinConfigurations[0];
+	tccConfiguration* tcc2 = ((SAMDHardwareDriverParams*)params)->tccPinConfigurations[1];
+	uint32_t pwm_res =((SAMDHardwareDriverParams*)params)->tccPinConfigurations[0]->pwm_res;
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
 		// low-side on a different pin of same TCC - do dead-time in software...
-		float ls = dc_a+(dead_zone*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1));
+		float ls = dc_a+(((SAMDHardwareDriverParams*)params)->dead_zone * (pwm_res-1)); // TODO resolution!!!
 		if (ls>1.0) ls = 1.0f; // no off-time is better than too-short dead-time
 		writeSAMDDutyCycle(tcc1, dc_a);
 		writeSAMDDutyCycle(tcc2, ls);
@@ -746,10 +754,10 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, H
 	else
 		writeSAMDDutyCycle(tcc1, dc_a); // dead-time is done is hardware, no need to set low side pin explicitly
 
-	tcc1 = getTccPinConfiguration(pinB_h);
-	tcc2 = getTccPinConfiguration(pinB_l);
+	tcc1 = ((SAMDHardwareDriverParams*)params)->tccPinConfigurations[2];
+	tcc2 = ((SAMDHardwareDriverParams*)params)->tccPinConfigurations[3];
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
-		float ls = dc_b+(dead_zone*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1));
+		float ls = dc_b+(((SAMDHardwareDriverParams*)params)->dead_zone * (pwm_res-1));
 		if (ls>1.0) ls = 1.0f; // no off-time is better than too-short dead-time
 		writeSAMDDutyCycle(tcc1, dc_b);
 		writeSAMDDutyCycle(tcc2, ls);
@@ -757,10 +765,10 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, H
 	else
 		writeSAMDDutyCycle(tcc1, dc_b);
 
-	tcc1 = getTccPinConfiguration(pinC_h);
-	tcc2 = getTccPinConfiguration(pinC_l);
+	tcc1 = ((SAMDHardwareDriverParams*)params)->tccPinConfigurations[4];
+	tcc2 = ((SAMDHardwareDriverParams*)params)->tccPinConfigurations[5];
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
-		float ls = dc_c+(dead_zone*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1));
+		float ls = dc_c+(((SAMDHardwareDriverParams*)params)->dead_zone * (pwm_res-1));
 		if (ls>1.0) ls = 1.0f; // no off-time is better than too-short dead-time
 		writeSAMDDutyCycle(tcc1, dc_c);
 		writeSAMDDutyCycle(tcc2, ls);

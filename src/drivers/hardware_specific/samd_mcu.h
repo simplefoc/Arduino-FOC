@@ -80,10 +80,11 @@ struct wo_association {
 
 
 
-struct SAMDHardwareDriverParams : public HardwareDriverParamsBase {
-	SAMDHardwareDriverParams(int numPins) : tccPinConfigurations[numPins] {};
-	tccConfiguration tccPinConfigurations[6];
-};
+typedef struct SAMDHardwareDriverParams {
+	tccConfiguration* tccPinConfigurations[6];
+	uint32_t pwm_frequency;
+	float dead_zone;
+} SAMDHardwareDriverParams;
 
 
 
