@@ -101,9 +101,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
 
   // if target setting
   if(isDigit(user_command[0]) || user_command[0] == '-' || user_command[0] == '+'){
-    printVerbose(F("Target: "));
     target(motor, user_command);
-    println(motor->target);
     return;
   }
 
@@ -466,7 +464,7 @@ void Commander::scalar(float* value,  char* user_cmd){
 void Commander::target(FOCMotor* motor,  char* user_cmd, char* separator){
   // if no values sent
   if(isSentinel(user_cmd[0])) return;
-
+  
   float pos, vel, torque;
   char* next_value;
   switch(motor->controller){
@@ -546,7 +544,8 @@ void Commander::target(FOCMotor* motor,  char* user_cmd, char* separator){
       }
       break;
   }
-  //println(*value);
+  printVerbose(F("Target: "));
+  println(motor->target);
 }
 
 
