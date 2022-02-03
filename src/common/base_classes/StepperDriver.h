@@ -14,6 +14,8 @@ class StepperDriver{
         long pwm_frequency; //!< pwm frequency value in hertz
         float voltage_power_supply; //!< power supply voltage 
         float voltage_limit; //!< limiting voltage set to the motor
+        
+        bool initialized = false; // true if driver was successfully initialized
             
         /** 
          * Set phase voltages to the harware 

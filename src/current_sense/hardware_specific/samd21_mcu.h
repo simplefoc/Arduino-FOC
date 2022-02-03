@@ -3,7 +3,7 @@
 #ifndef CURRENT_SENSE_SAMD21_H
 #define CURRENT_SENSE_SAMD21_H
 
-// #define SIMPLEFOC_SAMD_DEBUG
+#define SIMPLEFOC_SAMD_DEBUG
 #if !defined(SIMPLEFOC_SAMD_DEBUG_SERIAL)
 #define SIMPLEFOC_SAMD_DEBUG_SERIAL Serial
 #endif
@@ -17,6 +17,8 @@
     uint32_t descaddr;
   } dmacdescriptor ;
 
+
+// AREF pin is 42
 
 class SAMDCurrentSenseADCDMA
 {

@@ -24,32 +24,47 @@
 /**
  *  Motiron control type
  */
-enum MotionControlType{
-  torque,//!< Torque control
-  velocity,//!< Velocity motion control
-  angle,//!< Position/angle motion control
-  velocity_openloop,
-  angle_openloop
+enum MotionControlType : uint8_t {
+  torque            = 0x00,     //!< Torque control
+  velocity          = 0x01,     //!< Velocity motion control
+  angle             = 0x02,     //!< Position/angle motion control
+  velocity_openloop = 0x03,
+  angle_openloop    = 0x04
 };
 
 /**
  *  Motiron control type
  */
-enum TorqueControlType{
-  voltage, //!< Torque control using voltage
-  dc_current, //!< Torque control using DC current (one current magnitude)
-  foc_current //!< torque control using dq currents
+enum TorqueControlType : uint8_t { 
+  voltage            = 0x00,     //!< Torque control using voltage
+  dc_current         = 0x01,     //!< Torque control using DC current (one current magnitude)
+  foc_current        = 0x02,     //!< torque control using dq currents
 };
 
 /**
  *  FOC modulation type
  */
-enum FOCModulationType{
-  SinePWM, //!< Sinusoidal PWM modulation
-  SpaceVectorPWM, //!< Space vector modulation method
-  Trapezoid_120,
-  Trapezoid_150
+enum FOCModulationType : uint8_t {
+  SinePWM            = 0x00,     //!< Sinusoidal PWM modulation
+  SpaceVectorPWM     = 0x01,     //!< Space vector modulation method
+  Trapezoid_120      = 0x02,     
+  Trapezoid_150      = 0x03,     
 };
+
+
+
+enum FOCMotorStatus : uint8_t {
+  motor_uninitialized = 0x00,     //!< Motor is not yet initialized
+  motor_initializing  = 0x01,     //!< Motor intiialization is in progress
+  motor_uncalibrated  = 0x02,     //!< Motor is initialized, but not calibrated (open loop possible)
+  motor_calibrating   = 0x03,     //!< Motor calibration in progress
+  motor_ready         = 0x04,     //!< Motor is initialized and calibrated (closed loop possible)
+  motor_error         = 0x08,     //!< Motor is in error state (recoverable, e.g. overcurrent protection active)
+  motor_calib_failed  = 0x0E,     //!< Motor calibration failed (possibly recoverable)
+  motor_init_failed   = 0x0F,     //!< Motor initialization failed (not recoverable)
+};
+
+
 
 /**
  Generic motor class
@@ -153,6 +168,7 @@ class FOCMotor
 
     // motor status vairables
     int8_t enabled = 0;//!< enabled or disabled motor flag
+    FOCMotorStatus motor_status = FOCMotorStatus::motor_uninitialized; //!< motor status
     
     // pwm modulation related variables
     FOCModulationType foc_modulation;//!<  parameter derterniming modulation algorithm

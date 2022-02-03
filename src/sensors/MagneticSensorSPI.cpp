@@ -1,4 +1,3 @@
-#ifndef TARGET_RP2040
 
 #include "MagneticSensorSPI.h"
 
@@ -74,6 +73,8 @@ void MagneticSensorSPI::init(SPIClass* _spi){
 	// do any architectures need to set the clock divider for SPI? Why was this in the code?
   //spi->setClockDivider(SPI_CLOCK_DIV8);
 	digitalWrite(chip_select_pin, HIGH);
+
+  this->Sensor::init(); // call base class init
 }
 
 //  Shaft angle calculation
@@ -158,4 +159,3 @@ void MagneticSensorSPI::close(){
 }
 
 
-#endif

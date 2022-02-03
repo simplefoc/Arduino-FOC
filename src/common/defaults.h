@@ -28,7 +28,7 @@
 #define DEF_CURR_FILTER_Tf 0.005f //!< default currnet filter time constant
 #endif
 // default current limit values
-#define DEF_CURRENT_LIM 0.2f //!< 2Amps current limit by default
+#define DEF_CURRENT_LIM 2.0f //!< 2Amps current limit by default
 
 // default monitor downsample
 #define DEF_MON_DOWNSMAPLE 100 //!< default monitor downsample

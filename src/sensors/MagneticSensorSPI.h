@@ -1,7 +1,6 @@
 #ifndef MAGNETICSENSORSPI_LIB_H
 #define MAGNETICSENSORSPI_LIB_H
 
-#ifndef TARGET_RP2040
 
 #include "Arduino.h"
 #include <SPI.h>
@@ -82,5 +81,4 @@ class MagneticSensorSPI: public Sensor{
 };
 
 
-#endif
 #endif
