@@ -73,6 +73,7 @@ void setup() {
     motor_angle += 0.01f;
     sensor.update(); // keep track of the overflow
     motor.move(motor_angle);
+    _delay(1);
   }
   _delay(1000);
   // read the sensor value for 180

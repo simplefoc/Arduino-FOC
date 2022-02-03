@@ -100,9 +100,13 @@ class Commander
     Stream* com_port = nullptr; //!< Serial terminal variable if provided
     char eol = '\n'; //!< end of line sentinel character
     bool echo = false; //!< echo last typed character (for command line feedback)
+
     /**
      *
      * FOC motor (StepperMotor and BLDCMotor) command interface
+     * @param motor    - FOCMotor (BLDCMotor or StepperMotor) instance 
+     * @param user_cmd - the string command
+     * 
      *  - It has several paramters (the letters can be changed in the commands.h file)
      *    'Q' - Q current PID controller & LPF (see function pid and lpf for commands)
      *    'D' - D current PID controller & LPF (see function pid and lpf for commands)
@@ -139,7 +143,11 @@ class Commander
      *          'C' - clear monitor
      *          'S' - set monitoring variables
      *          'G' - get variable value
-     *    '' - Target get/set
+     *    '' - Target setting interface 
+     *         Depends of the motion control mode:
+     *          - torque                          : torque (ex. M2.5) 
+     *          - velocity (open and closed loop) : velocity torque (ex.M10 2.5 or M10 to only chanage the target witout limits)
+     *          - angle    (open and closed loop) : angle velocity torque (ex.M3.5 10 2.5 or M3.5 to only chanage the target witout limits)
      *
      *  - Each of them can be get by sening the command letter -(ex. 'R' - to get the phase resistance)
      *  - Each of them can be set by sending 'IdSubidValue' - (ex. SM1.5 for setting sensor zero offset to 1.5f)
@@ -149,6 +157,9 @@ class Commander
 
     /**
      * Low pass fileter command interface
+     * @param lpf      - LowPassFilter instance 
+     * @param user_cmd - the string command
+     * 
      *  - It only has one property - filtering time constant Tf
      *  - It can be get by sending 'F'
      *  - It can be set by sending 'Fvalue' - (ex. F0.01 for settin Tf=0.01)
@@ -156,6 +167,9 @@ class Commander
     void lpf(LowPassFilter* lpf, char* user_cmd);
     /**
      * PID controller command interface
+     * @param pid      - PIDController instance 
+     * @param user_cmd - the string command
+     * 
      *  - It has several paramters (the letters can be changed in the commands.h file)
      *     - P gain       - 'P'
      *     - I gain       - 'I'
@@ -168,6 +182,9 @@ class Commander
     void pid(PIDController* pid, char* user_cmd);
     /**
      * Float variable scalar command interface
+     * @param value    - float variable pointer 
+     * @param user_cmd - the string command
+     * 
      *  - It only has one property - one float value
      *  - It can be get by sending an empty string '\n'
      *  - It can be set by sending 'value' - (ex. 0.01f for settin *value=0.01)
@@ -175,15 +192,53 @@ class Commander
     void scalar(float* value, char* user_cmd);
     /**
      *  Target setting interface, enables setting the target and limiting variables at once. 
-     *  The valeus are sent separated by a space. ex. P2.34 70 2
+     *  The values are sent separated by a separator specified as the third argument. The default separator is the space.
+     * 
+     * @param motor     - FOCMotor (BLDCMotor or StepperMotor) instance 
+     * @param user_cmd  - the string command
+     * @param separator - the string separator in between target and limit values, default is space - " "
+     *  
+     *  Example: P2.34 70 2
      *  `P` is the user defined command, `2.34` is the target angle `70` is the target 
      *  velocity and `2` is the desired max current.
+     *  
      *  It depends of the motion control mode:
-     *  - torque   : torque (ex. P2.5) 
-     *  - velocity : velocity torque (ex.P10 2.5) 
-     *  - angle    : angle velocity torque (ex.P3.5 10 2.5)
+     *    - torque   : torque (ex. P2.5) 
+     *    - velocity : velocity torque (ex.P10 2.5 or P10 to only chanage the target witout limits)
+     *    - angle    : angle velocity torque (ex.P3.5 10 2.5 or P3.5 to only chanage the target witout limits)
      */
-    void target(FOCMotor* motor, char* user_cmd);
+    void target(FOCMotor* motor, char* user_cmd, char* separator = " ");
+
+    /**
+     * FOC motor (StepperMotor and BLDCMotor) motion control interfaces
+     * @param motor     - FOCMotor (BLDCMotor or StepperMotor) instance 
+     * @param user_cmd  - the string command
+     * @param separator - the string separator in between target and limit values, default is space - " "
+     * 
+     * Commands:
+     *    'C' - Motion control type config
+     *          sub-commands:
+     *          'D' - downsample motiron loop
+     *          '0' - torque
+     *          '1' - velocity
+     *          '2' - angle
+     *    'T' - Torque control type
+     *          sub-commands:
+     *          '0' - voltage
+     *          '1' - current
+     *          '2' - foc_current
+     *    'E' - Motor status (enable/disable)
+     *          sub-commands:
+     *          '0' - enable
+     *          '1' - disable
+     *    '' - Target setting interface 
+     *         Depends of the motion control mode:
+     *          - torque                          : torque (ex. M2.5) 
+     *          - velocity (open and closed loop) : velocity torque (ex.M10 2.5 or M10 to only chanage the target witout limits)
+     *          - angle    (open and closed loop) : angle velocity torque (ex.M3.5 10 2.5 or M3.5 to only chanage the target witout limits)
+     */
+    void motion(FOCMotor* motor, char* user_cmd, char* separator = " ");
+
   private:
     // Subscribed command callback variables
     CommandCallback call_list[20];//!< array of command callback pointers - 20 is an arbitrary number

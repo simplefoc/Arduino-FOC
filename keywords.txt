@@ -122,6 +122,7 @@ pullup	KEYWORD2
 quadrature	KEYWORD2
 foc_modulation	KEYWORD2
 target	KEYWORD2
+motion	KEYWORD2
 pwm_frequency	KEYWORD2
 dead_zone	KEYWORD2
 gain_a	KEYWORD2

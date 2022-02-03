@@ -18,17 +18,27 @@ Therefore this is an attempt to:
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
 
+
 <blockquote class="info">
-   <p class="heading">FUTURE RELEASE 📢: <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2.1 </p>
+   <p class="heading">NEW RELEASE 📢: <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2.1 <a href="https://github.com/simplefoc/Arduino-FOC/releases/tag/v2.2.1">see release</a></p>
    <ul>
-      <li>Sensor class init bugfix #121</li>
-      <li>Added the new motion control interface to the commander- possible to set the position, velocity and torque target at once</li>
-      <li>NRF52 series mcus support by <a href="https://github.com/Polyphe">@Polyphe</a></li>
-      <li>Voltage/current limit handling bugs #118</li>
-      <li>Generic position and current sense classes - to implement a new sensor only implement one function</li>
-      <li>Initial support for esp32s2 and esp32s3 - separation of the esp32 mcpwm and led implementation</li>
-      <li><b>esp32 arduino package transfer to v2.0.1+</b> - helpful PR#149 by <a href="https://github.com/samguns">samguns</a></li>
-   </ul>
+      <li>Sensor class init bugfix <a href="https://github.com/simplefoc/Arduino-FOC/issues/121">#121</a></li>
+      <li>Voltage/current limit handling bugs <a href="https://github.com/simplefoc/Arduino-FOC/issues/118">#118</a></li>
+      <li>Added the new motion control interface to the commander <a href="https://docs.simplefoc.com/commander_target">see docs</a>
+      <ul>
+         <li>New target setting - possible to set the position, velocity and torque target at once</li>
+         <li>Separated the motion control interface from full motor callback - only motion control and torque control type, enable disable and target setting</li>
+      </ul>
+      </li>
+      <li>New MCU support <a href="https://docs.simplefoc.com/microcontrollers">see docs</a>
+      <ul>
+        <li>NRF52 series mcus support by <a href="https://github.com/Polyphe">@Polyphe</a></li>
+        <li><b>esp32 arduino package transfer to v2.0.1+</b> - helpful <a href="https://github.com/simplefoc/Arduino-FOC/pull/92/149">PR#149</a> by <a href="https://github.com/samguns">samguns</a></li>
+        <li>Initial support for esp32s2 and esp32s3 - separation of the esp32 mcpwm and led implementation</li>
+      </ul>
+      </li>
+      <li>Generic sensor class - to implement a new sensor only implement one function <a href="https://docs.simplefoc.com/generic_sensor">see docs</a></li>
+      </ul>
 </blockquote>
 
 ## Arduino *SimpleFOClibrary* v2.2
