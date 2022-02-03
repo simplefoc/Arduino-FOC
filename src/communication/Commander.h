@@ -143,7 +143,11 @@ class Commander
      *          'C' - clear monitor
      *          'S' - set monitoring variables
      *          'G' - get variable value
-     *    '' - Target get/set
+     *    '' - Target setting interface 
+     *         Depends of the motion control mode:
+     *          - torque                          : torque (ex. M2.5) 
+     *          - velocity (open and closed loop) : velocity torque (ex.M10 2.5 or M10 to only chanage the target witout limits)
+     *          - angle    (open and closed loop) : angle velocity torque (ex.M3.5 10 2.5 or M3.5 to only chanage the target witout limits)
      *
      *  - Each of them can be get by sening the command letter -(ex. 'R' - to get the phase resistance)
      *  - Each of them can be set by sending 'IdSubidValue' - (ex. SM1.5 for setting sensor zero offset to 1.5f)
