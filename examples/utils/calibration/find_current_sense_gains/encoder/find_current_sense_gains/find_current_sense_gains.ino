@@ -16,19 +16,20 @@
 #include <SimpleFOC.h>
 
 // BLDC motor instance
-// its important to put pole pairs number as 1!!!
-BLDCMotor motor = BLDCMotor(1);
+BLDCMotor motor = BLDCMotor(10);
 BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
-// Stepper motor instance
-// its important to put pole pairs number as 1!!!
-//StepperMotor motor = StepperMotor(1);
-//StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
 //  Encoder(int encA, int encB , int cpr, int index)
 Encoder encoder = Encoder(2, 3, 2048);
 // interrupt routine intialisation
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
+
+// current sensor
+// shunt resistor value
+// gain value
+// pins phase A,B, (C optional)
+InlineCurrentSense current_sense = InlineCurrentSense(0.01, 50.0, A0, A2);
 
 void setup() {
 
@@ -45,45 +46,47 @@ void setup() {
   driver.init();
   motor.linkDriver(&driver);
 
-
   // initialize motor
   motor.init();
   // monitoring port
   Serial.begin(115200);
+
+  // initialise the current sensing
+  current_sense.init();
 
   // pole pairs calculation routine
   Serial.println("Pole pairs (PP) estimator");
   Serial.println("-\n");
 
   float pp_search_voltage = 4; // maximum power_supply_voltage/2
-  float pp_search_angle = 6*M_PI; // search electrical angle to turn
+  float pp_search_angle = 8*M_PI; // search electrical angle to turn
+  float pp_vel_limit = 1; 
 
   // move motor to the electrical angle 0
   motor.controller = MotionControlType::angle_openloop;
-  motor.voltage_limit=pp_search_voltage;
+  motor.voltage_limit = pp_search_voltage;
+  motor.velocity_limit = pp_vel_limit;
   motor.move(0);
   _delay(1000);
-  // read the encoder angle
-  encoder.update(); 
-  float angle_begin = encoder.getAngle();
-  _delay(50);
 
   // move the motor slowly to the electrical angle pp_search_angle
-  float motor_angle = 0;
+  float a_max=0,b_max=0,c_max=0;
   while(motor_angle <= pp_search_angle){
-    motor_angle += 0.01f;
-    motor.move(motor_angle);
-    _delay(1);
+    motor.move(pp_search_angle);
+    PhaseCurrent_s c = current_sense.getPhaseCurrents();
+    a_max = fabs(c.a) > a_max ? fabs(c.a) : a_max;
+    b_max = fabs(c.b) > b_max ? fabs(c.b) : b_max;
+    c_max = fabs(c.c) > c_max ? fabs(c.c) : c_max;
   }
   _delay(1000);
-  // read the encoder value for 180
-  encoder.update(); 
-  float angle_end = encoder.getAngle();
-  _delay(50);
-  // turn off the motor
-  motor.move(0);
-  _delay(1000);
+  
+  Serial.print(a_max);
+  Serial.print("\t");
+  Serial.print(b_max);
+  Serial.print("\t");
+  Serial.println(b_max);
 
+  return;
   // calculate the pole pair number
   int pp = round((pp_search_angle)/(angle_end-angle_begin));
 

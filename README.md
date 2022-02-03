@@ -22,7 +22,11 @@ Therefore this is an attempt to:
    <p class="heading">FUTURE RELEASE 📢: <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2.1 </p>
    <ul>
       <li>Sensor class init bugfix #121</li>
-      <li>Added the new motion control interface to the commander- possible to set the position, velocity and torque target at once</li>
+      <li>Added the new motion control interface to the commander
+      <ul>
+         <li>New target setting - possible to set the position, velocity and torque target at once</li>
+         <li>Separated the motion control interface from full motor callback - only motion control and torque control type, enable disable and target setting</li>
+      </ul>
       <li>NRF52 series mcus support by <a href="https://github.com/Polyphe">@Polyphe</a></li>
       <li>Voltage/current limit handling bugs #118</li>
       <li>Generic position and current sense classes - to implement a new sensor only implement one function</li>
