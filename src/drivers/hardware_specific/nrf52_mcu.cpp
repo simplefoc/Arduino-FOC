@@ -115,6 +115,16 @@ void _configureHwPwm(NRF_PWM_Type* mcpwm1,  NRF_PWM_Type* mcpwm2){
   }
 }
 
+
+
+// can we support it using the generic driver on this MCU? Commented out to fall back to generic driver for 2-pwm
+// void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
+//   return SIMPLEFOC_DRIVER_INIT_FAILED; // not supported
+// }
+
+
+
+
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
 // - hardware speciffic
