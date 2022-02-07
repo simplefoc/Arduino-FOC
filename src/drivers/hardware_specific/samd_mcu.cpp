@@ -682,7 +682,7 @@ void _writeDutyCycle2PWM(float dc_a,  float dc_b, void* params) {
  * @param pinB  phase B hardware pin number
  * @param pinC  phase C hardware pin number
  */
-void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC, void* params) {
+void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* params) {
 	writeSAMDDutyCycle(((SAMDHardwareDriverParams*)params)->tccPinConfigurations[0], dc_a);
 	writeSAMDDutyCycle(((SAMDHardwareDriverParams*)params)->tccPinConfigurations[1], dc_b);
 	writeSAMDDutyCycle(((SAMDHardwareDriverParams*)params)->tccPinConfigurations[2], dc_c);
@@ -706,7 +706,7 @@ void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, int pinA, int pinB
  * @param pin2A  phase 2A hardware pin number
  * @param pin2B  phase 2B hardware pin number
  */
-void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, int pin1A, int pin1B, int pin2A, int pin2B, void* params){
+void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, void* params){
 	writeSAMDDutyCycle(((SAMDHardwareDriverParams*)params)->tccPinConfigurations[0], dc_1a);
 	writeSAMDDutyCycle(((SAMDHardwareDriverParams*)params)->tccPinConfigurations[1], dc_1b);
 	writeSAMDDutyCycle(((SAMDHardwareDriverParams*)params)->tccPinConfigurations[2], dc_2a);
@@ -740,13 +740,14 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, in
  * @param pinC_l  phase C low-side hardware pin number
  *
  */
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, int pinA_h, int pinA_l, int pinB_h, int pinB_l, int pinC_h, int pinC_l, float dead_zone, void* params){
-	tccConfiguration* tcc1 = ((SAMDHardwareDriverParams*)params)->tccPinConfigurations[0];
-	tccConfiguration* tcc2 = ((SAMDHardwareDriverParams*)params)->tccPinConfigurations[1];
-	uint32_t pwm_res =((SAMDHardwareDriverParams*)params)->tccPinConfigurations[0]->pwm_res;
+void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
+	SAMDHardwareDriverParams* p = (SAMDHardwareDriverParams*)params;
+	tccConfiguration* tcc1 = p->tccPinConfigurations[0];
+	tccConfiguration* tcc2 = p->tccPinConfigurations[1];
+	uint32_t pwm_res =p->tccPinConfigurations[0]->pwm_res;
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
 		// low-side on a different pin of same TCC - do dead-time in software...
-		float ls = dc_a+(((SAMDHardwareDriverParams*)params)->dead_zone * (pwm_res-1)); // TODO resolution!!!
+		float ls = dc_a+(p->dead_zone * (pwm_res-1)); // TODO resolution!!!
 		if (ls>1.0) ls = 1.0f; // no off-time is better than too-short dead-time
 		writeSAMDDutyCycle(tcc1, dc_a);
 		writeSAMDDutyCycle(tcc2, ls);
@@ -754,10 +755,10 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, int pinA_h, int pi
 	else
 		writeSAMDDutyCycle(tcc1, dc_a); // dead-time is done is hardware, no need to set low side pin explicitly
 
-	tcc1 = ((SAMDHardwareDriverParams*)params)->tccPinConfigurations[2];
-	tcc2 = ((SAMDHardwareDriverParams*)params)->tccPinConfigurations[3];
+	tcc1 = p->tccPinConfigurations[2];
+	tcc2 = p->tccPinConfigurations[3];
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
-		float ls = dc_b+(((SAMDHardwareDriverParams*)params)->dead_zone * (pwm_res-1));
+		float ls = dc_b+(p->dead_zone * (pwm_res-1));
 		if (ls>1.0) ls = 1.0f; // no off-time is better than too-short dead-time
 		writeSAMDDutyCycle(tcc1, dc_b);
 		writeSAMDDutyCycle(tcc2, ls);
@@ -765,10 +766,10 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, int pinA_h, int pi
 	else
 		writeSAMDDutyCycle(tcc1, dc_b);
 
-	tcc1 = ((SAMDHardwareDriverParams*)params)->tccPinConfigurations[4];
-	tcc2 = ((SAMDHardwareDriverParams*)params)->tccPinConfigurations[5];
+	tcc1 = p->tccPinConfigurations[4];
+	tcc2 = p->tccPinConfigurations[5];
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
-		float ls = dc_c+(((SAMDHardwareDriverParams*)params)->dead_zone * (pwm_res-1));
+		float ls = dc_c+(p->dead_zone * (pwm_res-1));
 		if (ls>1.0) ls = 1.0f; // no off-time is better than too-short dead-time
 		writeSAMDDutyCycle(tcc1, dc_c);
 		writeSAMDDutyCycle(tcc2, ls);
