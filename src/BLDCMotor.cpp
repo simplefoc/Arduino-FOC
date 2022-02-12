@@ -143,7 +143,7 @@ int BLDCMotor::alignCurrentSense() {
   if(monitor_port) monitor_port->println(F("MOT: Align current sense."));
 
   // align current sense and the driver
-  exit_flag = current_sense->driverAlign(driver, voltage_sensor_align);
+  exit_flag = current_sense->driverAlign(voltage_sensor_align);
   if(!exit_flag){
     // error in current sense - phase either not measured or bad connection
     if(monitor_port) monitor_port->println(F("MOT: Align error!"));

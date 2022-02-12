@@ -3,8 +3,8 @@
 #include "Arduino.h"
 
 #if defined(STM32G4xx) 
-#define _ADC_VOLTAGE 3.3
-#define _ADC_RESOLUTION 4096.0
+#define _ADC_VOLTAGE 3.3f
+#define _ADC_RESOLUTION 4096.0f
 #define ADC_BUF_LEN_1 2
 #define ADC_BUF_LEN_2 1
 
@@ -20,11 +20,9 @@ static DMA_HandleTypeDef hdma_adc2;
 uint16_t adcBuffer1[ADC_BUF_LEN_1] = {0}; // Buffer for store the results of the ADC conversion
 uint16_t adcBuffer2[ADC_BUF_LEN_2] = {0}; // Buffer for store the results of the ADC conversion
 
-#define _ADC_CONV ( (_ADC_VOLTAGE) / (_ADC_RESOLUTION) )
-
 // function reading an ADC value and returning the read voltage
 // As DMA is being used just return the DMA result
-float _readADCVoltageInline(const int pin){
+float _readADCVoltageInline(const int pin, const void* cs_params){
   uint32_t raw_adc = 0;
   if(pin == PA2)  // = ADC1_IN3 = phase U (OP1_OUT) on B-G431B-ESC1
     raw_adc = adcBuffer1[1];
@@ -34,11 +32,7 @@ float _readADCVoltageInline(const int pin){
   else if(pin == PB1) // = ADC1_IN12 = phase W (OP3_OUT) on B-G431B-ESC1
     raw_adc = adcBuffer1[0];
 #endif
-  return raw_adc * _ADC_CONV;
-}
-// do the same for low side sensing
-float _readADCVoltageLowSide(const int pin){
-  return _readADCVoltageInline(pin);
+  return raw_adc * ((GenericCurrentSenseParams*)cs_params)->adc_voltage_conv;
 }
 
 void _configureOPAMP(OPAMP_HandleTypeDef *hopamp, OPAMP_TypeDef *OPAMPx_Def){
@@ -82,7 +76,9 @@ void MX_DMA1_Init(ADC_HandleTypeDef *hadc, DMA_HandleTypeDef *hdma_adc, DMA_Chan
   __HAL_LINKDMA(hadc, DMA_Handle, *hdma_adc);
 }
 
-void _configureADCInline(const int pinA,const int pinB,const int pinC){
+void* _configureADCInline(const void* driver_params, const int pinA,const int pinB,const int pinC){
+  _UNUSED(driver_params);
+
   HAL_Init();
   MX_GPIO_Init();
   MX_DMA_Init(); 
@@ -111,12 +107,15 @@ void _configureADCInline(const int pinA,const int pinB,const int pinC){
   // the motor pwm (usually BLDCDriver6PWM::init()) before initializing the ADC engine.
   _delay(5);
   if (adcBuffer1[0] == 0 || adcBuffer1[1] == 0 || adcBuffer2[0] == 0) {
-    Error_Handler();
+    return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
   }
-}
-// do the same for low side
-void _configureADCLowSide(const int pinA,const int pinB,const int pinC){
-  _configureADCInline(pinA, pinB, pinC);
+  
+  GenericCurrentSenseParams* params = new GenericCurrentSenseParams {
+    .pins = { pinA, pinB, pinC },
+    .adc_voltage_conv = (_ADC_VOLTAGE) / (_ADC_RESOLUTION)
+  };
+
+  return params;
 }
 
 extern "C" {

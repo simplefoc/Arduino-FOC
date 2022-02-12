@@ -34,6 +34,8 @@ void setup() {
   driver.init();
   // link driver
   motor.linkDriver(&driver);
+  // link current sense and the driver
+  current_sense.linkDriver(&driver);
 
   // set control loop type to be used
   motor.controller = MotionControlType::torque;

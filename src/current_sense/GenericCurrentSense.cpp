@@ -8,11 +8,13 @@ GenericCurrentSense::GenericCurrentSense(PhaseCurrent_s (*readCallback)(), void 
 }
 
 // Inline sensor init function
-void GenericCurrentSense::init(){
+int GenericCurrentSense::init(){
     // configure ADC variables
     if(initCallback != nullptr) initCallback();
     // calibrate zero offsets
     calibrateOffsets();
+    // return success
+    return 1;
 }
 // Function finding zero offsets of the ADC
 void GenericCurrentSense::calibrateOffsets(){
@@ -45,12 +47,6 @@ PhaseCurrent_s GenericCurrentSense::getPhaseCurrents(){
     return current;
 }
 
-// Function synchronizing current sense with motor driver.
-// for in-line sensig no such thing is necessary
-int GenericCurrentSense::driverSync(BLDCDriver *driver){
-    return 1;
-}
-
 // Function aligning the current sense with motor driver
 // if all pins are connected well none of this is really necessary! - can be avoided
 // returns flag
@@ -59,7 +55,7 @@ int GenericCurrentSense::driverSync(BLDCDriver *driver){
 // 2 - success but pins reconfigured
 // 3 - success but gains inverted
 // 4 - success but pins reconfigured and gains inverted
-int GenericCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
+int GenericCurrentSense::driverAlign(float voltage){
     int exit_flag = 1;
     if(skip_align) return exit_flag;
 

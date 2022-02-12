@@ -65,3 +65,10 @@ DQCurrent_s CurrentSense::getFOCCurrents(float angle_el){
     return_current.q = i_beta * ct - i_alpha * st;
     return return_current;
 }
+
+/**
+	Driver linking to the current sense
+*/
+void CurrentSense::linkDriver(BLDCDriver* _driver) {
+  driver = _driver;
+}

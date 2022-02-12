@@ -18,10 +18,9 @@ class GenericCurrentSense: public CurrentSense{
     GenericCurrentSense(PhaseCurrent_s (*readCallback)() = nullptr, void (*initCallback)() = nullptr);
 
     // CurrentSense interface implementing functions 
-    void init() override;
+    int init() override;
     PhaseCurrent_s getPhaseCurrents() override;
-    int driverSync(BLDCDriver *driver) override;
-    int driverAlign(BLDCDriver *driver, float voltage) override;
+    int driverAlign(float align_voltage) override;
 
 
     PhaseCurrent_s (*readCallback)() = nullptr; //!< function pointer to sensor reading

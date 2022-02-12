@@ -20,13 +20,17 @@ LowsideCurrentSense::LowsideCurrentSense(float _shunt_resistor, float _gain, int
 }
 
 // Lowside sensor init function
-void LowsideCurrentSense::init(){
+int LowsideCurrentSense::init(){
     // configure ADC variables
-    _configureADCLowSide(pinA,pinB,pinC);
+    params = _configureADCLowSide(driver->params,pinA,pinB,pinC);
+    // if init failed return fail
+    if (params == SIMPLEFOC_CURRENT_SENSE_INIT_FAILED) return 0; 
     // sync the driver
-    _driverSyncLowSide();
+    _driverSyncLowSide(driver->params, params);
     // calibrate zero offsets
     calibrateOffsets();
+    // return success
+    return 1;
 }
 // Function finding zero offsets of the ADC
 void LowsideCurrentSense::calibrateOffsets(){    
@@ -39,9 +43,9 @@ void LowsideCurrentSense::calibrateOffsets(){
     // read the adc voltage 1000 times ( arbitrary number )
     for (int i = 0; i < calibration_rounds; i++) {
         _startADC3PinConversionLowSide();
-        offset_ia += _readADCVoltageLowSide(pinA);
-        offset_ib += _readADCVoltageLowSide(pinB);
-        if(_isset(pinC)) offset_ic += _readADCVoltageLowSide(pinC);
+        offset_ia += _readADCVoltageLowSide(pinA, params);
+        offset_ib += _readADCVoltageLowSide(pinB, params);
+        if(_isset(pinC)) offset_ic += _readADCVoltageLowSide(pinC, params);
         _delay(1);
     }
     // calculate the mean offsets
@@ -54,16 +58,10 @@ void LowsideCurrentSense::calibrateOffsets(){
 PhaseCurrent_s LowsideCurrentSense::getPhaseCurrents(){
     PhaseCurrent_s current;
     _startADC3PinConversionLowSide();
-    current.a = (_readADCVoltageLowSide(pinA) - offset_ia)*gain_a;// amps
-    current.b = (_readADCVoltageLowSide(pinB) - offset_ib)*gain_b;// amps
-    current.c = (!_isset(pinC)) ? 0 : (_readADCVoltageLowSide(pinC) - offset_ic)*gain_c; // amps
+    current.a = (_readADCVoltageLowSide(pinA, params) - offset_ia)*gain_a;// amps
+    current.b = (_readADCVoltageLowSide(pinB, params) - offset_ib)*gain_b;// amps
+    current.c = (!_isset(pinC)) ? 0 : (_readADCVoltageLowSide(pinC, params) - offset_ic)*gain_c; // amps
     return current;
-}
-// Function synchronizing current sense with motor driver.
-// for in-line sensig no such thing is necessary
-int LowsideCurrentSense::driverSync(BLDCDriver *driver){
-    _driverSyncLowSide();
-    return 1;
 }
 
 // Function aligning the current sense with motor driver
@@ -74,7 +72,7 @@ int LowsideCurrentSense::driverSync(BLDCDriver *driver){
 // 2 - success but pins reconfigured
 // 3 - success but gains inverted
 // 4 - success but pins reconfigured and gains inverted
-int LowsideCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
+int LowsideCurrentSense::driverAlign(float voltage){
     
     int exit_flag = 1;
     if(skip_align) return exit_flag;

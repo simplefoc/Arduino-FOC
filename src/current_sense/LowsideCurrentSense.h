@@ -24,10 +24,9 @@ class LowsideCurrentSense: public CurrentSense{
     LowsideCurrentSense(float shunt_resistor, float gain, int pinA, int pinB, int pinC = NOT_SET);
 
     // CurrentSense interface implementing functions
-    void init() override;
+    int init() override;
     PhaseCurrent_s getPhaseCurrents() override;
-    int driverSync(BLDCDriver *driver) override;
-    int driverAlign(BLDCDriver *driver, float voltage) override;
+    int driverAlign(float align_voltage) override;
 
     // ADC measuremnet gain for each phase
     // support for different gains for different phases of more commonly - inverted phase currents
