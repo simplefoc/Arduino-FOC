@@ -21,13 +21,14 @@
 // #define _SOFTWARE_6PWM 0
 // #define _ERROR_6PWM -1
 
-typedef struct{
-  int id ;
-  pwmout_t pins[6];
-} portenta_h7_mcu_enty_s;
 
-portenta_h7_mcu_enty_s motor_slot[10];
-int slot_index = 0;
+
+typedef struct PortentaDriverParams {
+  pwmout_t pins[4];
+  long pwm_frequency;
+//  float dead_zone;
+} PortentaDriverParams;
+
 
 
 /* Convert STM32 Cube HAL channel to LL channel */
@@ -379,112 +380,111 @@ void _alignPWMTimers(pwmout_t *t1, pwmout_t *t2, pwmout_t *t3, pwmout_t *t4){
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 2PWM setting
 // - hardware speciffic
-void _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
+void* _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
   if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
   
-  motor_slot[slot_index].id = pinA;
+  PortentaDriverParams* params = new PortentaDriverParams();
+  params->pwm_frequency = pwm_frequency;
 
   core_util_critical_section_enter();
-  _pwm_init(&(motor_slot[slot_index].pins[0]), pinA, (long)pwm_frequency);
-  _pwm_init(&(motor_slot[slot_index].pins[1]), pinB, (long)pwm_frequency);
+  _pwm_init(&(params->pins[0]), pinA, (long)pwm_frequency);
+  _pwm_init(&(params->pins[1]), pinB, (long)pwm_frequency);
   // allign the timers
-  _alignPWMTimers(&(motor_slot[slot_index].pins[0]), &(motor_slot[slot_index].pins[1]));
+  _alignPWMTimers(&(params->pins[0]), &(params->pins[1]));
   core_util_critical_section_exit();
-  slot_index++;
+  return params;
 }
 
 
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
 // - hardware speciffic
-void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
+void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
   if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
 
-  motor_slot[slot_index].id = pinA;
+  PortentaDriverParams* params = new PortentaDriverParams();
+  params->pwm_frequency = pwm_frequency;
+
   core_util_critical_section_enter();
-  _pwm_init(&(motor_slot[slot_index].pins[0]), pinA, (long)pwm_frequency);
-  _pwm_init(&(motor_slot[slot_index].pins[1]), pinB, (long)pwm_frequency);
-  _pwm_init(&(motor_slot[slot_index].pins[2]), pinC, (long)pwm_frequency);
+  _pwm_init(&(params->pins[0]), pinA, (long)pwm_frequency);
+  _pwm_init(&(params->pins[1]), pinB, (long)pwm_frequency);
+  _pwm_init(&(params->pins[2]), pinC, (long)pwm_frequency);
   // allign the timers
-  _alignPWMTimers(&(motor_slot[slot_index].pins[0]), &(motor_slot[slot_index].pins[1]), &(motor_slot[slot_index].pins[2]));
+  _alignPWMTimers(&(params->pins[0]), &(params->pins[1]), &(params->pins[2]));
   core_util_critical_section_exit();
-  slot_index++;
+
+  return params;
 }
+
+
 
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 4PWM setting
 // - hardware speciffic
-void _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
+void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
   if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
 
-  motor_slot[slot_index].id = pinA;
+  PortentaDriverParams* params = new PortentaDriverParams();
+  params->pwm_frequency = pwm_frequency;
+
   core_util_critical_section_enter();
-  _pwm_init(&(motor_slot[slot_index].pins[0]), pinA, (long)pwm_frequency);
-  _pwm_init(&(motor_slot[slot_index].pins[1]), pinB, (long)pwm_frequency);
-  _pwm_init(&(motor_slot[slot_index].pins[2]), pinC, (long)pwm_frequency);
-  _pwm_init(&(motor_slot[slot_index].pins[3]), pinD, (long)pwm_frequency);
+  _pwm_init(&(params->pins[0]), pinA, (long)pwm_frequency);
+  _pwm_init(&(params->pins[1]), pinB, (long)pwm_frequency);
+  _pwm_init(&(params->pins[2]), pinC, (long)pwm_frequency);
+  _pwm_init(&(params->pins[3]), pinD, (long)pwm_frequency);
   // allign the timers
-  _alignPWMTimers(&(motor_slot[slot_index].pins[0]), &(motor_slot[slot_index].pins[1]), &(motor_slot[slot_index].pins[2]), &(motor_slot[slot_index].pins[3]));
+  _alignPWMTimers(&(params->pins[0]), &(params->pins[1]), &(params->pins[2]), &(params->pins[3]));
   core_util_critical_section_exit();
-  slot_index++;
+
+  return params;
 }
+
+
 
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 2PWM setting
 //- hardware speciffic
-void _writeDutyCycle2PWM(float dc_a,  float dc_b, int pinA, int pinB){
-for(int i=0; i<slot_index; i++){
-     if(motor_slot[i].id == pinA){
-      core_util_critical_section_enter();
-      _pwm_write(&(motor_slot[i].pins[0]), (float)dc_a);
-      _pwm_write(&(motor_slot[i].pins[1]), (float)dc_b);
-      core_util_critical_section_exit();
-    }
-  }
+void _writeDutyCycle2PWM(float dc_a,  float dc_b, void* params){
+    core_util_critical_section_enter();
+    _pwm_write(&(((PortentaDriverParams*)params)->pins[0]), (float)dc_a);
+    _pwm_write(&(((PortentaDriverParams*)params)->pins[1]), (float)dc_b);
+    core_util_critical_section_exit();
 }
 
 // function setting the pwm duty cycle to the hardware
 // - BLDC motor - 3PWM setting
 //- hardware speciffic
-void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC){
-  for(int i=0; i<slot_index; i++){
-     if(motor_slot[i].id == pinA){
-      core_util_critical_section_enter();
-      _pwm_write(&(motor_slot[i].pins[0]), (float)dc_a);
-      _pwm_write(&(motor_slot[i].pins[1]), (float)dc_b);
-      _pwm_write(&(motor_slot[i].pins[2]), (float)dc_c);
-      core_util_critical_section_exit();
-    }
-  }
+void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* params){
+    core_util_critical_section_enter();
+    _pwm_write(&(((PortentaDriverParams*)params)->pins[0]), (float)dc_a);
+    _pwm_write(&(((PortentaDriverParams*)params)->pins[1]), (float)dc_b);
+    _pwm_write(&(((PortentaDriverParams*)params)->pins[2]), (float)dc_c);
+    core_util_critical_section_exit();
 }
 
 
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 4PWM setting
 //- hardware speciffic
-void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, int pin1A, int pin1B, int pin2A, int pin2B){
-  for(int i=0; i<slot_index; i++){
-     if(motor_slot[i].id == pin1A){
-      core_util_critical_section_enter();
-      _pwm_write(&(motor_slot[i].pins[0]), (float)dc_1a);
-      _pwm_write(&(motor_slot[i].pins[1]), (float)dc_1b);
-      _pwm_write(&(motor_slot[i].pins[2]), (float)dc_2a);
-      _pwm_write(&(motor_slot[i].pins[3]), (float)dc_2b);
-      core_util_critical_section_exit();
-    }
-  }
+void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, void* params){
+    core_util_critical_section_enter();
+    _pwm_write(&(((PortentaDriverParams*)params)->pins[0]), (float)dc_1a);
+    _pwm_write(&(((PortentaDriverParams*)params)->pins[1]), (float)dc_1b);
+    _pwm_write(&(((PortentaDriverParams*)params)->pins[2]), (float)dc_2a);
+    _pwm_write(&(((PortentaDriverParams*)params)->pins[3]), (float)dc_2b);
+    core_util_critical_section_exit();
 }
 
 
-
+// 6-PWM currently not supported, defer to generic, which also doesn't support it ;-)
 
 // Configuring PWM frequency, resolution and alignment
 // - BLDC driver - 6PWM setting
 // - hardware specific
-int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
+//void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
   // if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   // else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to |%0kHz max
   // // center-aligned frequency is uses two periods
@@ -510,13 +510,13 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
   //     _alignPWMTimers(HT1, HT2, HT3);
   //     break;
   // }
-  return -1; // success
-}
+//   return -1; // success
+// }
 
 // Function setting the duty cycle to the pwm pin (ex. analogWrite())
 // - BLDC driver - 6PWM setting
 // - hardware specific
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, int pinA_h, int pinA_l, int pinB_h, int pinB_l, int pinC_h, int pinC_l){
+//void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
   // // find configuration
   // int config = _interfaceType(pinA_h, pinA_l,  pinB_h, pinB_l, pinC_h, pinC_l);
   // // set pwm accordingly
@@ -535,5 +535,5 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, i
   //     _setPwm(pinC_h, _constrain(dc_c - dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
   //     break;
   // }
-}
+//}
 #endif

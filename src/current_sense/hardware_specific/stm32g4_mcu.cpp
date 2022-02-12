@@ -1,5 +1,6 @@
 #include "../hardware_api.h"
 #include "stm32g4_hal.h"
+#include "Arduino.h"
 
 #if defined(STM32G4xx) 
 #define _ADC_VOLTAGE 3.3
@@ -29,9 +30,10 @@ float _readADCVoltageInline(const int pin){
     raw_adc = adcBuffer1[1];
   else if(pin == PA6) // = ADC2_IN3 = phase V (OP2_OUT) on B-G431B-ESC1
     raw_adc = adcBuffer2[0];
+#ifdef PB1
   else if(pin == PB1) // = ADC1_IN12 = phase W (OP3_OUT) on B-G431B-ESC1
     raw_adc = adcBuffer1[0];
-
+#endif
   return raw_adc * _ADC_CONV;
 }
 // do the same for low side sensing

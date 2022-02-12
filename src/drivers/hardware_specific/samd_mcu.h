@@ -80,6 +80,15 @@ struct wo_association {
 
 
 
+typedef struct SAMDHardwareDriverParams {
+	tccConfiguration* tccPinConfigurations[6];
+	uint32_t pwm_frequency;
+	float dead_zone;
+} SAMDHardwareDriverParams;
+
+
+
+
 #if defined(_SAMD21_)
 #define NUM_PIO_TIMER_PERIPHERALS 2
 #elif defined(_SAMD51_)||defined(_SAME51_)

@@ -1,6 +1,8 @@
 #ifndef STEPPERDRIVER_H
 #define STEPPERDRIVER_H
 
+#include "drivers/hardware_api.h"
+
 class StepperDriver{
     public:
         
@@ -16,7 +18,8 @@ class StepperDriver{
         float voltage_limit; //!< limiting voltage set to the motor
         
         bool initialized = false; // true if driver was successfully initialized
-            
+        void* params = 0; // pointer to hardware specific parameters of driver
+
         /** 
          * Set phase voltages to the harware 
          * 

@@ -14,15 +14,28 @@
 #define _ERROR_6PWM -1
 
 
-// setting pwm to hardware pin - instead analogWrite()
-void _setPwm(int ulPin, uint32_t value, int resolution)
-{
-  PinName pin = digitalPinToPinName(ulPin);
-  TIM_TypeDef *Instance = (TIM_TypeDef *)pinmap_peripheral(pin, PinMap_PWM);
-  uint32_t index = get_timer_index(Instance);
-  HardwareTimer *HT = (HardwareTimer *)(HardwareTimer_Handle[index]->__this);
 
-  uint32_t channel = STM_PIN_CHANNEL(pinmap_function(pin, PinMap_PWM));
+typedef struct STM32DriverParams {
+  HardwareTimer* timers[6];
+  uint32_t channels[6];
+  long pwm_frequency;
+  float dead_zone;
+  uint8_t interface_type;
+} STM32DriverParams;
+
+
+
+
+
+// setting pwm to hardware pin - instead analogWrite()
+void _setPwm(HardwareTimer *HT, uint32_t channel, uint32_t value, int resolution)
+{
+  // PinName pin = digitalPinToPinName(ulPin);
+  // TIM_TypeDef *Instance = (TIM_TypeDef *)pinmap_peripheral(pin, PinMap_PWM);
+  // uint32_t index = get_timer_index(Instance);
+  // HardwareTimer *HT = (HardwareTimer *)(HardwareTimer_Handle[index]->__this);
+
+  //uint32_t channel = STM_PIN_CHANNEL(pinmap_function(pin, PinMap_PWM));
   HT->setCaptureCompare(channel, value, (TimerCompareFormat_t)resolution);
 }
 
@@ -32,6 +45,12 @@ HardwareTimer* _initPinPWM(uint32_t PWM_freq, int ulPin)
 {
   PinName pin = digitalPinToPinName(ulPin);
   TIM_TypeDef *Instance = (TIM_TypeDef *)pinmap_peripheral(pin, PinMap_PWM);
+  if (Instance == NP) {
+    Serial.print("No timer on pin ");
+    Serial.println(ulPin);
+    delay(1000);
+    return NP;
+  }
 
   uint32_t index = get_timer_index(Instance);
   if (HardwareTimer_Handle[index] == NULL) {
@@ -123,7 +142,7 @@ void _alignPWMTimers(HardwareTimer *HT1,HardwareTimer *HT2,HardwareTimer *HT3,Ha
 }
 
 // configure hardware 6pwm interface only one timer with inverted channels
-HardwareTimer* _initHardware6PWMInterface(uint32_t PWM_freq, float dead_zone, int pinA_h, int pinA_l, int pinB_h, int pinB_l, int pinC_h, int pinC_l)
+STM32DriverParams* _initHardware6PWMInterface(long PWM_freq, float dead_zone, int pinA_h, int pinA_l, int pinB_h, int pinB_l, int pinC_h, int pinC_l)
 {
   
 #if !defined(STM32L0xx) // L0 boards dont have hardware 6pwm interface 
@@ -133,6 +152,12 @@ HardwareTimer* _initHardware6PWMInterface(uint32_t PWM_freq, float dead_zone, in
   PinName vlPinName = digitalPinToPinName(pinB_l);
   PinName whPinName = digitalPinToPinName(pinC_h);
   PinName wlPinName = digitalPinToPinName(pinC_l);
+  uint32_t channel1 = STM_PIN_CHANNEL(pinmap_function(uhPinName, PinMap_PWM));
+  uint32_t channel2 = STM_PIN_CHANNEL(pinmap_function(ulPinName, PinMap_PWM));
+  uint32_t channel3 = STM_PIN_CHANNEL(pinmap_function(vhPinName, PinMap_PWM));
+  uint32_t channel4 = STM_PIN_CHANNEL(pinmap_function(vlPinName, PinMap_PWM));
+  uint32_t channel5 = STM_PIN_CHANNEL(pinmap_function(whPinName, PinMap_PWM));
+  uint32_t channel6 = STM_PIN_CHANNEL(pinmap_function(wlPinName, PinMap_PWM));
 
   TIM_TypeDef *Instance = (TIM_TypeDef *)pinmap_peripheral(uhPinName, PinMap_PWM);
 
@@ -143,16 +168,16 @@ HardwareTimer* _initHardware6PWMInterface(uint32_t PWM_freq, float dead_zone, in
     HardwareTimer_Handle[index]->handle.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
     HardwareTimer_Handle[index]->handle.Init.RepetitionCounter = 1;
     HAL_TIM_Base_Init(&(HardwareTimer_Handle[index]->handle));
-    ((HardwareTimer *)HardwareTimer_Handle[index]->__this)->setOverflow(PWM_freq, HERTZ_FORMAT);
+    ((HardwareTimer *)HardwareTimer_Handle[index]->__this)->setOverflow((uint32_t)PWM_freq, HERTZ_FORMAT);
   }
   HardwareTimer *HT = (HardwareTimer *)(HardwareTimer_Handle[index]->__this);
 
-  HT->setMode(STM_PIN_CHANNEL(pinmap_function(uhPinName, PinMap_PWM)), TIMER_OUTPUT_COMPARE_PWM1, uhPinName);
-  HT->setMode(STM_PIN_CHANNEL(pinmap_function(ulPinName, PinMap_PWM)), TIMER_OUTPUT_COMPARE_PWM1, ulPinName);
-  HT->setMode(STM_PIN_CHANNEL(pinmap_function(vhPinName, PinMap_PWM)), TIMER_OUTPUT_COMPARE_PWM1, vhPinName);
-  HT->setMode(STM_PIN_CHANNEL(pinmap_function(vlPinName, PinMap_PWM)), TIMER_OUTPUT_COMPARE_PWM1, vlPinName);
-  HT->setMode(STM_PIN_CHANNEL(pinmap_function(whPinName, PinMap_PWM)), TIMER_OUTPUT_COMPARE_PWM1, whPinName);
-  HT->setMode(STM_PIN_CHANNEL(pinmap_function(wlPinName, PinMap_PWM)), TIMER_OUTPUT_COMPARE_PWM1, wlPinName);
+  HT->setMode(channel1, TIMER_OUTPUT_COMPARE_PWM1, uhPinName);
+  HT->setMode(channel2, TIMER_OUTPUT_COMPARE_PWM1, ulPinName);
+  HT->setMode(channel3, TIMER_OUTPUT_COMPARE_PWM1, vhPinName);
+  HT->setMode(channel4, TIMER_OUTPUT_COMPARE_PWM1, vlPinName);
+  HT->setMode(channel5, TIMER_OUTPUT_COMPARE_PWM1, whPinName);
+  HT->setMode(channel6, TIMER_OUTPUT_COMPARE_PWM1, wlPinName);
 
   // dead time is set in nanoseconds
   uint32_t dead_time_ns = (float)(1e9f/PWM_freq)*dead_zone;
@@ -171,9 +196,18 @@ HardwareTimer* _initHardware6PWMInterface(uint32_t PWM_freq, float dead_zone, in
   HT->getHandle()->Instance->CNT = TIM1->ARR;
 
   HT->resume();
-  return HT;
+
+  STM32DriverParams* params = new STM32DriverParams {
+    .timers = { HT },
+    .channels = { channel1, channel3, channel5 },
+    .pwm_frequency = PWM_freq,
+    .dead_zone = dead_zone,
+    .interface_type = _HARDWARE_6PWM
+  };
+    
+  return params;
 #else 
-  return nullptr; // return nothing
+  return SIMPLEFOC_DRIVER_INIT_FAILED; // return nothing
 #endif
 }
 
@@ -217,7 +251,7 @@ int _interfaceType(const int pinA_h, const int pinA_l,  const int pinB_h, const 
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 2PWM setting
 // - hardware speciffic
-void _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
+void* _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
   if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
   // center-aligned frequency is uses two periods
@@ -227,13 +261,24 @@ void _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
   HardwareTimer* HT2 = _initPinPWM(pwm_frequency, pinB);
   // allign the timers
   _alignPWMTimers(HT1, HT2, HT2);
+  
+  uint32_t channel1 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinA), PinMap_PWM));
+  uint32_t channel2 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinB), PinMap_PWM));
+
+  STM32DriverParams* params = new STM32DriverParams {
+    .timers = { HT1, HT2 },
+    .channels = { channel1, channel2 },
+    .pwm_frequency = pwm_frequency
+  };
+  return params;
 }
+
 
 
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
 // - hardware speciffic
-void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
+void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
   if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
   // center-aligned frequency is uses two periods
@@ -244,12 +289,25 @@ void _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int
   HardwareTimer* HT3 = _initPinPWM(pwm_frequency, pinC);
   // allign the timers
   _alignPWMTimers(HT1, HT2, HT3);
+  
+  uint32_t channel1 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinA), PinMap_PWM));
+  uint32_t channel2 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinB), PinMap_PWM));
+  uint32_t channel3 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinC), PinMap_PWM));
+
+  STM32DriverParams* params = new STM32DriverParams {
+    .timers = { HT1, HT2, HT3 },
+    .channels = { channel1, channel2, channel3 },
+    .pwm_frequency = pwm_frequency
+  };
+  return params;
 }
+
+
 
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 4PWM setting
 // - hardware speciffic
-void _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
+void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
   if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
   // center-aligned frequency is uses two periods
@@ -261,37 +319,51 @@ void _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int
   HardwareTimer* HT4 = _initPinPWM(pwm_frequency, pinD);
   // allign the timers
   _alignPWMTimers(HT1, HT2, HT3, HT4);
+
+  uint32_t channel1 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinA), PinMap_PWM));
+  uint32_t channel2 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinB), PinMap_PWM));
+  uint32_t channel3 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinC), PinMap_PWM));
+  uint32_t channel4 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinD), PinMap_PWM));
+
+  STM32DriverParams* params = new STM32DriverParams {
+    .timers = { HT1, HT2, HT3, HT4 },
+    .channels = { channel1, channel2, channel3, channel4 },
+    .pwm_frequency = pwm_frequency
+  };
+  return params;
 }
+
+
 
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 2PWM setting
 //- hardware speciffic
-void _writeDutyCycle2PWM(float dc_a,  float dc_b, int pinA, int pinB){
+void _writeDutyCycle2PWM(float dc_a,  float dc_b, void* params){
   // transform duty cycle from [0,1] to [0,4095]
-  _setPwm(pinA, _PWM_RANGE*dc_a, _PWM_RESOLUTION);
-  _setPwm(pinB, _PWM_RANGE*dc_b, _PWM_RESOLUTION);
+  _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _PWM_RANGE*dc_a, _PWM_RESOLUTION);
+  _setPwm(((STM32DriverParams*)params)->timers[1], ((STM32DriverParams*)params)->channels[1], _PWM_RANGE*dc_b, _PWM_RESOLUTION);
 }
 
 // function setting the pwm duty cycle to the hardware
 // - BLDC motor - 3PWM setting
 //- hardware speciffic
-void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, int pinA, int pinB, int pinC){
+void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* params){
   // transform duty cycle from [0,1] to [0,4095]
-  _setPwm(pinA, _PWM_RANGE*dc_a, _PWM_RESOLUTION);
-  _setPwm(pinB, _PWM_RANGE*dc_b, _PWM_RESOLUTION);
-  _setPwm(pinC, _PWM_RANGE*dc_c, _PWM_RESOLUTION);
+  _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _PWM_RANGE*dc_a, _PWM_RESOLUTION);
+  _setPwm(((STM32DriverParams*)params)->timers[1], ((STM32DriverParams*)params)->channels[1], _PWM_RANGE*dc_b, _PWM_RESOLUTION);
+  _setPwm(((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[2], _PWM_RANGE*dc_c, _PWM_RESOLUTION);
 }
 
 
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 4PWM setting
 //- hardware speciffic
-void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, int pin1A, int pin1B, int pin2A, int pin2B){
+void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, void* params){
   // transform duty cycle from [0,1] to [0,4095]
-  _setPwm(pin1A, _PWM_RANGE*dc_1a, _PWM_RESOLUTION);
-  _setPwm(pin1B, _PWM_RANGE*dc_1b, _PWM_RESOLUTION);
-  _setPwm(pin2A, _PWM_RANGE*dc_2a, _PWM_RESOLUTION);
-  _setPwm(pin2B, _PWM_RANGE*dc_2b, _PWM_RESOLUTION);
+  _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _PWM_RANGE*dc_1a, _PWM_RESOLUTION);
+  _setPwm(((STM32DriverParams*)params)->timers[1], ((STM32DriverParams*)params)->channels[1], _PWM_RANGE*dc_1b, _PWM_RESOLUTION);
+  _setPwm(((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[2], _PWM_RANGE*dc_2a, _PWM_RESOLUTION);
+  _setPwm(((STM32DriverParams*)params)->timers[3], ((STM32DriverParams*)params)->channels[3], _PWM_RANGE*dc_2b, _PWM_RESOLUTION);
 }
 
 
@@ -300,7 +372,7 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, in
 // Configuring PWM frequency, resolution and alignment
 // - BLDC driver - 6PWM setting
 // - hardware specific
-int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
+void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
   if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to |%0kHz max
   // center-aligned frequency is uses two periods
@@ -308,47 +380,58 @@ int _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const 
 
   // find configuration
   int config = _interfaceType(pinA_h, pinA_l,  pinB_h, pinB_l, pinC_h, pinC_l);
+  STM32DriverParams* params;
   // configure accordingly
   switch(config){
     case _ERROR_6PWM:
-      return -1; // fail
-      break;
+      return SIMPLEFOC_DRIVER_INIT_FAILED;
     case _HARDWARE_6PWM:
-      _initHardware6PWMInterface(pwm_frequency, dead_zone, pinA_h, pinA_l, pinB_h, pinB_l, pinC_h, pinC_l);
+      params = _initHardware6PWMInterface(pwm_frequency, dead_zone, pinA_h, pinA_l, pinB_h, pinB_l, pinC_h, pinC_l);
       break;
     case _SOFTWARE_6PWM:
       HardwareTimer* HT1 = _initPinPWMHigh(pwm_frequency, pinA_h);
       _initPinPWMLow(pwm_frequency, pinA_l);
-      HardwareTimer* HT2 = _initPinPWMHigh(pwm_frequency,pinB_h);
+      HardwareTimer* HT2 = _initPinPWMHigh(pwm_frequency, pinB_h);
       _initPinPWMLow(pwm_frequency, pinB_l);
-      HardwareTimer* HT3 = _initPinPWMHigh(pwm_frequency,pinC_h);
+      HardwareTimer* HT3 = _initPinPWMHigh(pwm_frequency, pinC_h);
       _initPinPWMLow(pwm_frequency, pinC_l);
       _alignPWMTimers(HT1, HT2, HT3);
+      uint32_t channel1 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinA_h), PinMap_PWM));
+      uint32_t channel2 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinA_l), PinMap_PWM));
+      uint32_t channel3 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinB_h), PinMap_PWM));
+      uint32_t channel4 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinB_l), PinMap_PWM));
+      uint32_t channel5 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinC_h), PinMap_PWM));
+      uint32_t channel6 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinC_l), PinMap_PWM));
+      params = new STM32DriverParams {
+        .timers = { HT1, HT2, HT3 },
+        .channels = { channel1, channel2, channel3, channel4, channel5, channel6 },
+        .pwm_frequency = pwm_frequency,
+        .dead_zone = dead_zone,
+        .interface_type = _SOFTWARE_6PWM
+      };
       break;
   }
-  return 0; // success
+  return params; // success
 }
 
 // Function setting the duty cycle to the pwm pin (ex. analogWrite())
 // - BLDC driver - 6PWM setting
 // - hardware specific
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, float dead_zone, int pinA_h, int pinA_l, int pinB_h, int pinB_l, int pinC_h, int pinC_l){
-  // find configuration
-  int config = _interfaceType(pinA_h, pinA_l,  pinB_h, pinB_l, pinC_h, pinC_l);
-  // set pwm accordingly
-  switch(config){
+void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
+  switch(((STM32DriverParams*)params)->interface_type){
     case _HARDWARE_6PWM:
-      _setPwm(pinA_h, _PWM_RANGE*dc_a, _PWM_RESOLUTION);
-      _setPwm(pinB_h, _PWM_RANGE*dc_b, _PWM_RESOLUTION);
-      _setPwm(pinC_h, _PWM_RANGE*dc_c, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _PWM_RANGE*dc_a, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[1], _PWM_RANGE*dc_b, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[2], _PWM_RANGE*dc_c, _PWM_RESOLUTION);
       break;
     case _SOFTWARE_6PWM:
-      _setPwm(pinA_l, _constrain(dc_a + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(pinA_h, _constrain(dc_a - dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(pinB_l, _constrain(dc_b + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(pinB_h, _constrain(dc_b - dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(pinC_l, _constrain(dc_c + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(pinC_h, _constrain(dc_c - dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
+      float dead_zone = ((STM32DriverParams*)params)->dead_zone;
+      _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _constrain(dc_a + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[1], _constrain(dc_a - dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[1], ((STM32DriverParams*)params)->channels[2], _constrain(dc_b + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[1], ((STM32DriverParams*)params)->channels[3], _constrain(dc_b - dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[4], _constrain(dc_c + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[5], _constrain(dc_c - dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
       break;
   }
 }
