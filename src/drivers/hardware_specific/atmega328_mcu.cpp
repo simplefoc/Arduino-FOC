@@ -72,7 +72,7 @@ void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* params){
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 4PWM setting
 // - hardware speciffic
-// supports Arudino/ATmega328
+// supports Arduino/ATmega328
 void* _configure4PWM(long pwm_frequency,const int pin1A, const int pin1B, const int pin2A, const int pin2B) {
    //  High PWM frequency
    // - always max 32kHz
@@ -128,7 +128,7 @@ int _configureComplementaryPair(int pinH, int pinL) {
 }
 
 // Configuring PWM frequency, resolution and alignment
-// - BLDC driver - 6PWM setting
+// - BLDC driver -  setting
 // - hardware specific
 // supports Arudino/ATmega328
 void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l) {
@@ -140,8 +140,8 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
   ret_flag += _configureComplementaryPair(pinC_h, pinC_l);
   if (ret_flag!=0) return SIMPLEFOC_DRIVER_INIT_FAILED;
   GenericDriverParams* params = new GenericDriverParams {
-    .pins = { pinA_h,, pinA_l, pinB_h, pinB_l, pinC_h, pinC_l },
-    .pwm_frequency = pwm_frequency
+    .pins = { pinA_h, pinA_l, pinB_h, pinB_l, pinC_h, pinC_l },
+    .pwm_frequency = pwm_frequency,
     .dead_zone = dead_zone
   };
   return params;

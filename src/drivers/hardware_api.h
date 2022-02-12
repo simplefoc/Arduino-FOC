@@ -4,8 +4,13 @@
 #include "../common/foc_utils.h"
 #include "../common/time_utils.h"
 
+// flag returned if driver init fails
 #define SIMPLEFOC_DRIVER_INIT_FAILED ((void*)-1)
 
+// generic implementation of the hardware specific structure
+// containing all the necessary driver parameters
+// will be returned as a void pointer from the _configurexPWM functions
+// will be provided to the _writeDutyCyclexPWM() as a void pointer
 typedef struct GenericDriverParams {
   int pins[6];
   long pwm_frequency;
