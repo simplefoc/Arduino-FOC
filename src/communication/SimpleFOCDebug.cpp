@@ -53,4 +53,39 @@ void SimpleFOCDebug::println(const __FlashStringHelper* str, int val) {
     }
 }
 
+
+void SimpleFOCDebug::print(const char* str) {
+    if (_debugPrint != NULL) {
+        _debugPrint->print(str);
+    }
+}
+
+
+void SimpleFOCDebug::print(const __FlashStringHelper* str) {
+    if (_debugPrint != NULL) {
+        _debugPrint->print(str);
+    }
+}
+
+
+void SimpleFOCDebug::print(int val) {
+    if (_debugPrint != NULL) {
+        _debugPrint->print(val);
+    }
+}
+
+
+void SimpleFOCDebug::print(float val) {
+    if (_debugPrint != NULL) {
+        _debugPrint->print(val);
+    }
+}
+
+
+void SimpleFOCDebug::println() {
+    if (_debugPrint != NULL) {
+        _debugPrint->println();
+    }
+}
+
 #endif

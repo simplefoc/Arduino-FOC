@@ -1,4 +1,6 @@
 #include "StepperMotor.h"
+#include "./communication/SimpleFOCDebug.h"
+
 
 // StepperMotor(int pp)
 // - pp            - pole pair number

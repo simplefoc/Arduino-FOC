@@ -3,6 +3,8 @@
 
 #include "../common/foc_utils.h"
 #include "../common/time_utils.h"
+#include "../communication/SimpleFOCDebug.h"
+
 
 // flag returned if driver init fails
 #define SIMPLEFOC_DRIVER_INIT_FAILED ((void*)-1)

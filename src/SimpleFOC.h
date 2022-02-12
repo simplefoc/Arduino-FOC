@@ -114,5 +114,6 @@ void loop() {
 #include "current_sense/GenericCurrentSense.h"
 #include "communication/Commander.h"
 #include "communication/StepDirListener.h"
+#include "communication/SimpleFOCDebug.h"
 
 #endif

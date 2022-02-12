@@ -1,4 +1,5 @@
 #include "BLDCMotor.h"
+#include "./communication/SimpleFOCDebug.h"
 
 // BLDCMotor( int pp , float R)
 // - pp            - pole pair number

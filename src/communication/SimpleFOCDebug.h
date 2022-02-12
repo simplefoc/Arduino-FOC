@@ -16,7 +16,7 @@
  * 
  * To produce debug output, use the macro SIMPLEFOC_DEBUG:
  *   SIMPLEFOC_DEBUG("Debug message!");
- *   SIMPLEFOC_DEBUG("a float value:", 123.456);
+ *   SIMPLEFOC_DEBUG("a float value:", 123.456f);
  *   SIMPLEFOC_DEBUG("an integer value: ", 123);
  * 
  * Keep debugging output short and simple. Some of our MCUs have limited
@@ -37,14 +37,20 @@
 
 class SimpleFOCDebug {
 public:
-    void enable(Print* debugPrint = Serial);
+    static void enable(Print* debugPrint = &Serial);
 
-    void println(const __FlashStringHelper* msg);
-    void println(const char* msg);
-    void println(const __FlashStringHelper* msg, float val);
-    void println(const char* msg, float val);
-    void println(const __FlashStringHelper* msg, int val);
-    void println(const char* msg, int val);
+    static void println(const __FlashStringHelper* msg);
+    static void println(const char* msg);
+    static void println(const __FlashStringHelper* msg, float val);
+    static void println(const char* msg, float val);
+    static void println(const __FlashStringHelper* msg, int val);
+    static void println(const char* msg, int val);
+    static void println();
+
+    static void print(const char* msg);
+    static void print(const __FlashStringHelper* msg);
+    static void print(int val);
+    static void print(float val);
 
 protected:
     static Print* _debugPrint;
@@ -52,7 +58,7 @@ protected:
 
 
 #define SIMPLEFOC_DEBUG(msg, ...) \
-    SimpleFOCDebug::println(F(msg) __VA_OPT__(,) __VA_ARGS__)
+    SimpleFOCDebug::println(F(msg), ##__VA_ARGS__)
 
 
 
