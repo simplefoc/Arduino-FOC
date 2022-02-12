@@ -1,7 +1,9 @@
 #include "../hardware_api.h"
 #include "../../drivers/hardware_api.h"
 
-#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32)
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) 
+
+#include "esp32_adc_driver.h"
 
 #include "driver/mcpwm.h"
 #include "soc/mcpwm_reg.h"
@@ -9,8 +11,6 @@
 
 #include <soc/sens_reg.h>
 #include <soc/sens_struct.h>
-
-#include "esp32_adc_driver.h"
 
 #define _ADC_VOLTAGE 3.3f
 #define _ADC_RESOLUTION 4095.0f
@@ -120,6 +120,5 @@ static void IRAM_ATTR isr_handler(void*){
   MCPWM[MCPWM_UNIT_0]->int_clr.timer1_tep_int_clr = mcpwm_intr_status_1;
   if( _isset(_pinC) ) MCPWM[MCPWM_UNIT_0]->int_clr.timer2_tep_int_clr = mcpwm_intr_status_2;
 }
-
 
 #endif

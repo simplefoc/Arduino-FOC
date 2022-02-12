@@ -73,6 +73,7 @@ void setup() {
   while(motor_angle <= pp_search_angle){
     motor_angle += 0.01f;
     motor.move(motor_angle);
+    _delay(1);
   }
   _delay(1000);
   // read the encoder value for 180

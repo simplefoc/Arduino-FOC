@@ -18,7 +18,7 @@ void setup() {
 
   // Normally SimpleFOC will call begin for i2c but with esp32 begin() is the only way to set pins!
   // It seems safe to call begin multiple times
-  Wire1.begin(19, 23, 400000);
+  Wire1.begin(19, 23, (uint32_t)400000);
 
   sensor0.init();
   sensor1.init(&Wire1);

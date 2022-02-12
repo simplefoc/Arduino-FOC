@@ -4,6 +4,7 @@
 ![Library Compile](https://github.com/simplefoc/Arduino-FOC/workflows/Library%20Compile/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![arduino-library-badge](https://www.ardu-badge.com/badge/Simple%20FOC.svg?)](https://www.ardu-badge.com/badge/Simple%20FOC.svg)
+[![status](https://joss.theoj.org/papers/4382445f249e064e9f0a7f6c1bb06b1d/status.svg)](https://joss.theoj.org/papers/4382445f249e064e9f0a7f6c1bb06b1d)
 
 We live in very exciting times 😃! BLDC motors are entering the hobby community more and more and many great projects have already emerged leveraging their far superior dynamics and power capabilities. BLDC motors have numerous advantages over regular DC motors but they have one big disadvantage, the complexity of control. Even though it has become relatively easy to design and manufacture PCBs and create our own hardware solutions for driving BLDC motors the proper low-cost solutions are yet to come. One of the reasons for this is the apparent complexity of writing the BLDC driving algorithms, Field oriented control (FOC) being an example of one of the most efficient ones.
 The solutions that can be found on-line are almost exclusively very specific for certain hardware configuration and the microcontroller architecture used.
@@ -17,14 +18,27 @@ Therefore this is an attempt to:
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
 
+
 <blockquote class="info">
-   <p class="heading">FUTURE RELEASE 📢: <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2.1 </p>
+   <p class="heading">NEW RELEASE 📢: <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2.1 <a href="https://github.com/simplefoc/Arduino-FOC/releases/tag/v2.2.1">see release</a></p>
    <ul>
-      <li>Sensor class init bugfix #121</li>
-      <li>Added the new motion control interface to the commander- possible to set the position, velocity and torque target at once</li>
-      <li>NRF52 series mcus support by <a href="https://github.com/Polyphe">@Polyphe</a></li>
-      <li>Voltage/current limit handling bugs #118</li>
-   </ul>
+      <li>Sensor class init bugfix <a href="https://github.com/simplefoc/Arduino-FOC/issues/121">#121</a></li>
+      <li>Voltage/current limit handling bugs <a href="https://github.com/simplefoc/Arduino-FOC/issues/118">#118</a></li>
+      <li>Added the new motion control interface to the commander <a href="https://docs.simplefoc.com/commander_target">see docs</a>
+      <ul>
+         <li>New target setting - possible to set the position, velocity and torque target at once</li>
+         <li>Separated the motion control interface from full motor callback - only motion control and torque control type, enable disable and target setting</li>
+      </ul>
+      </li>
+      <li>New MCU support <a href="https://docs.simplefoc.com/microcontrollers">see docs</a>
+      <ul>
+        <li>NRF52 series mcus support by <a href="https://github.com/Polyphe">@Polyphe</a></li>
+        <li><b>esp32 arduino package transfer to v2.0.1+</b> - helpful <a href="https://github.com/simplefoc/Arduino-FOC/pull/92/149">PR#149</a> by <a href="https://github.com/samguns">samguns</a></li>
+        <li>Initial support for esp32s2 and esp32s3 - separation of the esp32 mcpwm and led implementation</li>
+      </ul>
+      </li>
+      <li>Generic sensor class - to implement a new sensor only implement one function <a href="https://docs.simplefoc.com/generic_sensor">see docs</a></li>
+      </ul>
 </blockquote>
 
 ## Arduino *SimpleFOClibrary* v2.2

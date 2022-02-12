@@ -22,6 +22,9 @@ class BLDCDriver{
         float dc_b; //!< currently set duty cycle on phaseB
         float dc_c; //!< currently set duty cycle on phaseC
 
+        bool initialized = false; // true if driver was successfully initialized
+        void* params = 0; // pointer to hardware specific parameters of driver
+
         /**
          * Set phase voltages to the harware
          *
