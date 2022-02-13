@@ -216,10 +216,44 @@ void __analogReadResolution(uint8_t bits)
 
 uint16_t IRAM_ATTR adcRead(uint8_t pin)
 {
-    if(!__adcAttachPin(pin) || !__adcStart(pin)){
-        return 0;
+    int8_t channel = digitalPinToAnalogChannel(pin);
+    if(channel < 0){
+        return false;//not adc pin
     }
-    return __adcEnd(pin);
+
+    __analogInit();
+
+    if(channel > 9){
+        channel -= 10;
+        CLEAR_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M);
+        SET_PERI_REG_BITS(SENS_SAR_MEAS_START2_REG, SENS_SAR2_EN_PAD, (1 << channel), SENS_SAR2_EN_PAD_S);
+        SET_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M);
+    } else {
+        CLEAR_PERI_REG_MASK(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_SAR_M);
+        SET_PERI_REG_BITS(SENS_SAR_MEAS_START1_REG, SENS_SAR1_EN_PAD, (1 << channel), SENS_SAR1_EN_PAD_S);
+        SET_PERI_REG_MASK(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_SAR_M);
+    }
+
+    uint16_t value = 0;
+
+    if(channel > 7){
+        while (GET_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DONE_SAR) == 0); //wait for conversion
+        value = GET_PERI_REG_BITS2(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S);
+    } else {
+        while (GET_PERI_REG_MASK(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DONE_SAR) == 0); //wait for conversion
+        value = GET_PERI_REG_BITS2(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DATA_SAR, SENS_MEAS1_DATA_SAR_S);
+    }
+
+    // Shift result if necessary
+    uint8_t from = __analogWidth + 9;
+    if (from == __analogReturnedWidth) {
+        return value;
+    }
+    if (from > __analogReturnedWidth) {
+        return value >> (from - __analogReturnedWidth);
+    }
+    return value << (__analogReturnedWidth - from);
 }
+
 
 #endif

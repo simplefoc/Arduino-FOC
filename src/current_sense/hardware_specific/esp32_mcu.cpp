@@ -95,15 +95,11 @@ void* _configureADCLowSide(const void* driver_params, const int pinA,const int p
 void _driverSyncLowSide(void* driver_params, void* cs_params){
   // high side registers enable interrupt 
   // MCPWM[MCPWM_UNIT_0]->int_ena.timer0_tez_int_ena = true;//A PWM timer 0 TEP event will trigger this interrupt
-  // MCPWM[MCPWM_UNIT_0]->int_ena.timer1_tez_int_ena = true;//A PWM timer 1 TEP event will trigger this interrupt
-  // if( _isset(_pinC) ) MCPWM[MCPWM_UNIT_0]->int_ena.timer2_tez_int_ena = true;//A PWM timer 2 TEP event will trigger this interrupt
 
   // low-side register enable interrupt
   mcpwm_dev_t* mcpwm_dev = ((ESP32MCPWMDriverParams*)driver_params)->mcpwm_dev;
   mcpwm_unit_t mcpwm_unit = ((ESP32MCPWMDriverParams*)driver_params)->mcpwm_unit;
   mcpwm_dev->int_ena.timer0_tep_int_ena = true;//A PWM timer 0 TEP event will trigger this interrupt
-  mcpwm_dev->int_ena.timer1_tep_int_ena = true;//A PWM timer 1 TEP event will trigger this interrupt
-  if( _isset(_pinC) ) mcpwm_dev->int_ena.timer2_tep_int_ena = true;//A PWM timer 2 TEP event will trigger this interrupt
   if(mcpwm_unit == MCPWM_UNIT_0)
     mcpwm_isr_register(mcpwm_unit, mcpwm0_isr_handler, NULL, ESP_INTR_FLAG_IRAM, NULL);  //Set ISR Handler
   else
@@ -113,77 +109,63 @@ void _driverSyncLowSide(void* driver_params, void* cs_params){
 // Read currents when interrupt is triggered
 static void IRAM_ATTR mcpwm0_isr_handler(void*){
   // // high side
-  // uint32_t mcpwm_intr_status_0 = MCPWM[MCPWM_UNIT_0]->int_st.timer0_tez_int_st;
-  // uint32_t mcpwm_intr_status_1 = MCPWM[MCPWM_UNIT_0]->int_st.timer1_tez_int_st;
-  // uint32_t mcpwm_intr_status_2 = _isset(_pinC) ? MCPWM[MCPWM_UNIT_0]->int_st.timer2_tez_int_st : 0;
-
+  // uint32_t mcpwm_intr_status_0 = MCPWM0.int_st.timer0_tez_int_st;
+  
   // low side
-  uint32_t mcpwm_intr_status_0 = MCPWM0.int_st.timer0_tep_int_st;
-  uint32_t mcpwm_intr_status_1 = MCPWM0.int_st.timer1_tep_int_st;
-  uint32_t mcpwm_intr_status_2 = _isset(_pinC) ? MCPWM0.int_st.timer2_tep_int_st : 0;
-
-  switch (currentState)
-  {
-  case 1 :
-    if (mcpwm_intr_status_0 > 0) a1 = adcRead(_pinA);
-    currentState = 2;
-    break;
-  case 2 :
-    if (mcpwm_intr_status_1 > 0) a2 = adcRead(_pinB);
-    currentState = _isset(_pinC) ?  3 : 1;
-    break;
-  case 3 :
-    if (mcpwm_intr_status_2 > 0) a3 = adcRead(_pinC);
-    currentState = 1;
-    break;
+  uint32_t mcpwm_intr_status = MCPWM0.int_st.timer0_tep_int_st;
+  if(mcpwm_intr_status){
+    switch (currentState)
+    {
+    case 1 :
+      a1 = adcRead(_pinA);
+      currentState = 2;
+      break;
+    case 2 :
+      a2 = adcRead(_pinB);
+      currentState = _isset(_pinC) ?  3 : 1;
+      break;
+    case 3 :
+      a3 = adcRead(_pinC);
+      currentState = 1;
+      break;
+    }
   }
-
   // high side
-  // MCPWM[MCPWM_UNIT_0]->int_clr.timer0_tez_int_clr = mcpwm_intr_status_0;
-  // MCPWM[MCPWM_UNIT_0]->int_clr.timer1_tez_int_clr = mcpwm_intr_status_1;
-  // if( _isset(_pinC) ) MCPWM[MCPWM_UNIT_0]->int_clr.timer2_tez_int_clr = mcpwm_intr_status_2;
+  // MCPWM0.int_clr.timer0_tez_int_clr = mcpwm_intr_status_0;
+
   // low side
-  MCPWM0.int_clr.timer0_tep_int_clr = mcpwm_intr_status_0;
-  MCPWM0.int_clr.timer1_tep_int_clr = mcpwm_intr_status_1;
-  if( _isset(_pinC) ) MCPWM0.int_clr.timer2_tep_int_clr = mcpwm_intr_status_2;
+  MCPWM0.int_clr.timer0_tep_int_clr = mcpwm_intr_status;
 }
 
 // Read currents when interrupt is triggered
 static void IRAM_ATTR mcpwm1_isr_handler(void*){
   // // high side
-  // uint32_t mcpwm_intr_status_0 = MCPWM[MCPWM_UNIT_0]->int_st.timer0_tez_int_st;
-  // uint32_t mcpwm_intr_status_1 = MCPWM[MCPWM_UNIT_0]->int_st.timer1_tez_int_st;
-  // uint32_t mcpwm_intr_status_2 = _isset(_pinC) ? MCPWM[MCPWM_UNIT_0]->int_st.timer2_tez_int_st : 0;
-
+  // uint32_t mcpwm_intr_status_0 = MCPWM1.int_st.timer0_tez_int_st;
+  
   // low side
-  uint32_t mcpwm_intr_status_0 = MCPWM1.int_st.timer0_tep_int_st;
-  uint32_t mcpwm_intr_status_1 = MCPWM1.int_st.timer1_tep_int_st;
-  uint32_t mcpwm_intr_status_2 = _isset(_pinC) ? MCPWM1.int_st.timer2_tep_int_st : 0;
-
-  switch (currentState)
-  {
-  case 1 :
-    if (mcpwm_intr_status_0 > 0) a1 = adcRead(_pinA);
-    currentState = 2;
-    break;
-  case 2 :
-    if (mcpwm_intr_status_1 > 0) a2 = adcRead(_pinB);
-    currentState = _isset(_pinC) ?  3 : 1;
-    break;
-  case 3 :
-    if (mcpwm_intr_status_2 > 0) a3 = adcRead(_pinC);
-    currentState = 1;
-    break;
+  uint32_t mcpwm_intr_status = MCPWM1.int_st.timer0_tep_int_st;
+  if(mcpwm_intr_status){
+    switch (currentState)
+    {
+    case 1 :
+      a1 = adcRead(_pinA);
+      currentState = 2;
+      break;
+    case 2 :
+      a2 = adcRead(_pinB);
+      currentState = _isset(_pinC) ?  3 : 1;
+      break;
+    case 3 :
+      a3 = adcRead(_pinC);
+      currentState = 1;
+      break;
+    }
   }
-
   // high side
-  // MCPWM[MCPWM_UNIT_0]->int_clr.timer0_tez_int_clr = mcpwm_intr_status_0;
-  // MCPWM[MCPWM_UNIT_0]->int_clr.timer1_tez_int_clr = mcpwm_intr_status_1;
-  // if( _isset(_pinC) ) MCPWM[MCPWM_UNIT_0]->int_clr.timer2_tez_int_clr = mcpwm_intr_status_2;
+  // MCPWM1.int_clr.timer0_tez_int_clr = mcpwm_intr_status_0;
+
   // low side
-  MCPWM1.int_clr.timer0_tep_int_clr = mcpwm_intr_status_0;
-  MCPWM1.int_clr.timer1_tep_int_clr = mcpwm_intr_status_1;
-  if( _isset(_pinC) ) MCPWM1.int_clr.timer2_tep_int_clr = mcpwm_intr_status_2;
+  MCPWM1.int_clr.timer0_tep_int_clr = mcpwm_intr_status;
 }
 
 
