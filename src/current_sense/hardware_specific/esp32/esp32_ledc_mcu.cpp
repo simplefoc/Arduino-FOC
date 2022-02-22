@@ -1,14 +1,18 @@
-#include "../hardware_api.h" 
+#include "../../hardware_api.h"
+#include "../../../drivers/hardware_api.h"
 
-#if defined(_SAMD21_)|| defined(_SAMD51_) || defined(_SAME51_)
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && !defined(SOC_MCPWM_SUPPORTED) 
+
+#include "esp32_adc_driver.h"
 
 #define _ADC_VOLTAGE 3.3f
-#define _ADC_RESOLUTION 1024.0f
+#define _ADC_RESOLUTION 4095.0f
 
 // function reading an ADC value and returning the read voltage
 void* _configureADCInline(const void* driver_params, const int pinA,const int pinB,const int pinC){
   _UNUSED(driver_params);
-  pinMode(pinA, INPUT); 
+
+  pinMode(pinA, INPUT);
   pinMode(pinB, INPUT);
   if( _isset(pinC) ) pinMode(pinC, INPUT);
 
@@ -19,4 +23,5 @@ void* _configureADCInline(const void* driver_params, const int pinA,const int pi
 
   return params;
 }
+
 #endif

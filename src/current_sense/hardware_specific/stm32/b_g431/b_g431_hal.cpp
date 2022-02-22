@@ -1,10 +1,10 @@
-#include "../hardware_api.h"
-#if defined(STM32G4xx)
+#include "../../../hardware_api.h"
+#if defined(ARDUINO_B_G431B_ESC1)
 
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_ll_pwr.h"
 #include "stm32g4xx_hal_adc.h"
-#include "stm32g4_hal.h"
+#include "b_g431_hal.h"
 // From STM32 cube IDE
 /**
   ******************************************************************************

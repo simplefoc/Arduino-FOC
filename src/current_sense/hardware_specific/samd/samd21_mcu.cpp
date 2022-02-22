@@ -1,7 +1,7 @@
 #ifdef _SAMD21_
 
 #include "samd21_mcu.h"
-#include "../hardware_api.h"
+#include "../../hardware_api.h"
 
 
 static bool freeRunning = false;

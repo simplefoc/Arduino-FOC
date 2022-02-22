@@ -1,12 +1,10 @@
-#include "../hardware_api.h"
-#include "../../drivers/hardware_api.h"
 
-#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && !defined(SOC_MCPWM_SUPPORTED) 
+#include "../../hardware_api.h"
 
-#include "esp32_adc_driver.h"
+#if defined(_STM32_DEF_) and !defined(ARDUINO_B_G431B_ESC1) 
 
 #define _ADC_VOLTAGE 3.3f
-#define _ADC_RESOLUTION 4095.0f
+#define _ADC_RESOLUTION 1024.0f
 
 // function reading an ADC value and returning the read voltage
 void* _configureADCInline(const void* driver_params, const int pinA,const int pinB,const int pinC){

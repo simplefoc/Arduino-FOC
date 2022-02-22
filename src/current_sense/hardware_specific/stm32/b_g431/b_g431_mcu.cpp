@@ -1,8 +1,8 @@
-#include "../hardware_api.h"
-#include "stm32g4_hal.h"
+#include "../../../hardware_api.h"
+#include "b_g431_hal.h"
 #include "Arduino.h"
 
-#if defined(STM32G4xx) 
+#if defined(ARDUINO_B_G431B_ESC1) 
 #define _ADC_VOLTAGE 3.3f
 #define _ADC_RESOLUTION 4096.0f
 #define ADC_BUF_LEN_1 2

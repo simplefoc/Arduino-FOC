@@ -6,12 +6,12 @@
 
 // Motor instance
 BLDCMotor motor = BLDCMotor(11);
-BLDCDriver6PWM driver = BLDCDriver6PWM(PHASE_UH, PHASE_UL, PHASE_VH, PHASE_VL, PHASE_WH, PHASE_WL);
-LowsideCurrentSense currentSense = LowsideCurrentSense(0.003, -64.0/7.0, OP1_OUT, OP2_OUT, OP3_OUT);
+BLDCDriver6PWM driver = BLDCDriver6PWM(A_PHASE_UH, A_PHASE_UL, A_PHASE_VH, A_PHASE_VL, A_PHASE_WH, A_PHASE_WL);
+LowsideCurrentSense currentSense = LowsideCurrentSense(0.003, -64.0/7.0, A_OP1_OUT, A_OP2_OUT, A_OP3_OUT);
 
 
 // encoder instance
-Encoder encoder = Encoder(HALL2, HALL3, 2048, HALL1);
+Encoder encoder = Encoder(A_HALL2, A_HALL3, 2048, A_HALL1);
 
 // Interrupt routine intialisation
 // channel A and B callbacks
@@ -19,11 +19,9 @@ void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 void doIndex(){encoder.handleIndex();}
 
-// angle set point variable
-float target_angle = 0;
 // instantiate the commander
 Commander command = Commander(Serial);
-void doTarget(char* cmd) { command.scalar(&target_angle, cmd); }
+void doTarget(char* cmd) { command.motion(&motor, cmd); }
 
 void setup() {
   
@@ -96,14 +94,11 @@ void setup() {
   _delay(1000);
 }
 
-// angle set point variable
-float target_angle = 0;
-
 void loop() {
   // main FOC algorithm function
 
   // Motion control function
-  motor.move(target_angle);
+  motor.move();
 
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!

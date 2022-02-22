@@ -31,8 +31,8 @@
 #define M1_INL_B PB0
 #define M1_INL_C PB1
 // M0 currnets
-#define M0_IB PC2
-#define M0_IC PC3
+#define M1_IB PC2
+#define M1_IC PC3
 // Odrive M1 encoder pinout
 #define M1_ENC_A PB6
 #define M1_ENC_B PB7
@@ -78,7 +78,6 @@ void setup(){
   // control loop type and torque mode 
   motor.torque_controller = TorqueControlType::voltage;
   motor.controller = MotionControlType::torque;
-  motor.voltage_sensor_align = 0.5;
 
   // max voltage  allowed for motion control 
   motor.voltage_limit = 8.0;

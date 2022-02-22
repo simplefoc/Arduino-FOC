@@ -18,7 +18,6 @@ Therefore this is an attempt to:
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
 
->
 > NEXT RELEASE 📢: <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2.2 
 > - GenericCurrentSense bugfix and testing
 > - Odrive example code see `examples/hardware_specific/odrive_example`

@@ -1,7 +1,6 @@
+#include "../../hardware_api.h" 
 
-#include "../hardware_api.h"
-
-#if defined(_STM32_DEF_) and !defined(STM32G4xx)
+#if defined(_SAMD21_)|| defined(_SAMD51_) || defined(_SAME51_)
 
 #define _ADC_VOLTAGE 3.3f
 #define _ADC_RESOLUTION 1024.0f
@@ -9,8 +8,7 @@
 // function reading an ADC value and returning the read voltage
 void* _configureADCInline(const void* driver_params, const int pinA,const int pinB,const int pinC){
   _UNUSED(driver_params);
-
-  pinMode(pinA, INPUT);
+  pinMode(pinA, INPUT); 
   pinMode(pinB, INPUT);
   if( _isset(pinC) ) pinMode(pinC, INPUT);
 
@@ -21,5 +19,4 @@ void* _configureADCInline(const void* driver_params, const int pinA,const int pi
 
   return params;
 }
-
 #endif

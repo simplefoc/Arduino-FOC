@@ -17,13 +17,14 @@ jobs:
           - STMicroelectronics:stm32:GenF1:pnum=BLUEPILL_F103C8   # stm32 bluepill
           - STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE # stm32 nucleo
           - STMicroelectronics:stm32:GenF4:pnum=GENERIC_F405RGTX  # stm32f405 - odrive
+          - STMicroelectronics:stm32:Disco:pnum=B_G431B_ESC1      # B-G431-ESC1
           - arduino:mbed_rp2040:pico                 # rpi pico
           
         include:
           - arduino-boards-fqbn: arduino:avr:uno # arudino uno - compiling almost all examples
             sketch-names: '**.ino'
             required-libraries: PciManager
-            sketches-exclude: bluepill_position_control, esp32_position_control, esp32_i2c_dual_bus_example, stm32_i2c_dual_bus_example, magnetic_sensor_spi_alt_example, osc_esp32_3pwm, osc_esp32_fullcontrol, nano33IoT_velocity_control, smartstepper_control,esp32_current_control_low_side, stm32_spi_alt_example, esp32_spi_alt_example, B_G431B_ESC1_position_control, odrive_example
+            sketches-exclude: bluepill_position_control, esp32_position_control, esp32_i2c_dual_bus_example, stm32_i2c_dual_bus_example, magnetic_sensor_spi_alt_example, osc_esp32_3pwm, osc_esp32_fullcontrol, nano33IoT_velocity_control, smartstepper_control,esp32_current_control_low_side, stm32_spi_alt_example, esp32_spi_alt_example, B_G431B_ESC1_position_control, Odrive_example
 
           - arduino-boards-fqbn: arduino:sam:arduino_due_x # arduino due - one full example
             sketch-names: single_full_control_example.ino
@@ -50,9 +51,13 @@ jobs:
             platform-url:  https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
             sketch-names: bluepill_position_control.ino, stm32_i2c_dual_bus_example.ino, stm32_spi_alt_example.ino
 
+          - arduino-boards-fqbn: STMicroelectronics:stm32:Disco:pnum=B_G431B_ESC1      # B-G431-ESC1
+            platform-url:  https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
+            sketch-names: B_G431B_ESC1_position_control.ino
+
           - arduino-boards-fqbn: STMicroelectronics:stm32:GenF4:pnum=GENERIC_F405RGTX  # stm32f405 - odrive
             platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
-            sketch-names: odrive_example.ino
+            sketch-names: Odrive_example.ino
             
           - arduino-boards-fqbn: STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE # nucleo one full example
             platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
