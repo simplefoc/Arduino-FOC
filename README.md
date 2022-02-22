@@ -20,7 +20,7 @@ Therefore this is an attempt to:
 
 
 <blockquote class="info">
-   <p class="heading">NEW RELEASE 📢: <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2.1 <a href="https://github.com/simplefoc/Arduino-FOC/releases/tag/v2.2.1">see release</a></p>
+   <p class="heading">NEXT RELEASE 📢: <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2.2 <a href="https://github.com/simplefoc/Arduino-FOC/releases/tag/v2.2.1">see release</a></p>
    <ul>
       <li>Sensor class init bugfix <a href="https://github.com/simplefoc/Arduino-FOC/issues/121">#121</a></li>
       <li>Voltage/current limit handling bugs <a href="https://github.com/simplefoc/Arduino-FOC/issues/118">#118</a></li>
