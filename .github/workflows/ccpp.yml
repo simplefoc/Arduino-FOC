@@ -50,7 +50,7 @@ jobs:
             platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json 
             sketch-names: bluepill_position_control.ino, stm32_i2c_dual_bus_example.ino, stm32_spi_alt_example.ino
 
-          - arduino-boards-fqbn: STM32:stm32:Genf4:pnum=GENERIC_F405RGTX  # stm32f405 - odrive
+          - arduino-boards-fqbn: STM32:stm32:GenF4:pnum=GENERIC_F405RGTX  # stm32f405 - odrive
             platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json 
             sketch-names: odrive_example.ino
             
