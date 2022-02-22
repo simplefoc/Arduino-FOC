@@ -16,7 +16,7 @@ jobs:
           - esp32:esp32:esp32s2                      # esp32s2
           - STM32:stm32:GenF1:pnum=BLUEPILL_F103C8   # stm32 bluepill
           - STM32:stm32:Nucleo_64:pnum=NUCLEO_F411RE # stm32 nucleo
-          - STM32:stm32:Genf4:pnum=GENERIC_F405RGTX  # stm32f405 - odrive
+          - STM32:stm32:GenF4:pnum=GENERIC_F405RGTX  # stm32f405 - odrive
           - arduino:mbed_rp2040:pico                 # rpi pico
           
         include:
