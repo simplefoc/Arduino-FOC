@@ -41,9 +41,9 @@ void GenericCurrentSense::calibrateOffsets(){
 // read all three phase currents (if possible 2 or 3)
 PhaseCurrent_s GenericCurrentSense::getPhaseCurrents(){
     PhaseCurrent_s current = readCallback();
-    current.a = (current.a - offset_ia);// amps
-    current.b = (current.a - offset_ib);// amps
-    current.c = (current.a - offset_ic); // amps
+    current.a = (current.a - offset_ia); // amps
+    current.b = (current.b - offset_ib); // amps
+    current.c = (current.c - offset_ic); // amps
     return current;
 }
 
