@@ -59,6 +59,7 @@ int BLDCDriver6PWM::init() {
   // configure 6pwm
   // hardware specific function - depending on driver and mcu
   params = _configure6PWM(pwm_frequency, dead_zone, pwmA_h,pwmA_l, pwmB_h,pwmB_l, pwmC_h,pwmC_l);
+  initialized = (params!=SIMPLEFOC_DRIVER_INIT_FAILED);
   return params!=SIMPLEFOC_DRIVER_INIT_FAILED;
 }
 
