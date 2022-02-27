@@ -20,25 +20,29 @@ InlineCurrentSense::InlineCurrentSense(float _shunt_resistor, float _gain, int _
 }
 
 // Inline sensor init function
-void InlineCurrentSense::init(){
+int InlineCurrentSense::init(){
     // configure ADC variables
-    _configureADCInline(pinA,pinB,pinC);
+    params = _configureADCInline(driver->params,pinA,pinB,pinC);
+    // if init failed return fail
+    if (params == SIMPLEFOC_CURRENT_SENSE_INIT_FAILED) return 0; 
     // calibrate zero offsets
     calibrateOffsets();
+    // return success
+    return 1;
 }
 // Function finding zero offsets of the ADC
 void InlineCurrentSense::calibrateOffsets(){
     const int calibration_rounds = 1000;
-
+    
     // find adc offset = zero current voltage
     offset_ia = 0;
     offset_ib = 0;
     offset_ic = 0;
     // read the adc voltage 1000 times ( arbitrary number )
     for (int i = 0; i < calibration_rounds; i++) {
-        offset_ia += _readADCVoltageInline(pinA);
-        offset_ib += _readADCVoltageInline(pinB);
-        if(_isset(pinC)) offset_ic += _readADCVoltageInline(pinC);
+        offset_ia += _readADCVoltageInline(pinA, params);
+        offset_ib += _readADCVoltageInline(pinB, params);
+        if(_isset(pinC)) offset_ic += _readADCVoltageInline(pinC, params);
         _delay(1);
     }
     // calculate the mean offsets
@@ -50,15 +54,10 @@ void InlineCurrentSense::calibrateOffsets(){
 // read all three phase currents (if possible 2 or 3)
 PhaseCurrent_s InlineCurrentSense::getPhaseCurrents(){
     PhaseCurrent_s current;
-    current.a = (_readADCVoltageInline(pinA) - offset_ia)*gain_a;// amps
-    current.b = (_readADCVoltageInline(pinB) - offset_ib)*gain_b;// amps
-    current.c = (!_isset(pinC)) ? 0 : (_readADCVoltageInline(pinC) - offset_ic)*gain_c; // amps
+    current.a = (_readADCVoltageInline(pinA, params) - offset_ia)*gain_a;// amps
+    current.b = (_readADCVoltageInline(pinB, params) - offset_ib)*gain_b;// amps
+    current.c = (!_isset(pinC)) ? 0 : (_readADCVoltageInline(pinC, params) - offset_ic)*gain_c; // amps
     return current;
-}
-// Function synchronizing current sense with motor driver.
-// for in-line sensig no such thing is necessary
-int InlineCurrentSense::driverSync(BLDCDriver *driver){
-    return 1;
 }
 
 // Function aligning the current sense with motor driver
@@ -69,7 +68,7 @@ int InlineCurrentSense::driverSync(BLDCDriver *driver){
 // 2 - success but pins reconfigured
 // 3 - success but gains inverted
 // 4 - success but pins reconfigured and gains inverted
-int InlineCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
+int InlineCurrentSense::driverAlign(float voltage){
     int exit_flag = 1;
     if(skip_align) return exit_flag;
 

@@ -1,6 +1,7 @@
-#include "../hardware_api.h" 
 
-#if defined(__arm__) && defined(CORE_TEENSY)
+#include "../../hardware_api.h"
+
+#if defined(_STM32_DEF_) and !defined(ARDUINO_B_G431B_ESC1) 
 
 #define _ADC_VOLTAGE 3.3f
 #define _ADC_RESOLUTION 1024.0f

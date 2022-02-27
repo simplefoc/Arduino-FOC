@@ -91,7 +91,7 @@ getFOCCurrents	KEYWORD2
 getDCCurrent	KEYWORD2
 setPwm	KEYWORD2
 driverAlign	KEYWORD2
-driverSync	KEYWORD2
+linkDriver	KEYWORD2
 add	KEYWORD2
 run	KEYWORD2
 attach	KEYWORD2

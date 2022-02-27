@@ -1,28 +1,30 @@
 #ifdef _SAMD21_
 
 #include "samd21_mcu.h"
-#include "../hardware_api.h"
+#include "../../hardware_api.h"
 
 
 static bool freeRunning = false;
 static int _pinA, _pinB, _pinC;
 static uint16_t a = 0xFFFF, b = 0xFFFF, c = 0xFFFF; // updated by adcStopWithDMA when configured in freerunning mode
 static SAMDCurrentSenseADCDMA instance;
-/**
- *  function reading an ADC value and returning the read voltage 
- * 
- * @param pinA - adc pin A
- * @param pinB - adc pin B
- * @param pinC - adc pin C
- */
-void _configureADCLowSide(const int pinA,const int pinB,const int pinC)
+
+// function configuring low-side current sensing 
+void* _configureADCLowSide(const void* driver_params, const int pinA,const int pinB,const int pinC)
 {
+  _UNUSED(driver_params);
+
   _pinA = pinA;
   _pinB = pinB; 
   _pinC = pinC;
   freeRunning = true;
   instance.init(pinA, pinB, pinC);
 
+  GenericCurrentSenseParams* params = new GenericCurrentSenseParams {
+    .pins = { pinA, pinB, pinC }
+  };
+
+  return params;
 }
 void _startADC3PinConversionLowSide()
 {
@@ -33,8 +35,10 @@ void _startADC3PinConversionLowSide()
  * 
  * @param pinA - the arduino pin to be read (it has to be ADC pin)
  */
-float _readADCVoltageLowSide(const int pinA)
+float _readADCVoltageLowSide(const int pinA, const void* cs_params)
 {
+  _UNUSED(cs_params);
+
   instance.readResults(a, b, c);
   
   if(pinA == _pinA)
@@ -50,8 +54,11 @@ float _readADCVoltageLowSide(const int pinA)
 /**
  *  function syncing the Driver with the ADC  for the LowSide Sensing
  */
-void _driverSyncLowSide()
+void _driverSyncLowSide(void* driver_params, void* cs_params)
 {
+  _UNUSED(driver_params);
+  _UNUSED(cs_params);
+
   SIMPLEFOC_SAMD_DEBUG_SERIAL.println(F("TODO! _driverSyncLowSide() is not implemented"));
   instance.startADCScan();
   //TODO: hook with PWM interrupts
