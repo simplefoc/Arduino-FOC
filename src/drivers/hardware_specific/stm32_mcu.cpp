@@ -337,7 +337,7 @@ int scoreCombination(int numPins, PinMap* pinTimers[]) {
     else {
 
       // check for inverted low-side channels
-      if (STM_PIN_INVERTED(pinTimers[0]->function) || STM_PIN_INVERTED(pinTimers[2]->function) || STM_PIN_INVERTED(pinTimers[4]->function))
+      if (STM_PIN_INVERTED(pinTimers[1]->function) || STM_PIN_INVERTED(pinTimers[3]->function) || STM_PIN_INVERTED(pinTimers[5]->function))
         return -6; // bad combination - inverted channel used on low-side channel in software 6-pwm
       score += 10; // software 6pwm, score >10
     }
@@ -423,7 +423,7 @@ int findBestTimerCombination(int numPins, int pins[], PinMap* pinTimers[]) {
     return -10; // no workable combination found
   }
   #ifdef SIMPLEFOC_STM32_DEBUG
-  SimpleFOCDebug::print("STM32: best score: ");
+  SimpleFOCDebug::print("STM32: best: ");
   printTimerCombination(numPins, pinTimers, bestScore);
   #endif
   return bestScore;
