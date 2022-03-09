@@ -207,7 +207,7 @@ class Commander
      *    - velocity : velocity torque (ex.P10 2.5 or P10 to only chanage the target witout limits)
      *    - angle    : angle velocity torque (ex.P3.5 10 2.5 or P3.5 to only chanage the target witout limits)
      */
-    void target(FOCMotor* motor, char* user_cmd, char* separator = " ");
+    void target(FOCMotor* motor, char* user_cmd, char* separator = (char *)" ");
 
     /**
      * FOC motor (StepperMotor and BLDCMotor) motion control interfaces
