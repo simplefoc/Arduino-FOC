@@ -237,7 +237,7 @@ class Commander
      *          - velocity (open and closed loop) : velocity torque (ex.M10 2.5 or M10 to only chanage the target witout limits)
      *          - angle    (open and closed loop) : angle velocity torque (ex.M3.5 10 2.5 or M3.5 to only chanage the target witout limits)
      */
-    void motion(FOCMotor* motor, char* user_cmd, char* separator = " ");
+    void motion(FOCMotor* motor, char* user_cmd, char* separator = (char *)" ");
 
   private:
     // Subscribed command callback variables
