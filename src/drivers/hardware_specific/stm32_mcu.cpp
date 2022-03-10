@@ -307,15 +307,15 @@ int scoreCombination(int numPins, PinMap* pinTimers[]) {
         return -4; // bad combination - duplicated channel
     }
   }
-  int score = 1;
+  int score = 0;
   for (int i=0; i<numPins; i++) {
     // count distinct timers
-    for (int j=1; j<i; j++) {
+    bool found = false;
+    for (int j=i+1; j<numPins; j++) {
       if (pinTimers[i]->peripheral == pinTimers[j]->peripheral)
-        break;
-      if (i==j)
-        score++;
+        found = true;
     }
+    if (!found) score++;
   }
   if (numPins==6) {
     // check for inverted channels - best: 1 timer, 3 channels, 3 matching inverted channels
