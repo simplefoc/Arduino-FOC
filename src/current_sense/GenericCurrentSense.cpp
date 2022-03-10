@@ -56,7 +56,7 @@ PhaseCurrent_s GenericCurrentSense::getPhaseCurrents(){
 // 3 - success but gains inverted
 // 4 - success but pins reconfigured and gains inverted
 int GenericCurrentSense::driverAlign(float voltage){
-    (void) voltage; // remove unused parameter warning
+    _UNUSED(voltage) ; // remove unused parameter warning
     int exit_flag = 1;
     if(skip_align) return exit_flag;
 

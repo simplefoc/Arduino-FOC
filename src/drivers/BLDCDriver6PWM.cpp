@@ -82,8 +82,8 @@ void BLDCDriver6PWM::setPwm(float Ua, float Ub, float Uc) {
 
 // Set voltage to the pwm pin
 void BLDCDriver6PWM::setPhaseState(int sa, int sb, int sc) {
-  (void) sa;
-  (void) sb;
-  (void) sc;
+  _UNUSED(sa);
+  _UNUSED(sb);
+  _UNUSED(sc);
   // TODO implement disabling
 }
