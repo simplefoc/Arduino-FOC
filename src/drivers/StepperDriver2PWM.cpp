@@ -80,6 +80,7 @@ int StepperDriver2PWM::init() {
   // Set the pwm frequency to the pins
   // hardware specific function - depending on driver and mcu
   params = _configure2PWM(pwm_frequency, pwm1, pwm2);
+  initialized = (params!=SIMPLEFOC_DRIVER_INIT_FAILED);
   return params!=SIMPLEFOC_DRIVER_INIT_FAILED;
 }
 
