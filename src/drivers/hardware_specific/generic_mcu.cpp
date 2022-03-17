@@ -46,6 +46,15 @@ __attribute__((weak)) void* _configure4PWM(long pwm_frequency, const int pin1A, 
 // - BLDC driver - 6PWM setting
 // - hardware specific
 __attribute__((weak)) void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
+  _UNUSED(pwm_frequency);
+  _UNUSED(dead_zone);
+  _UNUSED(pinA_h);
+  _UNUSED(pinA_l);
+  _UNUSED(pinB_h);
+  _UNUSED(pinB_l);
+  _UNUSED(pinC_h);
+  _UNUSED(pinC_l);
+
   return SIMPLEFOC_DRIVER_INIT_FAILED;
 }
 
