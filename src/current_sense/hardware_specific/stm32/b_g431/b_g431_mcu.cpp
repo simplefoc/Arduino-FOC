@@ -1,8 +1,11 @@
 #include "../../../hardware_api.h"
-#include "b_g431_hal.h"
-#include "Arduino.h"
 
 #if defined(ARDUINO_B_G431B_ESC1) 
+
+#include "b_g431_hal.h"
+#include "Arduino.h"
+#include "../stm32_mcu.h"
+
 #define _ADC_VOLTAGE 3.3f
 #define _ADC_RESOLUTION 4096.0f
 #define ADC_BUF_LEN_1 2
@@ -32,7 +35,7 @@ float _readADCVoltageInline(const int pin, const void* cs_params){
   else if(pin == PB1) // = ADC1_IN12 = phase W (OP3_OUT) on B-G431B-ESC1
     raw_adc = adcBuffer1[0];
 #endif
-  return raw_adc * ((GenericCurrentSenseParams*)cs_params)->adc_voltage_conv;
+  return raw_adc * ((Stm32CurrentSenseParams*)cs_params)->adc_voltage_conv;
 }
 
 void _configureOPAMP(OPAMP_HandleTypeDef *hopamp, OPAMP_TypeDef *OPAMPx_Def){
@@ -110,7 +113,7 @@ void* _configureADCInline(const void* driver_params, const int pinA,const int pi
     return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
   }
   
-  GenericCurrentSenseParams* params = new GenericCurrentSenseParams {
+  Stm32CurrentSenseParams* params = new Stm32CurrentSenseParams {
     .pins = { pinA, pinB, pinC },
     .adc_voltage_conv = (_ADC_VOLTAGE) / (_ADC_RESOLUTION)
   };
@@ -126,6 +129,12 @@ void DMA1_Channel1_IRQHandler(void) {
 void DMA1_Channel2_IRQHandler(void) {
    HAL_DMA_IRQHandler(&hdma_adc2);
 }
+}
+
+void _driverSyncLowSide(void* driver_params, void* cs_params){
+  _UNUSED(cs_params);
+  // Set Trigger out for DMA transfer
+  LL_TIM_SetTriggerOutput(((STM32DriverParams*)driver_params)->timers[0]->getHandle()->Instance, LL_TIM_TRGO_UPDATE);
 }
 
 #endif
