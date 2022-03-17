@@ -3,13 +3,16 @@
 // StepperMotor(int pp)
 // - pp            - pole pair number
 // - R             - motor phase resistance
-StepperMotor::StepperMotor(int pp, float _R)
+// - KV            - motor kv rating
+StepperMotor::StepperMotor(int pp, float _R, float _KV)
 : FOCMotor()
 {
   // number od pole pairs
   pole_pairs = pp;
   // save phase resistance number
   phase_resistance = _R;
+  // save back emf constant KV = 1/KV
+  K_bemf = 1.0/_KV;
 
   // torque control type is voltage by default
   // current and foc_current not supported yet
@@ -32,12 +35,6 @@ void StepperMotor::init() {
   motor_status = FOCMotorStatus::motor_initializing;
   if(monitor_port) monitor_port->println(F("MOT: Init"));
 
-  // if set the phase resistance of the motor use current limit to calculate the voltage limit
-  if(_isset(phase_resistance)) {
-    float new_voltage_limit = current_limit * (phase_resistance); // v_lim = current_lim / (3/2 phase resistance) - worst case
-    // use it if it is less then voltage_limit set by the user
-    voltage_limit = new_voltage_limit < voltage_limit ? new_voltage_limit : voltage_limit;
-  }
   // sanity check for the voltage limit configuration
   if(voltage_limit > driver->voltage_limit) voltage_limit =  driver->voltage_limit;
   // constrain voltage for sensor alignment
@@ -283,11 +280,18 @@ void StepperMotor::move(float new_target) {
 
   // set internal target variable
   if(_isset(new_target) ) target = new_target;
+
+  // calculate the back-emf voltage if K_bemf available
+  if (_isset(K_bemf)) voltage_bemf = K_bemf*shaft_velocity;
+  // estimate the motor current if phase reistance available and current_sense not available
+  if(!current_sense && _isset(phase_resistance)) current.q = (voltage.q - voltage_bemf)/phase_resistance;
+
   // choose control loop
   switch (controller) {
     case MotionControlType::torque:
       if(!_isset(phase_resistance))  voltage.q = target; // if voltage torque control
-      else voltage.q =  target*phase_resistance;
+      else  voltage.q =  target*phase_resistance + voltage_bemf;
+      voltage.q = _constrain(voltage.q, -voltage_limit, voltage_limit);
       voltage.d = 0;
       break;
     case MotionControlType::angle:
@@ -300,8 +304,8 @@ void StepperMotor::move(float new_target) {
       // if torque controlled through voltage
       // use voltage if phase-resistance not provided
       if(!_isset(phase_resistance))  voltage.q = current_sp;
-      else  voltage.q = current_sp*phase_resistance;
-      voltage.d = 0;
+      else  voltage.q =  _constrain( current_sp*phase_resistance + voltage_bemf , -voltage_limit, voltage_limit);
+        voltage.d = 0;
       break;
     case MotionControlType::velocity:
       // velocity set point
@@ -311,7 +315,7 @@ void StepperMotor::move(float new_target) {
       // if torque controlled through voltage control
       // use voltage if phase-resistance not provided
       if(!_isset(phase_resistance))  voltage.q = current_sp;
-      else  voltage.q = current_sp*phase_resistance;
+      else  voltage.q = _constrain( current_sp*phase_resistance + voltage_bemf , -voltage_limit, voltage_limit);
       voltage.d = 0;
       break;
     case MotionControlType::velocity_openloop:
@@ -372,7 +376,8 @@ float StepperMotor::velocityOpenloop(float target_velocity){
 
   // use voltage limit or current limit
   float Uq = voltage_limit;
-  if(_isset(phase_resistance)) Uq =  current_limit*phase_resistance;
+  if(_isset(phase_resistance)) 
+    Uq = _constrain(current_limit*phase_resistance + voltage_bemf,-voltage_limit, voltage_limit);
 
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
   setPhaseVoltage(Uq,  0, _electricalAngle(shaft_angle, pole_pairs));
@@ -406,7 +411,8 @@ float StepperMotor::angleOpenloop(float target_angle){
 
   // use voltage limit or current limit
   float Uq = voltage_limit;
-  if(_isset(phase_resistance)) Uq =  current_limit*phase_resistance;
+  if(_isset(phase_resistance)) 
+    Uq = _constrain(current_limit*phase_resistance + voltage_bemf,-voltage_limit, voltage_limit);
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
   setPhaseVoltage(Uq,  0, _electricalAngle((shaft_angle), pole_pairs));
 

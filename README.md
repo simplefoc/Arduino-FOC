@@ -26,6 +26,9 @@ Therefore this is an attempt to:
 >    - Current sense API
 > - Low-side current sensing
 >    - ESP32 generic support for multiple motors
+> - New handlign of current limit using voltage 
+>    - Support for motor KV rating - back emf estimation
+>    - Using motor phase resistance
 
 
 

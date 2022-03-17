@@ -152,6 +152,7 @@ class FOCMotor
     float shaft_angle_sp;//!< current target angle
     DQVoltage_s voltage;//!< current d and q voltage set to the motor
     DQCurrent_s current;//!< current d and q current measured
+    float voltage_bemf; //!< estimated backemf voltage (if provided KV constant)
 
     // motor configuration parameters
     float voltage_sensor_align;//!< sensor and motor align voltage parameter
@@ -160,6 +161,7 @@ class FOCMotor
     // motor physical parameters
     float	phase_resistance; //!< motor phase resistance
     int pole_pairs;//!< motor pole pairs number
+    float K_bemf; //!< motor back emf constant (1/KV)
 
     // limiting variables
     float voltage_limit; //!< Voltage limitting variable - global limit

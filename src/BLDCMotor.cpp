@@ -3,13 +3,17 @@
 // BLDCMotor( int pp , float R)
 // - pp            - pole pair number
 // - R             - motor phase resistance
-BLDCMotor::BLDCMotor(int pp, float _R)
+// - KV            - motor kv rating
+BLDCMotor::BLDCMotor(int pp, float _R, float _KV)
 : FOCMotor()
 {
   // save pole pairs number
   pole_pairs = pp;
   // save phase resistance number
   phase_resistance = _R;
+  // save back emf constant KV = 1/KV
+  K_bemf = 1.0/_KV;
+
   // torque control type is voltage by default
   torque_controller = TorqueControlType::voltage;
 }
@@ -31,12 +35,6 @@ void BLDCMotor::init() {
   motor_status = FOCMotorStatus::motor_initializing;
   if(monitor_port) monitor_port->println(F("MOT: Init"));
 
-  // if no current sensing and the user has set the phase resistance of the motor use current limit to calculate the voltage limit
-  if( !current_sense && _isset(phase_resistance)) {
-    float new_voltage_limit = current_limit * (phase_resistance); // v_lim = current_lim / (3/2 phase resistance) - worst case
-    // use it if it is less then voltage_limit set by the user
-    voltage_limit = new_voltage_limit < voltage_limit ? new_voltage_limit : voltage_limit;
-  }
   // sanity check for the voltage limit configuration
   if(voltage_limit > driver->voltage_limit) voltage_limit =  driver->voltage_limit;
   // constrain voltage for sensor alignment
@@ -344,11 +342,18 @@ void BLDCMotor::move(float new_target) {
   // set internal target variable
   if(_isset(new_target)) target = new_target;
 
+  // calculate the back-emf voltage if K_bemf available
+  if (_isset(K_bemf)) voltage_bemf = K_bemf*shaft_velocity;
+  // estimate the motor current if phase reistance available and current_sense not available
+  if(!current_sense && _isset(phase_resistance)) current.q = (voltage.q - voltage_bemf)/phase_resistance;
+
+  // upgrade the current based voltage limit
   switch (controller) {
     case MotionControlType::torque:
       if(torque_controller == TorqueControlType::voltage){ // if voltage torque control
         if(!_isset(phase_resistance))  voltage.q = target;
-        else voltage.q =  target*phase_resistance;
+        else  voltage.q =  target*phase_resistance + voltage_bemf;
+        voltage.q = _constrain(voltage.q, -voltage_limit, voltage_limit);
         voltage.d = 0;
       }else{
         current_sp = target; // if current/foc_current torque control
@@ -368,7 +373,7 @@ void BLDCMotor::move(float new_target) {
       if(torque_controller == TorqueControlType::voltage){
         // use voltage if phase-resistance not provided
         if(!_isset(phase_resistance))  voltage.q = current_sp;
-        else  voltage.q = current_sp*phase_resistance;
+        else  voltage.q =  _constrain( current_sp*phase_resistance + voltage_bemf , -voltage_limit, voltage_limit);
         voltage.d = 0;
       }
       break;
@@ -381,7 +386,7 @@ void BLDCMotor::move(float new_target) {
       if(torque_controller == TorqueControlType::voltage){
         // use voltage if phase-resistance not provided
         if(!_isset(phase_resistance))  voltage.q = current_sp;
-        else  voltage.q = current_sp*phase_resistance;
+        else  voltage.q = _constrain( current_sp*phase_resistance + voltage_bemf , -voltage_limit, voltage_limit);
         voltage.d = 0;
       }
       break;
@@ -620,7 +625,8 @@ float BLDCMotor::velocityOpenloop(float target_velocity){
 
   // use voltage limit or current limit
   float Uq = voltage_limit;
-  if(_isset(phase_resistance)) Uq =  current_limit*phase_resistance;
+  if(_isset(phase_resistance)) 
+    Uq = _constrain(current_limit*phase_resistance + voltage_bemf,-voltage_limit, voltage_limit);
 
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
   setPhaseVoltage(Uq,  0, _electricalAngle(shaft_angle, pole_pairs));
@@ -655,10 +661,10 @@ float BLDCMotor::angleOpenloop(float target_angle){
     shaft_velocity = 0;
   }
 
-
   // use voltage limit or current limit
   float Uq = voltage_limit;
-  if(_isset(phase_resistance)) Uq =  current_limit*phase_resistance;
+  if(_isset(phase_resistance)) 
+    Uq = _constrain(current_limit*phase_resistance + voltage_bemf,-voltage_limit, voltage_limit);
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
   // sensor precision: this calculation is OK due to the normalisation
   setPhaseVoltage(Uq,  0, _electricalAngle(_normalizeAngle(shaft_angle), pole_pairs));
