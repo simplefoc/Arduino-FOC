@@ -5,6 +5,7 @@
 #include "b_g431_hal.h"
 #include "Arduino.h"
 #include "../stm32_mcu.h"
+#include "../../../../drivers/hardware_specific/stm32_mcu.h"
 
 #define _ADC_VOLTAGE 3.3f
 #define _ADC_RESOLUTION 4096.0f

@@ -35,7 +35,6 @@ ADC_HandleTypeDef hadc;
 
 void _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* driver_params)
 {
-  ADC_ChannelConfTypeDef sConfig;
   ADC_InjectionConfTypeDef sConfigInjected;
     
   /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
