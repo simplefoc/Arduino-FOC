@@ -18,11 +18,11 @@
 #define _MCPWM_FREQ 160e6f
 
 // preferred pwm resolution default
-#define _PWM_RES_DEF 2048
+#define _PWM_RES_DEF 4096
 // min resolution
-#define _PWM_RES_MIN 1500
+#define _PWM_RES_MIN 3000
 // max resolution
-#define _PWM_RES_MAX 3000
+#define _PWM_RES_MAX 8000
 // pwm frequency
 #define _PWM_FREQUENCY 25000 // default
 #define _PWM_FREQUENCY_MAX 50000 // mqx

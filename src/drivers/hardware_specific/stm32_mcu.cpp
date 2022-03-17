@@ -1,30 +1,8 @@
 
 #include "../hardware_api.h"
+#include "stm32_mcu.h"
 
 #if defined(_STM32_DEF_)
-// default pwm parameters
-#define _PWM_RESOLUTION 12 // 12bit
-#define _PWM_RANGE 4095.0 // 2^12 -1 = 4095
-#define _PWM_FREQUENCY 25000 // 25khz
-#define _PWM_FREQUENCY_MAX 50000 // 50khz
-
-// 6pwm parameters
-#define _HARDWARE_6PWM 1
-#define _SOFTWARE_6PWM 0
-#define _ERROR_6PWM -1
-
-
-
-typedef struct STM32DriverParams {
-  HardwareTimer* timers[6];
-  uint32_t channels[6];
-  long pwm_frequency;
-  float dead_zone;
-  uint8_t interface_type;
-} STM32DriverParams;
-
-
-
 
 
 // setting pwm to hardware pin - instead analogWrite()
@@ -185,12 +163,10 @@ STM32DriverParams* _initHardware6PWMInterface(long PWM_freq, float dead_zone, in
   LL_TIM_OC_SetDeadTime(HT->getHandle()->Instance, dead_time); // deadtime is non linear!
   LL_TIM_CC_EnableChannel(HT->getHandle()->Instance, LL_TIM_CHANNEL_CH1 | LL_TIM_CHANNEL_CH1N | LL_TIM_CHANNEL_CH2 | LL_TIM_CHANNEL_CH2N | LL_TIM_CHANNEL_CH3 | LL_TIM_CHANNEL_CH3N);
 
-  // Set Trigger out for DMA transfer
-  LL_TIM_SetTriggerOutput(HT->getHandle()->Instance, LL_TIM_TRGO_UPDATE);
-
   HT->pause();
   HT->refresh();
 
+  // maybe should be removed I am not sure if its necessary for BG431
   // adjust the initial timer state such that the trigger for DMA transfer aligns with the pwm peaks instead of throughs.
   HT->getHandle()->Instance->CR1 |= TIM_CR1_DIR;
   HT->getHandle()->Instance->CNT = TIM1->ARR;
