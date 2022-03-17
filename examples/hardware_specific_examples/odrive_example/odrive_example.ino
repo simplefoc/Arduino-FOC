@@ -1,7 +1,7 @@
 /*
     Odrive robotics' hardware is one of the best  BLDC motor foc supporting hardware out there.
 
-    This is an example code that can be directly uploaded to the Odrive usind the SWD programmer. 
+    This is an example code that can be directly uploaded to the Odrive using the SWD programmer. 
     This code uses an encoder with 500 cpr and a BLDC motor with 7 pole pairs connected to the M0 interface of the Odrive. 
 
     This is a short template code and the idea is that you are able to adapt to your needs not to be a complete solution. :D 
@@ -49,6 +49,11 @@ BLDCDriver6PWM driver = BLDCDriver6PWM(M0_INH_A,M0_INL_A, M0_INH_B,M0_INL_B, M0_
 Commander command = Commander(Serial);
 void doMotor(char* cmd) { command.motor(&motor, cmd); }
 
+// low side current sensing define
+// 0.0005 Ohm resistor
+// gain of 10x
+// current sensing on B and C phases, phase A not connected
+LowsideCurrentSense current_sense = LowsideCurrentSense(0.0005f, 10.0f, _NC, M0_IB, M0_IC);
 
 Encoder encoder = Encoder(M0_ENC_A, M0_ENC_B, 500);
 // Interrupt routine intialisation
@@ -88,18 +93,29 @@ void setup(){
   Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
-  motor.monitor_downsample = 0; // disable monitoring at start
+  motor.monitor_variables = _MON_CURR_Q | _MON_CURR_D;
+  motor.monitor_downsample = 1000;
 
   // add target command T
   command.add('M', doMotor, "motor M0");
 
   // initialise motor
   motor.init();
+
+  // link the driver
+  current_sense.linkDriver(&driver);
+  // init the current sense
+  current_sense.init();  
+  current_sense.skip_align = true;
+  motor.linkCurrentSense(&current_sense);
+  
   // init FOC  
   motor.initFOC();  
   delay(1000);
 }
+
 void loop(){
+
   // foc loop
   motor.loopFOC();
   // motion control
