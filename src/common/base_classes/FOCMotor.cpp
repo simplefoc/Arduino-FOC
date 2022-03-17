@@ -1,4 +1,5 @@
 #include "FOCMotor.h"
+#include "../../communication/SimpleFOCDebug.h"
 
 /**
  * Default constructor - setting all variabels to default values
@@ -80,7 +81,8 @@ float FOCMotor::electricalAngle(){
 // function implementing the monitor_port setter
 void FOCMotor::useMonitoring(Print &print){
   monitor_port = &print; //operate on the address of print
-  if(monitor_port ) monitor_port->println(F("MOT: Monitor enabled!"));
+  SimpleFOCDebug::enable(&print);
+  SIMPLEFOC_DEBUG("MOT: Monitor enabled!");
 }
 
 // utility function intended to be used with serial plotter to monitor motor variables

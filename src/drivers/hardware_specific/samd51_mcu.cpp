@@ -190,7 +190,7 @@ void configureSAMDClock() {
 		while (GCLK->SYNCBUSY.vec.GENCTRL&(0x1<<PWM_CLOCK_NUM));
 
 #ifdef SIMPLEFOC_SAMD_DEBUG
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured clock...");
+		SIMPLEFOC_DEBUG("SAMD: Configured clock...");
 #endif
 	}
 }
@@ -258,15 +258,16 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 		tcc->CTRLA.reg |= TCC_CTRLA_ENABLE | TCC_CTRLA_PRESCALER_DIV1; //48Mhz/1=48Mhz/2(up/down)=24MHz/1024=24KHz
 		while ( tcc->SYNCBUSY.bit.ENABLE == 1 ); // wait for sync
 
-#ifdef SIMPLEFOC_SAMD_DEBUG
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("(Re-)Initialized TCC ");
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.tcc.tccn);
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("-");
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.tcc.chan);
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("[");
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.wo);
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("]  pwm res ");
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.println(pwm_resolution);		
+#if defined(SIMPLEFOC_SAMD_DEBUG) && !defined(SIMPLEFOC_DISABLE_DEBUG)
+		SimpleFOCDebug::print("SAMD: (Re-)Initialized TCC ");
+		SimpleFOCDebug::print(tccConfig.tcc.tccn);
+		SimpleFOCDebug::print("-");
+		SimpleFOCDebug::print(tccConfig.tcc.chan);
+		SimpleFOCDebug::print("[");
+		SimpleFOCDebug::print(tccConfig.wo);
+		SimpleFOCDebug::print("]  pwm res ");
+		SimpleFOCDebug::print((int)pwm_resolution);
+		SimpleFOCDebug::println();	
 #endif
 	}
 	else if (tccConfig.tcc.tccn>=TCC_INST_NUM) {
@@ -292,9 +293,8 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 		// while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
 
 	#ifdef SIMPLEFOC_SAMD_DEBUG
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("Not initialized: TC ");
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.println(tccConfig.tcc.tccn);
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("TC units not supported on SAMD51");
+		SIMPLEFOC_DEBUG("SAMD: Not initialized: TC ", tccConfig.tcc.tccn);
+		SIMPLEFOC_DEBUG("SAMD: TC units not supported on SAMD51");
 	#endif
 	}
 

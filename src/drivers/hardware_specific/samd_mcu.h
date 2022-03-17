@@ -3,11 +3,9 @@
 #define SAMD_MCU_H
 
 
-// uncomment to enable debug output to Serial port
+// uncomment to enable debug output from SAMD driver
+// can set this as build-flag in Arduino IDE or PlatformIO
 // #define SIMPLEFOC_SAMD_DEBUG
-#if !defined(SIMPLEFOC_SAMD_DEBUG_SERIAL)
-#define SIMPLEFOC_SAMD_DEBUG_SERIAL Serial
-#endif
 
 #include "../hardware_api.h"
 

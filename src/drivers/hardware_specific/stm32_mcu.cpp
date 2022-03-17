@@ -4,6 +4,11 @@
 
 #if defined(_STM32_DEF_)
 
+#ifdef SIMPLEFOC_STM32_DEBUG
+void printTimerCombination(int numPins, PinMap* timers[], int score);
+int getTimerNumber(int timerIndex);
+#endif
+
 
 // setting pwm to hardware pin - instead analogWrite()
 void _setPwm(HardwareTimer *HT, uint32_t channel, uint32_t value, int resolution)
@@ -18,27 +23,24 @@ void _setPwm(HardwareTimer *HT, uint32_t channel, uint32_t value, int resolution
 }
 
 
-// init pin pwm
-HardwareTimer* _initPinPWM(uint32_t PWM_freq, int ulPin)
-{
-  PinName pin = digitalPinToPinName(ulPin);
-  TIM_TypeDef *Instance = (TIM_TypeDef *)pinmap_peripheral(pin, PinMap_PWM);
-  if (Instance == NP) {
-    Serial.print("No timer on pin ");
-    Serial.println(ulPin);
-    delay(1000);
-    return NP;
-  }
 
-  uint32_t index = get_timer_index(Instance);
+
+
+
+// init pin pwm
+HardwareTimer* _initPinPWM(uint32_t PWM_freq, PinMap* timer) {
+  // sanity check
+  if (timer==NP)
+    return NP;
+  uint32_t index = get_timer_index((TIM_TypeDef*)timer->peripheral);
   if (HardwareTimer_Handle[index] == NULL) {
-    HardwareTimer_Handle[index]->__this = new HardwareTimer((TIM_TypeDef *)pinmap_peripheral(pin, PinMap_PWM));
+    HardwareTimer_Handle[index]->__this = new HardwareTimer((TIM_TypeDef*)timer->peripheral);
     HardwareTimer_Handle[index]->handle.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
     HAL_TIM_Base_Init(&(HardwareTimer_Handle[index]->handle));
   }
   HardwareTimer *HT = (HardwareTimer *)(HardwareTimer_Handle[index]->__this);
-  uint32_t channel = STM_PIN_CHANNEL(pinmap_function(pin, PinMap_PWM));
-  HT->setMode(channel, TIMER_OUTPUT_COMPARE_PWM1, pin);
+  uint32_t channel = STM_PIN_CHANNEL(timer->function);
+  HT->setMode(channel, TIMER_OUTPUT_COMPARE_PWM1, timer->pin);
   HT->setOverflow(PWM_freq, HERTZ_FORMAT);
   HT->pause();
   HT->refresh();
@@ -46,21 +48,24 @@ HardwareTimer* _initPinPWM(uint32_t PWM_freq, int ulPin)
 }
 
 
+
+
+
+
+
 // init high side pin
-HardwareTimer* _initPinPWMHigh(uint32_t PWM_freq, int ulPin)
+HardwareTimer* _initPinPWMHigh(uint32_t PWM_freq, PinMap* timer)
 {
-  return _initPinPWM(PWM_freq, ulPin);
+  return _initPinPWM(PWM_freq, timer);
 }
 
 // init low side pin
-HardwareTimer* _initPinPWMLow(uint32_t PWM_freq, int ulPin)
+HardwareTimer* _initPinPWMLow(uint32_t PWM_freq, PinMap* timer)
 {
-  PinName pin = digitalPinToPinName(ulPin);
-  TIM_TypeDef *Instance = (TIM_TypeDef *)pinmap_peripheral(pin, PinMap_PWM);
-  uint32_t index = get_timer_index(Instance);
+  uint32_t index = get_timer_index((TIM_TypeDef*)timer->peripheral);
 
   if (HardwareTimer_Handle[index] == NULL) {
-    HardwareTimer_Handle[index]->__this = new HardwareTimer((TIM_TypeDef *)pinmap_peripheral(pin, PinMap_PWM));
+    HardwareTimer_Handle[index]->__this = new HardwareTimer((TIM_TypeDef*)timer->peripheral);
     HardwareTimer_Handle[index]->handle.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
     HAL_TIM_Base_Init(&(HardwareTimer_Handle[index]->handle));
     TIM_OC_InitTypeDef sConfigOC = TIM_OC_InitTypeDef();
@@ -75,12 +80,12 @@ HardwareTimer* _initPinPWMLow(uint32_t PWM_freq, int ulPin)
     sConfigOC.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
     sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
 #endif
-    uint32_t channel = STM_PIN_CHANNEL(pinmap_function(pin, PinMap_PWM));
+    uint32_t channel = STM_PIN_CHANNEL(timer->function);
     HAL_TIM_PWM_ConfigChannel(&(HardwareTimer_Handle[index]->handle), &sConfigOC, channel);
   }
   HardwareTimer *HT = (HardwareTimer *)(HardwareTimer_Handle[index]->__this);
-  uint32_t channel = STM_PIN_CHANNEL(pinmap_function(pin, PinMap_PWM));
-  HT->setMode(channel, TIMER_OUTPUT_COMPARE_PWM2, pin);
+  uint32_t channel = STM_PIN_CHANNEL(timer->function);
+  HT->setMode(channel, TIMER_OUTPUT_COMPARE_PWM2, timer->pin);
   HT->setOverflow(PWM_freq, HERTZ_FORMAT);
   HT->pause();
   HT->refresh();
@@ -88,8 +93,9 @@ HardwareTimer* _initPinPWMLow(uint32_t PWM_freq, int ulPin)
 }
 
 
+
 // align the timers to end the init
-void _alignPWMTimers(HardwareTimer *HT1,HardwareTimer *HT2,HardwareTimer *HT3)
+void _alignPWMTimers(HardwareTimer *HT1, HardwareTimer *HT2, HardwareTimer *HT3)
 {
   HT1->pause();
   HT1->refresh();
@@ -102,8 +108,11 @@ void _alignPWMTimers(HardwareTimer *HT1,HardwareTimer *HT2,HardwareTimer *HT3)
   HT3->resume();
 }
 
+
+
+
 // align the timers to end the init
-void _alignPWMTimers(HardwareTimer *HT1,HardwareTimer *HT2,HardwareTimer *HT3,HardwareTimer *HT4)
+void _alignPWMTimers(HardwareTimer *HT1, HardwareTimer *HT2, HardwareTimer *HT3, HardwareTimer *HT4)
 {
   HT1->pause();
   HT1->refresh();
@@ -119,30 +128,56 @@ void _alignPWMTimers(HardwareTimer *HT1,HardwareTimer *HT2,HardwareTimer *HT3,Ha
   HT4->resume();
 }
 
-// configure hardware 6pwm interface only one timer with inverted channels
-STM32DriverParams* _initHardware6PWMInterface(long PWM_freq, float dead_zone, int pinA_h, int pinA_l, int pinB_h, int pinB_l, int pinC_h, int pinC_l)
-{
+
+
+
+int getLLChannel(PinMap* timer) {
+#if defined(TIM_CCER_CC1NE)
+  if (STM_PIN_INVERTED(timer->function)) {
+    switch (STM_PIN_CHANNEL(timer->function)) {
+      case 1: return LL_TIM_CHANNEL_CH1N;
+      case 2: return LL_TIM_CHANNEL_CH2N;
+      case 3: return LL_TIM_CHANNEL_CH3N;
+#if defined(LL_TIM_CHANNEL_CH4N)
+      case 4: return LL_TIM_CHANNEL_CH4N;
+#endif
+      default: return -1;
+    }
+  } else
+#endif
+  {
+    switch (STM_PIN_CHANNEL(timer->function)) {
+      case 1: return LL_TIM_CHANNEL_CH1;
+      case 2: return LL_TIM_CHANNEL_CH2;
+      case 3: return LL_TIM_CHANNEL_CH3;
+      case 4: return LL_TIM_CHANNEL_CH4;
+      default: return -1;
+    }
+  }
+  return -1;
+}
+
+
+
+
+// configure hardware 6pwm for a complementary pair of channels
+STM32DriverParams* _initHardware6PWMPair(long PWM_freq, float dead_zone, PinMap* pinH, PinMap* pinL, STM32DriverParams* params, int paramsPos) {
+  // sanity check
+  if (pinH==NP || pinL==NP)
+    return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
   
 #if !defined(STM32L0xx) // L0 boards dont have hardware 6pwm interface 
-  PinName uhPinName = digitalPinToPinName(pinA_h);
-  PinName ulPinName = digitalPinToPinName(pinA_l);
-  PinName vhPinName = digitalPinToPinName(pinB_h);
-  PinName vlPinName = digitalPinToPinName(pinB_l);
-  PinName whPinName = digitalPinToPinName(pinC_h);
-  PinName wlPinName = digitalPinToPinName(pinC_l);
-  uint32_t channel1 = STM_PIN_CHANNEL(pinmap_function(uhPinName, PinMap_PWM));
-  uint32_t channel2 = STM_PIN_CHANNEL(pinmap_function(ulPinName, PinMap_PWM));
-  uint32_t channel3 = STM_PIN_CHANNEL(pinmap_function(vhPinName, PinMap_PWM));
-  uint32_t channel4 = STM_PIN_CHANNEL(pinmap_function(vlPinName, PinMap_PWM));
-  uint32_t channel5 = STM_PIN_CHANNEL(pinmap_function(whPinName, PinMap_PWM));
-  uint32_t channel6 = STM_PIN_CHANNEL(pinmap_function(wlPinName, PinMap_PWM));
+  uint32_t channel1 = STM_PIN_CHANNEL(pinH->function);
+  uint32_t channel2 = STM_PIN_CHANNEL(pinL->function);
 
-  TIM_TypeDef *Instance = (TIM_TypeDef *)pinmap_peripheral(uhPinName, PinMap_PWM);
+  // more sanity check
+  if (channel1!=channel2 || pinH->peripheral!=pinL->peripheral)
+    return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
 
-  uint32_t index = get_timer_index(Instance);
+  uint32_t index = get_timer_index((TIM_TypeDef*)pinH->peripheral);
 
   if (HardwareTimer_Handle[index] == NULL) {
-    HardwareTimer_Handle[index]->__this = new HardwareTimer((TIM_TypeDef *)pinmap_peripheral(uhPinName, PinMap_PWM));
+    HardwareTimer_Handle[index]->__this = new HardwareTimer((TIM_TypeDef*)pinH->peripheral);
     HardwareTimer_Handle[index]->handle.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
     HardwareTimer_Handle[index]->handle.Init.RepetitionCounter = 1;
     HAL_TIM_Base_Init(&(HardwareTimer_Handle[index]->handle));
@@ -150,18 +185,14 @@ STM32DriverParams* _initHardware6PWMInterface(long PWM_freq, float dead_zone, in
   }
   HardwareTimer *HT = (HardwareTimer *)(HardwareTimer_Handle[index]->__this);
 
-  HT->setMode(channel1, TIMER_OUTPUT_COMPARE_PWM1, uhPinName);
-  HT->setMode(channel2, TIMER_OUTPUT_COMPARE_PWM1, ulPinName);
-  HT->setMode(channel3, TIMER_OUTPUT_COMPARE_PWM1, vhPinName);
-  HT->setMode(channel4, TIMER_OUTPUT_COMPARE_PWM1, vlPinName);
-  HT->setMode(channel5, TIMER_OUTPUT_COMPARE_PWM1, whPinName);
-  HT->setMode(channel6, TIMER_OUTPUT_COMPARE_PWM1, wlPinName);
+  HT->setMode(channel1, TIMER_OUTPUT_COMPARE_PWM1, pinH->pin);
+  HT->setMode(channel2, TIMER_OUTPUT_COMPARE_PWM1, pinL->pin);
 
   // dead time is set in nanoseconds
   uint32_t dead_time_ns = (float)(1e9f/PWM_freq)*dead_zone;
   uint32_t dead_time = __LL_TIM_CALC_DEADTIME(SystemCoreClock, LL_TIM_GetClockDivision(HT->getHandle()->Instance), dead_time_ns);
   LL_TIM_OC_SetDeadTime(HT->getHandle()->Instance, dead_time); // deadtime is non linear!
-  LL_TIM_CC_EnableChannel(HT->getHandle()->Instance, LL_TIM_CHANNEL_CH1 | LL_TIM_CHANNEL_CH1N | LL_TIM_CHANNEL_CH2 | LL_TIM_CHANNEL_CH2N | LL_TIM_CHANNEL_CH3 | LL_TIM_CHANNEL_CH3N);
+  LL_TIM_CC_EnableChannel(HT->getHandle()->Instance, getLLChannel(pinH) | getLLChannel(pinL));
 
   HT->pause();
   HT->refresh();
@@ -169,18 +200,14 @@ STM32DriverParams* _initHardware6PWMInterface(long PWM_freq, float dead_zone, in
   // maybe should be removed I am not sure if its necessary for BG431
   // adjust the initial timer state such that the trigger for DMA transfer aligns with the pwm peaks instead of throughs.
   HT->getHandle()->Instance->CR1 |= TIM_CR1_DIR;
-  HT->getHandle()->Instance->CNT = TIM1->ARR;
+  HT->getHandle()->Instance->CNT = HT->getHandle()->Instance->ARR;
 
   HT->resume();
 
-  STM32DriverParams* params = new STM32DriverParams {
-    .timers = { HT },
-    .channels = { channel1, channel3, channel5 },
-    .pwm_frequency = PWM_freq,
-    .dead_zone = dead_zone,
-    .interface_type = _HARDWARE_6PWM
-  };
-    
+  params->timers[paramsPos] = HT;
+  params->timers[paramsPos+1] = HT;
+  params->channels[paramsPos] = channel1;
+  params->channels[paramsPos+1] = channel2;
   return params;
 #else 
   return SIMPLEFOC_DRIVER_INIT_FAILED; // return nothing
@@ -188,66 +215,240 @@ STM32DriverParams* _initHardware6PWMInterface(long PWM_freq, float dead_zone, in
 }
 
 
-// returns 0 if each pair of pwm channels has same channel
-// returns 1 all the channels belong to the same timer - hardware inverted channels
-// returns -1 if neither - avoid configuring - error!!!
-int _interfaceType(const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
-  PinName nameAH = digitalPinToPinName(pinA_h);
-  PinName nameAL = digitalPinToPinName(pinA_l);
-  PinName nameBH = digitalPinToPinName(pinB_h);
-  PinName nameBL = digitalPinToPinName(pinB_l);
-  PinName nameCH = digitalPinToPinName(pinC_h);
-  PinName nameCL = digitalPinToPinName(pinC_l);
-  int tim1 = get_timer_index((TIM_TypeDef *)pinmap_peripheral(nameAH, PinMap_PWM));
-  int tim2 = get_timer_index((TIM_TypeDef *)pinmap_peripheral(nameAL, PinMap_PWM));
-  int tim3 = get_timer_index((TIM_TypeDef *)pinmap_peripheral(nameBH, PinMap_PWM));
-  int tim4 = get_timer_index((TIM_TypeDef *)pinmap_peripheral(nameBL, PinMap_PWM));
-  int tim5 = get_timer_index((TIM_TypeDef *)pinmap_peripheral(nameCH, PinMap_PWM));
-  int tim6 = get_timer_index((TIM_TypeDef *)pinmap_peripheral(nameCL, PinMap_PWM));
 
-#if defined(STM32L0xx) // L0 boards dont have hardware 6pwm interface 
 
-  if(tim1 == tim2 && tim3==tim4  && tim5==tim6)
-    return _SOFTWARE_6PWM; // software 6pwm interface - each pair of high-low side same timer
-  else
-    return _ERROR_6PWM; // might be error avoid configuration
-#else // the rest of stm32 boards
+STM32DriverParams* _initHardware6PWMInterface(long PWM_freq, float dead_zone, PinMap* pinA_h, PinMap* pinA_l, PinMap* pinB_h, PinMap* pinB_l, PinMap* pinC_h, PinMap* pinC_l) {
+  STM32DriverParams* params = new STM32DriverParams {
+    .timers = { NP, NP, NP, NP, NP, NP },
+    .channels = { 0, 0, 0, 0, 0, 0 },
+    .pwm_frequency = PWM_freq,
+    .dead_zone = dead_zone,
+    .interface_type = _HARDWARE_6PWM
+  };
 
-  if(tim1 == tim2 && tim2==tim3 && tim3==tim4  && tim4==tim5 && tim5==tim6)
-    return _HARDWARE_6PWM; // hardware 6pwm interface - only on timer
-  else if(tim1 == tim2 && tim3==tim4  && tim5==tim6)
-    return _SOFTWARE_6PWM; // software 6pwm interface - each pair of high-low side same timer
-  else
-    return _ERROR_6PWM; // might be error avoid configuration
-#endif
+  if (_initHardware6PWMPair(PWM_freq, dead_zone, pinA_h, pinA_l, params, 0) == SIMPLEFOC_DRIVER_INIT_FAILED)
+    return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+  if(_initHardware6PWMPair(PWM_freq, dead_zone, pinB_h, pinB_l, params, 2) == SIMPLEFOC_DRIVER_INIT_FAILED)
+    return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+  if (_initHardware6PWMPair(PWM_freq, dead_zone, pinC_h, pinC_l, params, 4) == SIMPLEFOC_DRIVER_INIT_FAILED)
+    return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+
+  _alignPWMTimers(params->timers[0], params->timers[2], params->timers[4]);
+
+  return params;
 }
+
+
+
+
+
+
+#ifndef SIMPLEFOC_STM32_MAX_PINTIMERSUSED
+#define SIMPLEFOC_STM32_MAX_PINTIMERSUSED 12
+#endif
+int numTimerPinsUsed;
+PinMap* timerPinsUsed[SIMPLEFOC_STM32_MAX_PINTIMERSUSED];
+
+
+/*
+  timer combination scoring function
+  assigns a score, and also checks the combination is valid
+  returns <0 if combination is invalid, >=0 if combination is valid. lower (but positive) score is better
+  for 6 pwm, hardware 6-pwm is preferred over software 6-pwm
+  hardware 6-pwm is possible if each low channel is the inverted counterpart of its high channel
+  inverted channels are not allowed except when using hardware 6-pwm (in theory they could be but lets not complicate things)
+*/
+int scoreCombination(int numPins, PinMap* pinTimers[]) {
+  // check already used - TODO move this to outer loop also...
+  for (int i=0; i<numTimerPinsUsed; i++) {
+    if (pinTimers[i]->peripheral == timerPinsUsed[i]->peripheral
+        && STM_PIN_CHANNEL(pinTimers[i]->function) == STM_PIN_CHANNEL(timerPinsUsed[i]->function))
+      return -2; // bad combination - timer channel already used
+  }
+  // check for inverted channels - TODO move this to outer loop also...
+  if (numPins < 6) {
+    for (int i=0; i<numPins; i++) {
+      if (STM_PIN_INVERTED(pinTimers[i]->function))
+        return -3; // bad combination - inverted channel used in non-hardware 6pwm
+    }
+  }
+  // check for duplicated channels
+  for (int i=0; i<numPins-1; i++) {
+    for (int j=i+1; j<numPins; j++) {
+      if (pinTimers[i]->peripheral == pinTimers[j]->peripheral
+          && STM_PIN_CHANNEL(pinTimers[i]->function) == STM_PIN_CHANNEL(pinTimers[j]->function)
+          && STM_PIN_INVERTED(pinTimers[i]->function) == STM_PIN_INVERTED(pinTimers[j]->function))
+        return -4; // bad combination - duplicated channel
+    }
+  }
+  int score = 0;
+  for (int i=0; i<numPins; i++) {
+    // count distinct timers
+    bool found = false;
+    for (int j=i+1; j<numPins; j++) {
+      if (pinTimers[i]->peripheral == pinTimers[j]->peripheral)
+        found = true;
+    }
+    if (!found) score++;
+  }
+  if (numPins==6) {
+    // check for inverted channels - best: 1 timer, 3 channels, 3 matching inverted channels
+    //                                     >1 timer, 3 channels, 3 matching inverted channels
+    //                                     1 timer, 6 channels (no inverted channels)
+    //                                     >1 timer, 6 channels (no inverted channels)
+    // check for inverted high-side channels - TODO is this a configuration we should allow? what if all 3 high side channels are inverted and the low-side non-inverted?
+    if (STM_PIN_INVERTED(pinTimers[0]->function) || STM_PIN_INVERTED(pinTimers[2]->function) || STM_PIN_INVERTED(pinTimers[4]->function))
+      return -5; // bad combination - inverted channel used on high-side channel
+    if (pinTimers[0]->peripheral == pinTimers[1]->peripheral
+        && pinTimers[2]->peripheral == pinTimers[3]->peripheral
+        && pinTimers[4]->peripheral == pinTimers[5]->peripheral
+        && STM_PIN_CHANNEL(pinTimers[0]->function) == STM_PIN_CHANNEL(pinTimers[1]->function)
+        && STM_PIN_CHANNEL(pinTimers[2]->function) == STM_PIN_CHANNEL(pinTimers[3]->function)
+        && STM_PIN_CHANNEL(pinTimers[4]->function) == STM_PIN_CHANNEL(pinTimers[5]->function)
+        && STM_PIN_INVERTED(pinTimers[1]->function) && STM_PIN_INVERTED(pinTimers[3]->function) && STM_PIN_INVERTED(pinTimers[5]->function)) {
+          // hardware 6pwm, score <10
+        }
+    else {
+
+      // check for inverted low-side channels
+      if (STM_PIN_INVERTED(pinTimers[1]->function) || STM_PIN_INVERTED(pinTimers[3]->function) || STM_PIN_INVERTED(pinTimers[5]->function))
+        return -6; // bad combination - inverted channel used on low-side channel in software 6-pwm
+      score += 10; // software 6pwm, score >10
+    }
+  }
+  return score;
+}
+
+
+
+
+int findIndexOfFirstPinMapEntry(int pin) {
+  PinName pinName = digitalPinToPinName(pin);
+  int i = 0;
+  while (PinMap_TIM[i].pin!=NC) {
+    if (pinName == PinMap_TIM[i].pin)
+      return i;
+    i++;
+  }
+  return -1;
+}
+
+
+int findIndexOfLastPinMapEntry(int pin) {
+  PinName pinName = digitalPinToPinName(pin);
+  int i = 0;
+  while (PinMap_TIM[i].pin!=NC) {
+    if (   pinName == (PinMap_TIM[i].pin & ~ALTX_MASK) 
+        && pinName != (PinMap_TIM[i+1].pin & ~ALTX_MASK))
+      return i;
+    i++;
+  }
+  return -1;
+}
+
+
+
+
+
+
+#define NOT_FOUND 1000
+
+int findBestTimerCombination(int numPins, int index, int pins[], PinMap* pinTimers[]) {
+  PinMap* searchArray[numPins];
+  for (int j=0;j<numPins;j++)
+        searchArray[j] = pinTimers[j];
+  int bestScore = NOT_FOUND;
+  int startIndex = findIndexOfFirstPinMapEntry(pins[index]);
+  int endIndex = findIndexOfLastPinMapEntry(pins[index]);
+  if (startIndex == -1 || endIndex == -1) {
+    SIMPLEFOC_DEBUG("STM32: ERR: no timer on pin ", pins[index]);
+    return -1; // pin is not connected to any timer
+  }
+  for (int i=startIndex;i<=endIndex;i++) {
+    searchArray[index] = (PinMap*)&PinMap_TIM[i];
+    int score = NOT_FOUND;
+    if (index<numPins-1)
+      score = findBestTimerCombination(numPins, index+1, pins, searchArray);
+    else {
+      score = scoreCombination(numPins, searchArray);
+      #ifdef SIMPLEFOC_STM32_DEBUG
+      printTimerCombination(numPins, searchArray, score);
+      #endif
+    }
+    if (score==-1)
+      return -1; // pin not connected to any timer, propagate driectly
+    if (score>=0 && score<bestScore) {
+      bestScore = score;
+      for (int j=index;j<numPins;j++)
+        pinTimers[j] = searchArray[j];
+    }
+  }
+  return bestScore;
+}
+
+
+int findBestTimerCombination(int numPins, int pins[], PinMap* pinTimers[]) {
+  int bestScore = findBestTimerCombination(numPins, 0, pins, pinTimers);
+  if (bestScore == NOT_FOUND) {
+    #ifdef SIMPLEFOC_STM32_DEBUG
+    SimpleFOCDebug::print("STM32: no workable combination found on these pins ");
+    printTimerCombination(numPins, pinTimers, bestScore);
+    #endif
+    return -10; // no workable combination found
+  }
+  #ifdef SIMPLEFOC_STM32_DEBUG
+  SimpleFOCDebug::print("STM32: best: ");
+  printTimerCombination(numPins, pinTimers, bestScore);
+  #endif
+  return bestScore;
+};
+
+
+
+
+
+
 
 
 
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 2PWM setting
 // - hardware speciffic
-void* _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
+void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
+  if (numTimerPinsUsed+2 > SIMPLEFOC_STM32_MAX_PINTIMERSUSED) {
+    SIMPLEFOC_DEBUG("STM32: ERR: too many pins used");
+    return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+  }
+
   if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
   // center-aligned frequency is uses two periods
   pwm_frequency *=2;
 
-  HardwareTimer* HT1 = _initPinPWM(pwm_frequency, pinA);
-  HardwareTimer* HT2 = _initPinPWM(pwm_frequency, pinB);
+  int pins[2] = { pinA, pinB };
+  PinMap* pinTimers[2] = { NP, NP };
+  if (findBestTimerCombination(2, pins, pinTimers)<0)
+    return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+
+  HardwareTimer* HT1 = _initPinPWM(pwm_frequency, pinTimers[0]);
+  HardwareTimer* HT2 = _initPinPWM(pwm_frequency, pinTimers[1]);
   // allign the timers
   _alignPWMTimers(HT1, HT2, HT2);
   
-  uint32_t channel1 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinA), PinMap_PWM));
-  uint32_t channel2 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinB), PinMap_PWM));
+  uint32_t channel1 = STM_PIN_CHANNEL(pinTimers[0]->function);
+  uint32_t channel2 = STM_PIN_CHANNEL(pinTimers[1]->function);
 
   STM32DriverParams* params = new STM32DriverParams {
     .timers = { HT1, HT2 },
     .channels = { channel1, channel2 },
     .pwm_frequency = pwm_frequency
   };
+  timerPinsUsed[numTimerPinsUsed++] = pinTimers[0];
+  timerPinsUsed[numTimerPinsUsed++] = pinTimers[1];
   return params;
 }
+
+
 
 
 
@@ -255,26 +456,38 @@ void* _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
 // - BLDC motor - 3PWM setting
 // - hardware speciffic
 void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
+  if (numTimerPinsUsed+3 > SIMPLEFOC_STM32_MAX_PINTIMERSUSED) {
+    SIMPLEFOC_DEBUG("STM32: ERR: too many pins used");
+    return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+  }
   if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
   // center-aligned frequency is uses two periods
   pwm_frequency *=2;
 
-  HardwareTimer* HT1 = _initPinPWM(pwm_frequency, pinA);
-  HardwareTimer* HT2 = _initPinPWM(pwm_frequency, pinB);
-  HardwareTimer* HT3 = _initPinPWM(pwm_frequency, pinC);
+  int pins[3] = { pinA, pinB, pinC };
+  PinMap* pinTimers[3] = { NP, NP, NP };
+  if (findBestTimerCombination(3, pins, pinTimers)<0)
+    return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+
+  HardwareTimer* HT1 = _initPinPWM(pwm_frequency, pinTimers[0]);
+  HardwareTimer* HT2 = _initPinPWM(pwm_frequency, pinTimers[1]);
+  HardwareTimer* HT3 = _initPinPWM(pwm_frequency, pinTimers[2]);
   // allign the timers
   _alignPWMTimers(HT1, HT2, HT3);
   
-  uint32_t channel1 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinA), PinMap_PWM));
-  uint32_t channel2 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinB), PinMap_PWM));
-  uint32_t channel3 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinC), PinMap_PWM));
+  uint32_t channel1 = STM_PIN_CHANNEL(pinTimers[0]->function);
+  uint32_t channel2 = STM_PIN_CHANNEL(pinTimers[1]->function);
+  uint32_t channel3 = STM_PIN_CHANNEL(pinTimers[2]->function);
 
   STM32DriverParams* params = new STM32DriverParams {
     .timers = { HT1, HT2, HT3 },
     .channels = { channel1, channel2, channel3 },
     .pwm_frequency = pwm_frequency
   };
+  timerPinsUsed[numTimerPinsUsed++] = pinTimers[0];
+  timerPinsUsed[numTimerPinsUsed++] = pinTimers[1];
+  timerPinsUsed[numTimerPinsUsed++] = pinTimers[2];
   return params;
 }
 
@@ -284,28 +497,41 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
 // - Stepper motor - 4PWM setting
 // - hardware speciffic
 void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
+  if (numTimerPinsUsed+4 > SIMPLEFOC_STM32_MAX_PINTIMERSUSED) {
+    SIMPLEFOC_DEBUG("STM32: ERR: too many pins used");
+    return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+  }
   if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
   // center-aligned frequency is uses two periods
   pwm_frequency *=2;
 
-  HardwareTimer* HT1 = _initPinPWM(pwm_frequency, pinA);
-  HardwareTimer* HT2 = _initPinPWM(pwm_frequency, pinB);
-  HardwareTimer* HT3 = _initPinPWM(pwm_frequency, pinC);
-  HardwareTimer* HT4 = _initPinPWM(pwm_frequency, pinD);
+  int pins[4] = { pinA, pinB, pinC, pinD };
+  PinMap* pinTimers[4] = { NP, NP, NP, NP };
+  if (findBestTimerCombination(4, pins, pinTimers)<0)
+    return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+
+  HardwareTimer* HT1 = _initPinPWM(pwm_frequency, pinTimers[0]);
+  HardwareTimer* HT2 = _initPinPWM(pwm_frequency, pinTimers[1]);
+  HardwareTimer* HT3 = _initPinPWM(pwm_frequency, pinTimers[2]);
+  HardwareTimer* HT4 = _initPinPWM(pwm_frequency, pinTimers[3]);
   // allign the timers
   _alignPWMTimers(HT1, HT2, HT3, HT4);
 
-  uint32_t channel1 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinA), PinMap_PWM));
-  uint32_t channel2 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinB), PinMap_PWM));
-  uint32_t channel3 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinC), PinMap_PWM));
-  uint32_t channel4 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinD), PinMap_PWM));
+  uint32_t channel1 = STM_PIN_CHANNEL(pinTimers[0]->function);
+  uint32_t channel2 = STM_PIN_CHANNEL(pinTimers[1]->function);
+  uint32_t channel3 = STM_PIN_CHANNEL(pinTimers[2]->function);
+  uint32_t channel4 = STM_PIN_CHANNEL(pinTimers[3]->function);
 
   STM32DriverParams* params = new STM32DriverParams {
     .timers = { HT1, HT2, HT3, HT4 },
     .channels = { channel1, channel2, channel3, channel4 },
     .pwm_frequency = pwm_frequency
   };
+  timerPinsUsed[numTimerPinsUsed++] = pinTimers[0];
+  timerPinsUsed[numTimerPinsUsed++] = pinTimers[1];
+  timerPinsUsed[numTimerPinsUsed++] = pinTimers[2];
+  timerPinsUsed[numTimerPinsUsed++] = pinTimers[3];
   return params;
 }
 
@@ -349,46 +575,56 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
 // - BLDC driver - 6PWM setting
 // - hardware specific
 void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
+  if (numTimerPinsUsed+6 > SIMPLEFOC_STM32_MAX_PINTIMERSUSED) {
+    SIMPLEFOC_DEBUG("STM32: ERR: too many pins used");
+    return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+  }
   if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to |%0kHz max
   // center-aligned frequency is uses two periods
   pwm_frequency *=2;
 
   // find configuration
-  int config = _interfaceType(pinA_h, pinA_l,  pinB_h, pinB_l, pinC_h, pinC_l);
+  int pins[6] = { pinA_h, pinA_l, pinB_h, pinB_l, pinC_h, pinC_l };
+  PinMap* pinTimers[6] = { NP, NP, NP, NP, NP, NP };
+  int score = findBestTimerCombination(6, pins, pinTimers);
+
   STM32DriverParams* params;
   // configure accordingly
-  switch(config){
-    case _ERROR_6PWM:
-      return SIMPLEFOC_DRIVER_INIT_FAILED;
-    case _HARDWARE_6PWM:
-      params = _initHardware6PWMInterface(pwm_frequency, dead_zone, pinA_h, pinA_l, pinB_h, pinB_l, pinC_h, pinC_l);
-      break;
-    case _SOFTWARE_6PWM:
-      HardwareTimer* HT1 = _initPinPWMHigh(pwm_frequency, pinA_h);
-      _initPinPWMLow(pwm_frequency, pinA_l);
-      HardwareTimer* HT2 = _initPinPWMHigh(pwm_frequency, pinB_h);
-      _initPinPWMLow(pwm_frequency, pinB_l);
-      HardwareTimer* HT3 = _initPinPWMHigh(pwm_frequency, pinC_h);
-      _initPinPWMLow(pwm_frequency, pinC_l);
-      _alignPWMTimers(HT1, HT2, HT3);
-      uint32_t channel1 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinA_h), PinMap_PWM));
-      uint32_t channel2 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinA_l), PinMap_PWM));
-      uint32_t channel3 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinB_h), PinMap_PWM));
-      uint32_t channel4 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinB_l), PinMap_PWM));
-      uint32_t channel5 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinC_h), PinMap_PWM));
-      uint32_t channel6 = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pinC_l), PinMap_PWM));
-      params = new STM32DriverParams {
-        .timers = { HT1, HT2, HT3 },
-        .channels = { channel1, channel2, channel3, channel4, channel5, channel6 },
-        .pwm_frequency = pwm_frequency,
-        .dead_zone = dead_zone,
-        .interface_type = _SOFTWARE_6PWM
-      };
-      break;
+  if (score<0)
+    params = (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+  else if (score<10)  // hardware pwm
+    params = _initHardware6PWMInterface(pwm_frequency, dead_zone, pinTimers[0], pinTimers[1], pinTimers[2], pinTimers[3], pinTimers[4], pinTimers[5]);
+  else {  // software pwm
+    HardwareTimer* HT1 = _initPinPWMHigh(pwm_frequency, pinTimers[0]);
+    HardwareTimer* HT2 = _initPinPWMLow(pwm_frequency, pinTimers[1]);
+    HardwareTimer* HT3 = _initPinPWMHigh(pwm_frequency, pinTimers[2]);
+    HardwareTimer* HT4 = _initPinPWMLow(pwm_frequency, pinTimers[3]);
+    HardwareTimer* HT5 = _initPinPWMHigh(pwm_frequency, pinTimers[4]);
+    HardwareTimer* HT6 = _initPinPWMLow(pwm_frequency, pinTimers[5]);
+    _alignPWMTimers(HT1, HT2, HT3);
+    uint32_t channel1 = STM_PIN_CHANNEL(pinTimers[0]->function);
+    uint32_t channel2 = STM_PIN_CHANNEL(pinTimers[1]->function);
+    uint32_t channel3 = STM_PIN_CHANNEL(pinTimers[2]->function);
+    uint32_t channel4 = STM_PIN_CHANNEL(pinTimers[3]->function);
+    uint32_t channel5 = STM_PIN_CHANNEL(pinTimers[4]->function);
+    uint32_t channel6 = STM_PIN_CHANNEL(pinTimers[5]->function);
+    params = new STM32DriverParams {
+      .timers = { HT1, HT2, HT3, HT4, HT5, HT6 },
+      .channels = { channel1, channel2, channel3, channel4, channel5, channel6 },
+      .pwm_frequency = pwm_frequency,
+      .dead_zone = dead_zone,
+      .interface_type = _SOFTWARE_6PWM
+    };
   }
+  for (int i=0; i<6; i++)
+    timerPinsUsed[numTimerPinsUsed++] = pinTimers[i];
   return params; // success
 }
+
+
+
+
 
 // Function setting the duty cycle to the pwm pin (ex. analogWrite())
 // - BLDC driver - 6PWM setting
@@ -397,8 +633,8 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
   switch(((STM32DriverParams*)params)->interface_type){
     case _HARDWARE_6PWM:
       _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _PWM_RANGE*dc_a, _PWM_RESOLUTION);
-      _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[1], _PWM_RANGE*dc_b, _PWM_RESOLUTION);
-      _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[2], _PWM_RANGE*dc_c, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[2], _PWM_RANGE*dc_b, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[4], ((STM32DriverParams*)params)->channels[4], _PWM_RANGE*dc_c, _PWM_RESOLUTION);
       break;
     case _SOFTWARE_6PWM:
       float dead_zone = ((STM32DriverParams*)params)->dead_zone;
@@ -411,4 +647,105 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
       break;
   }
 }
+
+
+
+
+
+#ifdef SIMPLEFOC_STM32_DEBUG
+
+int getTimerNumber(int timerIndex) {
+  #if defined(TIM1_BASE)
+    if (timerIndex==TIMER1_INDEX) return 1;
+  #endif
+  #if defined(TIM2_BASE)
+    if (timerIndex==TIMER2_INDEX) return 2;
+  #endif
+  #if defined(TIM3_BASE)
+    if (timerIndex==TIMER3_INDEX) return 3;
+  #endif
+  #if defined(TIM4_BASE)
+    if (timerIndex==TIMER4_INDEX) return 4;
+  #endif
+  #if defined(TIM5_BASE)
+    if (timerIndex==TIMER5_INDEX) return 5;
+  #endif
+  #if defined(TIM6_BASE)
+    if (timerIndex==TIMER6_INDEX) return 6;
+  #endif
+  #if defined(TIM7_BASE)
+    if (timerIndex==TIMER7_INDEX) return 7;
+  #endif
+  #if defined(TIM8_BASE)
+    if (timerIndex==TIMER8_INDEX) return 8;
+  #endif
+  #if defined(TIM9_BASE)
+    if (timerIndex==TIMER9_INDEX) return 9;
+  #endif
+  #if defined(TIM10_BASE)
+    if (timerIndex==TIMER10_INDEX) return 10;
+  #endif
+  #if defined(TIM11_BASE)
+    if (timerIndex==TIMER11_INDEX) return 11;
+  #endif
+  #if defined(TIM12_BASE)
+    if (timerIndex==TIMER12_INDEX) return 12;
+  #endif
+  #if defined(TIM13_BASE)
+    if (timerIndex==TIMER13_INDEX) return 13;
+  #endif
+  #if defined(TIM14_BASE)
+    if (timerIndex==TIMER14_INDEX) return 14;
+  #endif
+  #if defined(TIM15_BASE)
+    if (timerIndex==TIMER15_INDEX) return 15;
+  #endif
+  #if defined(TIM16_BASE)
+    if (timerIndex==TIMER16_INDEX) return 16;
+  #endif
+  #if defined(TIM17_BASE)
+    if (timerIndex==TIMER17_INDEX) return 17;
+  #endif
+  #if defined(TIM18_BASE)
+    if (timerIndex==TIMER18_INDEX) return 18;
+  #endif
+  #if defined(TIM19_BASE)
+    if (timerIndex==TIMER19_INDEX) return 19;
+  #endif
+  #if defined(TIM20_BASE)
+    if (timerIndex==TIMER20_INDEX) return 20;
+  #endif
+  #if defined(TIM21_BASE)
+    if (timerIndex==TIMER21_INDEX) return 21;
+  #endif
+  #if defined(TIM22_BASE)
+    if (timerIndex==TIMER22_INDEX) return 22;
+  #endif
+  return -1;
+}
+
+
+void printTimerCombination(int numPins, PinMap* timers[], int score) {
+  for (int i=0; i<numPins; i++) {
+    if (timers[i] == NP)
+      SimpleFOCDebug::print("NP");
+    else {
+      SimpleFOCDebug::print("TIM");
+      SimpleFOCDebug::print(getTimerNumber(get_timer_index((TIM_TypeDef*)timers[i]->peripheral)));
+      SimpleFOCDebug::print("-CH");
+      SimpleFOCDebug::print(STM_PIN_CHANNEL(timers[i]->function));
+      if (STM_PIN_INVERTED(timers[i]->function))
+        SimpleFOCDebug::print("N");
+    }
+    SimpleFOCDebug::print(" ");
+  }
+  SimpleFOCDebug::println("score: ", score);
+}
+
+#endif
+
+
+
+
+
 #endif

@@ -164,7 +164,7 @@ void configureSAMDClock() {
 		while (GCLK->STATUS.bit.SYNCBUSY);              // Wait for synchronization
 
 #ifdef SIMPLEFOC_SAMD_DEBUG
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured clock...");
+		SIMPLEFOC_DEBUG("SAMD: Configured clock...");
 #endif
 	}
 }
@@ -227,8 +227,7 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 			tc->COUNT8.CTRLA.bit.ENABLE = 1;
 			while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
 #ifdef SIMPLEFOC_SAMD_DEBUG
-			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("Initialized TC ");
-			SIMPLEFOC_SAMD_DEBUG_SERIAL.println(tccConfig.tcc.tccn);
+			SIMPLEFOC_DEBUG("SAMD: Initialized TC ", tccConfig.tcc.tccn);
 #endif
 		}
 		else {
@@ -264,15 +263,16 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 			tcc->CTRLA.reg |= TCC_CTRLA_ENABLE | TCC_CTRLA_PRESCALER_DIV1; //48Mhz/1=48Mhz/2(up/down)=24MHz/1024=24KHz
 			while ( tcc->SYNCBUSY.bit.ENABLE == 1 ); // wait for sync
 
-#ifdef SIMPLEFOC_SAMD_DEBUG
-			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("    Initialized TCC ");
-			SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.tcc.tccn);
-			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("-");
-			SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.tcc.chan);
-			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("[");
-			SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.wo);
-			SIMPLEFOC_SAMD_DEBUG_SERIAL.print("]  pwm res ");
-			SIMPLEFOC_SAMD_DEBUG_SERIAL.println(pwm_resolution);
+#if defined(SIMPLEFOC_SAMD_DEBUG) && !defined(SIMPLEFOC_DISABLE_DEBUG)
+			SimpleFOCDebug::print("SAMD:     Initialized TCC ");
+			SimpleFOCDebug::print(tccConfig.tcc.tccn);
+			SimpleFOCDebug::print("-");
+			SimpleFOCDebug::print(tccConfig.tcc.chan);
+			SimpleFOCDebug::print("[");
+			SimpleFOCDebug::print(tccConfig.wo);
+			SimpleFOCDebug::print("]  pwm res ");
+			SimpleFOCDebug::print((int)pwm_resolution);
+			SimpleFOCDebug::println();
 #endif
 		}
 	}
@@ -298,15 +298,16 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 		tcc->CTRLA.bit.ENABLE = 1;
 		while ( tcc->SYNCBUSY.bit.ENABLE == 1 );
 
-#ifdef SIMPLEFOC_SAMD_DEBUG
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("(Re-)Initialized TCC ");
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.tcc.tccn);
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("-");
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.tcc.chan);
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("[");
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.wo);
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("]  pwm res ");
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.println(pwm_resolution);
+#if defined(SIMPLEFOC_SAMD_DEBUG) && !defined(SIMPLEFOC_DISABLE_DEBUG)
+		SimpleFOCDebug::print("SAMD: (Re-)Initialized TCC ");
+		SimpleFOCDebug::print(tccConfig.tcc.tccn);
+		SimpleFOCDebug::print("-");
+		SimpleFOCDebug::print(tccConfig.tcc.chan);
+		SimpleFOCDebug::print("[");
+		SimpleFOCDebug::print(tccConfig.wo);
+		SimpleFOCDebug::print("]  pwm res ");
+		SimpleFOCDebug::print((int)pwm_resolution);
+		SimpleFOCDebug::println();
 #endif
 	}
 
