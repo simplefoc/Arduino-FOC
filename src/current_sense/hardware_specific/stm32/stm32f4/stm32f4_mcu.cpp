@@ -18,8 +18,12 @@ uint16_t adc_channel_number[3]={0};
 
 int _adcToIndex(ADC_HandleTypeDef *AdcHandle){
   if(AdcHandle->Instance == ADC1) return 0;
+#ifdef ADC2 // if ADC2 exists
   else if(AdcHandle->Instance == ADC2) return 1;
+#endif
+#ifdef ADC3 // if ADC3 exists
   else if(AdcHandle->Instance == ADC3) return 2;
+#endif
   return 0;
 }
 

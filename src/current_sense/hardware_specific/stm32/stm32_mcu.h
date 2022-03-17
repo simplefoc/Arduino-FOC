@@ -4,10 +4,7 @@
 #include "../../hardware_api.h"
 #include "../../../common/foc_utils.h"
 
-#if defined(_STM32_DEF_) and !defined(ARDUINO_B_G431B_ESC1) 
-
-#define _ADC_VOLTAGE 3.3f
-#define _ADC_RESOLUTION 1024.0f
+#if defined(_STM32_DEF_) 
 
 // generic implementation of the hardware specific structure
 // containing all the necessary current sense parameters

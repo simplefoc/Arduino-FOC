@@ -9,11 +9,15 @@ uint32_t _timerToInjectedTRGO(HardwareTimer* timer){
   if(timer->getHandle()->Instance == TIM1)  
     return ADC_EXTERNALTRIGINJECCONV_T1_TRGO;
   else if(timer->getHandle()->Instance == TIM2) 
+#ifdef TIM2 // if defined timer 2
     return ADC_EXTERNALTRIGINJECCONV_T2_TRGO;
   else if(timer->getHandle()->Instance == TIM4) 
     return ADC_EXTERNALTRIGINJECCONV_T4_TRGO;
+#endif
+#ifdef TIM5 // if defined timer 5
   else if(timer->getHandle()->Instance == TIM5) 
     return ADC_EXTERNALTRIGINJECCONV_T5_TRGO;
+#endif
   else
     return 0;
 }
@@ -23,10 +27,14 @@ uint32_t _timerToInjectedTRGO(HardwareTimer* timer){
 uint32_t _timerToRegularTRGO(HardwareTimer* timer){
   if(timer->getHandle()->Instance == TIM2)  
     return ADC_EXTERNALTRIGCONV_T2_TRGO;
+#ifdef TIM3 // if defined timer 3
   else if(timer->getHandle()->Instance == TIM3) 
     return ADC_EXTERNALTRIGCONV_T3_TRGO;
+#endif
+#ifdef TIM8 // if defined timer 8
   else if(timer->getHandle()->Instance == TIM8) 
     return ADC_EXTERNALTRIGCONV_T8_TRGO;
+#endif
   else
     return 0;
 }
@@ -42,8 +50,13 @@ void _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* driv
   hadc.Instance = (ADC_TypeDef *)pinmap_peripheral(analogInputToPinName(cs_params->pins[0]), PinMap_ADC);
 
   if(hadc.Instance == ADC1) __HAL_RCC_ADC1_CLK_ENABLE();
+#ifdef ADC2  // if defined ADC2
   else if(hadc.Instance == ADC2) __HAL_RCC_ADC2_CLK_ENABLE();
+#endif
+#ifdef ADC3  // if defined ADC3
   else if(hadc.Instance == ADC3) __HAL_RCC_ADC3_CLK_ENABLE();
+#endif
+  else return; // error not a valid ADC instance
 
   hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc.Init.Resolution = ADC_RESOLUTION_12B;
