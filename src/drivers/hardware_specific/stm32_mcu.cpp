@@ -396,10 +396,12 @@ int findBestTimerCombination(int numPins, int pins[], PinMap* pinTimers[]) {
     #endif
     return -10; // no workable combination found
   }
-  #ifdef SIMPLEFOC_STM32_DEBUG
-  SimpleFOCDebug::print("STM32: best: ");
-  printTimerCombination(numPins, pinTimers, bestScore);
-  #endif
+  else if (bestScore >= 0) {
+    #ifdef SIMPLEFOC_STM32_DEBUG
+    SimpleFOCDebug::print("STM32: best: ");
+    printTimerCombination(numPins, pinTimers, bestScore);
+    #endif
+  }
   return bestScore;
 };
 
