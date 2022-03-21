@@ -10,6 +10,19 @@ int getTimerNumber(int timerIndex);
 #endif
 
 
+
+
+#ifndef SIMPLEFOC_STM32_MAX_PINTIMERSUSED
+#define SIMPLEFOC_STM32_MAX_PINTIMERSUSED 12
+#endif
+int numTimerPinsUsed;
+PinMap* timerPinsUsed[SIMPLEFOC_STM32_MAX_PINTIMERSUSED];
+
+
+
+
+
+
 // setting pwm to hardware pin - instead analogWrite()
 void _setPwm(HardwareTimer *HT, uint32_t channel, uint32_t value, int resolution)
 {
@@ -130,6 +143,38 @@ void _alignPWMTimers(HardwareTimer *HT1, HardwareTimer *HT2, HardwareTimer *HT3,
 
 
 
+void _alignTimersNew() {
+  int numTimers = 0;
+  HardwareTimer *timers[numTimerPinsUsed];
+
+  // reset timer counters
+  for (int i=0; i<numTimerPinsUsed; i++) {
+    uint32_t index = get_timer_index((TIM_TypeDef*)timerPinsUsed[i]->peripheral);
+    HardwareTimer *timer = (HardwareTimer *)(HardwareTimer_Handle[index]->__this);
+    bool found = false;
+    for (int j=0; j<numTimers; j++) {
+      if (timers[j] == timer) {
+        found = true;
+        break;
+      }
+    }
+    if (!found)
+      timers[numTimers++] = timer;
+  }
+
+  // enable timer clock
+  for (int i=0; i<numTimers; i++) {
+    timers[i]->pause();
+    timers[i]->refresh();
+  }
+
+  for (int i=0; i<numTimers; i++)
+    timers[i]->resume();
+
+}
+
+
+
 
 int getLLChannel(PinMap* timer) {
 #if defined(TIM_CCER_CC1NE)
@@ -243,13 +288,6 @@ STM32DriverParams* _initHardware6PWMInterface(long PWM_freq, float dead_zone, Pi
 
 
 
-#ifndef SIMPLEFOC_STM32_MAX_PINTIMERSUSED
-#define SIMPLEFOC_STM32_MAX_PINTIMERSUSED 12
-#endif
-int numTimerPinsUsed;
-PinMap* timerPinsUsed[SIMPLEFOC_STM32_MAX_PINTIMERSUSED];
-
-
 /*
   timer combination scoring function
   assigns a score, and also checks the combination is valid
@@ -265,7 +303,7 @@ int scoreCombination(int numPins, PinMap* pinTimers[]) {
         && STM_PIN_CHANNEL(pinTimers[i]->function) == STM_PIN_CHANNEL(timerPinsUsed[i]->function))
       return -2; // bad combination - timer channel already used
   }
-  // check for inverted channels - TODO move this to outer loop also...
+  // check for inverted channels
   if (numPins < 6) {
     for (int i=0; i<numPins; i++) {
       if (STM_PIN_INVERTED(pinTimers[i]->function))
@@ -309,10 +347,13 @@ int scoreCombination(int numPins, PinMap* pinTimers[]) {
           // hardware 6pwm, score <10
         }
     else {
-
       // check for inverted low-side channels
       if (STM_PIN_INVERTED(pinTimers[1]->function) || STM_PIN_INVERTED(pinTimers[3]->function) || STM_PIN_INVERTED(pinTimers[5]->function))
         return -6; // bad combination - inverted channel used on low-side channel in software 6-pwm
+      if (pinTimers[0]->peripheral != pinTimers[1]->peripheral
+        || pinTimers[2]->peripheral != pinTimers[3]->peripheral
+        || pinTimers[4]->peripheral != pinTimers[5]->peripheral)
+        return -7; // bad combination - non-matching timers for H/L side in software 6-pwm
       score += 10; // software 6pwm, score >10
     }
   }
@@ -387,12 +428,14 @@ int findBestTimerCombination(int numPins, int index, int pins[], PinMap* pinTime
 }
 
 
+
+
+
 int findBestTimerCombination(int numPins, int pins[], PinMap* pinTimers[]) {
   int bestScore = findBestTimerCombination(numPins, 0, pins, pinTimers);
   if (bestScore == NOT_FOUND) {
     #ifdef SIMPLEFOC_STM32_DEBUG
-    SimpleFOCDebug::print("STM32: no workable combination found on these pins ");
-    printTimerCombination(numPins, pinTimers, bestScore);
+    SimpleFOCDebug::println("STM32: no workable combination found on these pins");
     #endif
     return -10; // no workable combination found
   }
@@ -476,7 +519,7 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
   HardwareTimer* HT2 = _initPinPWM(pwm_frequency, pinTimers[1]);
   HardwareTimer* HT3 = _initPinPWM(pwm_frequency, pinTimers[2]);
   // allign the timers
-  _alignPWMTimers(HT1, HT2, HT3);
+  //_alignPWMTimers(HT1, HT2, HT3);
   
   uint32_t channel1 = STM_PIN_CHANNEL(pinTimers[0]->function);
   uint32_t channel2 = STM_PIN_CHANNEL(pinTimers[1]->function);
@@ -490,6 +533,9 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
   timerPinsUsed[numTimerPinsUsed++] = pinTimers[0];
   timerPinsUsed[numTimerPinsUsed++] = pinTimers[1];
   timerPinsUsed[numTimerPinsUsed++] = pinTimers[2];
+
+  _alignTimersNew();
+
   return params;
 }
 
@@ -619,8 +665,10 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
       .interface_type = _SOFTWARE_6PWM
     };
   }
-  for (int i=0; i<6; i++)
-    timerPinsUsed[numTimerPinsUsed++] = pinTimers[i];
+  if (params>=0) {
+    for (int i=0; i<6; i++)
+      timerPinsUsed[numTimerPinsUsed++] = pinTimers[i];
+  }
   return params; // success
 }
 
