@@ -174,6 +174,7 @@ int BLDCMotor::alignSensor() {
     for (int i = 0; i <=500; i++ ) {
       float angle = _3PI_2 + _2PI * i / 500.0f;
       setPhaseVoltage(voltage_sensor_align, 0,  angle);
+	  sensor->update();
       _delay(2);
     }
     // take and angle in the middle
@@ -183,6 +184,7 @@ int BLDCMotor::alignSensor() {
     for (int i = 500; i >=0; i-- ) {
       float angle = _3PI_2 + _2PI * i / 500.0f ;
       setPhaseVoltage(voltage_sensor_align, 0,  angle);
+	  sensor->update();
       _delay(2);
     }
     sensor->update();
