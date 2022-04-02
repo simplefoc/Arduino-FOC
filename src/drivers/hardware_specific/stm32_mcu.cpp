@@ -87,8 +87,8 @@ HardwareTimer* _initPinPWMLow(uint32_t PWM_freq, PinMap* timer)
   }
   HardwareTimer *HT = (HardwareTimer *)(HardwareTimer_Handle[index]->__this);
   uint32_t channel = STM_PIN_CHANNEL(timer->function);
-  SIMPLEFOC_DEBUG("Configuring low timer ", (int)getTimerNumber(get_timer_index(HardwareTimer_Handle[index]->handle.Instance)));
-  SIMPLEFOC_DEBUG("Configuring low channel ", (int)channel);
+  //SIMPLEFOC_DEBUG("Configuring low timer ", (int)getTimerNumber(get_timer_index(HardwareTimer_Handle[index]->handle.Instance)));
+  //SIMPLEFOC_DEBUG("Configuring low channel ", (int)channel);
 
 
   HT->pause();
@@ -178,7 +178,7 @@ void _alignTimersNew() {
   }
 
   for (int i=0; i<numTimers; i++) {
-    SIMPLEFOC_DEBUG("Resuming timer ", getTimerNumber(get_timer_index(timers[i]->getHandle()->Instance)));
+    //SIMPLEFOC_DEBUG("Resuming timer ", getTimerNumber(get_timer_index(timers[i]->getHandle()->Instance)));
     timers[i]->resume();
   }
 
