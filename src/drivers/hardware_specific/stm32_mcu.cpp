@@ -98,19 +98,19 @@ HardwareTimer* _initPinPWMLow(uint32_t PWM_freq, PinMap* timer)
   // sets internal fields of HT, but we can't set polarity here
   HT->setMode(channel, TIMER_OUTPUT_COMPARE_PWM2, timer->pin);
   // set polarity, unfortunately we have to set these other fields too
-  TIM_OC_InitTypeDef sConfigOC = TIM_OC_InitTypeDef();
-  sConfigOC.OCMode = TIM_OCMODE_PWM2;
-  sConfigOC.Pulse = __HAL_TIM_GET_COMPARE(&(HardwareTimer_Handle[index]->handle), HT->getChannel(channel));
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-#if defined(TIM_OCIDLESTATE_SET) // TODO check this flag, looks like G4 uses something else...
-  sConfigOC.OCIdleState  = TIM_OCIDLESTATE_SET;
-#endif
-#if defined(TIM_OCNIDLESTATE_RESET) // TODO check this flag, looks like G4 uses something else...
-  sConfigOC.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
-  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-#endif
-  HAL_TIM_PWM_ConfigChannel(&(HardwareTimer_Handle[index]->handle), &sConfigOC, channel);
+//   TIM_OC_InitTypeDef sConfigOC = TIM_OC_InitTypeDef();
+//   sConfigOC.OCMode = TIM_OCMODE_PWM2;
+//   sConfigOC.Pulse = __HAL_TIM_GET_COMPARE(&(HardwareTimer_Handle[index]->handle), HT->getChannel(channel));
+//   sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
+//   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+// #if defined(TIM_OCIDLESTATE_SET) // TODO check this flag, looks like G4 uses something else...
+//   sConfigOC.OCIdleState  = TIM_OCIDLESTATE_SET;
+// #endif
+// #if defined(TIM_OCNIDLESTATE_RESET) // TODO check this flag, looks like G4 uses something else...
+//   sConfigOC.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
+//   sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+// #endif
+//   HAL_TIM_PWM_ConfigChannel(&(HardwareTimer_Handle[index]->handle), &sConfigOC, channel);
   return HT;
 }
 
@@ -718,12 +718,12 @@ void _writeDutyCycle6PWM(float dc_a, float dc_b, float dc_c, void* params){
       break;
     case _SOFTWARE_6PWM:
       float dead_zone = ((STM32DriverParams*)params)->dead_zone  / 2.0f;
-      _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _constrain(dc_a + dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[1], _constrain(dc_a - dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(((STM32DriverParams*)params)->timers[1], ((STM32DriverParams*)params)->channels[2], _constrain(dc_b + dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(((STM32DriverParams*)params)->timers[1], ((STM32DriverParams*)params)->channels[3], _constrain(dc_b - dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[4], _constrain(dc_c + dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[5], _constrain(dc_c - dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _constrain(dc_a - dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[1], ((STM32DriverParams*)params)->channels[1], _constrain(dc_a + dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[2], _constrain(dc_b - dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[3], ((STM32DriverParams*)params)->channels[3], _constrain(dc_b + dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[4], ((STM32DriverParams*)params)->channels[4], _constrain(dc_c - dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[5], ((STM32DriverParams*)params)->channels[5], _constrain(dc_c + dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
       break;
   }
 }
