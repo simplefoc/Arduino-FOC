@@ -46,17 +46,19 @@ HardwareTimer* _initPinPWM(uint32_t PWM_freq, PinMap* timer) {
   if (timer==NP)
     return NP;
   uint32_t index = get_timer_index((TIM_TypeDef*)timer->peripheral);
+  bool init = false;
   if (HardwareTimer_Handle[index] == NULL) {
     HardwareTimer_Handle[index]->__this = new HardwareTimer((TIM_TypeDef*)timer->peripheral);
     HardwareTimer_Handle[index]->handle.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
     HAL_TIM_Base_Init(&(HardwareTimer_Handle[index]->handle));
+    init = true;
   }
   HardwareTimer *HT = (HardwareTimer *)(HardwareTimer_Handle[index]->__this);
   uint32_t channel = STM_PIN_CHANNEL(timer->function);
-  HT->setMode(channel, TIMER_OUTPUT_COMPARE_PWM1, timer->pin);
-  HT->setOverflow(PWM_freq, HERTZ_FORMAT);
   HT->pause();
-  HT->refresh();
+  if (init)
+    HT->setOverflow(PWM_freq, HERTZ_FORMAT);
+  HT->setMode(channel, TIMER_OUTPUT_COMPARE_PWM1, timer->pin);
   return HT;
 }
 
@@ -67,8 +69,7 @@ HardwareTimer* _initPinPWM(uint32_t PWM_freq, PinMap* timer) {
 
 
 // init high side pin
-HardwareTimer* _initPinPWMHigh(uint32_t PWM_freq, PinMap* timer)
-{
+HardwareTimer* _initPinPWMHigh(uint32_t PWM_freq, PinMap* timer) {
   return _initPinPWM(PWM_freq, timer);
 }
 
@@ -77,31 +78,39 @@ HardwareTimer* _initPinPWMLow(uint32_t PWM_freq, PinMap* timer)
 {
   uint32_t index = get_timer_index((TIM_TypeDef*)timer->peripheral);
 
+  bool init = false;
   if (HardwareTimer_Handle[index] == NULL) {
     HardwareTimer_Handle[index]->__this = new HardwareTimer((TIM_TypeDef*)timer->peripheral);
     HardwareTimer_Handle[index]->handle.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
     HAL_TIM_Base_Init(&(HardwareTimer_Handle[index]->handle));
-    TIM_OC_InitTypeDef sConfigOC = TIM_OC_InitTypeDef();
-    sConfigOC.OCMode = TIM_OCMODE_PWM2;
-    sConfigOC.Pulse = 100;
-    sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
-    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-#if defined(TIM_OCIDLESTATE_SET)
-    sConfigOC.OCIdleState  = TIM_OCIDLESTATE_SET;
-#endif
-#if defined(TIM_OCNIDLESTATE_RESET)
-    sConfigOC.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
-    sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-#endif
-    uint32_t channel = STM_PIN_CHANNEL(timer->function);
-    HAL_TIM_PWM_ConfigChannel(&(HardwareTimer_Handle[index]->handle), &sConfigOC, channel);
+    init = true;
   }
   HardwareTimer *HT = (HardwareTimer *)(HardwareTimer_Handle[index]->__this);
   uint32_t channel = STM_PIN_CHANNEL(timer->function);
-  HT->setMode(channel, TIMER_OUTPUT_COMPARE_PWM2, timer->pin);
-  HT->setOverflow(PWM_freq, HERTZ_FORMAT);
+  SIMPLEFOC_DEBUG("Configuring low timer ", (int)getTimerNumber(get_timer_index(HardwareTimer_Handle[index]->handle.Instance)));
+  SIMPLEFOC_DEBUG("Configuring low channel ", (int)channel);
+
+
   HT->pause();
-  HT->refresh();
+
+  if (init)
+    HT->setOverflow(PWM_freq, HERTZ_FORMAT);
+  // sets internal fields of HT, but we can't set polarity here
+  HT->setMode(channel, TIMER_OUTPUT_COMPARE_PWM2, timer->pin);
+  // set polarity, unfortunately we have to set these other fields too
+  TIM_OC_InitTypeDef sConfigOC = TIM_OC_InitTypeDef();
+  sConfigOC.OCMode = TIM_OCMODE_PWM2;
+  sConfigOC.Pulse = __HAL_TIM_GET_COMPARE(&(HardwareTimer_Handle[index]->handle), HT->getChannel(channel));
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+#if defined(TIM_OCIDLESTATE_SET) // TODO check this flag, looks like G4 uses something else...
+  sConfigOC.OCIdleState  = TIM_OCIDLESTATE_SET;
+#endif
+#if defined(TIM_OCNIDLESTATE_RESET) // TODO check this flag, looks like G4 uses something else...
+  sConfigOC.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
+  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+#endif
+  HAL_TIM_PWM_ConfigChannel(&(HardwareTimer_Handle[index]->handle), &sConfigOC, channel);
   return HT;
 }
 
@@ -168,8 +177,10 @@ void _alignTimersNew() {
     timers[i]->refresh();
   }
 
-  for (int i=0; i<numTimers; i++)
+  for (int i=0; i<numTimers; i++) {
+    SIMPLEFOC_DEBUG("Resuming timer ", getTimerNumber(get_timer_index(timers[i]->getHandle()->Instance)));
     timers[i]->resume();
+  }
 
 }
 
@@ -303,6 +314,9 @@ int scoreCombination(int numPins, PinMap* pinTimers[]) {
         && STM_PIN_CHANNEL(pinTimers[i]->function) == STM_PIN_CHANNEL(timerPinsUsed[i]->function))
       return -2; // bad combination - timer channel already used
   }
+  
+  // TODO LPTIM and HRTIM should be ignored for now
+  
   // check for inverted channels
   if (numPins < 6) {
     for (int i=0; i<numPins; i++) {
@@ -345,6 +359,21 @@ int scoreCombination(int numPins, PinMap* pinTimers[]) {
         && STM_PIN_CHANNEL(pinTimers[4]->function) == STM_PIN_CHANNEL(pinTimers[5]->function)
         && STM_PIN_INVERTED(pinTimers[1]->function) && STM_PIN_INVERTED(pinTimers[3]->function) && STM_PIN_INVERTED(pinTimers[5]->function)) {
           // hardware 6pwm, score <10
+
+          // TODO F37xxx doesn't support dead-time insertion, it has no TIM1/TIM8
+          // F301, F302 --> 6 channels, but only 1-3 have dead-time insertion
+          // TIM2/TIM3/TIM4/TIM5 don't do dead-time insertion
+          // TIM15/TIM16/TIM17 do dead-time insertion only on channel 1
+
+          // TODO check these defines
+          #if defined(STM32F4xx_HAL_TIM_H) || defined(STM32F3xx_HAL_TIM_H) || defined(STM32F2xx_HAL_TIM_H) || defined(STM32F1xx_HAL_TIM_H) || defined(STM32F100_HAL_TIM_H) || defined(STM32FG0x1_HAL_TIM_H)  || defined(STM32G0x0_HAL_TIM_H) 
+          if (STM_PIN_CHANNEL(pinTimers[0]->function)>3 || STM_PIN_CHANNEL(pinTimers[2]->function)>3 || STM_PIN_CHANNEL(pinTimers[4]->function)>3 )
+            return -8; // channel 4 does not have dead-time insertion
+          #endif
+          #ifdef STM32G4xx_HAL_TIM_H
+          if (STM_PIN_CHANNEL(pinTimers[0]->function)>4 || STM_PIN_CHANNEL(pinTimers[2]->function)>4 || STM_PIN_CHANNEL(pinTimers[4]->function)>4 )
+            return -8; // channels 5 & 6 do not have dead-time insertion
+          #endif
         }
     else {
       // check for inverted low-side channels
@@ -622,7 +651,7 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
 // Configuring PWM frequency, resolution and alignment
 // - BLDC driver - 6PWM setting
 // - hardware specific
-void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
+void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l, const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
   if (numTimerPinsUsed+6 > SIMPLEFOC_STM32_MAX_PINTIMERSUSED) {
     SIMPLEFOC_DEBUG("STM32: ERR: too many pins used");
     return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
@@ -650,7 +679,7 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
     HardwareTimer* HT4 = _initPinPWMLow(pwm_frequency, pinTimers[3]);
     HardwareTimer* HT5 = _initPinPWMHigh(pwm_frequency, pinTimers[4]);
     HardwareTimer* HT6 = _initPinPWMLow(pwm_frequency, pinTimers[5]);
-    _alignPWMTimers(HT1, HT2, HT3);
+    //_alignPWMTimers(HT1, HT2, HT3);
     uint32_t channel1 = STM_PIN_CHANNEL(pinTimers[0]->function);
     uint32_t channel2 = STM_PIN_CHANNEL(pinTimers[1]->function);
     uint32_t channel3 = STM_PIN_CHANNEL(pinTimers[2]->function);
@@ -665,9 +694,10 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
       .interface_type = _SOFTWARE_6PWM
     };
   }
-  if (params>=0) {
+  if (score>=0) {
     for (int i=0; i<6; i++)
       timerPinsUsed[numTimerPinsUsed++] = pinTimers[i];
+    _alignTimersNew();
   }
   return params; // success
 }
@@ -679,7 +709,7 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 // Function setting the duty cycle to the pwm pin (ex. analogWrite())
 // - BLDC driver - 6PWM setting
 // - hardware specific
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
+void _writeDutyCycle6PWM(float dc_a, float dc_b, float dc_c, void* params){
   switch(((STM32DriverParams*)params)->interface_type){
     case _HARDWARE_6PWM:
       _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _PWM_RANGE*dc_a, _PWM_RESOLUTION);
@@ -687,13 +717,13 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
       _setPwm(((STM32DriverParams*)params)->timers[4], ((STM32DriverParams*)params)->channels[4], _PWM_RANGE*dc_c, _PWM_RESOLUTION);
       break;
     case _SOFTWARE_6PWM:
-      float dead_zone = ((STM32DriverParams*)params)->dead_zone;
-      _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _constrain(dc_a + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[1], _constrain(dc_a - dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(((STM32DriverParams*)params)->timers[1], ((STM32DriverParams*)params)->channels[2], _constrain(dc_b + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(((STM32DriverParams*)params)->timers[1], ((STM32DriverParams*)params)->channels[3], _constrain(dc_b - dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[4], _constrain(dc_c + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[5], _constrain(dc_c - dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
+      float dead_zone = ((STM32DriverParams*)params)->dead_zone  / 2.0f;
+      _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _constrain(dc_a + dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[1], _constrain(dc_a - dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[1], ((STM32DriverParams*)params)->channels[2], _constrain(dc_b + dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[1], ((STM32DriverParams*)params)->channels[3], _constrain(dc_b - dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[4], _constrain(dc_c + dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
+      _setPwm(((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[5], _constrain(dc_c - dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
       break;
   }
 }
