@@ -212,16 +212,21 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
        }
       break;
     case CMD_RESIST:
-      // enable/disable
       printVerbose(F("R phase: "));
       if(!GET){
         motor->phase_resistance = value;
-        if(motor->torque_controller==TorqueControlType::voltage){
-          motor->voltage_limit = motor->current_limit*value;
+        if(motor->torque_controller==TorqueControlType::voltage)
           motor->PID_velocity.limit= motor->current_limit;
-        }
       }
       if(_isset(motor->phase_resistance)) println(motor->phase_resistance);
+      else println(0);
+      break;
+    case CMD_KV_RATING:
+      printVerbose(F("Motor KV: "));
+      if(!GET){
+        motor->K_bemf = 1.0f/value;
+      }
+      if(_isset(motor->K_bemf)) println(1.0f/motor->K_bemf);
       else println(0);
       break;
     case CMD_SENSOR:
