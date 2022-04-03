@@ -24,7 +24,7 @@ jobs:
           - arduino-boards-fqbn: arduino:avr:uno # arudino uno - compiling almost all examples
             sketch-names: '**.ino'
             required-libraries: PciManager
-            sketches-exclude: bluepill_position_control, esp32_position_control, esp32_i2c_dual_bus_example, stm32_i2c_dual_bus_example, magnetic_sensor_spi_alt_example, osc_esp32_3pwm, osc_esp32_fullcontrol, nano33IoT_velocity_control, smartstepper_control,esp32_current_control_low_side, stm32_spi_alt_example, esp32_spi_alt_example, B_G431B_ESC1, odrive_example
+            sketches-exclude: bluepill_position_control, esp32_position_control, esp32_i2c_dual_bus_example, stm32_i2c_dual_bus_example, magnetic_sensor_spi_alt_example, osc_esp32_3pwm, osc_esp32_fullcontrol, nano33IoT_velocity_control, smartstepper_control,esp32_current_control_low_side, stm32_spi_alt_example, esp32_spi_alt_example, B_G431B_ESC1, odrive_example_spi, odrive_example_encoder
 
           - arduino-boards-fqbn: arduino:sam:arduino_due_x # arduino due - one full example
             sketch-names: single_full_control_example.ino
@@ -57,7 +57,7 @@ jobs:
 
           - arduino-boards-fqbn: STMicroelectronics:stm32:GenF4:pnum=GENERIC_F405RGTX  # stm32f405 - odrive
             platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
-            sketch-names: odrive_example.ino
+            sketch-names: odrive_example_encoder.ino odrive_example_spi.ino
             
           - arduino-boards-fqbn: STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE # nucleo one full example
             platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
