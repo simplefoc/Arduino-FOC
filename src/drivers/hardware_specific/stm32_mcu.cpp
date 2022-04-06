@@ -26,12 +26,12 @@ PinMap* timerPinsUsed[SIMPLEFOC_STM32_MAX_PINTIMERSUSED];
 // setting pwm to hardware pin - instead analogWrite()
 void _setPwm(HardwareTimer *HT, uint32_t channel, uint32_t value, int resolution)
 {
+  // TODO - remove commented code
   // PinName pin = digitalPinToPinName(ulPin);
   // TIM_TypeDef *Instance = (TIM_TypeDef *)pinmap_peripheral(pin, PinMap_PWM);
   // uint32_t index = get_timer_index(Instance);
   // HardwareTimer *HT = (HardwareTimer *)(HardwareTimer_Handle[index]->__this);
-
-  //uint32_t channel = STM_PIN_CHANNEL(pinmap_function(pin, PinMap_PWM));
+  
   HT->setCaptureCompare(channel, value, (TimerCompareFormat_t)resolution);
 }
 
@@ -50,6 +50,7 @@ HardwareTimer* _initPinPWM(uint32_t PWM_freq, PinMap* timer) {
   if (HardwareTimer_Handle[index] == NULL) {
     HardwareTimer_Handle[index]->__this = new HardwareTimer((TIM_TypeDef*)timer->peripheral);
     HardwareTimer_Handle[index]->handle.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
+    HardwareTimer_Handle[index]->handle.Init.RepetitionCounter = 1;
     HAL_TIM_Base_Init(&(HardwareTimer_Handle[index]->handle));
     init = true;
   }
@@ -59,6 +60,10 @@ HardwareTimer* _initPinPWM(uint32_t PWM_freq, PinMap* timer) {
   if (init)
     HT->setOverflow(PWM_freq, HERTZ_FORMAT);
   HT->setMode(channel, TIMER_OUTPUT_COMPARE_PWM1, timer->pin);
+#ifdef SIMPLEFOC_STM32_DEBUG
+  SIMPLEFOC_DEBUG("STM32-DRV: Configuring high timer ", (int)getTimerNumber(get_timer_index(HardwareTimer_Handle[index]->handle.Instance)));
+  SIMPLEFOC_DEBUG("STM32-DRV: Configuring high channel ", (int)channel);
+#endif
   return HT;
 }
 
@@ -82,35 +87,23 @@ HardwareTimer* _initPinPWMLow(uint32_t PWM_freq, PinMap* timer)
   if (HardwareTimer_Handle[index] == NULL) {
     HardwareTimer_Handle[index]->__this = new HardwareTimer((TIM_TypeDef*)timer->peripheral);
     HardwareTimer_Handle[index]->handle.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
+    HardwareTimer_Handle[index]->handle.Init.RepetitionCounter = 1;
     HAL_TIM_Base_Init(&(HardwareTimer_Handle[index]->handle));
     init = true;
   }
   HardwareTimer *HT = (HardwareTimer *)(HardwareTimer_Handle[index]->__this);
   uint32_t channel = STM_PIN_CHANNEL(timer->function);
-  //SIMPLEFOC_DEBUG("Configuring low timer ", (int)getTimerNumber(get_timer_index(HardwareTimer_Handle[index]->handle.Instance)));
-  //SIMPLEFOC_DEBUG("Configuring low channel ", (int)channel);
 
+#ifdef SIMPLEFOC_STM32_DEBUG
+  SIMPLEFOC_DEBUG("STM32-DRV: Configuring low timer ", (int)getTimerNumber(get_timer_index(HardwareTimer_Handle[index]->handle.Instance)));
+  SIMPLEFOC_DEBUG("STM32-DRV: Configuring low channel ", (int)channel);
+#endif
 
   HT->pause();
-
   if (init)
     HT->setOverflow(PWM_freq, HERTZ_FORMAT);
   // sets internal fields of HT, but we can't set polarity here
   HT->setMode(channel, TIMER_OUTPUT_COMPARE_PWM2, timer->pin);
-  // set polarity, unfortunately we have to set these other fields too
-//   TIM_OC_InitTypeDef sConfigOC = TIM_OC_InitTypeDef();
-//   sConfigOC.OCMode = TIM_OCMODE_PWM2;
-//   sConfigOC.Pulse = __HAL_TIM_GET_COMPARE(&(HardwareTimer_Handle[index]->handle), HT->getChannel(channel));
-//   sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
-//   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-// #if defined(TIM_OCIDLESTATE_SET) // TODO check this flag, looks like G4 uses something else...
-//   sConfigOC.OCIdleState  = TIM_OCIDLESTATE_SET;
-// #endif
-// #if defined(TIM_OCNIDLESTATE_RESET) // TODO check this flag, looks like G4 uses something else...
-//   sConfigOC.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
-//   sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-// #endif
-//   HAL_TIM_PWM_ConfigChannel(&(HardwareTimer_Handle[index]->handle), &sConfigOC, channel);
   return HT;
 }
 
@@ -151,6 +144,31 @@ void _alignPWMTimers(HardwareTimer *HT1, HardwareTimer *HT2, HardwareTimer *HT3,
 }
 
 
+// align the timers to end the init
+void _stopTimers(HardwareTimer **timers_to_stop, int timer_num)
+{
+  // TODO - stop each timer only once
+  // stop timers
+  for (int i=0; i < timer_num; i++) {
+    if(timers_to_stop[i] == NP) return;
+    timers_to_stop[i]->pause();
+    timers_to_stop[i]->refresh();
+    #ifdef SIMPLEFOC_STM32_DEBUG
+      SIMPLEFOC_DEBUG("STM32-DRV: Stopping timer ", getTimerNumber(get_timer_index(timers_to_stop[i]->getHandle()->Instance)));
+    #endif
+  }
+}
+
+// align the timers to end the init
+void _startTimers(HardwareTimer **timers_to_start, int timer_num)
+{
+  // TODO - sart each timer only once
+  // sart timers
+  for (int i=0; i < timer_num; i++) {
+    if(timers_to_start[i] == NP) return;
+    timers_to_start[i]->resume();
+  }
+}
 
 void _alignTimersNew() {
   int numTimers = 0;
@@ -175,10 +193,12 @@ void _alignTimersNew() {
   for (int i=0; i<numTimers; i++) {
     timers[i]->pause();
     timers[i]->refresh();
+    #ifdef SIMPLEFOC_STM32_DEBUG
+      SIMPLEFOC_DEBUG("STM32-DRV: Restarting timer ", getTimerNumber(get_timer_index(timers[i]->getHandle()->Instance)));
+    #endif
   }
 
   for (int i=0; i<numTimers; i++) {
-    //SIMPLEFOC_DEBUG("Resuming timer ", getTimerNumber(get_timer_index(timers[i]->getHandle()->Instance)));
     timers[i]->resume();
   }
 
@@ -222,7 +242,10 @@ STM32DriverParams* _initHardware6PWMPair(long PWM_freq, float dead_zone, PinMap*
   if (pinH==NP || pinL==NP)
     return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
   
-#if !defined(STM32L0xx) // L0 boards dont have hardware 6pwm interface 
+#if defined(STM32L0xx) // L0 boards dont have hardware 6pwm interface 
+  return SIMPLEFOC_DRIVER_INIT_FAILED; // return nothing
+#endif
+
   uint32_t channel1 = STM_PIN_CHANNEL(pinH->function);
   uint32_t channel2 = STM_PIN_CHANNEL(pinL->function);
 
@@ -236,6 +259,7 @@ STM32DriverParams* _initHardware6PWMPair(long PWM_freq, float dead_zone, PinMap*
     HardwareTimer_Handle[index]->__this = new HardwareTimer((TIM_TypeDef*)pinH->peripheral);
     HardwareTimer_Handle[index]->handle.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
     HardwareTimer_Handle[index]->handle.Init.RepetitionCounter = 1;
+    // HardwareTimer_Handle[index]->handle.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE; 
     HAL_TIM_Base_Init(&(HardwareTimer_Handle[index]->handle));
     ((HardwareTimer *)HardwareTimer_Handle[index]->__this)->setOverflow((uint32_t)PWM_freq, HERTZ_FORMAT);
   }
@@ -251,23 +275,12 @@ STM32DriverParams* _initHardware6PWMPair(long PWM_freq, float dead_zone, PinMap*
   LL_TIM_CC_EnableChannel(HT->getHandle()->Instance, getLLChannel(pinH) | getLLChannel(pinL));
 
   HT->pause();
-  HT->refresh();
-
-  // maybe should be removed I am not sure if its necessary for BG431
-  // adjust the initial timer state such that the trigger for DMA transfer aligns with the pwm peaks instead of throughs.
-  HT->getHandle()->Instance->CR1 |= TIM_CR1_DIR;
-  HT->getHandle()->Instance->CNT = HT->getHandle()->Instance->ARR;
-
-  HT->resume();
 
   params->timers[paramsPos] = HT;
   params->timers[paramsPos+1] = HT;
   params->channels[paramsPos] = channel1;
   params->channels[paramsPos+1] = channel2;
   return params;
-#else 
-  return SIMPLEFOC_DRIVER_INIT_FAILED; // return nothing
-#endif
 }
 
 
@@ -288,8 +301,6 @@ STM32DriverParams* _initHardware6PWMInterface(long PWM_freq, float dead_zone, Pi
     return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
   if (_initHardware6PWMPair(PWM_freq, dead_zone, pinC_h, pinC_l, params, 4) == SIMPLEFOC_DRIVER_INIT_FAILED)
     return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
-
-  _alignPWMTimers(params->timers[0], params->timers[2], params->timers[4]);
 
   return params;
 }
@@ -431,7 +442,7 @@ int findBestTimerCombination(int numPins, int index, int pins[], PinMap* pinTime
   int startIndex = findIndexOfFirstPinMapEntry(pins[index]);
   int endIndex = findIndexOfLastPinMapEntry(pins[index]);
   if (startIndex == -1 || endIndex == -1) {
-    SIMPLEFOC_DEBUG("STM32: ERR: no timer on pin ", pins[index]);
+    SIMPLEFOC_DEBUG("STM32-DRV: ERR: no timer on pin ", pins[index]);
     return -1; // pin is not connected to any timer
   }
   for (int i=startIndex;i<=endIndex;i++) {
@@ -464,13 +475,13 @@ int findBestTimerCombination(int numPins, int pins[], PinMap* pinTimers[]) {
   int bestScore = findBestTimerCombination(numPins, 0, pins, pinTimers);
   if (bestScore == NOT_FOUND) {
     #ifdef SIMPLEFOC_STM32_DEBUG
-    SimpleFOCDebug::println("STM32: no workable combination found on these pins");
+    SimpleFOCDebug::println("STM32-DRV: no workable combination found on these pins");
     #endif
     return -10; // no workable combination found
   }
   else if (bestScore >= 0) {
     #ifdef SIMPLEFOC_STM32_DEBUG
-    SimpleFOCDebug::print("STM32: best: ");
+    SimpleFOCDebug::print("STM32-DRV: best: ");
     printTimerCombination(numPins, pinTimers, bestScore);
     #endif
   }
@@ -490,7 +501,7 @@ int findBestTimerCombination(int numPins, int pins[], PinMap* pinTimers[]) {
 // - hardware speciffic
 void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
   if (numTimerPinsUsed+2 > SIMPLEFOC_STM32_MAX_PINTIMERSUSED) {
-    SIMPLEFOC_DEBUG("STM32: ERR: too many pins used");
+    SIMPLEFOC_DEBUG("STM32-DRV: ERR: too many pins used");
     return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
   }
 
@@ -531,7 +542,7 @@ void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 // - hardware speciffic
 void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
   if (numTimerPinsUsed+3 > SIMPLEFOC_STM32_MAX_PINTIMERSUSED) {
-    SIMPLEFOC_DEBUG("STM32: ERR: too many pins used");
+    SIMPLEFOC_DEBUG("STM32-DRV: ERR: too many pins used");
     return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
   }
   if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
@@ -547,8 +558,6 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
   HardwareTimer* HT1 = _initPinPWM(pwm_frequency, pinTimers[0]);
   HardwareTimer* HT2 = _initPinPWM(pwm_frequency, pinTimers[1]);
   HardwareTimer* HT3 = _initPinPWM(pwm_frequency, pinTimers[2]);
-  // allign the timers
-  //_alignPWMTimers(HT1, HT2, HT3);
   
   uint32_t channel1 = STM_PIN_CHANNEL(pinTimers[0]->function);
   uint32_t channel2 = STM_PIN_CHANNEL(pinTimers[1]->function);
@@ -575,7 +584,7 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
 // - hardware speciffic
 void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
   if (numTimerPinsUsed+4 > SIMPLEFOC_STM32_MAX_PINTIMERSUSED) {
-    SIMPLEFOC_DEBUG("STM32: ERR: too many pins used");
+    SIMPLEFOC_DEBUG("STM32-DRV: ERR: too many pins used");
     return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
   }
   if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
@@ -653,7 +662,7 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
 // - hardware specific
 void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l, const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
   if (numTimerPinsUsed+6 > SIMPLEFOC_STM32_MAX_PINTIMERSUSED) {
-    SIMPLEFOC_DEBUG("STM32: ERR: too many pins used");
+    SIMPLEFOC_DEBUG("STM32-DRV: ERR: too many pins used");
     return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
   }
   if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
@@ -679,7 +688,6 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
     HardwareTimer* HT4 = _initPinPWMLow(pwm_frequency, pinTimers[3]);
     HardwareTimer* HT5 = _initPinPWMHigh(pwm_frequency, pinTimers[4]);
     HardwareTimer* HT6 = _initPinPWMLow(pwm_frequency, pinTimers[5]);
-    //_alignPWMTimers(HT1, HT2, HT3);
     uint32_t channel1 = STM_PIN_CHANNEL(pinTimers[0]->function);
     uint32_t channel2 = STM_PIN_CHANNEL(pinTimers[1]->function);
     uint32_t channel3 = STM_PIN_CHANNEL(pinTimers[2]->function);

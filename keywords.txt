@@ -24,7 +24,7 @@ Commander	KEYWORD1
 StepDirListener	KEYWORD1   
 GenericCurrentSense	KEYWORD1   
 GenericSensor	KEYWORD1   
-
+SimpleFOCDebug	KEYWORD1   
 
 initFOC	KEYWORD2
 loopFOC	KEYWORD2

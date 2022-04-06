@@ -13,8 +13,8 @@
 typedef struct Stm32CurrentSenseParams {
   int pins[3] = {(int)NOT_SET};
   float adc_voltage_conv;
-  ADC_HandleTypeDef* adc_handle = NULL;
-  HardwareTimer* timer_handle = NULL;
+  ADC_HandleTypeDef* adc_handle = NP;
+  HardwareTimer* timer_handle = NP;
 } Stm32CurrentSenseParams;
 
 #endif

@@ -24,9 +24,15 @@ Therefore this is an attempt to:
 > - Low level API restructuring
 >    - Driver API
 >    - Current sense API
+> - New debugging interface
+>    - Static class SimpleFOCDebug
 > - Low-side current sensing
 >    - ESP32 generic support for multiple motors
-> - New handlign of current limit using voltage 
+>    - Added low-side current sensing support for stm32 - only one motor
+>        - f1 family
+>        - f4 family
+>        - g4 family
+> - New handling of current limit using voltage 
 >    - Support for motor KV rating - back emf estimation
 >    - Using motor phase resistance
 

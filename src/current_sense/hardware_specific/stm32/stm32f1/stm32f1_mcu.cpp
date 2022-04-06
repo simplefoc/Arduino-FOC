@@ -1,18 +1,16 @@
 #include "../../../hardware_api.h"
 
-#if defined(STM32F4xx)
+#if defined(STM32F1xx) 
 #include "../../../../common/foc_utils.h"
 #include "../../../../drivers/hardware_api.h"
 #include "../../../../drivers/hardware_specific/stm32_mcu.h"
 #include "../../../hardware_api.h"
 #include "../stm32_mcu.h"
-#include "stm32f4_hal.h"
+#include "stm32f1_hal.h"
 #include "Arduino.h"
 
-
-#define _ADC_VOLTAGE_F4 3.3f
-#define _ADC_RESOLUTION_F4 4096.0f
-
+#define _ADC_VOLTAGE_F1 3.3f
+#define _ADC_RESOLUTION_F1 4096.0f
 
 // array of values of 4 injected channels per adc instance (3)
 uint32_t adc_val[3][4]={0};
@@ -36,7 +34,7 @@ void* _configureADCLowSide(const void* driver_params, const int pinA, const int 
 
   Stm32CurrentSenseParams* cs_params= new Stm32CurrentSenseParams {
     .pins={0},
-    .adc_voltage_conv = (_ADC_VOLTAGE_F4) / (_ADC_RESOLUTION_F4)
+    .adc_voltage_conv = (_ADC_VOLTAGE_F1) / (_ADC_RESOLUTION_F1)
   };
   _adc_gpio_init(cs_params, pinA,pinB,pinC);
   if(_adc_init(cs_params, (STM32DriverParams*)driver_params) != 0) return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
@@ -50,7 +48,7 @@ void _driverSyncLowSide(void* _driver_params, void* _cs_params){
  
   // if compatible timer has not been found
   if (cs_params->timer_handle == NULL) return;
-  
+
   // stop all the timers for the driver
   _stopTimers(driver_params->timers, 6);
 
@@ -96,10 +94,10 @@ extern "C" {
       tim_downsample[adc_index] = 0;
       return;
     }
-    
+
     adc_val[adc_index][0]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_1);
     adc_val[adc_index][1]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_2);
-    adc_val[adc_index][2]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_3);    
+    adc_val[adc_index][2]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_3);
   }
 }
 

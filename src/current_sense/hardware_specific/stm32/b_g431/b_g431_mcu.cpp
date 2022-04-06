@@ -132,10 +132,27 @@ void DMA1_Channel2_IRQHandler(void) {
 }
 }
 
-void _driverSyncLowSide(void* driver_params, void* cs_params){
-  _UNUSED(cs_params);
-  // Set Trigger out for DMA transfer
-  LL_TIM_SetTriggerOutput(((STM32DriverParams*)driver_params)->timers[0]->getHandle()->Instance, LL_TIM_TRGO_UPDATE);
+void _driverSyncLowSide(void* _driver_params, void* _cs_params){
+  STM32DriverParams* driver_params = (STM32DriverParams*)_driver_params;
+  Stm32CurrentSenseParams* cs_params = (Stm32CurrentSenseParams*)_cs_params;
+   
+  // stop all the timers for the driver
+  _stopTimers(driver_params->timers, 6);
+
+  // if timer has repetition counter - it will downsample using it
+  // and it does not need the software downsample
+  if( IS_TIM_REPETITION_COUNTER_INSTANCE(cs_params->timer_handle->getHandle()->Instance) ){
+    // adjust the initial timer state such that the trigger for DMA transfer aligns with the pwm peaks instead of throughs.
+    // only necessary for the timers that have repetition counters
+    cs_params->timer_handle->getHandle()->Instance->CR1 |= TIM_CR1_DIR;
+    cs_params->timer_handle->getHandle()->Instance->CNT =  cs_params->timer_handle->getHandle()->Instance->ARR;
+  }
+  // set the trigger output event
+  LL_TIM_SetTriggerOutput(cs_params->timer_handle->getHandle()->Instance, LL_TIM_TRGO_UPDATE);
+
+  // restart all the timers of the driver
+  _startTimers(driver_params->timers, 6);
+
 }
 
 #endif

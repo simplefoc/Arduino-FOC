@@ -1,10 +1,10 @@
-#ifndef STM32F4_LOWSIDE_HAL
-#define STM32F4_LOWSIDE_HAL
+#ifndef STM32F1_LOWSIDE_HAL
+#define STM32F1_LOWSIDE_HAL
 
 #include "Arduino.h"
 
-#if defined(STM32F4xx)
-#include "stm32f4xx_hal.h"
+#if defined(STM32F1xx) 
+#include "stm32f1xx_hal.h"
 #include "../../../../common/foc_utils.h"
 #include "../../../../drivers/hardware_specific/stm32_mcu.h"
 #include "../stm32_mcu.h"
