@@ -46,6 +46,8 @@ public:
     static void println(const __FlashStringHelper* msg, int val);
     static void println(const char* msg, int val);
     static void println();
+    static void println(int val);
+    static void println(float val);
 
     static void print(const char* msg);
     static void print(const __FlashStringHelper* msg);
