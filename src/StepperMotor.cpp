@@ -5,7 +5,7 @@
 // StepperMotor(int pp)
 // - pp            - pole pair number
 // - R             - motor phase resistance
-// - KV            - motor kv rating
+// - KV            - motor kv rating (rmp/v)
 StepperMotor::StepperMotor(int pp, float _R, float _KV)
 : FOCMotor()
 {
@@ -14,7 +14,7 @@ StepperMotor::StepperMotor(int pp, float _R, float _KV)
   // save phase resistance number
   phase_resistance = _R;
   // save back emf constant KV = 1/KV
-  K_bemf = _isset(_KV) ? 1.0/_KV : NOT_SET;
+  K_bemf = _isset(_KV) ? 1.0f/_KV/_RPM_TO_RADS : NOT_SET;
 
   // torque control type is voltage by default
   // current and foc_current not supported yet

@@ -224,9 +224,9 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
     case CMD_KV_RATING:
       printVerbose(F("Motor KV: "));
       if(!GET){
-        motor->K_bemf = 1.0f/value;
+        motor->K_bemf = 1.0f/value/_RPM_TO_RADS;
       }
-      if(_isset(motor->K_bemf)) println(1.0f/motor->K_bemf);
+      if(_isset(motor->K_bemf)) println(1.0f/motor->K_bemf/_RPM_TO_RADS);
       else println(0);
       break;
     case CMD_SENSOR:

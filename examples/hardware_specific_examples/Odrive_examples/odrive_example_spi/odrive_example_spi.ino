@@ -21,6 +21,7 @@
 // Odrive M0 encoder pinout
 #define M0_ENC_A PB4
 #define M0_ENC_B PB5
+#define M0_ENC_Z PC9
 
 
 // Odrive M1 motor pinout
@@ -36,6 +37,7 @@
 // Odrive M1 encoder pinout
 #define M1_ENC_A PB6
 #define M1_ENC_B PB7
+#define M1_ENC_Z PC15
 
 // M1 & M2 common enable pin
 #define EN_GATE PB12

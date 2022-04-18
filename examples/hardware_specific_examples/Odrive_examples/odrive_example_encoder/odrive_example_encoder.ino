@@ -21,6 +21,7 @@
 // Odrive M0 encoder pinout
 #define M0_ENC_A PB4
 #define M0_ENC_B PB5
+#define M0_ENC_Z PC9
 
 
 // Odrive M1 motor pinout
@@ -36,6 +37,7 @@
 // Odrive M1 encoder pinout
 #define M1_ENC_A PB6
 #define M1_ENC_B PB7
+#define M1_ENC_Z PC15
 
 // M1 & M2 common enable pin
 #define EN_GATE PB12
@@ -59,11 +61,12 @@ void doMotor(char* cmd) { command.motor(&motor, cmd); }
 // current sensing on B and C phases, phase A not connected
 LowsideCurrentSense current_sense = LowsideCurrentSense(0.0005f, 10.0f, _NC, M0_IB, M0_IC);
 
-Encoder encoder = Encoder(M0_ENC_A, M0_ENC_B, 500);
+Encoder encoder = Encoder(M0_ENC_A, M0_ENC_B, 500,M0_ENC_Z);
 // Interrupt routine intialisation
 // channel A and B callbacks
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
+void doI(){encoder.handleIndex();}
 
 void setup(){
 
@@ -80,7 +83,7 @@ void setup(){
 
   // initialize encoder sensor hardware
   encoder.init();
-  encoder.enableInterrupts(doA, doB); 
+  encoder.enableInterrupts(doA, doB, doI); 
   // link the motor to the sensor
   motor.linkSensor(&encoder);
   

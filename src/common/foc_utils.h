@@ -24,6 +24,7 @@
 #define _2PI 6.28318530718f
 #define _3PI_2 4.71238898038f
 #define _PI_6 0.52359877559f
+#define _RPM_TO_RADS 0.10471975512f
 
 #define NOT_SET -12345.0
 #define _HIGH_IMPEDANCE 0
