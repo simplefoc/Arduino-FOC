@@ -21,6 +21,7 @@ Therefore this is an attempt to:
 > NEXT RELEASE 📢: <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2.2 
 > - GenericCurrentSense bugfix and testing
 > - bugfix leonardo #170
+> - bugfix - no index search after specifying natural direction
 > - Odrive example code see `examples/hardware_specific/odrive_example`
 > - Low level API restructuring
 >    - Driver API

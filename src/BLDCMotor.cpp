@@ -162,12 +162,13 @@ int BLDCMotor::alignSensor() {
   int exit_flag = 1; //success
   SIMPLEFOC_DEBUG("MOT: Align sensor.");
 
+  // check if sensor needs zero search
+  if(sensor->needsSearch()) exit_flag = absoluteZeroSearch();
+  // stop init if not found index
+  if(!exit_flag) return exit_flag;
+
   // if unknown natural direction
   if(!_isset(sensor_direction)){
-    // check if sensor needs zero search
-    if(sensor->needsSearch()) exit_flag = absoluteZeroSearch();
-    // stop init if not found index
-    if(!exit_flag) return exit_flag;
 
     // find natural direction
     // move one electrical revolution forward
