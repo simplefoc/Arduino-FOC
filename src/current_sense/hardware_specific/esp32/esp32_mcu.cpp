@@ -38,8 +38,8 @@ float _readADCVoltageInline(const int pinA, const void* cs_params){
 void* _configureADCInline(const void* driver_params, const int pinA, const int pinB, const int pinC){
   _UNUSED(driver_params);
 
-  pinMode(pinA, INPUT);
-  pinMode(pinB, INPUT);
+  if( _isset(pinA) ) pinMode(pinA, INPUT);
+  if( _isset(pinB) ) pinMode(pinB, INPUT);
   if( _isset(pinC) ) pinMode(pinC, INPUT);
 
   ESP32MCPWMCurrentSenseParams* params = new ESP32MCPWMCurrentSenseParams {
@@ -87,12 +87,12 @@ void* _configureADCLowSide(const void* driver_params, const int pinA,const int p
   
   mcpwm_unit_t unit = ((ESP32MCPWMDriverParams*)driver_params)->mcpwm_unit;
   int index_start = adc_pin_count[unit];
-  adc_pins[unit][adc_pin_count[unit]++] = pinA;
-  adc_pins[unit][adc_pin_count[unit]++] = pinB;
+  if( _isset(pinA) ) adc_pins[unit][adc_pin_count[unit]++] = pinA;
+  if( _isset(pinB) ) adc_pins[unit][adc_pin_count[unit]++] = pinB;
   if( _isset(pinC) ) adc_pins[unit][adc_pin_count[unit]++] = pinC;
 
-  pinMode(pinA, INPUT);
-  pinMode(pinB, INPUT);
+  if( _isset(pinA) ) pinMode(pinA, INPUT);
+  if( _isset(pinB) ) pinMode(pinB, INPUT);
   if( _isset(pinC) ) pinMode(pinC, INPUT);
 
   ESP32MCPWMCurrentSenseParams* params = new ESP32MCPWMCurrentSenseParams {

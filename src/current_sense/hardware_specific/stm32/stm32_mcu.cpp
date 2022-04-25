@@ -12,8 +12,8 @@
 void* _configureADCInline(const void* driver_params, const int pinA,const int pinB,const int pinC){
   _UNUSED(driver_params);
 
-  pinMode(pinA, INPUT);
-  pinMode(pinB, INPUT);
+  if( _isset(pinA) ) pinMode(pinA, INPUT);
+  if( _isset(pinB) ) pinMode(pinB, INPUT);
   if( _isset(pinC) ) pinMode(pinC, INPUT);
 
   Stm32CurrentSenseParams* params = new Stm32CurrentSenseParams {
