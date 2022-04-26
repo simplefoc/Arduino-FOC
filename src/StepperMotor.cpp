@@ -13,8 +13,8 @@ StepperMotor::StepperMotor(int pp, float _R, float _KV)
   pole_pairs = pp;
   // save phase resistance number
   phase_resistance = _R;
-  // save back emf constant KV = 1/KV
-  K_bemf = _isset(_KV) ? 1.0f/_KV/_RPM_TO_RADS : NOT_SET;
+  // save back emf constant KV = 1/K_bemf
+  KV_rating = _KV;
 
   // torque control type is voltage by default
   // current and foc_current not supported yet
@@ -282,8 +282,8 @@ void StepperMotor::move(float new_target) {
   // set internal target variable
   if(_isset(new_target) ) target = new_target;
 
-  // calculate the back-emf voltage if K_bemf available
-  if (_isset(K_bemf)) voltage_bemf = K_bemf*shaft_velocity;
+  // calculate the back-emf voltage if KV_rating available U_bemf = vel*(1/KV)
+  if (_isset(KV_rating)) voltage_bemf = shaft_velocity/KV_rating/_RPM_TO_RADS;
   // estimate the motor current if phase reistance available and current_sense not available
   if(!current_sense && _isset(phase_resistance)) current.q = (voltage.q - voltage_bemf)/phase_resistance;
 

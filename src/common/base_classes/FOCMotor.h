@@ -161,7 +161,7 @@ class FOCMotor
     // motor physical parameters
     float	phase_resistance; //!< motor phase resistance
     int pole_pairs;//!< motor pole pairs number
-    float K_bemf; //!< motor back emf constant (1/KV)
+    float KV_rating; //!< motor KV rating
 
     // limiting variables
     float voltage_limit; //!< Voltage limitting variable - global limit
