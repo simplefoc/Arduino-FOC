@@ -39,7 +39,6 @@ void setup() {
   
   // initialize encoder sensor hardware
   sensor.init();
-  sensor.enableInterrupts(doA, doB, doC); 
   // link the motor to the sensor
   motor.linkSensor(&sensor);
 

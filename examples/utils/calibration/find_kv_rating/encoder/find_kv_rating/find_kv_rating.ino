@@ -24,8 +24,8 @@ Encoder encoder = Encoder(2, 3, 8192);
 
 // Interrupt routine intialisation
 // channel A and B callbacks
-void doA(){encoder.handleA();}
-void doB(){encoder.handleB();}
+void doA(){sensor.handleA();}
+void doB(){sensor.handleB();}
 
 
 // voltage set point variable
@@ -44,7 +44,7 @@ void setup() {
   
   // initialize encoder sensor hardware
   sensor.init();
-  sensor.enableInterrupts(doA, doB, doC); 
+  sensor.enableInterrupts(doA, doB); 
   // link the motor to the sensor
   motor.linkSensor(&sensor);
 
