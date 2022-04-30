@@ -20,7 +20,7 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 //StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
 // encoder instance
-Encoder encoder = Encoder(2, 3, 8192);
+Encoder sensor = Encoder(2, 3, 8192);
 
 // Interrupt routine intialisation
 // channel A and B callbacks
