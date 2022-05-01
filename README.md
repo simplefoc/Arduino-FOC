@@ -19,27 +19,46 @@ Therefore this is an attempt to:
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
 
-> NEXT RELEASE 📢: <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2.2 
-> - GenericCurrentSense bugfix and testing
-> - bugfix leonardo #170
-> - bugfix - no index search after specifying natural direction
-> - Odrive example code see `examples/hardware_specific/odrive_example`
-> - Low level API restructuring
->    - Driver API
->    - Current sense API
-> - New debugging interface
->    - Static class SimpleFOCDebug
-> - Low-side current sensing
->    - ESP32 generic support for multiple motors
->    - Added low-side current sensing support for stm32 - only one motor
->        - f1 family
->        - f4 family
->        - g4 family
-> - New handling of current limit using voltage 
->    - Support for motor KV rating - back emf estimation
->    - Using motor phase resistance
 
-
+<blockquote class="info">
+   <p class="heading">NEW RELEASE 📢: <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2.2 <a href="https://github.com/simplefoc/Arduino-FOC/releases/tag/v2.2.2">see release</a></p>
+   <ul>
+      <li>GenericCurrentSense bugfix and testing</li>
+      <li>bugfix leonardo #170</li>
+      <li>bugfix - no index search after specifying natural direction</li>
+      <li>Low level API restructuring
+         <ul dir="auto">
+            <li>Driver API</li>
+            <li>Current sense API</li>
+         </ul>
+      </li>
+      <li>New debugging interface - <a href="https://docs.simplefoc.com/debugging">see in docs</a>
+         <ul dir="auto">
+            <li>Static class SimpleFOCDebug</li>
+         </ul>
+      </li>
+      <li>CurrentSense API change - added method <code class="highlighter-rouge">linkDriver()</code> - <a href="https://docs.simplefoc.com/current_sense">see in docs</a></li>
+      <li>Low-side current sensing - <a href="https://docs.simplefoc.com/low_side_current_sense">see in docs</a>
+         <ul dir="auto">
+            <li>ESP32 generic support for multiple motors</li>
+            <li>Added low-side current sensing support for stm32 - only one motor
+            <ul dir="auto">
+               <li>f1 family</li>
+               <li>f4 family</li>
+               <li>g4 family</li>
+            </ul>
+            </li>
+         </ul>
+      </li>
+      <li>New appraoch for current estimation for torque control using voltage - <a href="https://docs.simplefoc.com/voltage_torque_mode">see in docs </a>
+         <ul dir="auto">
+            <li>Support for motor KV rating - back emf estimation</li>
+            <li>Using motor phase resistance</li>
+         </ul>
+      </li>
+      <li>KV rating and phase resistance used for open-loop current limiting as well - <a href="https://docs.simplefoc.com/open_loop_motion_control">see in docs </a> </li>
+   </ul>
+</blockquote>
 
 ## Arduino *SimpleFOClibrary* v2.2
 
