@@ -51,23 +51,28 @@ Therefore this is an attempt to:
 
 This video demonstrates the *Simple**FOC**library* basic usage, electronic connections and shows its capabilities.
 
-
 ### Features
-- **Arduino compatible**: 
-   - Arduino library code
-  - Arduino Library Manager integration
+- **Easy install**: 
+   - Arduino IDE: Arduino Library Manager integration
+   - PlatformIO
 - **Open-Source**: Full code and documentation available on github
+- **Goal**: 
+   - Support as many [sensor](https://docs.simplefoc.com/position_sensors) + [motor](https://docs.simplefoc.com/motors) + [driver](https://docs.simplefoc.com/drivers) + [current sense](https://docs.simplefoc.com/current_sense)   combination as possible.
+   - Provide the up-to-date and in-depth documentation with API references and the examples
 - **Easy to setup and configure**: 
-  - Easy hardware configuration
-  - Easy [tuning the control loops](https://docs.simplefoc.com/motion_control)
-- **Modular**:
-  - Supports as many [sensors,  BLDC motors  and  driver boards](https://docs.simplefoc.com/supported_hardware) as possible
-  - Supports multiple [MCU architectures](https://docs.simplefoc.com/microcontrollers):
-     - Arduino: UNO, MEGA, any board with ATMega328 chips
-     - STM32 boards: [Nucleo](https://www.st.com/en/evaluation-tools/stm32-nucleo-boards.html), [Bluepill](https://stm32-base.org/boards/STM32F103C8T6-Blue-Pill.html) ...
-     - ESP32
-     - Teensy boards
-- **Plug & play**: Arduino <span class="simple">Simple<span class="foc">FOC</span>Shield</span>  
+   - Easy hardware configuration 
+   - Each hardware component is a C++ object (easy to understand) 
+   - Easy [tuning the control loops](https://docs.simplefoc.com/motion_control)
+   - [*Simple**FOC**Studio*](https://docs.simplefoc.com/studio) configuration GUI tool
+   - Built-in communication and monitoring
+- **Cross-platform**:
+   - Seamless code transfer from one microcontroller family to another 
+   - Supports multiple [MCU architectures](https://docs.simplefoc.com/microcontrollers):
+      - Arduino: UNO, MEGA, DUE, Leonardo ....
+      - STM32
+      - ESP32
+      - Teensy
+      - many more ...
 
 <p align=""> <img src="https://docs.simplefoc.com/extras/Images/uno_l6234.jpg"  height="170px">  <img src="https://docs.simplefoc.com/extras/Images/hmbgc_v22.jpg" height="170px">  <img src="https://docs.simplefoc.com/extras/Images/foc_shield_v13.jpg"  height="170px"></p>
 
