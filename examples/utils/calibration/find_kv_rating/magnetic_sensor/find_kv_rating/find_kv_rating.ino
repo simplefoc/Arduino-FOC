@@ -43,7 +43,8 @@ void setup() {
   motor.linkSensor(&sensor);
 
   // driver config
-  // power supply voltage [V]
+  // IMPORTANT!
+  // make sure to set the correct power supply voltage [V]
   driver.voltage_power_supply = 12;
   driver.init();
   // link driver
@@ -51,9 +52,6 @@ void setup() {
 
   // aligning voltage
   motor.voltage_sensor_align = 3;
-  
-  // choose FOC modulation (optional)
-  motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
 
   // set motion control loop to be used
   motor.controller = MotionControlType::torque;

@@ -1,52 +1,48 @@
 /**
  *
- * Position/angle motion control example
- * Steps:
- * 1) Configure the motor and encoder
- * 2) Run the code
- * 3) Set the target angle (in radians) from serial terminal
- *
- *
- * NOTE :
- * > Arduino UNO example code for running velocity motion control using an encoder with index significantly
- * > Since Arduino UNO doesn't have enough interrupt pins we have to use software interrupt library PciManager.
- *
- * > If running this code with Nucleo or Bluepill or any other board which has more than 2 interrupt pins
- * > you can supply doIndex directly to the encoder.enableInterrupts(doA,doB,doIndex) and avoid using PciManger
- *
- * > If you don't want to use index pin initialize the encoder class without index pin number:
- * > For example:
- * > - Encoder encoder = Encoder(2, 3, 8192);
- * > and initialize interrupts like this:
- * > - encoder.enableInterrupts(doA,doB)
- *
- * Check the docs.simplefoc.com for more info about the possible encoder configuration.
+ * SimpleFOCMini motor control example
+ * 
+ * For Arduino UNO, the most convenient way to use the board is to stack it to the pins: 
+ * - 12 - GND
+ * - 11 - IN1
+ * - 10 - IN2
+ * -  9 - IN3
+ * -  8 - EN
+ * 
+ * For other boards with UNO headers but more PWM channles such as esp32, nucleo-64, samd51 metro etc, the best way to most convenient pinout is:
+ * - GND - GND
+ * -  13 - IN1
+ * -  12 - IN2
+ * -  11 - IN3
+ * -   9 - EN 
+ * 
+ * For the boards without arduino uno headers, the choice of pinout is a lot less constrained.
  *
  */
 #include <SimpleFOC.h>
 
+
 // BLDC motor & driver instance
 BLDCMotor motor = BLDCMotor(11);
-BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
-// Stepper motor & driver instance
-//StepperMotor motor = StepperMotor(50);
-//StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
+BLDCDriver3PWM driver = BLDCDriver3PWM(11, 10, 9, 8);
 
 // encoder instance
-Encoder encoder = Encoder(2, 3, 8192);
-
+Encoder encoder = Encoder(2, 3, 500);
 // Interrupt routine intialisation
 // channel A and B callbacks
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 
-// angle set point variable
-float target_angle = 0;
 // instantiate the commander
 Commander command = Commander(Serial);
-void doTarget(char* cmd) { command.scalar(&target_angle, cmd); }
+void doMotor(char* cmd) { command.motor(&motor, cmd); }
 
 void setup() {
+  // if SimpleFOCMini is stacked in arduino headers
+  // on pins 12,11,10,9,8 
+  // pin 12 is used as ground
+  pinMode(12,OUTPUT);
+  pinMode(12,LOW);
 
   // initialize encoder sensor hardware
   encoder.init();
@@ -99,8 +95,8 @@ void setup() {
   // align encoder and start FOC
   motor.initFOC();
 
-  // add target command T
-  command.add('T', doTarget, "target angle");
+  // add target command M
+  command.add('M', doMotor, "motor");
 
   Serial.println(F("Motor ready."));
   Serial.println(F("Set the target angle using serial terminal:"));
@@ -118,7 +114,7 @@ void loop() {
   // velocity, position or voltage (defined in motor.controller)
   // this function can be run at much lower frequency than loopFOC() function
   // You can also use motor.move() and set the motor.target in the code
-  motor.move(target_angle);
+  motor.move();
 
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
