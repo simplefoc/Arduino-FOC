@@ -34,7 +34,7 @@ int LowsideCurrentSense::init(){
 }
 // Function finding zero offsets of the ADC
 void LowsideCurrentSense::calibrateOffsets(){    
-    const int calibration_rounds = 10000;
+    const int calibration_rounds = 1000;
 
     // find adc offset = zero current voltage
     offset_ia = 0;
