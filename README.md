@@ -95,38 +95,18 @@ This video demonstrates the *Simple**FOC**library* basic usage, electronic conne
 
 <p align=""> <img src="https://docs.simplefoc.com/extras/Images/uno_l6234.jpg"  height="170px">  <img src="https://docs.simplefoc.com/extras/Images/hmbgc_v22.jpg" height="170px">  <img src="https://docs.simplefoc.com/extras/Images/foc_shield_v13.jpg"  height="170px"></p>
 
-## Arduino *SimpleFOCShield* v2.0.4
-<p align="">
-<a href="https://youtu.be/G5pbo0C6ujE">
-<img src="https://docs.simplefoc.com/extras/Images/foc_shield_video.jpg"  height="320px">
-</a>
-</p>
 
-### Features
-- **Plug & play**: In combination with Arduino *Simple**FOC**library* - [github](https://github.com/simplefoc/Arduino-FOC)
-- **Low-cost**: Price of €15 - [Check the pricing](https://www.simplefoc.com/shop) 
-- **In-line current sensing**: Up to 3Amps/5Amps bidirectional
-   - configurable: 3.3Amps - 3.3V adc, 5Amps - 5V adc
-- **Integrated 8V regulator**: 
-   - Enable/disable by soldering pads
-- **Max power 120W** - max current 5A, power-supply 12-24V
-   - Designed for Gimbal motors with the internal resistance >10 Ωs. 
-- **Stackable**: running 2 motors in the same time
-- **Encoder/Hall sensors interface**: Integrated 3.3kΩ pullups (configurable)
-- **I2C interface**: Integrated 4.7kΩ pullups (configurable)
-- **Configurable pinout**: Hardware configuration - soldering connections
-- **Arduino headers**: Arduino UNO, Arduino MEGA, STM32 Nucleo boards...
-- **Open Source**: Fully available fabrication files - [how to make it yourself](https://docs.simplefoc.com/arduino_simplefoc_shield_fabrication)
+## Documentation
+Full API code documentation as well as example projects and step by step guides can be found on our [docs website](https://docs.simplefoc.com/).
 
-<p align=""><img src="https://simplefoc.com/assets/img/v2.jpg" height="180px">   <img src="https://simplefoc.com/assets/img/v1.jpg"  height="180px"> <img src="https://docs.simplefoc.com/extras/Images/simple_foc_shield_v13_small.gif"  height="180x"></p>
-
+![image](https://user-images.githubusercontent.com/36178713/168475410-105e4e3d-082a-4015-98ff-d380c7992dfd.png)
 
 
 ## Getting Started
 Depending on if you want to use this library as the plug and play Arduino library or you want to get insight in the algorithm and make changes there are two ways to install this code.
 
 - Full library installation [Docs](https://docs.simplefoc.com/library_download)
-- Minimal project builder [Docs](https://docs.simplefoc.com/minimal_download)
+- PlatformIO [Docs](https://docs.simplefoc.com/library_platformio)
 
 ### Arduino *SimpleFOClibrary* installation to Arduino IDE
 #### Arduino Library Manager 
@@ -149,14 +129,19 @@ git clone https://github.com/simplefoc/Arduino-FOC.git
 ```
 - Reopen Arduino IDE and you should have the library examples in `File > Examples > Simple FOC`.
 
-###  *SimpleFOClibrary* minimal project builder
+## Community and contributing
 
-For those willing to experiment and to modify the code I suggest using the minimal project builder [minimal branch](https://github.com/simplefoc/Arduino-FOC/tree/minimal). 
- > This code is completely independent and you can run it as any other Arduino Sketch without the need for any libraries. 
+For all the questions regarding the potential implementation, applications, supported hardware and similar please visit our [community forum](https://community.simplefoc.com) or our [discord server](https://discord.gg/kWBwuzY32n).
 
-All you need to do is:
-- Go to [minimal branch](https://github.com/simplefoc/Arduino-FOC/tree/minimal) 
-- Follow the tutorial in the README file and choose only the library files that are necessary for your application.
+It is always helpful to hear the stories/problems/suggestions of people implementing the code and you might find a lot of answered questions there already! 
+
+### Github Issues & Pull requests
+
+Please do not hesitate to leave an issue if you have problems/advices/suggestions regarding the code!
+
+Pull requests are welcome, but let's first discuss them in [community forum](https://community.simplefoc.com)!
+
+If you'd like to contribute to this porject but you are not very familiar with github, don't worry, let us know either by posting at the community forum , by posting a github issue or at our discord server.
 
 ## Arduino code example
 This is a simple Arduino code example implementing the velocity control program of a BLDC motor with encoder. 
@@ -229,9 +214,6 @@ Here are some of the *Simple**FOC**library* and *Simple**FOC**Shield* applicatio
 </a>
 </p>
 
-
-## Documentation
-Find out more information about the Arduino SimpleFOC project in [docs website](https://docs.simplefoc.com/) 
 
 
 ## Arduino FOC repo structure
