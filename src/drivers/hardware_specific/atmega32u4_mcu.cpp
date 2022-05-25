@@ -89,7 +89,7 @@ void* _configure4PWM(long pwm_frequency,const int pin1A, const int pin1B, const 
   _pinHighFrequency(pin2A);
   _pinHighFrequency(pin2B);
   GenericDriverParams* params = new GenericDriverParams {
-    .pins = { pin1A, pin2A, pin2A, pin2B },
+    .pins = { pin1A, pin1B, pin2A, pin2B },
     .pwm_frequency = pwm_frequency
   };
   return params;
