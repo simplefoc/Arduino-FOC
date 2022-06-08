@@ -79,6 +79,10 @@ void setup() {
   driver.init();
   // link the motor and the driver
   motor.linkDriver(&driver);
+  // link current sense and the driver
+  cs.linkDriver(&driver);
+
+  // align voltage
   motor.voltage_sensor_align = 0.5;
   
   // control loop type and torque mode 
@@ -124,7 +128,6 @@ void setup() {
   motor.init();
 
   cs.init();
-  cs.driverSync(&driver);
   // driver 8302 has inverted gains on all channels
   cs.gain_a *=-1;
   cs.gain_b *=-1;

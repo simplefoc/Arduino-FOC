@@ -56,11 +56,16 @@ void setup() {
   driver1.init();
   // link driver
   motor1.linkDriver(&driver1);
+  // link current sense and the driver
+  current_sense1.linkDriver(&driver1);
+  
   // power supply voltage [V]
   driver2.voltage_power_supply = 12;
   driver2.init();
   // link driver
   motor2.linkDriver(&driver2);
+  // link current sense and the driver
+  current_sense2.linkDriver(&driver2);
 
   // set control loop type to be used
   motor1.controller = MotionControlType::torque;

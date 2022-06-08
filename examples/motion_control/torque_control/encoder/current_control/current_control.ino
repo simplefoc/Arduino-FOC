@@ -39,6 +39,8 @@ void setup() {
   driver.init();
   // link driver
   motor.linkDriver(&driver);
+  // link current sense and the driver
+  current_sense.linkDriver(&driver);
 
   // current sense init hardware
   current_sense.init();

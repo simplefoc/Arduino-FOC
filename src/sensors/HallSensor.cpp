@@ -166,6 +166,7 @@ void HallSensor::init(){
 
   pulse_timestamp = _micros();
 
+  // we don't call Sensor::init() here because init is handled in HallSensor class.
 }
 
 // function enabling hardware interrupts for the callback provided

@@ -1,6 +1,5 @@
 #include "Commander.h"
 
-
 Commander::Commander(Stream& serial, char eol, bool echo){
   com_port = &serial;
   this->eol = eol;
@@ -102,9 +101,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
 
   // if target setting
   if(isDigit(user_command[0]) || user_command[0] == '-' || user_command[0] == '+'){
-    printVerbose(F("Target: "));
-    motor->target = atof(user_command);
-    println(motor->target);
+    target(motor, user_command);
     return;
   }
 
@@ -178,59 +175,9 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
       }
       break;
     case CMD_MOTION_TYPE:
-      printVerbose(F("Motion:"));
-      switch(sub_cmd){
-        case SCMD_DOWNSAMPLE:
-            printVerbose(F(" downsample: "));
-            if(!GET) motor->motion_downsample = value;
-            println((int)motor->motion_downsample);
-          break;
-        default:
-          // change control type
-          if(!GET && value >= 0 && (int)value < 5) // if set command
-            motor->controller = (MotionControlType)value;
-          switch(motor->controller){
-            case MotionControlType::torque:
-              println(F("torque"));
-              break;
-            case MotionControlType::velocity:
-              println(F("vel"));
-              break;
-            case MotionControlType::angle:
-              println(F("angle"));
-              break;
-            case MotionControlType::velocity_openloop:
-              println(F("vel open"));
-              break;
-            case MotionControlType::angle_openloop:
-              println(F("angle open"));
-              break;
-          }
-            break;
-        }
-      break;
     case CMD_TORQUE_TYPE:
-      // change control type
-      printVerbose(F("Torque: "));
-      if(!GET && (int8_t)value >= 0 && (int8_t)value < 3)// if set command
-        motor->torque_controller = (TorqueControlType)value;
-      switch(motor->torque_controller){
-        case TorqueControlType::voltage:
-          println(F("volt"));
-          break;
-        case TorqueControlType::dc_current:
-          println(F("dc curr"));
-          break;
-        case TorqueControlType::foc_current:
-          println(F("foc curr"));
-          break;
-      }
-      break;
     case CMD_STATUS:
-      // enable/disable
-      printVerbose(F("Status: "));
-      if(!GET) (bool)value ? motor->enable() : motor->disable();
-       println(motor->enabled);
+      motion(motor, &user_command[0]);
       break;
     case CMD_PWMMOD:
        // PWM modulation change
@@ -265,16 +212,21 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
        }
       break;
     case CMD_RESIST:
-      // enable/disable
       printVerbose(F("R phase: "));
       if(!GET){
         motor->phase_resistance = value;
-        if(motor->torque_controller==TorqueControlType::voltage){
-          motor->voltage_limit = motor->current_limit*value;
+        if(motor->torque_controller==TorqueControlType::voltage)
           motor->PID_velocity.limit= motor->current_limit;
-        }
       }
       if(_isset(motor->phase_resistance)) println(motor->phase_resistance);
+      else println(0);
+      break;
+    case CMD_KV_RATING:
+      printVerbose(F("Motor KV: "));
+      if(!GET){
+        motor->KV_rating = value;
+      }
+      if(_isset(motor->KV_rating)) println(motor->KV_rating);
       else println(0);
       break;
     case CMD_SENSOR:
@@ -379,6 +331,80 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
   }
 }
 
+void Commander::motion(FOCMotor* motor, char* user_cmd, char* separator){
+  char cmd = user_cmd[0];
+  char sub_cmd = user_cmd[1];
+  bool GET  = isSentinel(user_cmd[1]);
+  float value = atof(&user_cmd[(sub_cmd >= 'A'  && sub_cmd <= 'Z') ?  2 :  1]);
+
+  switch(cmd){
+    case CMD_MOTION_TYPE:
+      printVerbose(F("Motion:"));
+      switch(sub_cmd){
+        case SCMD_DOWNSAMPLE:
+            printVerbose(F(" downsample: "));
+            if(!GET) motor->motion_downsample = value;
+            println((int)motor->motion_downsample);
+          break;
+        default:
+          // change control type
+          if(!GET && value >= 0 && (int)value < 5) // if set command
+            motor->controller = (MotionControlType)value;
+          switch(motor->controller){
+            case MotionControlType::torque:
+              println(F("torque"));
+              break;
+            case MotionControlType::velocity:
+              println(F("vel"));
+              break;
+            case MotionControlType::angle:
+              println(F("angle"));
+              break;
+            case MotionControlType::velocity_openloop:
+              println(F("vel open"));
+              break;
+            case MotionControlType::angle_openloop:
+              println(F("angle open"));
+              break;
+          }
+            break;
+        }
+      break;
+    case CMD_TORQUE_TYPE:
+      // change control type
+      printVerbose(F("Torque: "));
+      if(!GET && (int8_t)value >= 0 && (int8_t)value < 3)// if set command
+        motor->torque_controller = (TorqueControlType)value;
+      switch(motor->torque_controller){
+        case TorqueControlType::voltage:
+          println(F("volt"));
+          // change the velocity control limits if necessary
+          if( !_isset(motor->phase_resistance) ) motor->PID_velocity.limit = motor->voltage_limit;
+          break;
+        case TorqueControlType::dc_current:
+          println(F("dc curr"));
+          // change the velocity control limits if necessary
+          motor->PID_velocity.limit = motor->current_limit;
+          break;
+        case TorqueControlType::foc_current:
+          println(F("foc curr"));
+          // change the velocity control limits if necessary
+          motor->PID_velocity.limit = motor->current_limit;
+          break;
+      }
+      break;
+    case CMD_STATUS:
+      // enable/disable
+      printVerbose(F("Status: "));
+      if(!GET) (bool)value ? motor->enable() : motor->disable();
+       println(motor->enabled);
+      break;
+    default:
+      target(motor,  user_cmd, separator);
+      break;
+  }
+}
+
 void Commander::pid(PIDController* pid, char* user_cmd){
   char cmd = user_cmd[0];
   bool GET  = isSentinel(user_cmd[1]);
@@ -438,6 +464,95 @@ void Commander::scalar(float* value,  char* user_cmd){
   if(!GET) *value = atof(user_cmd);
   println(*value);
 }
+
+
+void Commander::target(FOCMotor* motor,  char* user_cmd, char* separator){
+  // if no values sent
+  if(isSentinel(user_cmd[0])) return;
+  
+  float pos, vel, torque;
+  char* next_value;
+  switch(motor->controller){
+    case MotionControlType::torque: // setting torque target
+      torque = atof(strtok (user_cmd, separator));
+      motor->target = torque;
+      break;
+    case MotionControlType::velocity: // setting velocity target + torque limit
+      // set the target
+      vel= atof(strtok (user_cmd, separator));
+      motor->target = vel;
+
+      // allow for setting only the target velocity without chaning the torque limit
+      next_value = strtok (NULL, separator);
+      if (next_value){
+        torque = atof(next_value);
+        motor->PID_velocity.limit = torque;
+        // torque command can be voltage or current
+        if(!_isset(motor->phase_resistance) && motor->torque_controller == TorqueControlType::voltage) motor->voltage_limit = torque;
+        else  motor->current_limit = torque;
+      }
+      break;
+    case MotionControlType::angle: // setting angle target + torque, velocity limit
+      // setting the target position
+      pos= atof(strtok (user_cmd, separator));
+      motor->target = pos;
+
+      // allow for setting only the target position without chaning the velocity/torque limits 
+      next_value = strtok (NULL, separator);
+      if( next_value ){
+        vel = atof(next_value);
+        motor->velocity_limit = vel;
+        motor->P_angle.limit = vel;
+  
+        // allow for setting only the target position and velocity limit without the torque limit 
+        next_value = strtok (NULL, separator);
+        if( next_value ){
+          torque= atof(next_value);
+          motor->PID_velocity.limit = torque;
+          // torque command can be voltage or current
+          if(!_isset(motor->phase_resistance) && motor->torque_controller == TorqueControlType::voltage) motor->voltage_limit = torque;
+          else  motor->current_limit = torque;
+        }
+      }
+      break;
+    case MotionControlType::velocity_openloop: // setting velocity target + torque limit
+      // set the target
+      vel= atof(strtok (user_cmd, separator));
+      motor->target = vel;
+      // allow for setting only the target velocity without chaning the torque limit
+      next_value = strtok (NULL, separator);
+      if (next_value ){
+        torque = atof(next_value);
+        // torque command can be voltage or current
+        if(!_isset(motor->phase_resistance)) motor->voltage_limit = torque;
+        else  motor->current_limit = torque;
+      }
+      break;
+    case MotionControlType::angle_openloop: // setting angle target + torque, velocity limit
+      // set the target
+      pos= atof(strtok (user_cmd, separator));
+      motor->target = pos; 
+      
+      // allow for setting only the target position without chaning the velocity/torque limits 
+      next_value = strtok (NULL, separator);
+      if( next_value ){
+        vel = atof(next_value);
+        motor->velocity_limit = vel;
+        // allow for setting only the target velocity without chaning the torque limit
+        next_value = strtok (NULL, separator);
+        if (next_value ){
+          torque = atof(next_value);
+          // torque command can be voltage or current
+          if(!_isset(motor->phase_resistance)) motor->voltage_limit = torque;
+          else  motor->current_limit = torque;
+        }
+      }
+      break;
+  }
+  printVerbose(F("Target: "));
+  println(motor->target);
+}
+
 
 bool Commander::isSentinel(char ch)
 {

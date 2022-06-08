@@ -7,6 +7,16 @@
 
 
 
+// expected frequency on DPLL, since we don't configure it ourselves. Typically this is the CPU frequency.
+// for custom boards or overclockers you can override it using this define.
+#ifndef SIMPLEFOC_SAMD51_DPLL_FREQ
+#define SIMPLEFOC_SAMD51_DPLL_FREQ 120000000
+#endif
+
+
+
+
+
 //	TCC#   Channels   WO_NUM   Counter size   Fault   Dithering   Output matrix   DTI   SWAP   Pattern generation
 //	0         6         8         24-bit       Yes       Yes       Yes            Yes   Yes    Yes
 //	1         4         8         24-bit       Yes       Yes       Yes            Yes   Yes    Yes
@@ -16,7 +26,6 @@
 
 
 #define NUM_WO_ASSOCIATIONS 72
-
 
 struct wo_association WO_associations[] = {
 
@@ -112,7 +121,7 @@ struct wo_association& getWOAssociation(EPortType port, uint32_t pin) {
 
 
 EPioType getPeripheralOfPermutation(int permutation, int pin_position) {
-	return ((permutation>>pin_position)&0x01)==0x1?PIO_TIMER_ALT:PIO_TIMER;
+	return ((permutation>>pin_position)&0x01)==0x1?PIO_TCC_PDEC:PIO_TIMER_ALT;
 }
 
 
@@ -124,24 +133,17 @@ void syncTCC(Tcc* TCCx) {
 
 
 
-void writeSAMDDutyCycle(int chaninfo, float dc) {
-	uint8_t tccn = GetTCNumber(chaninfo);
-	uint8_t chan = GetTCChannelNumber(chaninfo);
+void writeSAMDDutyCycle(tccConfiguration* info, float dc) {
+	uint8_t tccn = GetTCNumber(info->tcc.chaninfo);
+	uint8_t chan = GetTCChannelNumber(info->tcc.chaninfo);
 	if (tccn<TCC_INST_NUM) {
-		Tcc* tcc = (Tcc*)GetTC(chaninfo);
+		Tcc* tcc = (Tcc*)GetTC(info->tcc.chaninfo);
 		// set via CCBUF
-		while ( (tcc->SYNCBUSY.vec.CC & (0x1<<chan)) > 0 );
-		tcc->CCBUF[chan].reg = (uint32_t)((SIMPLEFOC_SAMD_PWM_RESOLUTION-1) * dc); // TODO pwm frequency!
-//		tcc->STATUS.vec.CCBUFV |= (0x1<<chan);
-//		while ( tcc->SYNCBUSY.bit.STATUS > 0 );
-//		tcc->CTRLBSET.reg |= TCC_CTRLBSET_CMD(TCC_CTRLBSET_CMD_UPDATE_Val);
-//		while ( tcc->SYNCBUSY.bit.CTRLB > 0 );
+//		while ( (tcc->SYNCBUSY.vec.CC & (0x1<<chan)) > 0 );
+		tcc->CCBUF[chan].reg = (uint32_t)((info->pwm_res-1) * dc); // TODO pwm frequency!
 	}
-	else {
-		// Tc* tc = (Tc*)GetTC(chaninfo);
-		// //tc->COUNT16.CC[chan].reg = (uint32_t)((SIMPLEFOC_SAMD_PWM_RESOLUTION-1) * dc);
-		// tc->COUNT8.CC[chan].reg = (uint8_t)((SIMPLEFOC_SAMD_PWM_TC_RESOLUTION-1) * dc);
-		// while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
+	else { 
+		// we don't support the TC channels on SAMD51, isn't worth it.
 	}
 }
 
@@ -183,12 +185,12 @@ void configureSAMDClock() {
 		while (GCLK->SYNCBUSY.vec.GENCTRL&(0x1<<PWM_CLOCK_NUM));
 
 		GCLK->GENCTRL[PWM_CLOCK_NUM].reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_DIV(1) | GCLK_GENCTRL_IDC
-										 | GCLK_GENCTRL_SRC(GCLK_GENCTRL_SRC_DFLL_Val);
-	 	 	 	 	 	 	 	 	 	 //| GCLK_GENCTRL_SRC(GCLK_GENCTRL_SRC_DPLL0_Val);
+										 //| GCLK_GENCTRL_SRC(GCLK_GENCTRL_SRC_DFLL_Val);
+	 	 	 	 	 	 	 	 	 	 | GCLK_GENCTRL_SRC(GCLK_GENCTRL_SRC_DPLL0_Val);
 		while (GCLK->SYNCBUSY.vec.GENCTRL&(0x1<<PWM_CLOCK_NUM));
 
 #ifdef SIMPLEFOC_SAMD_DEBUG
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("Configured clock...");
+		SIMPLEFOC_DEBUG("SAMD: Configured clock...");
 #endif
 	}
 }
@@ -221,10 +223,19 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 		tcc->DRVCTRL.vec.INVEN = (tcc->DRVCTRL.vec.INVEN&invenMask)|invenVal;
 		syncTCC(tcc); // wait for sync
 
+		// work out pwm resolution for desired frequency and constrain to max/min values
+		long pwm_resolution = (SIMPLEFOC_SAMD51_DPLL_FREQ/2) / pwm_frequency;
+		if (pwm_resolution>SIMPLEFOC_SAMD_MAX_PWM_RESOLUTION) 
+			pwm_resolution = SIMPLEFOC_SAMD_MAX_PWM_RESOLUTION;
+		if (pwm_resolution<SIMPLEFOC_SAMD_MIN_PWM_RESOLUTION) 
+			pwm_resolution = SIMPLEFOC_SAMD_MIN_PWM_RESOLUTION;
+		// store for later use
+		tccConfig.pwm_res = pwm_resolution;
+
 		if (hw6pwm>0.0) {
 			tcc->WEXCTRL.vec.DTIEN |= (1<<tccConfig.tcc.chan);
-			tcc->WEXCTRL.bit.DTLS = hw6pwm*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1);
-			tcc->WEXCTRL.bit.DTHS = hw6pwm*(SIMPLEFOC_SAMD_PWM_RESOLUTION-1);
+			tcc->WEXCTRL.bit.DTLS = hw6pwm*(pwm_resolution-1);
+			tcc->WEXCTRL.bit.DTHS = hw6pwm*(pwm_resolution-1);
 			syncTCC(tcc); // wait for sync
 		}
 
@@ -232,7 +243,7 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 			tcc->WAVE.reg |= TCC_WAVE_POL(0xF)|TCC_WAVE_WAVEGEN_DSTOP;   // Set wave form configuration - TODO check this... why set like this?
 			while ( tcc->SYNCBUSY.bit.WAVE == 1 ); // wait for sync
 
-			tcc->PER.reg = SIMPLEFOC_SAMD_PWM_RESOLUTION - 1;                 // Set counter Top using the PER register
+			tcc->PER.reg = pwm_resolution - 1;                 // Set counter Top using the PER register
 			while ( tcc->SYNCBUSY.bit.PER == 1 ); // wait for sync
 
 			// set all channels to 0%
@@ -247,18 +258,20 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 		tcc->CTRLA.reg |= TCC_CTRLA_ENABLE | TCC_CTRLA_PRESCALER_DIV1; //48Mhz/1=48Mhz/2(up/down)=24MHz/1024=24KHz
 		while ( tcc->SYNCBUSY.bit.ENABLE == 1 ); // wait for sync
 
-#ifdef SIMPLEFOC_SAMD_DEBUG
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("(Re-)Initialized TCC ");
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.tcc.tccn);
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("-");
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.tcc.chan);
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("[");
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print(tccConfig.wo);
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.println("]");
+#if defined(SIMPLEFOC_SAMD_DEBUG) && !defined(SIMPLEFOC_DISABLE_DEBUG)
+		SimpleFOCDebug::print("SAMD: (Re-)Initialized TCC ");
+		SimpleFOCDebug::print(tccConfig.tcc.tccn);
+		SimpleFOCDebug::print("-");
+		SimpleFOCDebug::print(tccConfig.tcc.chan);
+		SimpleFOCDebug::print("[");
+		SimpleFOCDebug::print(tccConfig.wo);
+		SimpleFOCDebug::print("]  pwm res ");
+		SimpleFOCDebug::print((int)pwm_resolution);
+		SimpleFOCDebug::println();	
 #endif
 	}
 	else if (tccConfig.tcc.tccn>=TCC_INST_NUM) {
-		Tc* tc = (Tc*)GetTC(tccConfig.tcc.chaninfo);
+		//Tc* tc = (Tc*)GetTC(tccConfig.tcc.chaninfo);
 
 		// disable
 		// tc->COUNT8.CTRLA.bit.ENABLE = 0;
@@ -280,8 +293,8 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 		// while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
 
 	#ifdef SIMPLEFOC_SAMD_DEBUG
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.print("Initialized TC ");
-		SIMPLEFOC_SAMD_DEBUG_SERIAL.println(tccConfig.tcc.tccn);
+		SIMPLEFOC_DEBUG("SAMD: Not initialized: TC ", tccConfig.tcc.tccn);
+		SIMPLEFOC_DEBUG("SAMD: TC units not supported on SAMD51");
 	#endif
 	}
 
