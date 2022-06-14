@@ -32,7 +32,7 @@ jobs:
             sketch-names: single_full_control_example.ino
             
           - arduino-boards-fqbn: arduino:avr:leonardo # arduino leonardo - one full example
-            sketch-names: angle_control.ino
+            sketch-names: open_loop_position_example.ino
             
           - arduino-boards-fqbn: arduino:avr:mega # arduino mega2660 - one full example
             sketch-names: single_full_control_example.ino
