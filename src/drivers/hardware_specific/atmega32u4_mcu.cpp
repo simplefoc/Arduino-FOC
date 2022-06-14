@@ -158,8 +158,8 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
   ret_flag += _configureComplementaryPair(pinC_h, pinC_l);
   if (ret_flag!=0) return SIMPLEFOC_DRIVER_INIT_FAILED;
   GenericDriverParams* params = new GenericDriverParams {
-    .pins = { pinA_h,, pinA_l, pinB_h, pinB_l, pinC_h, pinC_l },
-    .pwm_frequency = pwm_frequency
+    .pins = { pinA_h, pinA_l, pinB_h, pinB_l, pinC_h, pinC_l },
+    .pwm_frequency = pwm_frequency,
     .dead_zone = dead_zone
   };
   return params;

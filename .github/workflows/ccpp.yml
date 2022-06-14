@@ -10,6 +10,8 @@ jobs:
         arduino-boards-fqbn:
           - arduino:avr:uno                          # arudino uno
           - arduino:sam:arduino_due_x                # arduino due
+          - arduino:avr:mega2560                     # arduino mega2650
+          - arduino:avr:leonardo                     # arduino leonardo
           - arduino:samd:nano_33_iot                 # samd21
           - adafruit:samd:adafruit_metro_m4          # samd51
           - esp32:esp32:esp32doit-devkit-v1          # esp32
@@ -27,6 +29,12 @@ jobs:
             sketches-exclude: bluepill_position_control, esp32_position_control, esp32_i2c_dual_bus_example, stm32_i2c_dual_bus_example, magnetic_sensor_spi_alt_example, osc_esp32_3pwm, osc_esp32_fullcontrol, nano33IoT_velocity_control, smartstepper_control,esp32_current_control_low_side, stm32_spi_alt_example, esp32_spi_alt_example, B_G431B_ESC1, odrive_example_spi, odrive_example_encoder, single_full_control_example, double_full_control_example
 
           - arduino-boards-fqbn: arduino:sam:arduino_due_x # arduino due - one full example
+            sketch-names: single_full_control_example.ino
+            
+          - arduino-boards-fqbn: arduino:avr:leonardo # arduino leonardo - one full example
+            sketch-names: single_full_control_example.ino
+            
+          - arduino-boards-fqbn: arduino:avr:mega2560 # arduino mega2660 - one full example
             sketch-names: single_full_control_example.ino
             
           - arduino-boards-fqbn: arduino:samd:nano_33_iot  # samd21 
