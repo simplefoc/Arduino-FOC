@@ -10,7 +10,7 @@ jobs:
         arduino-boards-fqbn:
           - arduino:avr:uno                          # arudino uno
           - arduino:sam:arduino_due_x                # arduino due
-          - arduino:avr:mega2560                     # arduino mega2650
+          - arduino:avr:mega                         # arduino mega2650
           - arduino:avr:leonardo                     # arduino leonardo
           - arduino:samd:nano_33_iot                 # samd21
           - adafruit:samd:adafruit_metro_m4          # samd51
@@ -32,9 +32,9 @@ jobs:
             sketch-names: single_full_control_example.ino
             
           - arduino-boards-fqbn: arduino:avr:leonardo # arduino leonardo - one full example
-            sketch-names: single_full_control_example.ino
+            sketch-names: angle_control.ino
             
-          - arduino-boards-fqbn: arduino:avr:mega2560 # arduino mega2660 - one full example
+          - arduino-boards-fqbn: arduino:avr:mega # arduino mega2660 - one full example
             sketch-names: single_full_control_example.ino
             
           - arduino-boards-fqbn: arduino:samd:nano_33_iot  # samd21 
