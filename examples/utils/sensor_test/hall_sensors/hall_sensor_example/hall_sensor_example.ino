@@ -11,7 +11,7 @@
 // HallSensor(int hallA, int hallB , int cpr, int index)
 //  - hallA, hallB, hallC    - HallSensor A, B and C pins
 //  - pp                     - pole pairs
-HallSensor sensor = HallSensor(2, 3, 4, 11);
+HallSensor sensor = HallSensor(2, 3, 4, 14);
 
 // Interrupt routine intialisation
 // channel A and B callbacks
@@ -44,4 +44,5 @@ void loop() {
   Serial.print(sensor.getAngle());
   Serial.print("\t");
   Serial.println(sensor.getVelocity());
+  delay(100);
 }
