@@ -39,10 +39,10 @@ preferred-citation:
   doi: "10.21105/joss.04232"
   journal: "Journal of Open Source Software"
   url: "https://doi.org/10.21105/joss.04232"
-  month: 9
+  month: 6
   start: 4232 # First page number
   end: 4232 # Last page number
   title: "SimpleFOC: A Field Oriented Control (FOC) Library for Controlling Brushless Direct Current (BLDC) and Stepper Motors"
   volume: 7
-  number: 74
+  issue: 74
   year: 2022
