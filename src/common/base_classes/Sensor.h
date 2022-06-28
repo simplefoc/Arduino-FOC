@@ -101,6 +101,12 @@ class Sensor{
          * 1 - ecoder with index (with index not found yet)
          */
         virtual int needsSearch();
+
+        /**
+         * Minimum time between updates to velocity. If time elapsed is lower than this, the velocity is not updated.
+         */
+        float minDeltaT = 0.000100; // default is 100 microseconds, or 10kHz
+
     protected:
         /** 
          * Get current shaft angle from the sensor hardware, and 
@@ -120,9 +126,10 @@ class Sensor{
         virtual void init();
 
         // velocity calculation variables
-        float angle_prev=0; // result of last call to getSensorAngle(), used for full rotations and velocity
+        float velocity=0.0f;
+        float angle_prev=0.0f; // result of last call to getSensorAngle(), used for full rotations and velocity
         long angle_prev_ts=0; // timestamp of last call to getAngle, used for velocity
-        float vel_angle_prev=0; // angle at last call to getVelocity, used for velocity
+        float vel_angle_prev=0.0f; // angle at last call to getVelocity, used for velocity
         long vel_angle_prev_ts=0; // last velocity calculation timestamp
         int32_t full_rotations=0; // full rotation tracking
         int32_t vel_full_rotations=0; // previous full rotation value for velocity calculation
