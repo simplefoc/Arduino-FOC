@@ -59,7 +59,7 @@ jobs:
             platform-url:  https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
             sketch-names: bluepill_position_control.ino, stm32_i2c_dual_bus_example.ino, stm32_spi_alt_example.ino
 
-          - arduino-boards-fqbn: STMicroelectronics:stm32:Disco:pnum=B_G431B_ESC1      # B-G431-ESC1
+          - arduino-boards-fqbn: STMicroelectronics:stm32:Disco:pnum=B-G431B-ESC1      # B-G431-ESC1
             platform-url:  https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
             sketch-names: B_G431B_ESC1.ino
 
