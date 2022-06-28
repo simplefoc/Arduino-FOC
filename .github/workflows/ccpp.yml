@@ -19,7 +19,7 @@ jobs:
           - STMicroelectronics:stm32:GenF1:pnum=BLUEPILL_F103C8   # stm32 bluepill
           - STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE # stm32 nucleo
           - STMicroelectronics:stm32:GenF4:pnum=GENERIC_F405RGTX  # stm32f405 - odrive
-          - STMicroelectronics:stm32:Disco:pnum=B_G431B_ESC1      # B-G431-ESC1
+          - STMicroelectronics:stm32:Disco:pnum=B-G431B-ESC1      # B-G431-ESC1
           - arduino:mbed_rp2040:pico                 # rpi pico
           
         include:
