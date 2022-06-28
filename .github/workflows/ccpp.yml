@@ -63,7 +63,7 @@ jobs:
             platform-url:  https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
             sketch-names: B_G431B_ESC1.ino
             build-properties: 
-              All:
+              B_G431B_ESC1:
                 -DHAL_ADC_MODULE_ONLY
                 -DHAL_OPAMP_MODULE_ENABLED
 
