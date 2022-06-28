@@ -62,6 +62,10 @@ jobs:
           - arduino-boards-fqbn: STMicroelectronics:stm32:Disco:pnum=B_G431B_ESC1      # B-G431-ESC1
             platform-url:  https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
             sketch-names: B_G431B_ESC1.ino
+            build-properties: 
+              All:
+                -DHAL_ADC_MODULE_ONLY
+                -DHAL_OPAMP_MODULE_ENABLED
 
           - arduino-boards-fqbn: STMicroelectronics:stm32:GenF4:pnum=GENERIC_F405RGTX  # stm32f405 - odrive
             platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
@@ -71,7 +75,6 @@ jobs:
             platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
             sketch-names: single_full_control_example.ino, stm32_spi_alt_example.ino, sdouble_full_control_example.ino
             
-        
 
       # Do not cancel all jobs / architectures if one job fails
       fail-fast: false
