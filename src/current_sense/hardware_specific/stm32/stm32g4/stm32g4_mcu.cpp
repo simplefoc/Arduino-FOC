@@ -49,31 +49,37 @@ void _driverSyncLowSide(void* _driver_params, void* _cs_params){
   STM32DriverParams* driver_params = (STM32DriverParams*)_driver_params;
   Stm32CurrentSenseParams* cs_params = (Stm32CurrentSenseParams*)_cs_params;
  
+  
+
   // if compatible timer has not been found
   if (cs_params->timer_handle == NULL) return;
   
-  // stop all the timers for the driver
-  _stopTimers(driver_params->timers, 6);
+  // // stop all the timers for the driver
+  // _stopTimers(driver_params->timers, 6);
 
-  // if timer has repetition counter - it will downsample using it
-  // and it does not need the software downsample
-  if( IS_TIM_REPETITION_COUNTER_INSTANCE(cs_params->timer_handle->getHandle()->Instance) ){
-    // adjust the initial timer state such that the trigger 
-    //   - for DMA transfer aligns with the pwm peaks instead of throughs.
-    //   - for interrupt based ADC transfer 
-    //   - only necessary for the timers that have repetition counters
-    cs_params->timer_handle->getHandle()->Instance->CR1 |= TIM_CR1_DIR;
-    cs_params->timer_handle->getHandle()->Instance->CNT =  cs_params->timer_handle->getHandle()->Instance->ARR;
-    // remember that this timer has repetition counter - no need to downasmple
-    needs_downsample[_adcToIndex(cs_params->adc_handle)] = 0;
-  }
+  // // if timer has repetition counter - it will downsample using it
+  // // and it does not need the software downsample
+  // if( IS_TIM_REPETITION_COUNTER_INSTANCE(cs_params->timer_handle->getHandle()->Instance) ){
+  //   // adjust the initial timer state such that the trigger 
+  //   //   - for DMA transfer aligns with the pwm peaks instead of throughs.
+  //   //   - for interrupt based ADC transfer 
+  //   //   - only necessary for the timers that have repetition counters
+  //   cs_params->timer_handle->getHandle()->Instance->CR1 |= TIM_CR1_DIR;
+  //   cs_params->timer_handle->getHandle()->Instance->CNT =  cs_params->timer_handle->getHandle()->Instance->ARR;
+  //   // remember that this timer has repetition counter - no need to downasmple
+  //   needs_downsample[_adcToIndex(cs_params->adc_handle)] = 0;
+  // }
+  
   // set the trigger output event
   LL_TIM_SetTriggerOutput(cs_params->timer_handle->getHandle()->Instance, LL_TIM_TRGO_UPDATE);
   // start the adc 
+  // HAL_ADC_Start(cs_params->adc_handle);
   HAL_ADCEx_InjectedStart_IT(cs_params->adc_handle);
 
+  SIMPLEFOC_DEBUG("here  driver_sync!");
   // restart all the timers of the driver
-  _startTimers(driver_params->timers, 6);
+  // _startTimers(driver_params->timers, 6);
+  pinMode(PB10,OUTPUT);
 }
   
 
@@ -89,6 +95,7 @@ float _readADCVoltageLowSide(const int pin, const void* cs_params){
 
 extern "C" {
   void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef *AdcHandle){
+    digitalWrite(PB10, 0);
     // calculate the instance
     int adc_index = _adcToIndex(AdcHandle);
 
@@ -100,7 +107,8 @@ extern "C" {
     
     adc_val[adc_index][0]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_1);
     adc_val[adc_index][1]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_2);
-    adc_val[adc_index][2]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_3);    
+    adc_val[adc_index][2]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_3);  
+    digitalWrite(PB10, 1);  
   }
 }
 

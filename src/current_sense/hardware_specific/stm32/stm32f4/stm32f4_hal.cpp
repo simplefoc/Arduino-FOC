@@ -78,7 +78,12 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   hadc.Init.NbrOfConversion = 1;
   hadc.Init.DMAContinuousRequests = DISABLE;
   hadc.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
-  HAL_ADC_Init(&hadc);
+  if ( HAL_ADC_Init(&hadc) != HAL_OK){
+  #ifdef SIMPLEFOC_STM32_DEBUG
+    SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init ADC!");
+  #endif
+    return -1;
+  }
   /**Configure for the selected ADC regular channel to be converted. 
   */
     
@@ -122,17 +127,32 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   // first channel
   sConfigInjected.InjectedRank = 1;
   sConfigInjected.InjectedChannel = STM_PIN_CHANNEL(pinmap_function(analogInputToPinName(cs_params->pins[0]), PinMap_ADC));
-  HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected);
+  if (HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected) != HAL_OK){
+  #ifdef SIMPLEFOC_STM32_DEBUG
+    SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init injected channel: ", (int)STM_PIN_CHANNEL(pinmap_function(analogInputToPinName(cs_params->pins[0]), PinMap_ADC)) );
+  #endif
+    return -1;
+  }
   // second channel
   sConfigInjected.InjectedRank = 2;
   sConfigInjected.InjectedChannel = STM_PIN_CHANNEL(pinmap_function(analogInputToPinName(cs_params->pins[1]), PinMap_ADC));
-  HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected);
+  if (HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected) != HAL_OK){
+  #ifdef SIMPLEFOC_STM32_DEBUG
+    SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init injected channel: ", (int)STM_PIN_CHANNEL(pinmap_function(analogInputToPinName(cs_params->pins[1]), PinMap_ADC)) );
+  #endif
+    return -1;
+  }
 
   // third channel - if exists
   if(_isset(cs_params->pins[2])){
     sConfigInjected.InjectedRank = 3;
     sConfigInjected.InjectedChannel = STM_PIN_CHANNEL(pinmap_function(analogInputToPinName(cs_params->pins[2]), PinMap_ADC));
-    HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected);
+    if (HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected) != HAL_OK){
+    #ifdef SIMPLEFOC_STM32_DEBUG
+      SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init injected channel: ", (int)STM_PIN_CHANNEL(pinmap_function(analogInputToPinName(cs_params->pins[2]), PinMap_ADC)) );
+    #endif
+      return -1;
+    }
   }
   
   // enable interrupt
