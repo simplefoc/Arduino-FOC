@@ -1,0 +1,48 @@
+cff-version: 1.0.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Skuric"
+  given-names: "Antun"
+  orcid: "https://orcid.org/0000-0002-3323-4482"
+- family-names: "Bank"
+  given-names: "Hasan Sinan"
+  orcid: "https://orcid.org/0000-0002-0626-2664"  
+- family-names: "Unger"
+  given-names: "Richard"  
+- family-names: "Williams"
+  given-names: "Owen"  
+- family-names: "González-Reyes"
+  given-names: "David"
+  orcid: "https://orcid.org/0000-0002-1535-3007"
+title: "SimpleFOC: A Field Oriented Control (FOC) Library for Controlling Brushless Direct Current (BLDC) and Stepper Motors"
+version: 2.2.2
+doi: 10.21105/joss.04232
+date-released: 2022-06-26
+url: "https://github.com/simplefoc/Arduino-FOC"
+
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Skuric"
+    given-names: "Antun"
+    orcid: "https://orcid.org/0000-0002-3323-4482"
+  - family-names: "Bank"
+    given-names: "Hasan Sinan"
+    orcid: "https://orcid.org/0000-0002-0626-2664"  
+  - family-names: "Unger"
+    given-names: "Richard"  
+  - family-names: "Williams"
+    given-names: "Owen"  
+  - family-names: "González-Reyes"
+    given-names: "David"
+    orcid: "https://orcid.org/0000-0002-1535-3007"
+  doi: "10.21105/joss.04232"
+  journal: "Journal of Open Source Software"
+  url: "https://doi.org/10.21105/joss.04232"
+  month: 6
+  start: 4232 # First page number
+  end: 4232 # Last page number
+  title: "SimpleFOC: A Field Oriented Control (FOC) Library for Controlling Brushless Direct Current (BLDC) and Stepper Motors"
+  volume: 7
+  issue: 74
+  year: 2022
