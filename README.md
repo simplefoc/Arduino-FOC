@@ -18,7 +18,12 @@ Therefore this is an attempt to:
    - *Medium-power* BLDC driver (<30Amps): [Arduino <span class="simple">Simple<b>FOC</b>PowerShield</span> ](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
-
+<h3>NEWS 📢: SimpleFOClibrary has been published in the Journal of Open Source Software</h3>
+<p>
+  <b>SimpleFOC</b>: A Field Oriented Control (FOC) Library for Controlling Brushless Direct Current (BLDC) and Stepper Motors.<br>
+  A. Skuric, HS. Bank, R. Unger, O. Williams, D. González-Reyes<br>
+Journal of Open Source Software, 7(74), 4232, https://doi.org/10.21105/joss.04232
+</p>
 
 > FUTURE RELEASE : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2.3
 > - stm32 low-side current sensing 
@@ -185,6 +190,34 @@ Here are some of the *Simple**FOC**library* and *Simple**FOC**Shield* applicatio
 </a>
 </p>
 
+
+## Citing the *SimpleFOC* 
+
+We are very happy that *Simple**FOC**library* has been used as a component of several research project and has made its way to several scientific papers.  We are hoping that this trend is going to continue as the project matures and becomes more robust! 
+A short resume paper about *Simple**FOC*** has been published in the Journal of Open Source Software: 
+<p>
+  <b><i>SimpleFOC</i></b>: A Field Oriented Control (FOC) Library for Controlling Brushless Direct Current (BLDC) and Stepper Motors.<br>
+  A. Skuric, HS. Bank, R. Unger, O. Williams, D. González-Reyes<br>
+Journal of Open Source Software, 7(74), 4232, https://doi.org/10.21105/joss.04232
+</p>
+
+If you are interested in citing  *Simple**FOC**library* or some other component of *Simple**FOC**project* in your research, we suggest you to cite our paper:
+
+```bib
+@article{simplefoc2022,
+  doi = {10.21105/joss.04232},
+  url = {https://doi.org/10.21105/joss.04232},
+  year = {2022},
+  publisher = {The Open Journal},
+  volume = {7},
+  number = {74},
+  pages = {4232},
+  author = {Antun Skuric and Hasan Sinan Bank and Richard Unger and Owen Williams and David González-Reyes},
+  title = {SimpleFOC: A Field Oriented Control (FOC) Library for Controlling Brushless Direct Current (BLDC) and Stepper Motors},
+  journal = {Journal of Open Source Software}
+}
+
+```
 
 
 ## Arduino FOC repo structure
