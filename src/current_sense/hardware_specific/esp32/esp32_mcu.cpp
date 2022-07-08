@@ -68,7 +68,6 @@ int adc_read_index[2]={0};
 
 // function reading an ADC value and returning the read voltage
 float _readADCVoltageLowSide(const int pin, const void* cs_params){
-  uint32_t raw_adc;
 
   mcpwm_unit_t unit = ((ESP32MCPWMCurrentSenseParams*)cs_params)->mcpwm_unit;
   int buffer_index = ((ESP32MCPWMCurrentSenseParams*)cs_params)->buffer_index;
