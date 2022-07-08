@@ -1,5 +1,5 @@
-# Arduino Simple Field Oriented Control (FOC) library 
-
+# SimpleFOClibrary - **Simple** Field Oriented Control (FOC) **library** <br> 
+### A Cross-Platform FOC implementation for BLDC and Stepper motors<br> based on the Arduino IDE and PlatformIO 
 
 ![Library Compile](https://github.com/simplefoc/Arduino-FOC/workflows/Library%20Compile/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
