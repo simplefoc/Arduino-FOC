@@ -1,4 +1,4 @@
-# Arduino Simple Field Oriented Control (FOC) library 
+# SimpleFOC -  A Cross-platform Field Oriented Control (FOC) library based on the Arduino IDE 
 
 
 ![Library Compile](https://github.com/simplefoc/Arduino-FOC/workflows/Library%20Compile/badge.svg)
