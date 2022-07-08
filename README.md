@@ -27,7 +27,9 @@ Therefore this is an attempt to:
 > - bugfixing
 >    - leonardo
 >    - mega2560
-
+> - `initFOC` fails if current sense not initialised
+>    - driver and cs have to be well initialised for `initFOC` to start
+>    - `cs.init()` and `driver.init()` return `1` if well initialised and `0` if failed 
 ## Arduino *SimpleFOClibrary* v2.2.2
 
 <p align="">
