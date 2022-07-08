@@ -2,53 +2,29 @@
 
 #if defined(STM32F4xx)
 
+//#define SIMPLEFOC_STM32_DEBUG
+
 #include "../../../../communication/SimpleFOCDebug.h"
 #define _TRGO_NOT_AVAILABLE 12345
-
-
-// timer to injected TRGO
-// https://github.com/stm32duino/Arduino_Core_STM32/blob/e156c32db24d69cb4818208ccc28894e2f427cfa/system/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc_ex.h#L179
-uint32_t _timerToInjectedTRGO(HardwareTimer* timer){
-  if(timer->getHandle()->Instance == TIM1)  
-    return ADC_EXTERNALTRIGINJECCONV_T1_TRGO;
-#ifdef TIM2 // if defined timer 2
-  else if(timer->getHandle()->Instance == TIM2) 
-    return ADC_EXTERNALTRIGINJECCONV_T2_TRGO;
-#endif
-#ifdef TIM4 // if defined timer 4
-  else if(timer->getHandle()->Instance == TIM4) 
-    return ADC_EXTERNALTRIGINJECCONV_T4_TRGO;
-#endif
-#ifdef TIM5 // if defined timer 5
-  else if(timer->getHandle()->Instance == TIM5) 
-    return ADC_EXTERNALTRIGINJECCONV_T5_TRGO;
-#endif
-  else
-    return _TRGO_NOT_AVAILABLE;
-}
-
-// timer to regular TRGO
-// https://github.com/stm32duino/Arduino_Core_STM32/blob/e156c32db24d69cb4818208ccc28894e2f427cfa/system/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc.h#L331
-uint32_t _timerToRegularTRGO(HardwareTimer* timer){
-  if(timer->getHandle()->Instance == TIM2)  
-    return ADC_EXTERNALTRIGCONV_T2_TRGO;
-#ifdef TIM3 // if defined timer 3
-  else if(timer->getHandle()->Instance == TIM3) 
-    return ADC_EXTERNALTRIGCONV_T3_TRGO;
-#endif
-#ifdef TIM8 // if defined timer 8
-  else if(timer->getHandle()->Instance == TIM8) 
-    return ADC_EXTERNALTRIGCONV_T8_TRGO;
-#endif
-  else
-    return _TRGO_NOT_AVAILABLE;
-}
 
 ADC_HandleTypeDef hadc;
 
 int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* driver_params)
 {
   ADC_InjectionConfTypeDef sConfigInjected;
+
+  // check if all pins belong to the same ADC
+  ADC_TypeDef* adc_pin1 = (ADC_TypeDef*)pinmap_peripheral(analogInputToPinName(cs_params->pins[0]), PinMap_ADC);
+  ADC_TypeDef* adc_pin2 = (ADC_TypeDef*)pinmap_peripheral(analogInputToPinName(cs_params->pins[1]), PinMap_ADC);
+  ADC_TypeDef* adc_pin3 = _isset(cs_params->pins[2]) ? (ADC_TypeDef*)pinmap_peripheral(analogInputToPinName(cs_params->pins[2]), PinMap_ADC) : nullptr;
+ if ( (adc_pin1 != adc_pin2) || ( (adc_pin3) && (adc_pin1 != adc_pin3) )){
+#ifdef SIMPLEFOC_STM32_DEBUG
+    SIMPLEFOC_DEBUG("STM32-CS: ERR: Analog pins dont belong to the same ADC!");
+#endif
+  return -1;
+ }
+
+
   /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
   */
   hadc.Instance = (ADC_TypeDef *)pinmap_peripheral(analogInputToPinName(cs_params->pins[0]), PinMap_ADC);
@@ -67,6 +43,10 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
     return -1; // error not a valid ADC instance
   }
   
+#ifdef SIMPLEFOC_STM32_DEBUG
+    SIMPLEFOC_DEBUG("STM32-CS: Using ADC: ", _adcToIndex(&hadc)+1);
+#endif
+
   hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc.Init.Resolution = ADC_RESOLUTION_12B;
   hadc.Init.ScanConvMode = ENABLE;
@@ -79,13 +59,11 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   hadc.Init.DMAContinuousRequests = DISABLE;
   hadc.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if ( HAL_ADC_Init(&hadc) != HAL_OK){
-  #ifdef SIMPLEFOC_STM32_DEBUG
+#ifdef SIMPLEFOC_STM32_DEBUG
     SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init ADC!");
-  #endif
+#endif
     return -1;
   }
-  /**Configure for the selected ADC regular channel to be converted. 
-  */
     
   /**Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time 
     */
@@ -124,33 +102,35 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
     SIMPLEFOC_DEBUG("STM32-CS: injected trigger for timer index: ", get_timer_index(cs_params->timer_handle->getHandle()->Instance) + 1);
   #endif
 
+
   // first channel
-  sConfigInjected.InjectedRank = 1;
-  sConfigInjected.InjectedChannel = STM_PIN_CHANNEL(pinmap_function(analogInputToPinName(cs_params->pins[0]), PinMap_ADC));
+  sConfigInjected.InjectedRank = ADC_INJECTED_RANK_1;
+  sConfigInjected.InjectedChannel = _getADCChannel(analogInputToPinName(cs_params->pins[0]));
   if (HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected) != HAL_OK){
-  #ifdef SIMPLEFOC_STM32_DEBUG
-    SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init injected channel: ", (int)STM_PIN_CHANNEL(pinmap_function(analogInputToPinName(cs_params->pins[0]), PinMap_ADC)) );
-  #endif
+#ifdef SIMPLEFOC_STM32_DEBUG
+    SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init injected channel: ", (int)_getADCChannel(analogInputToPinName(cs_params->pins[0])) );
+#endif
     return -1;
   }
+
   // second channel
-  sConfigInjected.InjectedRank = 2;
-  sConfigInjected.InjectedChannel = STM_PIN_CHANNEL(pinmap_function(analogInputToPinName(cs_params->pins[1]), PinMap_ADC));
+  sConfigInjected.InjectedRank = ADC_INJECTED_RANK_2;
+  sConfigInjected.InjectedChannel = _getADCChannel(analogInputToPinName(cs_params->pins[1]));
   if (HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected) != HAL_OK){
-  #ifdef SIMPLEFOC_STM32_DEBUG
-    SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init injected channel: ", (int)STM_PIN_CHANNEL(pinmap_function(analogInputToPinName(cs_params->pins[1]), PinMap_ADC)) );
-  #endif
+#ifdef SIMPLEFOC_STM32_DEBUG
+    SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init injected channel: ", (int)_getADCChannel(analogInputToPinName(cs_params->pins[1]))) ;
+#endif
     return -1;
   }
 
   // third channel - if exists
   if(_isset(cs_params->pins[2])){
-    sConfigInjected.InjectedRank = 3;
-    sConfigInjected.InjectedChannel = STM_PIN_CHANNEL(pinmap_function(analogInputToPinName(cs_params->pins[2]), PinMap_ADC));
+    sConfigInjected.InjectedRank = ADC_INJECTED_RANK_3;
+    sConfigInjected.InjectedChannel = _getADCChannel(analogInputToPinName(cs_params->pins[2]));
     if (HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected) != HAL_OK){
-    #ifdef SIMPLEFOC_STM32_DEBUG
-      SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init injected channel: ", (int)STM_PIN_CHANNEL(pinmap_function(analogInputToPinName(cs_params->pins[2]), PinMap_ADC)) );
-    #endif
+#ifdef SIMPLEFOC_STM32_DEBUG
+      SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init injected channel: ", (int)_getADCChannel(analogInputToPinName(cs_params->pins[2]))) ;
+#endif
       return -1;
     }
   }

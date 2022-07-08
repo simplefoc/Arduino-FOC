@@ -7,6 +7,7 @@
 #include "../../../hardware_api.h"
 #include "../stm32_mcu.h"
 #include "stm32f4_hal.h"
+#include "stm32f4_utils.h"
 #include "Arduino.h"
 
 
@@ -21,21 +22,10 @@ bool needs_downsample[3] = {1};
 // downsampling variable - per adc (3)
 uint8_t tim_downsample[3] = {0};
 
-int _adcToIndex(ADC_HandleTypeDef *AdcHandle){
-  if(AdcHandle->Instance == ADC1) return 0;
-#ifdef ADC2 // if ADC2 exists
-  else if(AdcHandle->Instance == ADC2) return 1;
-#endif
-#ifdef ADC3 // if ADC3 exists
-  else if(AdcHandle->Instance == ADC3) return 2;
-#endif
-  return 0;
-}
-
 void* _configureADCLowSide(const void* driver_params, const int pinA, const int pinB, const int pinC){
 
   Stm32CurrentSenseParams* cs_params= new Stm32CurrentSenseParams {
-    .pins={0},
+    .pins={(int)NOT_SET,(int)NOT_SET,(int)NOT_SET},
     .adc_voltage_conv = (_ADC_VOLTAGE_F4) / (_ADC_RESOLUTION_F4)
   };
   _adc_gpio_init(cs_params, pinA,pinB,pinC);
