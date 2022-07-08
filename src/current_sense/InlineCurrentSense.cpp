@@ -27,6 +27,8 @@ int InlineCurrentSense::init(){
     if (params == SIMPLEFOC_CURRENT_SENSE_INIT_FAILED) return 0; 
     // calibrate zero offsets
     calibrateOffsets();
+    // set the initialized flag
+    initialized = (params!=SIMPLEFOC_CURRENT_SENSE_INIT_FAILED);
     // return success
     return 1;
 }

@@ -13,6 +13,8 @@ int GenericCurrentSense::init(){
     if(initCallback != nullptr) initCallback();
     // calibrate zero offsets
     calibrateOffsets();
+    // set the initialized flag
+    initialized = (params!=SIMPLEFOC_CURRENT_SENSE_INIT_FAILED);
     // return success
     return 1;
 }
