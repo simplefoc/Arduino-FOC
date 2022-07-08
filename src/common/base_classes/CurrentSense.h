@@ -28,7 +28,7 @@ class CurrentSense{
     // variables
     bool skip_align = false; //!< variable signaling that the phase current direction should be verified during initFOC()
     
-    BLDCDriver* driver; //!< driver link
+    BLDCDriver* driver = nullptr; //!< driver link
     bool initialized = false; // true if current sense was successfully initialized   
     void* params = 0; //!< pointer to hardware specific parameters of current sensing
     
