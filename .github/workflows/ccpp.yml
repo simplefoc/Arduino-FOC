@@ -16,6 +16,7 @@ jobs:
           - adafruit:samd:adafruit_metro_m4          # samd51
           - esp32:esp32:esp32doit-devkit-v1          # esp32
           - esp32:esp32:esp32s2                      # esp32s2
+          - esp32:esp32:esp32s3                      # esp32s3
           - STMicroelectronics:stm32:GenF1:pnum=BLUEPILL_F103C8   # stm32 bluepill
           - STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE # stm32 nucleo
           - STMicroelectronics:stm32:GenF4:pnum=GENERIC_F405RGTX  # stm32f405 - odrive
@@ -50,6 +51,10 @@ jobs:
           - arduino-boards-fqbn: esp32:esp32:esp32s2 # esp32s2
             platform-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json
             sketch-names: bldc_driver_3pwm_standalone.ino, stepper_driver_2pwm_standalone.ino, stepper_driver_4pwm_standalone 
+            
+          - arduino-boards-fqbn: esp32:esp32:esp32s3 # esp32s3
+            platform-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json
+            sketch-names: esp32_position_control.ino, esp32_i2c_dual_bus_example.ino
             
           - arduino-boards-fqbn: esp32:esp32:esp32doit-devkit-v1 # esp32 
             platform-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json
