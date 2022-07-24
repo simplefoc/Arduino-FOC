@@ -4,6 +4,9 @@
 
 #if defined(_STM32_DEF_)
 
+
+//#define SIMPLEFOC_STM32_DEBUG
+
 #ifdef SIMPLEFOC_STM32_DEBUG
 void printTimerCombination(int numPins, PinMap* timers[], int score);
 int getTimerNumber(int timerIndex);

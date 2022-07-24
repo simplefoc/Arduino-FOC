@@ -8,6 +8,7 @@
 #include "../../../hardware_api.h"
 #include "../stm32_mcu.h"
 #include "stm32g4_hal.h"
+#include "stm32g4_utils.h"
 #include "Arduino.h"
 
 
@@ -15,28 +16,18 @@
 #define _ADC_RESOLUTION_G4 4096.0f
 
 
-// array of values of 4 injected channels per adc instance (3)
-uint32_t adc_val[3][4]={0};
-// does adc interrupt need a downsample - per adc (3)
-bool needs_downsample[3] = {1};
-// downsampling variable - per adc (3)
-uint8_t tim_downsample[3] = {0};
+// array of values of 4 injected channels per adc instance (5)
+uint32_t adc_val[5][4]={0};
+// does adc interrupt need a downsample - per adc (5)
+bool needs_downsample[5] = {1};
+// downsampling variable - per adc (5)
+uint8_t tim_downsample[5] = {0};
 
-int _adcToIndex(ADC_HandleTypeDef *AdcHandle){
-  if(AdcHandle->Instance == ADC1) return 0;
-#ifdef ADC2 // if ADC2 exists
-  else if(AdcHandle->Instance == ADC2) return 1;
-#endif
-#ifdef ADC3 // if ADC3 exists
-  else if(AdcHandle->Instance == ADC3) return 2;
-#endif
-  return 0;
-}
 
 void* _configureADCLowSide(const void* driver_params, const int pinA, const int pinB, const int pinC){
 
   Stm32CurrentSenseParams* cs_params= new Stm32CurrentSenseParams {
-    .pins={0},
+    .pins={(int)NOT_SET, (int)NOT_SET, (int)NOT_SET},
     .adc_voltage_conv = (_ADC_VOLTAGE_G4) / (_ADC_RESOLUTION_G4)
   };
   _adc_gpio_init(cs_params, pinA,pinB,pinC);
@@ -67,11 +58,11 @@ void _driverSyncLowSide(void* _driver_params, void* _cs_params){
     // remember that this timer has repetition counter - no need to downasmple
     needs_downsample[_adcToIndex(cs_params->adc_handle)] = 0;
   }
+  
   // set the trigger output event
   LL_TIM_SetTriggerOutput(cs_params->timer_handle->getHandle()->Instance, LL_TIM_TRGO_UPDATE);
   // start the adc 
   HAL_ADCEx_InjectedStart_IT(cs_params->adc_handle);
-
   // restart all the timers of the driver
   _startTimers(driver_params->timers, 6);
 }
@@ -100,7 +91,7 @@ extern "C" {
     
     adc_val[adc_index][0]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_1);
     adc_val[adc_index][1]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_2);
-    adc_val[adc_index][2]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_3);    
+    adc_val[adc_index][2]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_3);  
   }
 }
 

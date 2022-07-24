@@ -21,12 +21,17 @@ InlineCurrentSense::InlineCurrentSense(float _shunt_resistor, float _gain, int _
 
 // Inline sensor init function
 int InlineCurrentSense::init(){
+    // if no linked driver its fine in this case 
+    // at least for init()
+    void* drv_params = driver ? driver->params : nullptr;
     // configure ADC variables
-    params = _configureADCInline(driver->params,pinA,pinB,pinC);
+    params = _configureADCInline(drv_params,pinA,pinB,pinC);
     // if init failed return fail
     if (params == SIMPLEFOC_CURRENT_SENSE_INIT_FAILED) return 0; 
     // calibrate zero offsets
     calibrateOffsets();
+    // set the initialized flag
+    initialized = (params!=SIMPLEFOC_CURRENT_SENSE_INIT_FAILED);
     // return success
     return 1;
 }

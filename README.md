@@ -1,10 +1,16 @@
-# Arduino Simple Field Oriented Control (FOC) library 
-
+# SimpleFOClibrary - **Simple** Field Oriented Control (FOC) **library** <br> 
+### A Cross-Platform FOC implementation for BLDC and Stepper motors<br> based on the Arduino IDE and PlatformIO 
 
 ![Library Compile](https://github.com/simplefoc/Arduino-FOC/workflows/Library%20Compile/badge.svg)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/simplefoc/arduino-foc)
+![GitHub Release Date](https://img.shields.io/github/release-date/simplefoc/arduino-foc?color=blue)
+![GitHub commits since tagged version](https://img.shields.io/github/commits-since/simplefoc/arduino-foc/latest/dev)
+![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/m/simplefoc/arduino-foc/dev)
+
 [![arduino-library-badge](https://www.ardu-badge.com/badge/Simple%20FOC.svg?)](https://www.ardu-badge.com/badge/Simple%20FOC.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![status](https://joss.theoj.org/papers/4382445f249e064e9f0a7f6c1bb06b1d/status.svg)](https://joss.theoj.org/papers/4382445f249e064e9f0a7f6c1bb06b1d)
+
 
 We live in very exciting times 😃! BLDC motors are entering the hobby community more and more and many great projects have already emerged leveraging their far superior dynamics and power capabilities. BLDC motors have numerous advantages over regular DC motors but they have one big disadvantage, the complexity of control. Even though it has become relatively easy to design and manufacture PCBs and create our own hardware solutions for driving BLDC motors the proper low-cost solutions are yet to come. One of the reasons for this is the apparent complexity of writing the BLDC driving algorithms, Field oriented control (FOC) being an example of one of the most efficient ones.
 The solutions that can be found on-line are almost exclusively very specific for certain hardware configuration and the microcontroller architecture used.
@@ -18,49 +24,25 @@ Therefore this is an attempt to:
    - *Medium-power* BLDC driver (<30Amps): [Arduino <span class="simple">Simple<b>FOC</b>PowerShield</span> ](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
+<h3>NEWS 📢: SimpleFOClibrary has been published in the Journal of Open Source Software</h3>
+<p>
+  <b>SimpleFOC</b>: A Field Oriented Control (FOC) Library for Controlling Brushless Direct Current (BLDC) and Stepper Motors.<br>
+  A. Skuric, HS. Bank, R. Unger, O. Williams, D. González-Reyes<br>
+Journal of Open Source Software, 7(74), 4232, https://doi.org/10.21105/joss.04232
+</p>
 
-
-<blockquote class="info">
-   <p class="heading">NEW RELEASE 📢: <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2.2 <a href="https://github.com/simplefoc/Arduino-FOC/releases/tag/v2.2.2">see release</a></p>
-   <ul>
-      <li>GenericCurrentSense bugfix and testing</li>
-      <li>bugfix leonardo #170</li>
-      <li>bugfix - no index search after specifying natural direction</li>
-      <li>Low level API restructuring
-         <ul dir="auto">
-            <li>Driver API</li>
-            <li>Current sense API</li>
-         </ul>
-      </li>
-      <li>New debugging interface - <a href="https://docs.simplefoc.com/debugging">see in docs</a>
-         <ul dir="auto">
-            <li>Static class SimpleFOCDebug</li>
-         </ul>
-      </li>
-      <li>CurrentSense API change - added method <code class="highlighter-rouge">linkDriver()</code> - <a href="https://docs.simplefoc.com/current_sense">see in docs</a></li>
-      <li>Low-side current sensing - <a href="https://docs.simplefoc.com/low_side_current_sense">see in docs</a>
-         <ul dir="auto">
-            <li>ESP32 generic support for multiple motors</li>
-            <li>Added low-side current sensing support for stm32 - only one motor
-            <ul dir="auto">
-               <li>f1 family</li>
-               <li>f4 family</li>
-               <li>g4 family</li>
-            </ul>
-            </li>
-         </ul>
-      </li>
-      <li>New appraoch for current estimation for torque control using voltage - <a href="https://docs.simplefoc.com/voltage_torque_mode">see in docs </a>
-         <ul dir="auto">
-            <li>Support for motor KV rating - back emf estimation</li>
-            <li>Using motor phase resistance</li>
-         </ul>
-      </li>
-      <li>KV rating and phase resistance used for open-loop current limiting as well - <a href="https://docs.simplefoc.com/open_loop_motion_control">see in docs </a> </li>
-   </ul>
-</blockquote>
-
-## Arduino *SimpleFOClibrary* v2.2
+> FUTURE RELEASE : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2.3
+> - stm32 low-side current sensing 
+>    - g4 supported
+>    - thoroughly tested f1/f4/g4
+> - bugfixing
+>    - leonardo
+>    - mega2560
+>    - inline current sense without driver #188
+> - `initFOC` fails if current sense not initialised
+>    - driver and cs have to be well initialised for `initFOC` to start
+>    - `cs.init()` and `driver.init()` return `1` if well initialised and `0` if failed 
+## Arduino *SimpleFOClibrary* v2.2.2
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">
@@ -214,6 +196,34 @@ Here are some of the *Simple**FOC**library* and *Simple**FOC**Shield* applicatio
 </a>
 </p>
 
+
+## Citing the *SimpleFOC* 
+
+We are very happy that *Simple**FOC**library* has been used as a component of several research project and has made its way to several scientific papers.  We are hoping that this trend is going to continue as the project matures and becomes more robust! 
+A short resume paper about *Simple**FOC*** has been published in the Journal of Open Source Software: 
+<p>
+  <b><i>SimpleFOC</i></b>: A Field Oriented Control (FOC) Library for Controlling Brushless Direct Current (BLDC) and Stepper Motors.<br>
+  A. Skuric, HS. Bank, R. Unger, O. Williams, D. González-Reyes<br>
+Journal of Open Source Software, 7(74), 4232, https://doi.org/10.21105/joss.04232
+</p>
+
+If you are interested in citing  *Simple**FOC**library* or some other component of *Simple**FOC**project* in your research, we suggest you to cite our paper:
+
+```bib
+@article{simplefoc2022,
+  doi = {10.21105/joss.04232},
+  url = {https://doi.org/10.21105/joss.04232},
+  year = {2022},
+  publisher = {The Open Journal},
+  volume = {7},
+  number = {74},
+  pages = {4232},
+  author = {Antun Skuric and Hasan Sinan Bank and Richard Unger and Owen Williams and David González-Reyes},
+  title = {SimpleFOC: A Field Oriented Control (FOC) Library for Controlling Brushless Direct Current (BLDC) and Stepper Motors},
+  journal = {Journal of Open Source Software}
+}
+
+```
 
 
 ## Arduino FOC repo structure
