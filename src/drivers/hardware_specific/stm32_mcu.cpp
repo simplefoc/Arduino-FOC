@@ -167,6 +167,9 @@ void _startTimers(HardwareTimer **timers_to_start, int timer_num)
   for (int i=0; i < timer_num; i++) {
     if(timers_to_start[i] == NP) return;
     timers_to_start[i]->resume();
+    #ifdef SIMPLEFOC_STM32_DEBUG
+      SIMPLEFOC_DEBUG("STM32-DRV: Starting timer ", getTimerNumber(get_timer_index(timers_to_start[i]->getHandle()->Instance)));
+    #endif
   }
 }
 
