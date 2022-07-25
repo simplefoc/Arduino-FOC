@@ -137,7 +137,7 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction _sensor_direction
   return exit_flag;
 }
 
-// Calibarthe the motor and current sense phases
+// calibrate the motor and current sense phases
 int BLDCMotor::alignCurrentSense() {
   int exit_flag = 1; // success
 
