@@ -7,15 +7,28 @@
 #define SIMPLEFOC_DEBUG_RP2040
 
 
-#ifdef SIMPLEFOC_DEBUG_RP2040
-
-#ifndef SIMPLEFOC_RP2040_DEBUG_SERIAL
-#define SIMPLEFOC_RP2040_DEBUG_SERIAL Serial
-#endif
-
-#endif
 
 #include "Arduino.h"
+#include "communication/SimpleFOCDebug.h"
+
+
+// these defines determine the polarity of the PWM output. Normally, the polarity is active-high,
+// i.e. a high-level PWM output is expected to switch on the MOSFET. But should your driver design
+// require inverted polarity, you can change the defines below, or set them via your build environment
+// or board definition files.
+
+// used for 2-PWM, 3-PWM, and 4-PWM modes
+#ifndef SIMPLEFOC_PWM_ACTIVE_HIGH
+#define SIMPLEFOC_PWM_ACTIVE_HIGH true
+#endif
+// used fof 6-PWM mode, high-side
+#ifndef SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH
+#define SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH true
+#endif
+// used fof 6-PWM mode, low-side
+#ifndef SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH
+#define SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH true
+#endif
 
 
 
@@ -48,16 +61,16 @@ void setupPWM(int pin, long pwm_frequency, bool invert, RP2040DriverParams* para
 	if (wrapvalue < 999) wrapvalue = 999; // 66kHz, resolution 1000
 	if (wrapvalue > 3299) wrapvalue = 3299; // 20kHz, resolution 3300
 #ifdef SIMPLEFOC_DEBUG_RP2040
-	SIMPLEFOC_RP2040_DEBUG_SERIAL.print("Configuring pin ");
-	SIMPLEFOC_RP2040_DEBUG_SERIAL.print(pin);
-	SIMPLEFOC_RP2040_DEBUG_SERIAL.print(" slice ");
-	SIMPLEFOC_RP2040_DEBUG_SERIAL.print(slice);
-	SIMPLEFOC_RP2040_DEBUG_SERIAL.print(" channel ");
-	SIMPLEFOC_RP2040_DEBUG_SERIAL.print(chan);
-	SIMPLEFOC_RP2040_DEBUG_SERIAL.print(" frequency ");
-	SIMPLEFOC_RP2040_DEBUG_SERIAL.print(pwm_frequency);
-	SIMPLEFOC_RP2040_DEBUG_SERIAL.print(" top value ");
-	SIMPLEFOC_RP2040_DEBUG_SERIAL.println(wrapvalue);
+	SimpleFOCDebug::print("Configuring pin ");
+	SimpleFOCDebug::print(pin);
+	SimpleFOCDebug::print(" slice ");
+	SimpleFOCDebug::print((int)slice);
+	SimpleFOCDebug::print(" channel ");
+	SimpleFOCDebug::print((int)chan);
+	SimpleFOCDebug::print(" frequency ");
+	SimpleFOCDebug::print((int)pwm_frequency);
+	SimpleFOCDebug::print(" top value ");
+	SimpleFOCDebug::println(wrapvalue);
 #endif
 	pwm_set_wrap(slice, wrapvalue);
 	wrapvalues[slice] = wrapvalue;
@@ -84,8 +97,8 @@ void syncSlices() {
 void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 	RP2040DriverParams* params = new RP2040DriverParams();
 	params->pwm_frequency = pwm_frequency;
-	setupPWM(pinA, pwm_frequency, false, params, 0);
-	setupPWM(pinB, pwm_frequency, false, params, 1);
+	setupPWM(pinA, pwm_frequency, !SIMPLEFOC_PWM_ACTIVE_HIGH, params, 0);
+	setupPWM(pinB, pwm_frequency, !SIMPLEFOC_PWM_ACTIVE_HIGH, params, 1);
 	syncSlices();
 	return params;
 }
@@ -95,9 +108,9 @@ void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 void* _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const int pinC) {
 	RP2040DriverParams* params = new RP2040DriverParams();
 	params->pwm_frequency = pwm_frequency;
-	setupPWM(pinA, pwm_frequency, false, params, 0);
-	setupPWM(pinB, pwm_frequency, false, params, 1);
-	setupPWM(pinC, pwm_frequency, false, params, 2);
+	setupPWM(pinA, pwm_frequency, !SIMPLEFOC_PWM_ACTIVE_HIGH, params, 0);
+	setupPWM(pinB, pwm_frequency, !SIMPLEFOC_PWM_ACTIVE_HIGH, params, 1);
+	setupPWM(pinC, pwm_frequency, !SIMPLEFOC_PWM_ACTIVE_HIGH, params, 2);
 	syncSlices();
 	return params;
 }
@@ -108,10 +121,10 @@ void* _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const i
 void* _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const int pin2A, const int pin2B) {
 	RP2040DriverParams* params = new RP2040DriverParams();
 	params->pwm_frequency = pwm_frequency;
-	setupPWM(pin1A, pwm_frequency, false, params, 0);
-	setupPWM(pin1B, pwm_frequency, false, params, 1);
-	setupPWM(pin2A, pwm_frequency, false, params, 2);
-	setupPWM(pin2B, pwm_frequency, false, params, 3);
+	setupPWM(pin1A, pwm_frequency, !SIMPLEFOC_PWM_ACTIVE_HIGH, params, 0);
+	setupPWM(pin1B, pwm_frequency, !SIMPLEFOC_PWM_ACTIVE_HIGH, params, 1);
+	setupPWM(pin2A, pwm_frequency, !SIMPLEFOC_PWM_ACTIVE_HIGH, params, 2);
+	setupPWM(pin2B, pwm_frequency, !SIMPLEFOC_PWM_ACTIVE_HIGH, params, 3);
 	syncSlices();
 	return params;
 }
@@ -122,12 +135,12 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 	RP2040DriverParams* params = new RP2040DriverParams();
 	params->pwm_frequency = pwm_frequency;
 	params->dead_zone = dead_zone;
-	setupPWM(pinA_h, pwm_frequency, false, params, 0);
-	setupPWM(pinB_h, pwm_frequency, false, params, 2);
-	setupPWM(pinC_h, pwm_frequency, false, params, 4);
-	setupPWM(pinA_l, pwm_frequency, true, params, 1);
-	setupPWM(pinB_l, pwm_frequency, true, params, 3);
-	setupPWM(pinC_l, pwm_frequency, true, params, 5);
+	setupPWM(pinA_h, pwm_frequency, !SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, params, 0);
+	setupPWM(pinB_h, pwm_frequency, !SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, params, 2);
+	setupPWM(pinC_h, pwm_frequency, !SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, params, 4);
+	setupPWM(pinA_l, pwm_frequency, SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH, params, 1);
+	setupPWM(pinB_l, pwm_frequency, SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH, params, 3);
+	setupPWM(pinC_l, pwm_frequency, SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH, params, 5);
 	syncSlices();
 	return params;
 }
