@@ -6,10 +6,7 @@
 
 #define SIMPLEFOC_DEBUG_RP2040
 
-
-
-#include "Arduino.h"
-#include "communication/SimpleFOCDebug.h"
+#include "../hardware_api.h"
 
 
 // these defines determine the polarity of the PWM output. Normally, the polarity is active-high,
@@ -30,6 +27,10 @@
 #define SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH true
 #endif
 
+
+#define _PWM_FREQUENCY 24000
+#define _PWM_FREQUENCY_MAX 66000
+#define _PWM_FREQUENCY_MIN 5000
 
 
 typedef struct RP2040DriverParams {
@@ -59,7 +60,7 @@ void setupPWM(int pin, long pwm_frequency, bool invert, RP2040DriverParams* para
 	pwm_set_phase_correct(slice, true);
 	uint16_t wrapvalue = ((125L * 1000L * 1000L) / pwm_frequency) / 2L - 1L;
 	if (wrapvalue < 999) wrapvalue = 999; // 66kHz, resolution 1000
-	if (wrapvalue > 3299) wrapvalue = 3299; // 20kHz, resolution 3300
+	if (wrapvalue > 12499) wrapvalue = 12499; // 20kHz, resolution 12500
 #ifdef SIMPLEFOC_DEBUG_RP2040
 	SimpleFOCDebug::print("Configuring pin ");
 	SimpleFOCDebug::print(pin);
@@ -96,6 +97,8 @@ void syncSlices() {
 
 void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 	RP2040DriverParams* params = new RP2040DriverParams();
+	if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY;
+	else pwm_frequency = _constrain(pwm_frequency, _PWM_FREQUENCY_MIN, _PWM_FREQUENCY_MAX);
 	params->pwm_frequency = pwm_frequency;
 	setupPWM(pinA, pwm_frequency, !SIMPLEFOC_PWM_ACTIVE_HIGH, params, 0);
 	setupPWM(pinB, pwm_frequency, !SIMPLEFOC_PWM_ACTIVE_HIGH, params, 1);
@@ -107,6 +110,8 @@ void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 
 void* _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const int pinC) {
 	RP2040DriverParams* params = new RP2040DriverParams();
+	if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY;
+	else pwm_frequency = _constrain(pwm_frequency, _PWM_FREQUENCY_MIN, _PWM_FREQUENCY_MAX);
 	params->pwm_frequency = pwm_frequency;
 	setupPWM(pinA, pwm_frequency, !SIMPLEFOC_PWM_ACTIVE_HIGH, params, 0);
 	setupPWM(pinB, pwm_frequency, !SIMPLEFOC_PWM_ACTIVE_HIGH, params, 1);
@@ -120,6 +125,8 @@ void* _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const i
 
 void* _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const int pin2A, const int pin2B) {
 	RP2040DriverParams* params = new RP2040DriverParams();
+	if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY;
+	else pwm_frequency = _constrain(pwm_frequency, _PWM_FREQUENCY_MIN, _PWM_FREQUENCY_MAX);
 	params->pwm_frequency = pwm_frequency;
 	setupPWM(pin1A, pwm_frequency, !SIMPLEFOC_PWM_ACTIVE_HIGH, params, 0);
 	setupPWM(pin1B, pwm_frequency, !SIMPLEFOC_PWM_ACTIVE_HIGH, params, 1);
@@ -133,6 +140,8 @@ void* _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const
 void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l) {
 	// non-PIO solution...
 	RP2040DriverParams* params = new RP2040DriverParams();
+	if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY;
+	else pwm_frequency = _constrain(pwm_frequency, _PWM_FREQUENCY_MIN, _PWM_FREQUENCY_MAX);
 	params->pwm_frequency = pwm_frequency;
 	params->dead_zone = dead_zone;
 	setupPWM(pinA_h, pwm_frequency, !SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, params, 0);
