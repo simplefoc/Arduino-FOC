@@ -5,7 +5,7 @@
 #include "../common/foc_utils.h"
 
 
-#if defined(_STM32_DEF_)
+#if defined(_STM32_DEF_) || defined(ESP_H) || defined(ARDUINO_ARCH_AVR)
 #define PinStatus int
 #endif
 
