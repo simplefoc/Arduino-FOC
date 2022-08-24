@@ -6,6 +6,7 @@
 #include "Arduino.h"
 #include "../stm32_mcu.h"
 #include "../../../../drivers/hardware_specific/stm32_mcu.h"
+#include "communication/SimpleFOCDebug.h"
 
 #define _ADC_VOLTAGE 3.3f
 #define _ADC_RESOLUTION 4096.0f
@@ -21,8 +22,8 @@ static OPAMP_HandleTypeDef hopamp3;
 static DMA_HandleTypeDef hdma_adc1;
 static DMA_HandleTypeDef hdma_adc2;
 
-uint16_t adcBuffer1[ADC_BUF_LEN_1] = {0}; // Buffer for store the results of the ADC conversion
-uint16_t adcBuffer2[ADC_BUF_LEN_2] = {0}; // Buffer for store the results of the ADC conversion
+volatile uint16_t adcBuffer1[ADC_BUF_LEN_1] = {0}; // Buffer for store the results of the ADC conversion
+volatile uint16_t adcBuffer2[ADC_BUF_LEN_2] = {0}; // Buffer for store the results of the ADC conversion
 
 // function reading an ADC value and returning the read voltage
 // As DMA is being used just return the DMA result
@@ -52,7 +53,7 @@ void _configureOPAMP(OPAMP_HandleTypeDef *hopamp, OPAMP_TypeDef *OPAMPx_Def){
   hopamp->Init.UserTrimming = OPAMP_TRIMMING_FACTORY;
   if (HAL_OPAMP_Init(hopamp) != HAL_OK)
   {
-    Error_Handler();
+    SIMPLEFOC_DEBUG("HAL_OPAMP_Init failed!");
   }
 }
 void _configureOPAMPs(OPAMP_HandleTypeDef *OPAMPA, OPAMP_HandleTypeDef *OPAMPB, OPAMP_HandleTypeDef *OPAMPC){
@@ -75,7 +76,7 @@ void MX_DMA1_Init(ADC_HandleTypeDef *hadc, DMA_HandleTypeDef *hdma_adc, DMA_Chan
   HAL_DMA_DeInit(hdma_adc);
   if (HAL_DMA_Init(hdma_adc) != HAL_OK)
   {
-    Error_Handler();
+    SIMPLEFOC_DEBUG("HAL_DMA_Init failed!");
   }
   __HAL_LINKDMA(hadc, DMA_Handle, *hdma_adc);
 }
@@ -95,11 +96,11 @@ void* _configureADCInline(const void* driver_params, const int pinA,const int pi
 
   if (HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adcBuffer1, ADC_BUF_LEN_1) != HAL_OK)
   {
-    Error_Handler();
+    SIMPLEFOC_DEBUG("DMA read init failed");
   }
   if (HAL_ADC_Start_DMA(&hadc2, (uint32_t*)adcBuffer2, ADC_BUF_LEN_2) != HAL_OK)
   {
-    Error_Handler();
+    SIMPLEFOC_DEBUG("DMA read init failed");
   }
 
   HAL_OPAMP_Start(&hopamp1);
@@ -111,6 +112,7 @@ void* _configureADCInline(const void* driver_params, const int pinA,const int pi
   // the motor pwm (usually BLDCDriver6PWM::init()) before initializing the ADC engine.
   _delay(5);
   if (adcBuffer1[0] == 0 || adcBuffer1[1] == 0 || adcBuffer2[0] == 0) {
+    SIMPLEFOC_DEBUG("Current sense init failed, no DMA?");
     return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
   }
   

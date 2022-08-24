@@ -1,10 +1,13 @@
 #include "../../../hardware_api.h"
 #if defined(ARDUINO_B_G431B_ESC1)
 
+#include "communication/SimpleFOCDebug.h"
+
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_ll_pwr.h"
 #include "stm32g4xx_hal_adc.h"
 #include "b_g431_hal.h"
+
 // From STM32 cube IDE
 /**
   ******************************************************************************
@@ -101,7 +104,7 @@ void  MX_ADC1_Init(ADC_HandleTypeDef* hadc1)
 
   if (HAL_ADC_Init(hadc1) != HAL_OK)
   {
-    Error_Handler();
+    SIMPLEFOC_DEBUG("HAL_ADC_Init failed!");
   }
 
   /** Configure the ADC multi-mode 
@@ -109,7 +112,7 @@ void  MX_ADC1_Init(ADC_HandleTypeDef* hadc1)
   multimode.Mode = ADC_MODE_INDEPENDENT;
   if (HAL_ADCEx_MultiModeConfigChannel(hadc1, &multimode) != HAL_OK)
   {
-    Error_Handler();
+    SIMPLEFOC_DEBUG("HAL_ADCEx_MultiModeConfigChannel failed!");
   }
   /** Configure Regular Channel 
   */
@@ -121,7 +124,7 @@ void  MX_ADC1_Init(ADC_HandleTypeDef* hadc1)
   sConfig.Offset = 0;
   if (HAL_ADC_ConfigChannel(hadc1, &sConfig) != HAL_OK)
   {
-    Error_Handler();
+    SIMPLEFOC_DEBUG("HAL_ADC_ConfigChannel failed!");
   }
   /** Configure Regular Channel 
   */
@@ -129,7 +132,7 @@ void  MX_ADC1_Init(ADC_HandleTypeDef* hadc1)
   sConfig.Rank = ADC_REGULAR_RANK_2;
   if (HAL_ADC_ConfigChannel(hadc1, &sConfig) != HAL_OK)
   {
-    Error_Handler();
+    SIMPLEFOC_DEBUG("HAL_ADC_ConfigChannel failed!");
   }
   /* USER CODE BEGIN ADC1_Init 2 */
 
@@ -173,7 +176,7 @@ void MX_ADC2_Init(ADC_HandleTypeDef* hadc2)
 
   if (HAL_ADC_Init(hadc2) != HAL_OK)
   {
-    Error_Handler();
+    SIMPLEFOC_DEBUG("HAL_ADC_Init failed!");
   }
   /** Configure Regular Channel 
   */
@@ -185,7 +188,7 @@ void MX_ADC2_Init(ADC_HandleTypeDef* hadc2)
   sConfig.Offset = 0;
   if (HAL_ADC_ConfigChannel(hadc2, &sConfig) != HAL_OK)
   {
-    Error_Handler();
+    SIMPLEFOC_DEBUG("HAL_ADC_ConfigChannel failed!");
   }
   /* USER CODE BEGIN ADC2_Init 2 */
 
