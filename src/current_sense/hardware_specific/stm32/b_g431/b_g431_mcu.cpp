@@ -106,19 +106,11 @@ void* _configureADCInline(const void* driver_params, const int pinA,const int pi
   HAL_OPAMP_Start(&hopamp1);
   HAL_OPAMP_Start(&hopamp2);
   HAL_OPAMP_Start(&hopamp3); 
-
-  // Check if the ADC DMA is collecting any data.
-  // If this fails, it likely means timer1 has not started. Verify that your application starts
-  // the motor pwm (usually BLDCDriver6PWM::init()) before initializing the ADC engine.
-  _delay(5);
-  if (adcBuffer1[0] == 0 || adcBuffer1[1] == 0 || adcBuffer2[0] == 0) {
-    SIMPLEFOC_DEBUG("Current sense init failed, no DMA?");
-    return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
-  }
   
   Stm32CurrentSenseParams* params = new Stm32CurrentSenseParams {
     .pins = { pinA, pinB, pinC },
-    .adc_voltage_conv = (_ADC_VOLTAGE) / (_ADC_RESOLUTION)
+    .adc_voltage_conv = (_ADC_VOLTAGE) / (_ADC_RESOLUTION),
+    .timer_handle = (HardwareTimer *)(HardwareTimer_Handle[get_timer_index(TIM1)]->__this)
   };
 
   return params;
