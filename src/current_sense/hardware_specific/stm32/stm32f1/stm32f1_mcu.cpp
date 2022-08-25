@@ -33,7 +33,7 @@ int _adcToIndex(ADC_HandleTypeDef *AdcHandle){
 void* _configureADCLowSide(const void* driver_params, const int pinA, const int pinB, const int pinC){
 
   Stm32CurrentSenseParams* cs_params= new Stm32CurrentSenseParams {
-    .pins={0},
+    .pins={(int)NOT_SET,(int)NOT_SET,(int)NOT_SET},
     .adc_voltage_conv = (_ADC_VOLTAGE_F1) / (_ADC_RESOLUTION_F1)
   };
   _adc_gpio_init(cs_params, pinA,pinB,pinC);

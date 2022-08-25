@@ -121,7 +121,15 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction _sensor_direction
   // and checks the direction of measuremnt.
   _delay(500);
   if(exit_flag){
-    if(current_sense) exit_flag *= alignCurrentSense();
+    if(current_sense){ 
+      if (!current_sense->initialized) {
+        motor_status = FOCMotorStatus::motor_calib_failed;
+        SIMPLEFOC_DEBUG("MOT: Init FOC error, current sense not initialized");
+        exit_flag = 0;
+      }else{
+        exit_flag *= alignCurrentSense();
+      }
+    }
     else SIMPLEFOC_DEBUG("MOT: No current sense.");
   }
 
