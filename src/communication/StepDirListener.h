@@ -4,6 +4,12 @@
 #include "Arduino.h"
 #include "../common/foc_utils.h"
 
+
+#if defined(_STM32_DEF_) || defined(ESP_H) || defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_SAM_DUE)
+#define PinStatus int
+#endif
+
+
 /**
  * Step/Dir listenner class for easier interraction with this communication interface.
  */
@@ -47,11 +53,13 @@ class StepDirListener
     int pin_step; //!< step pin
     int pin_dir; //!< direction pin
     long count; //!< current counter value - should be set to 0 for homing
+    PinStatus polarity = RISING; //!< polarity of the step pin
 
   private:
     float* attached_variable = nullptr; //!< pointer to the attached variable 
     float counter_to_value; //!< step counter to value 
-    bool step_active = 0; //!< current step pin status (HIGH/LOW) - debouncing variable
+    //bool step_active = 0; //!< current step pin status (HIGH/LOW) - debouncing variable
+
 };
 
 #endif
