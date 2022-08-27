@@ -345,7 +345,7 @@ void BLDCMotor::move(float new_target) {
   //                        when switching to a 2-component representation.
   if( controller!=MotionControlType::angle_openloop && controller!=MotionControlType::velocity_openloop ) 
     shaft_angle = shaftAngle(); // read value even if motor is disabled to keep the monitoring updated but not in openloop mode
-  // get angular velocity 
+  // get angular velocity  TODO the velocity reading probably also shouldn't happen in open loop modes?
   shaft_velocity = shaftVelocity(); // read value even if motor is disabled to keep the monitoring updated
 
   // if disabled do nothing
