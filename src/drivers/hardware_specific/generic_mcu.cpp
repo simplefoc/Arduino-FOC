@@ -5,6 +5,18 @@
   __attribute__((weak)) void analogWrite(uint8_t pin, int value){ };
 #endif
 
+// function setting the high pwm frequency to the supplied pin
+// - Stepper motor - 1PWM setting
+// - hardware speciffic
+// in generic case dont do anything
+__attribute__((weak)) void* _configure1PWM(long pwm_frequency, const int pinA) {
+  GenericDriverParams* params = new GenericDriverParams {
+    .pins = { pinA },
+    .pwm_frequency = pwm_frequency
+  };
+  return params;
+}
+
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 2PWM setting
 // - hardware speciffic
@@ -56,6 +68,15 @@ __attribute__((weak)) void* _configure6PWM(long pwm_frequency, float dead_zone, 
   _UNUSED(pinC_l);
 
   return SIMPLEFOC_DRIVER_INIT_FAILED;
+}
+
+
+// function setting the pwm duty cycle to the hardware
+// - Stepper motor - 1PWM setting
+// - hardware speciffic
+__attribute__((weak)) void _writeDutyCycle1PWM(float dc_a, void* params){
+  // transform duty cycle from [0,1] to [0,255]
+  analogWrite(((GenericDriverParams*)params)->pins[0], 255.0f*dc_a);
 }
 
 
