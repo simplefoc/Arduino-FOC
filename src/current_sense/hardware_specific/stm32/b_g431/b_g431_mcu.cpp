@@ -83,6 +83,17 @@ void MX_DMA1_Init(ADC_HandleTypeDef *hadc, DMA_HandleTypeDef *hdma_adc, DMA_Chan
 
 void* _configureADCInline(const void* driver_params, const int pinA,const int pinB,const int pinC){
   _UNUSED(driver_params);
+  _UNUSED(pinA);
+  _UNUSED(pinB);
+  _UNUSED(pinC);
+
+  SIMPLEFOC_DEBUG("B-G431B does not implement inline current sense. Use low-side current sense instead.");
+  return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
+}
+
+
+void* _configureADCLowSide(const void* driver_params, const int pinA,const int pinB,const int pinC){
+  _UNUSED(driver_params);
 
   HAL_Init();
   MX_GPIO_Init();
