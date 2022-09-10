@@ -152,4 +152,18 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
  */ 
 void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params);
 
+/**
+ * Function setting the phase state
+ * - BLDC driver - 6PWM setting
+ * - hardware specific
+ *
+ * @param dc_a  phase A state (_ACTIVE, _HIGH_IMPEDANCE)
+ * @param dc_b  phase B state (_ACTIVE, _HIGH_IMPEDANCE)
+ * @param dc_c  phase C state (_ACTIVE, _HIGH_IMPEDANCE)
+ * @param params  the driver parameters
+ *
+ */
+void _setPhaseState(int sa, int sb, int sc, void* params);
+
+
 #endif

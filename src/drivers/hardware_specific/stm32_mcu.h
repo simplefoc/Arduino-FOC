@@ -22,6 +22,7 @@ typedef struct STM32DriverParams {
   long pwm_frequency;
   float dead_zone;
   uint8_t interface_type;
+  uint8_t phase_status[3] = {_ACTIVE, _ACTIVE, _ACTIVE};
 } STM32DriverParams;
 
 // timer synchornisation functions

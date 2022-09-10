@@ -282,6 +282,9 @@ STM32DriverParams* _initHardware6PWMPair(long PWM_freq, float dead_zone, PinMap*
 
   HT->pause();
 
+  // make sure timer output goes to LOW when timer channels are temporarily disabled
+  LL_TIM_SetOffStates(HT->getHandle()->Instance, LL_TIM_OSSI_DISABLE, LL_TIM_OSSR_ENABLE);
+
   params->timers[paramsPos] = HT;
   params->timers[paramsPos+1] = HT;
   params->channels[paramsPos] = channel1;
@@ -724,6 +727,16 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 // - BLDC driver - 6PWM setting
 // - hardware specific
 void _writeDutyCycle6PWM(float dc_a, float dc_b, float dc_c, void* params){
+  if (((STM32DriverParams*)params)->phase_status[0] == _HIGH_IMPEDANCE) {
+    dc_a = 0;
+  }
+  if (((STM32DriverParams*)params)->phase_status[1] == _HIGH_IMPEDANCE) {
+    dc_b = 0;
+  }
+  if (((STM32DriverParams*)params)->phase_status[2] == _HIGH_IMPEDANCE) {
+    dc_c = 0;
+  }
+
   switch(((STM32DriverParams*)params)->interface_type){
     case _HARDWARE_6PWM:
       _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _PWM_RANGE*dc_a, _PWM_RESOLUTION);
@@ -742,8 +755,31 @@ void _writeDutyCycle6PWM(float dc_a, float dc_b, float dc_c, void* params){
   }
 }
 
+void _setSinglePhaseState(int state, HardwareTimer *HT, int channel1, int channel2) {
+  _UNUSED(channel2);
+  switch (state) {
+    case _ACTIVE:
+      HT->resumeChannel(channel1);
+      break;
+    case _HIGH_IMPEDANCE:
+      // Due to a weird quirk in the arduino timer API, pauseChannel only disables the complementary channel (e.g. CC1NE).
+      // To actually make the phase floating, we must also set pwm to 0.
+      HT->pauseChannel(channel1);
+      break;
+  }
+}
 
+void _setPhaseState(int sa, int sb, int sc, void* params_void) {
+  STM32DriverParams* params = (STM32DriverParams*)params_void;
 
+  params->phase_status[0] = sa;
+  params->phase_status[1] = sb;
+  params->phase_status[2] = sc;
+
+  _setSinglePhaseState(sa, params->timers[1], params->channels[0], params->channels[1]);
+  _setSinglePhaseState(sb, params->timers[2], params->channels[2], params->channels[3]);
+  _setSinglePhaseState(sc, params->timers[4], params->channels[4], params->channels[5]);
+}
 
 
 #ifdef SIMPLEFOC_STM32_DEBUG
