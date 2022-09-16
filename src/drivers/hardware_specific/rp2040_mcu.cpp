@@ -91,7 +91,7 @@ void syncSlices() {
 		pwm_set_counter(i, 0);
 	}
 	// enable all slices
-	pwm_set_mask_enabled(0x7F);
+	pwm_set_mask_enabled(0xFF);
 }
 
 
