@@ -95,6 +95,19 @@ void syncSlices() {
 }
 
 
+
+void* _configure1PWM(long pwm_frequency, const int pinA) {
+	RP2040DriverParams* params = new RP2040DriverParams();
+	if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY;
+	else pwm_frequency = _constrain(pwm_frequency, _PWM_FREQUENCY_MIN, _PWM_FREQUENCY_MAX);
+	params->pwm_frequency = pwm_frequency;
+	setupPWM(pinA, pwm_frequency, !SIMPLEFOC_PWM_ACTIVE_HIGH, params, 0);
+	syncSlices();
+	return params;
+}
+
+
+
 void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 	RP2040DriverParams* params = new RP2040DriverParams();
 	if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY;
@@ -162,6 +175,12 @@ void writeDutyCycle(float val, uint slice, uint chan) {
 	pwm_set_chan_level(slice, chan, (wrapvalues[slice]+1) * val);
 }
 
+
+
+
+void _writeDutyCycle1PWM(float dc_a, void* params) {
+	writeDutyCycle(dc_a, ((RP2040DriverParams*)params)->slice[0], ((RP2040DriverParams*)params)->chan[0]);
+}
 
 
 

@@ -14,6 +14,36 @@
 #endif
 
 
+#ifndef TCC3_CH0
+#define TCC3_CH0 NOT_ON_TIMER
+#define TCC3_CH1 NOT_ON_TIMER
+#endif
+
+#ifndef TCC4_CH0
+#define TCC4_CH0 NOT_ON_TIMER
+#define TCC4_CH1 NOT_ON_TIMER
+#endif
+
+
+#ifndef TC4_CH0
+#define TC4_CH0 NOT_ON_TIMER
+#define TC4_CH1 NOT_ON_TIMER
+#endif
+
+#ifndef TC5_CH0
+#define TC5_CH0 NOT_ON_TIMER
+#define TC5_CH1 NOT_ON_TIMER
+#endif
+
+#ifndef TC6_CH0
+#define TC6_CH0 NOT_ON_TIMER
+#define TC6_CH1 NOT_ON_TIMER
+#endif
+
+#ifndef TC7_CH0
+#define TC7_CH0 NOT_ON_TIMER
+#define TC7_CH1 NOT_ON_TIMER
+#endif
 
 
 
@@ -109,7 +139,12 @@ struct wo_association WO_associations[] = {
 
 wo_association ASSOCIATION_NOT_FOUND = { NOT_A_PORT, 0, NOT_ON_TIMER, 0, NOT_ON_TIMER, 0, NOT_ON_TIMER, 0};
 
+#ifndef TCC3_CC_NUM
+uint8_t TCC_CHANNEL_COUNT[] = { TCC0_CC_NUM, TCC1_CC_NUM, TCC2_CC_NUM };
+#else
 uint8_t TCC_CHANNEL_COUNT[] = { TCC0_CC_NUM, TCC1_CC_NUM, TCC2_CC_NUM, TCC3_CC_NUM, TCC4_CC_NUM };
+#endif
+
 
 struct wo_association& getWOAssociation(EPortType port, uint32_t pin) {
 	for (int i=0;i<NUM_WO_ASSOCIATIONS;i++) {
