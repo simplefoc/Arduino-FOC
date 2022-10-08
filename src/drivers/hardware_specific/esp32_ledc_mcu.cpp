@@ -53,6 +53,33 @@ void _setHighFrequency(const long freq, const int pin, const int channel){
 
 
 
+
+
+
+void* _configure1PWM(long pwm_frequency, const int pinA) {
+  if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
+  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
+
+  // check if enough channels available
+  if ( channel_index + 1 >= LEDC_CHANNELS ) return SIMPLEFOC_DRIVER_INIT_FAILED;
+
+  int ch1 = channel_index++;
+  _setHighFrequency(pwm_frequency, pinA, ch1);
+
+  ESP32LEDCDriverParams* params = new ESP32LEDCDriverParams {
+    .channels = { ch1 },
+    .pwm_frequency = pwm_frequency
+  };
+  return params;
+}
+
+
+
+
+
+
+
+
 void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
   if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
@@ -120,6 +147,12 @@ void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const in
   return params;
 }
 
+
+
+
+void _writeDutyCycle1PWM(float dc_a, void* params){
+  ledcWrite(((ESP32LEDCDriverParams*)params)->channels[0], _constrain(_PWM_RES*dc_a, 0, _PWM_RES));
+}
 
 
 

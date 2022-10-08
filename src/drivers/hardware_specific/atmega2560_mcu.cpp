@@ -28,6 +28,21 @@ void _pinHighFrequency(const int pin){
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 2PWM setting
 // - hardware speciffic
+void* _configure1PWM(long pwm_frequency,const int pinA) {
+   //  High PWM frequency
+   // - always max 32kHz
+  _pinHighFrequency(pinA);
+  GenericDriverParams* params = new GenericDriverParams {
+    .pins = { pinA },
+    .pwm_frequency = pwm_frequency
+  };
+  return params;
+}
+
+
+// function setting the high pwm frequency to the supplied pins
+// - Stepper motor - 2PWM setting
+// - hardware speciffic
 void* _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
    //  High PWM frequency
    // - always max 32kHz
@@ -54,6 +69,14 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
     .pwm_frequency = pwm_frequency
   };
   return params;
+}
+
+// function setting the pwm duty cycle to the hardware
+// - Stepper motor - 2PWM setting
+// - hardware speciffic
+void _writeDutyCycle1PWM(float dc_a, void* params){
+  // transform duty cycle from [0,1] to [0,255]
+  analogWrite(((GenericDriverParams*)params)->pins[0], 255.0f*dc_a);
 }
 
 // function setting the pwm duty cycle to the hardware
