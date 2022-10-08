@@ -127,6 +127,16 @@ class FOCMotor
      */
     virtual void move(float target = NOT_SET)=0;
 
+    /**
+    * Method using FOC to set Uq to the motor at the optimal angle
+    * Heart of the FOC algorithm
+    * 
+    * @param Uq Current voltage in q axis to set to the motor
+    * @param Ud Current voltage in d axis to set to the motor
+    * @param angle_el current electrical angle of the motor
+    */
+    virtual void setPhaseVoltage(float Uq, float Ud, float angle_el)=0;
+    
     // State calculation methods 
     /** Shaft angle calculation in radians [rad] */
     float shaftAngle();
@@ -135,6 +145,7 @@ class FOCMotor
      * It implements low pass filtering
      */
     float shaftVelocity();
+
 
 
     /** 
