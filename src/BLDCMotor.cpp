@@ -636,9 +636,11 @@ float BLDCMotor::velocityOpenloop(float target_velocity){
 
   // use voltage limit or current limit
   float Uq = voltage_limit;
-  if(_isset(phase_resistance)) 
-    Uq = _constrain(current_limit*phase_resistance + voltage_bemf,-voltage_limit, voltage_limit);
-
+  if(_isset(phase_resistance)){
+    Uq = _constrain(current_limit*phase_resistance + fabs(voltage_bemf),-voltage_limit, voltage_limit);
+    // recalculate the current  
+    current.q = (Uq - fabs(voltage_bemf))/phase_resistance;
+  }
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
   setPhaseVoltage(Uq,  0, _electricalAngle(shaft_angle, pole_pairs));
 
@@ -674,8 +676,11 @@ float BLDCMotor::angleOpenloop(float target_angle){
 
   // use voltage limit or current limit
   float Uq = voltage_limit;
-  if(_isset(phase_resistance)) 
-    Uq = _constrain(current_limit*phase_resistance + voltage_bemf,-voltage_limit, voltage_limit);
+  if(_isset(phase_resistance)){
+    Uq = _constrain(current_limit*phase_resistance + fabs(voltage_bemf),-voltage_limit, voltage_limit);
+    // recalculate the current  
+    current.q = (Uq - fabs(voltage_bemf))/phase_resistance;
+  }
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
   // sensor precision: this calculation is OK due to the normalisation
   setPhaseVoltage(Uq,  0, _electricalAngle(_normalizeAngle(shaft_angle), pole_pairs));

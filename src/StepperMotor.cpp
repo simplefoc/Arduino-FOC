@@ -377,8 +377,11 @@ float StepperMotor::velocityOpenloop(float target_velocity){
 
   // use voltage limit or current limit
   float Uq = voltage_limit;
-  if(_isset(phase_resistance)) 
-    Uq = _constrain(current_limit*phase_resistance + voltage_bemf,-voltage_limit, voltage_limit);
+  if(_isset(phase_resistance)){
+    Uq = _constrain(current_limit*phase_resistance + fabs(voltage_bemf),-voltage_limit, voltage_limit);
+    // recalculate the current  
+    current.q = (Uq - fabs(voltage_bemf))/phase_resistance;
+  }
 
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
   setPhaseVoltage(Uq,  0, _electricalAngle(shaft_angle, pole_pairs));
@@ -412,8 +415,11 @@ float StepperMotor::angleOpenloop(float target_angle){
 
   // use voltage limit or current limit
   float Uq = voltage_limit;
-  if(_isset(phase_resistance)) 
-    Uq = _constrain(current_limit*phase_resistance + voltage_bemf,-voltage_limit, voltage_limit);
+  if(_isset(phase_resistance)){
+    Uq = _constrain(current_limit*phase_resistance + fabs(voltage_bemf),-voltage_limit, voltage_limit);
+    // recalculate the current  
+    current.q = (Uq - fabs(voltage_bemf))/phase_resistance;
+  }
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
   setPhaseVoltage(Uq,  0, _electricalAngle((shaft_angle), pole_pairs));
 
