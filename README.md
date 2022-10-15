@@ -24,25 +24,31 @@ Therefore this is an attempt to:
    - *Medium-power* BLDC driver (<30Amps): [Arduino <span class="simple">Simple<b>FOC</b>PowerShield</span> ](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
-<h3>NEWS 📢: SimpleFOClibrary has been published in the Journal of Open Source Software</h3>
-<p>
-  <b>SimpleFOC</b>: A Field Oriented Control (FOC) Library for Controlling Brushless Direct Current (BLDC) and Stepper Motors.<br>
-  A. Skuric, HS. Bank, R. Unger, O. Williams, D. González-Reyes<br>
-Journal of Open Source Software, 7(74), 4232, https://doi.org/10.21105/joss.04232
-</p>
-
-> FUTURE RELEASE : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2.3
+> NEW RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2.3
 > - stm32 low-side current sensing 
 >    - g4 supported
->    - thoroughly tested f1/f4/g4
+>    - thoroughly tested f1/f4/g4 - [#187](https://github.com/simplefoc/Arduino-FOC/issues/187)
+>    - bg431b: added support for VBAT and TEMPERATURE readings [#222](https://github.com/simplefoc/Arduino-FOC/pull/222)
 > - bugfixing
 >    - leonardo
->    - mega2560
->    - inline current sense without driver #188
-> - `initFOC` fails if current sense not initialised
->    - driver and cs have to be well initialised for `initFOC` to start
->    - `cs.init()` and `driver.init()` return `1` if well initialised and `0` if failed 
-## Arduino *SimpleFOClibrary* v2.2.2
+>    - mega2560 [#190](https://github.com/simplefoc/Arduino-FOC/issues/190)
+>    - inline current sense without driver [#188](https://github.com/simplefoc/Arduino-FOC/issues/188)
+>    - bg431b support current sense fix [#210](https://github.com/simplefoc/Arduino-FOC/pull/210)
+>    - StepperDriver4PWM wrong init  [#182](https://github.com/simplefoc/Arduino-FOC/issues/182)
+>    - open loop back-emf vlotage issue [#219](https://github.com/simplefoc/Arduino-FOC/issues/219)
+>    - SAMD51 compile issue [#217](https://github.com/simplefoc/Arduino-FOC/issues/217)
+>    - ESP32-S3 compile issue [#198](https://github.com/simplefoc/Arduino-FOC/issues/198)
+>    - ESP32 compile issue [#208](https://github.com/simplefoc/Arduino-FOC/issues/208), [#207](https://github.com/simplefoc/Arduino-FOC/issues/207)
+>    - magnetic sensor direction finding more robust [#173](https://github.com/simplefoc/Arduino-FOC/issues/173), [#164](https://github.com/simplefoc/Arduino-FOC/pull/164)
+>    - `StepDirListener` improved timing [#169](https://github.com/simplefoc/Arduino-FOC/issues/169), [#209](https://github.com/simplefoc/Arduino-FOC/pull/209)
+> - API changes
+>    - `setPhaseVoltage` is now public function 
+>    - `getVelocity` can now be called as many times as necessary (it recalculates the velocity if the time between calls is longer then `minDeltaT` - default 0.1ms)
+>    - BG431 board can be used only with `LowsideCurrentSense` class!
+>    - `initFOC` fails if current sense not initialised
+>       - driver and curent sense have to be well initialised for `initFOC` to start
+>       - `cs.init()` and `driver.init()` return `1` if well initialised and `0` if failed 
+## Arduino *SimpleFOClibrary* v2.2.3
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">
