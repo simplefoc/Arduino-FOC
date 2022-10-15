@@ -77,7 +77,7 @@ class HallSensor: public Sensor{
     volatile long total_interrupts; 
 
     // variable used to filter outliers - rad/s
-    float velocity_max = 1000.0f
+    float velocity_max = 1000.0f;
 
   private:
     
