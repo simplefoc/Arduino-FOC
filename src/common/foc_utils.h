@@ -32,6 +32,8 @@
 #define _ACTIVE 1
 #define _NC (NOT_SET)
 
+#define MIN_ANGLE_DETECT_MOVEMENT (_2PI/101.0f)
+
 // dq current structure
 struct DQCurrent_s
 {

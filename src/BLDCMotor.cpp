@@ -113,8 +113,10 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction _sensor_direction
     // added the shaft_angle update
     sensor->update();
     shaft_angle = shaftAngle();
-  }else 
+  }else {
+    exit_flag = 0; // no FOC without sensor
     SIMPLEFOC_DEBUG("MOT: No sensor.");
+  }
 
   // aligning the current sensor - can be skipped
   // checks if driver phases are the same as current sense phases
@@ -201,7 +203,8 @@ int BLDCMotor::alignSensor() {
     setPhaseVoltage(0, 0, 0);
     _delay(200);
     // determine the direction the sensor moved
-    if (mid_angle == end_angle) {
+    float moved =  fabs(mid_angle - end_angle);
+    if (moved<MIN_ANGLE_DETECT_MOVEMENT) { // minimum angle to detect movement
       SIMPLEFOC_DEBUG("MOT: Failed to notice movement");
       return 0; // failed calibration
     } else if (mid_angle < end_angle) {
@@ -212,7 +215,6 @@ int BLDCMotor::alignSensor() {
       sensor_direction = Direction::CW;
     }
     // check pole pair number
-    float moved =  fabs(mid_angle - end_angle);
     if( fabs(moved*pole_pairs - _2PI) > 0.5f ) { // 0.5f is arbitrary number it can be lower or higher!
       SIMPLEFOC_DEBUG("MOT: PP check: fail - estimated pp: ", _2PI/moved);
     } else 
