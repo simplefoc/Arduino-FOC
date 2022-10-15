@@ -10,7 +10,7 @@
 
 #define _ADC_VOLTAGE 3.3f
 #define _ADC_RESOLUTION 4096.0f
-#define ADC_BUF_LEN_1 2
+#define ADC_BUF_LEN_1 5
 #define ADC_BUF_LEN_2 1
 
 static ADC_HandleTypeDef hadc1;
@@ -37,6 +37,14 @@ float _readADCVoltageInline(const int pin, const void* cs_params){
   else if(pin == PB1) // = ADC1_IN12 = phase W (OP3_OUT) on B-G431B-ESC1
     raw_adc = adcBuffer1[0];
 #endif
+
+  else if (pin == A_POTENTIOMETER)
+    raw_adc = adcBuffer1[2];
+  else if (pin == A_TEMPERATURE)
+    raw_adc = adcBuffer1[3];
+  else if (pin == A_VBUS)
+    raw_adc = adcBuffer1[4];
+
   return raw_adc * ((Stm32CurrentSenseParams*)cs_params)->adc_voltage_conv;
 }
 
