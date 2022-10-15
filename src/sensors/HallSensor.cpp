@@ -118,7 +118,7 @@ float HallSensor::getVelocity(){
   } else {
     float vel = direction * (_2PI / (float)cpr) / (pulse_diff / 1000000.0f);
     // quick fix https://github.com/simplefoc/Arduino-FOC/issues/192
-    if(vel < -velocity_max || vel > velocity_max)  vel = 0f;   //if velocity is out of range then make it zero
+    if(vel < -velocity_max || vel > velocity_max)  vel = 0.0f;   //if velocity is out of range then make it zero
     return vel;
   }
 
