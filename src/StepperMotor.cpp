@@ -141,6 +141,7 @@ int StepperMotor::alignSensor() {
     for (int i = 0; i <=500; i++ ) {
       float angle = _3PI_2 + _2PI * i / 500.0f;
       setPhaseVoltage(voltage_sensor_align, 0,  angle);
+	    sensor->update();
       _delay(2);
     }
     // take and angle in the middle
@@ -150,6 +151,7 @@ int StepperMotor::alignSensor() {
     for (int i = 500; i >=0; i-- ) {
       float angle = _3PI_2 + _2PI * i / 500.0f ;
       setPhaseVoltage(voltage_sensor_align, 0,  angle);
+	    sensor->update();
       _delay(2);
     }
     sensor->update();
@@ -377,8 +379,11 @@ float StepperMotor::velocityOpenloop(float target_velocity){
 
   // use voltage limit or current limit
   float Uq = voltage_limit;
-  if(_isset(phase_resistance)) 
-    Uq = _constrain(current_limit*phase_resistance + voltage_bemf,-voltage_limit, voltage_limit);
+  if(_isset(phase_resistance)){
+    Uq = _constrain(current_limit*phase_resistance + fabs(voltage_bemf),-voltage_limit, voltage_limit);
+    // recalculate the current  
+    current.q = (Uq - fabs(voltage_bemf))/phase_resistance;
+  }
 
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
   setPhaseVoltage(Uq,  0, _electricalAngle(shaft_angle, pole_pairs));
@@ -412,8 +417,11 @@ float StepperMotor::angleOpenloop(float target_angle){
 
   // use voltage limit or current limit
   float Uq = voltage_limit;
-  if(_isset(phase_resistance)) 
-    Uq = _constrain(current_limit*phase_resistance + voltage_bemf,-voltage_limit, voltage_limit);
+  if(_isset(phase_resistance)){
+    Uq = _constrain(current_limit*phase_resistance + fabs(voltage_bemf),-voltage_limit, voltage_limit);
+    // recalculate the current  
+    current.q = (Uq - fabs(voltage_bemf))/phase_resistance;
+  }
   // set the maximal allowed voltage (voltage_limit) with the necessary angle
   setPhaseVoltage(Uq,  0, _electricalAngle((shaft_angle), pole_pairs));
 

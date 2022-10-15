@@ -76,6 +76,9 @@ class HallSensor: public Sensor{
     // this is sometimes useful to identify interrupt issues (e.g. weak or no pullup resulting in 1000s of interrupts)
     volatile long total_interrupts; 
 
+    // variable used to filter outliers - rad/s
+    float velocity_max = 1000.0f;
+
   private:
     
     Direction decodeDirection(int oldState, int newState);
