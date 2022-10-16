@@ -7,7 +7,7 @@
 #define SIMPLEFOC_DEBUG_RP2040
 
 #include "../hardware_api.h"
-
+#include "./rp2040_mcu.h"
 
 // these defines determine the polarity of the PWM output. Normally, the polarity is active-high,
 // i.e. a high-level PWM output is expected to switch on the MOSFET. But should your driver design
@@ -32,14 +32,6 @@
 #define _PWM_FREQUENCY_MAX 66000
 #define _PWM_FREQUENCY_MIN 5000
 
-
-typedef struct RP2040DriverParams {
-  int pins[6];
-  uint slice[6];
-  uint chan[6];
-  long pwm_frequency;
-  float dead_zone;
-} RP2040DriverParams;
 
 
 // until I can figure out if this can be quickly read from some register, keep it here.
