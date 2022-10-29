@@ -17,9 +17,9 @@ void Sensor::update() {
  /** get current angular velocity (rad/s) */
 float Sensor::getVelocity() {
     // calculate sample time
-    float Ts = (angle_prev_ts - vel_angle_prev_ts)*1e-6f;
+    float Ts = (angle_prev_ts - vel_angle_prev_ts)*1e-6;
     // TODO handle overflow - we do need to reset vel_angle_prev_ts
-    if (Ts<minDeltaT) return velocity; // don't update velocity if deltaT is too small
+    if (Ts < min_elapsed_time) return velocity; // don't update velocity if deltaT is too small
 
     velocity = ( (float)(full_rotations - vel_full_rotations)*_2PI + (angle_prev - vel_angle_prev) ) / Ts;
     vel_angle_prev = angle_prev;
