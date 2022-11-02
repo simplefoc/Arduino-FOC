@@ -496,7 +496,36 @@ int findBestTimerCombination(int numPins, int pins[], PinMap* pinTimers[]) {
 
 
 
+void* _configure1PWM(long pwm_frequency, const int pinA) {
+  if (numTimerPinsUsed+1 > SIMPLEFOC_STM32_MAX_PINTIMERSUSED) {
+    SIMPLEFOC_DEBUG("STM32-DRV: ERR: too many pins used");
+    return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+  }
 
+  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
+  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
+  // center-aligned frequency is uses two periods
+  pwm_frequency *=2;
+
+  int pins[1] = { pinA };
+  PinMap* pinTimers[1] = { NP };
+  if (findBestTimerCombination(1, pins, pinTimers)<0)
+    return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+
+  HardwareTimer* HT1 = _initPinPWM(pwm_frequency, pinTimers[0]);\
+  // allign the timers
+  _alignTimersNew();
+  
+  uint32_t channel1 = STM_PIN_CHANNEL(pinTimers[0]->function);
+
+  STM32DriverParams* params = new STM32DriverParams {
+    .timers = { HT1 },
+    .channels = { channel1 },
+    .pwm_frequency = pwm_frequency
+  };
+  timerPinsUsed[numTimerPinsUsed++] = pinTimers[0];
+  return params;
+}
 
 
 
@@ -625,6 +654,16 @@ void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const in
   timerPinsUsed[numTimerPinsUsed++] = pinTimers[2];
   timerPinsUsed[numTimerPinsUsed++] = pinTimers[3];
   return params;
+}
+
+
+
+// function setting the pwm duty cycle to the hardware
+// - DC motor - 1PWM setting
+// - hardware speciffic
+void _writeDutyCycle1PWM(float dc_a, void* params){
+  // transform duty cycle from [0,1] to [0,255]
+  _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _PWM_RANGE*dc_a, _PWM_RESOLUTION);
 }
 
 
