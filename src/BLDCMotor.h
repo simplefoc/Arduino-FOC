@@ -28,7 +28,7 @@ class BLDCMotor: public FOCMotor
      * 
      * @param driver BLDCDriver class implementing all the hardware specific functions necessary PWM setting
      */
-    void linkDriver(BLDCDriver* driver);
+    virtual void linkDriver(BLDCDriver* driver);
 
     /** 
       * BLDCDriver link:
