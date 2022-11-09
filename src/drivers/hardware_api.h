@@ -19,6 +19,17 @@ typedef struct GenericDriverParams {
   float dead_zone;
 } GenericDriverParams;
 
+/** 
+ * Configuring PWM frequency, resolution and alignment
+ * - Stepper driver - 2PWM setting
+ * - hardware specific
+ * 
+ * @param pwm_frequency - frequency in hertz - if applicable
+ * @param pinA pinA pwm pin
+ * 
+ * @return -1 if failed, or pointer to internal driver parameters struct if successful
+ */
+void* _configure1PWM(long pwm_frequency, const int pinA);
 
 /** 
  * Configuring PWM frequency, resolution and alignment
@@ -79,6 +90,17 @@ void* _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const
  * @return -1 if failed, or pointer to internal driver parameters struct if successful
  */
 void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l);
+
+/** 
+ * Function setting the duty cycle to the pwm pin (ex. analogWrite())
+ * - Stepper driver - 2PWM setting
+ * - hardware specific
+ * 
+ * @param dc_a  duty cycle phase A [0, 1]
+ * @param dc_b  duty cycle phase B [0, 1]
+ * @param params  the driver parameters
+ */ 
+void _writeDutyCycle1PWM(float dc_a, void* params);
 
 /** 
  * Function setting the duty cycle to the pwm pin (ex. analogWrite())

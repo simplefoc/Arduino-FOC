@@ -15,6 +15,21 @@ void _setHighFrequency(const long freq, const int pin){
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 2PWM setting
 // - hardware speciffic
+void* _configure1PWM(long pwm_frequency, const int pinA) {
+  if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
+  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
+  _setHighFrequency(pwm_frequency, pinA);
+  GenericDriverParams* params = new GenericDriverParams {
+    .pins = { pinA },
+    .pwm_frequency = pwm_frequency
+  };
+  return params;
+}
+
+
+// function setting the high pwm frequency to the supplied pins
+// - Stepper motor - 2PWM setting
+// - hardware speciffic
 void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
   if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
@@ -60,6 +75,17 @@ void* _configure4PWM(long pwm_frequency, const int pinA, const int pinB, const i
   return params;
 }
 
+
+
+// function setting the pwm duty cycle to the hardware
+// - Stepper motor - 2PWM setting
+// - hardware speciffic
+void _writeDutyCycle1PWM(float dc_a, void* params) {
+  // transform duty cycle from [0,1] to [0,255]
+  analogWrite(((GenericDriverParams*)params)->pins[0], 255.0f*dc_a);
+}
+
+
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 2PWM setting
 // - hardware speciffic
@@ -68,6 +94,8 @@ void _writeDutyCycle2PWM(float dc_a,  float dc_b, void* params) {
   analogWrite(((GenericDriverParams*)params)->pins[0], 255.0f*dc_a);
   analogWrite(((GenericDriverParams*)params)->pins[1], 255.0f*dc_b);
 }
+
+
 // function setting the pwm duty cycle to the hardware
 // - BLDC motor - 3PWM setting
 // - hardware speciffic

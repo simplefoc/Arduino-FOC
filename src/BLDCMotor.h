@@ -78,7 +78,7 @@ class BLDCMotor: public FOCMotor
     * @param Ud Current voltage in d axis to set to the motor
     * @param angle_el current electrical angle of the motor
     */
-    void setPhaseVoltage(float Uq, float Ud, float angle_el);
+    void setPhaseVoltage(float Uq, float Ud, float angle_el) override;
 
   private:
     // FOC methods 

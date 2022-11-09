@@ -13,7 +13,7 @@ void StepDirListener::init(){
 }
 
 void StepDirListener::enableInterrupt(void (*doA)()){
-    attachInterrupt(digitalPinToInterrupt(pin_step), doA, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(pin_step), doA, polarity);
 }
 
 void StepDirListener::attach(float* variable){
@@ -22,15 +22,15 @@ void StepDirListener::attach(float* variable){
 
 void StepDirListener::handle(){ 
   // read step status
-  bool step = digitalRead(pin_step);
+  //bool step = digitalRead(pin_step);
   // update counter only on rising edge 
-  if(step && step != step_active){
-     if(digitalRead(pin_dir)) 
+  //if(step && step != step_active){
+    if(digitalRead(pin_dir)) 
         count++;
-     else 
+    else 
         count--;
-   }
-   step_active = step;
+   //}
+   //step_active = step;
    // if attached variable update it
    if(attached_variable) *attached_variable = getValue();
 }
