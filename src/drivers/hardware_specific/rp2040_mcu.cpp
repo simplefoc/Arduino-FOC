@@ -205,13 +205,15 @@ inline float swDti(float val, float dt) {
 	return ret;
 }
 
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params) {
+void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params) {
 	writeDutyCycle(dc_a, ((RP2040DriverParams*)params)->slice[0], ((RP2040DriverParams*)params)->chan[0]);
 	writeDutyCycle(swDti(dc_a, ((RP2040DriverParams*)params)->dead_zone), ((RP2040DriverParams*)params)->slice[1], ((RP2040DriverParams*)params)->chan[1]);
 	writeDutyCycle(dc_b, ((RP2040DriverParams*)params)->slice[2], ((RP2040DriverParams*)params)->chan[2]);
 	writeDutyCycle(swDti(dc_b, ((RP2040DriverParams*)params)->dead_zone), ((RP2040DriverParams*)params)->slice[3], ((RP2040DriverParams*)params)->chan[3]);
 	writeDutyCycle(dc_c, ((RP2040DriverParams*)params)->slice[4], ((RP2040DriverParams*)params)->chan[4]);
 	writeDutyCycle(swDti(dc_c, ((RP2040DriverParams*)params)->dead_zone), ((RP2040DriverParams*)params)->slice[5], ((RP2040DriverParams*)params)->chan[5]);
+
+	_UNUSED(phase_state);
 }
 
 #endif

@@ -734,7 +734,7 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
  * @param pinC_l  phase C low-side hardware pin number
  *
  */
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
+void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params){
 	SAMDHardwareDriverParams* p = (SAMDHardwareDriverParams*)params;
 	tccConfiguration* tcc1 = p->tccPinConfigurations[0];
 	tccConfiguration* tcc2 = p->tccPinConfigurations[1];
@@ -771,6 +771,8 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
 	else
 		writeSAMDDutyCycle(tcc1, dc_c);
 	return;
+
+	_UNUSED(phase_state);
 }
 
 

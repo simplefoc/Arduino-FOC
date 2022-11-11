@@ -762,7 +762,7 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 // Function setting the duty cycle to the pwm pin (ex. analogWrite())
 // - BLDC driver - 6PWM setting
 // - hardware specific
-void _writeDutyCycle6PWM(float dc_a, float dc_b, float dc_c, void* params){
+void _writeDutyCycle6PWM(float dc_a, float dc_b, float dc_c, PhaseState *phase_state, void* params){
   switch(((STM32DriverParams*)params)->interface_type){
     case _HARDWARE_6PWM:
       _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _PWM_RANGE*dc_a, _PWM_RESOLUTION);
@@ -779,6 +779,7 @@ void _writeDutyCycle6PWM(float dc_a, float dc_b, float dc_c, void* params){
       _setPwm(((STM32DriverParams*)params)->timers[5], ((STM32DriverParams*)params)->channels[5], _constrain(dc_c + dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
       break;
   }
+  _UNUSED(phase_state);
 }
 
 

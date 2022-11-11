@@ -207,10 +207,12 @@ void _setPwmPair(int pinH, int pinL, float val, int dead_time)
 //  - BLDC driver - 6PWM setting
 //  - hardware specific
 // supports Arudino/ATmega328 
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
+void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params){
   _setPwmPair(((GenericDriverParams*)params)->pins[0], ((GenericDriverParams*)params)->pins[1], dc_a*255.0, ((GenericDriverParams*)params)->dead_zone*255.0);
   _setPwmPair(((GenericDriverParams*)params)->pins[2], ((GenericDriverParams*)params)->pins[3], dc_b*255.0, ((GenericDriverParams*)params)->dead_zone*255.0);
   _setPwmPair(((GenericDriverParams*)params)->pins[4], ((GenericDriverParams*)params)->pins[5], dc_c*255.0, ((GenericDriverParams*)params)->dead_zone*255.0);
+
+  _UNUSED(phase_state);
 }
 
 #endif
