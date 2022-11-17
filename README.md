@@ -43,7 +43,7 @@ Therefore this is an attempt to:
 >    - `StepDirListener` improved timing [#169](https://github.com/simplefoc/Arduino-FOC/issues/169), [#209](https://github.com/simplefoc/Arduino-FOC/pull/209)
 > - API changes
 >    - `setPhaseVoltage` is now public function 
->    - `getVelocity` can now be called as many times as necessary (it recalculates the velocity if the time between calls is longer then `minDeltaT` - default 0.1ms)
+>    - `getVelocity` can now be called as many times as necessary (it recalculates the velocity if the time between calls is longer then `min_elapsed_time` - default 0.1ms)
 >    - BG431 board can be used only with `LowsideCurrentSense` class!
 >    - `initFOC` fails if current sense not initialised
 >       - driver and curent sense have to be well initialised for `initFOC` to start
