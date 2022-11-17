@@ -1,9 +1,6 @@
-#include "../hardware_api.h"
+#include "teensy_mcu.h"
 
 #if defined(__arm__) && defined(CORE_TEENSY)
-
-#define _PWM_FREQUENCY 25000 // 25khz
-#define _PWM_FREQUENCY_MAX 50000 // 50khz
 
 //  configure High PWM frequency
 void _setHighFrequency(const long freq, const int pin){
@@ -74,7 +71,6 @@ void* _configure4PWM(long pwm_frequency, const int pinA, const int pinB, const i
   };
   return params;
 }
-
 
 
 // function setting the pwm duty cycle to the hardware
