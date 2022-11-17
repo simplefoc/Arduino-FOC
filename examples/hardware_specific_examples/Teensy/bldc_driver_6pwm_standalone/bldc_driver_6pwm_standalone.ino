@@ -4,9 +4,9 @@
 
 // BLDC driver instance
 // using FTM0 timer
-//BLDCDriver6PWM driver = BLDCDriver6PWM(22,23, 9,10, 6,20, 8);
+BLDCDriver6PWM driver = BLDCDriver6PWM(22,23, 9,10, 6,20, 8);
 // using FTM3 timer - available on Teensy3.5 and Teensy3.6
-BLDCDriver6PWM driver = BLDCDriver6PWM(2,14, 7,8, 35,36, 8);
+//BLDCDriver6PWM driver = BLDCDriver6PWM(2,14, 7,8, 35,36, 8);
 
 void setup() {
   Serial.begin(9600);
