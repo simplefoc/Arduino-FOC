@@ -35,7 +35,7 @@ void MagneticSensorPWM::init(){
 float MagneticSensorPWM::getSensorAngle(){
     // raw data from sensor
     raw_count = getRawCount();
-    return( (float) (raw_count) / (float)cpr) * _2PI;
+    return( (float) (raw_count - min_raw_count) / (float)cpr) * _2PI;
 }
 
 
