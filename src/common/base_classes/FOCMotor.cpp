@@ -94,16 +94,28 @@ void FOCMotor::monitor() {
   bool printed = 0;
 
   if(monitor_variables & _MON_TARGET){
+    if (monitor_prepend_id && !printed) {
+      monitor_port->print(monitor_prepend_id);
+      monitor_port->print("M");
+    }
     monitor_port->print(target,4);
     monitor_port->print("\t");
     printed= true;
   }
   if(monitor_variables & _MON_VOLT_Q) {
+    if (monitor_prepend_id && !printed) {
+      monitor_port->print(monitor_prepend_id);
+      monitor_port->print("M");
+    }
     monitor_port->print(voltage.q,4);
     monitor_port->print("\t");
     printed= true;
   }
   if(monitor_variables & _MON_VOLT_D) {
+    if (monitor_prepend_id && !printed) {
+      monitor_port->print(monitor_prepend_id);
+      monitor_port->print("M");
+    }
     monitor_port->print(voltage.d,4);
     monitor_port->print("\t");
     printed= true;
@@ -117,11 +129,19 @@ void FOCMotor::monitor() {
       c.d = LPF_current_d(c.d);
     }
     if(monitor_variables & _MON_CURR_Q) {
+      if (monitor_prepend_id && !printed) {
+        monitor_port->print(monitor_prepend_id);
+        monitor_port->print("M");
+      }
       monitor_port->print(c.q*1000, 2); // mAmps
       monitor_port->print("\t");
       printed= true;
     }
     if(monitor_variables & _MON_CURR_D) {
+      if (monitor_prepend_id && !printed) {
+        monitor_port->print(monitor_prepend_id);
+        monitor_port->print("M");
+      }
       monitor_port->print(c.d*1000, 2); // mAmps
       monitor_port->print("\t");
       printed= true;
@@ -129,11 +149,19 @@ void FOCMotor::monitor() {
   }
  
   if(monitor_variables & _MON_VEL) {
+    if (monitor_prepend_id && !printed) {
+      monitor_port->print(monitor_prepend_id);
+      monitor_port->print("M");
+    }
     monitor_port->print(shaft_velocity,4);
     monitor_port->print("\t");
     printed= true;
   }
   if(monitor_variables & _MON_ANGLE) {
+    if (monitor_prepend_id && !printed) {
+      monitor_port->print(monitor_prepend_id);
+      monitor_port->print("M");
+    }
     monitor_port->print(shaft_angle,4);
     printed= true;
   }
