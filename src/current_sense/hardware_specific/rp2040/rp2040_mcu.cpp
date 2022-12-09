@@ -4,7 +4,7 @@
 
 #include "../../hardware_api.h"
 #include "./rp2040_mcu.h"
-#include "../../../drivers/hardware_specific/rp2040_mcu.h"
+#include "../../../drivers/hardware_specific/rp2040/rp2040_mcu.h"
 #include "communication/SimpleFOCDebug.h"
 
 #include "hardware/dma.h"
