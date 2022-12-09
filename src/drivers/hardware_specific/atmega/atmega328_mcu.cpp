@@ -1,33 +1,26 @@
-#include "../hardware_api.h"
+#include "../../hardware_api.h"
 
-#if defined(__AVR_ATmega2560__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega328PB__)
 
 // set pwm frequency to 32KHz
 void _pinHighFrequency(const int pin){
   //  High PWM frequency
   //  https://sites.google.com/site/qeewiki/books/avr-guide/timers-on-the-atmega328
-  //  https://forum.arduino.cc/index.php?topic=72092.0
-  if (pin == 13 || pin == 4  ) {
+  if (pin == 5 || pin == 6  ) {
       TCCR0A = ((TCCR0A & 0b11111100) | 0x01); // configure the pwm phase-corrected mode
       TCCR0B = ((TCCR0B & 0b11110000) | 0x01); // set prescaler to 1
   }
-  else if (pin == 12 || pin == 11 )
+  if (pin == 9 || pin == 10 )
       TCCR1B = ((TCCR1B & 0b11111000) | 0x01);     // set prescaler to 1
-  else if (pin == 10 || pin == 9 )
-      TCCR2B = ((TCCR2B & 0b11111000) | 0x01);     // set prescaler to 1
-  else if (pin == 5 || pin == 3 || pin == 2)
-      TCCR3B = ((TCCR2B & 0b11111000) | 0x01);    // set prescaler to 1
-  else if (pin == 8 || pin == 7 || pin == 6)
-      TCCR4B = ((TCCR4B & 0b11111000) | 0x01);    // set prescaler to 1
-  else if (pin == 44 || pin == 45 || pin == 46)
-      TCCR5B = ((TCCR5B & 0b11111000) | 0x01);    // set prescaler to 1
+  if (pin == 3 || pin == 11)
+      TCCR2B = ((TCCR2B & 0b11111000) | 0x01);// set prescaler to 1
 
 }
-
 
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 2PWM setting
 // - hardware speciffic
+// supports Arudino/ATmega328
 void* _configure1PWM(long pwm_frequency,const int pinA) {
    //  High PWM frequency
    // - always max 32kHz
@@ -38,11 +31,10 @@ void* _configure1PWM(long pwm_frequency,const int pinA) {
   };
   return params;
 }
-
-
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 2PWM setting
 // - hardware speciffic
+// supports Arudino/ATmega328
 void* _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
    //  High PWM frequency
    // - always max 32kHz
@@ -58,6 +50,7 @@ void* _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
 // - hardware speciffic
+// supports Arudino/ATmega328
 void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
    //  High PWM frequency
    // - always max 32kHz
@@ -71,6 +64,9 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
   return params;
 }
 
+
+
+
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 2PWM setting
 // - hardware speciffic
@@ -78,6 +74,7 @@ void _writeDutyCycle1PWM(float dc_a, void* params){
   // transform duty cycle from [0,1] to [0,255]
   analogWrite(((GenericDriverParams*)params)->pins[0], 255.0f*dc_a);
 }
+
 
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 2PWM setting
@@ -101,6 +98,7 @@ void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* params){
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 4PWM setting
 // - hardware speciffic
+// supports Arduino/ATmega328
 void* _configure4PWM(long pwm_frequency,const int pin1A, const int pin1B, const int pin2A, const int pin2B) {
    //  High PWM frequency
    // - always max 32kHz
@@ -118,7 +116,7 @@ void* _configure4PWM(long pwm_frequency,const int pin1A, const int pin1B, const 
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 4PWM setting
 // - hardware speciffic
-void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, void* params) {
+void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, void* params){
   // transform duty cycle from [0,1] to [0,255]
   analogWrite(((GenericDriverParams*)params)->pins[0], 255.0f*dc_1a);
   analogWrite(((GenericDriverParams*)params)->pins[1], 255.0f*dc_1b);
@@ -128,27 +126,26 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
 
 
 // function configuring pair of high-low side pwm channels, 32khz frequency and center aligned pwm
-// supports Arudino/ATmega2560
 int _configureComplementaryPair(int pinH, int pinL) {
-  if( (pinH == 4 && pinL == 13 ) || (pinH == 13 && pinL == 4 ) ){
+  if( (pinH == 5 && pinL == 6 ) || (pinH == 6 && pinL == 5 ) ){
     // configure the pwm phase-corrected mode
     TCCR0A = ((TCCR0A & 0b11111100) | 0x01);
     // configure complementary pwm on low side
-    if(pinH == 13 ) TCCR0A = 0b10110000 | (TCCR0A & 0b00001111) ;
+    if(pinH == 6 ) TCCR0A = 0b10110000 | (TCCR0A & 0b00001111) ;
     else TCCR0A = 0b11100000 | (TCCR0A & 0b00001111) ;
     // set prescaler to 1 - 32kHz freq
     TCCR0B = ((TCCR0B & 0b11110000) | 0x01);
-  }else if( (pinH == 11 && pinL == 12 ) || (pinH == 12 && pinL == 11 ) ){
+  }else if( (pinH == 9 && pinL == 10 ) || (pinH == 10 && pinL == 9 ) ){
     // set prescaler to 1 - 32kHz freq
     TCCR1B = ((TCCR1B & 0b11111000) | 0x01);
     // configure complementary pwm on low side
-    if(pinH == 11 ) TCCR1A = 0b10110000 | (TCCR1A & 0b00001111) ;
+    if(pinH == 9 ) TCCR1A = 0b10110000 | (TCCR1A & 0b00001111) ;
     else TCCR1A = 0b11100000 | (TCCR1A & 0b00001111) ;
-  }else if((pinH == 10 && pinL == 9 ) || (pinH == 9 && pinL == 10 ) ){
+  }else if((pinH == 3 && pinL == 11 ) || (pinH == 11 && pinL == 3 ) ){
     // set prescaler to 1 - 32kHz freq
     TCCR2B = ((TCCR2B & 0b11111000) | 0x01);
     // configure complementary pwm on low side
-    if(pinH == 10 ) TCCR2A = 0b10110000 | (TCCR2A & 0b00001111) ;
+    if(pinH == 11 ) TCCR2A = 0b10110000 | (TCCR2A & 0b00001111) ;
     else TCCR2A = 0b11100000 | (TCCR2A & 0b00001111) ;
   }else{
     return -1;
@@ -157,7 +154,7 @@ int _configureComplementaryPair(int pinH, int pinL) {
 }
 
 // Configuring PWM frequency, resolution and alignment
-// - BLDC driver - 6PWM setting
+// - BLDC driver -  setting
 // - hardware specific
 // supports Arudino/ATmega328
 void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l) {

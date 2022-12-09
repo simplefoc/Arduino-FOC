@@ -4,7 +4,7 @@
 
 #include "../../../../common/foc_utils.h"
 #include "../../../../drivers/hardware_api.h"
-#include "../../../../drivers/hardware_specific/stm32_mcu.h"
+#include "../../../../drivers/hardware_specific/stm32/stm32_mcu.h"
 #include "../../../hardware_api.h"
 #include "../stm32_mcu.h"
 #include "stm32g4_hal.h"

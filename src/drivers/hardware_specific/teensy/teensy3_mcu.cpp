@@ -103,6 +103,9 @@ int _findTimer( const int Ah, const int Al,  const int Bh, const int Bl, const i
          if((Ch == FTM0_CH0_PIN && Cl == FTM0_CH1_PIN) || 
           (Ch == FTM0_CH2_PIN && Cl == FTM0_CH3_PIN) ||
           (Ch == FTM0_CH4_PIN && Cl == FTM0_CH5_PIN) ){
+#ifdef SIMPLEFOC_TEENSY_DEBUG
+                SIMPLEFOC_DEBUG("TEENSY-DRV: Using timer FTM0.");
+#endif
             // timer FTM0 
             return 0;
         }
@@ -120,12 +123,18 @@ int _findTimer( const int Ah, const int Al,  const int Bh, const int Bl, const i
             (Ch == FTM3_CH2_PIN && Cl == FTM3_CH3_PIN) ||
             (Ch == FTM3_CH4_PIN && Cl == FTM3_CH5_PIN) ){
               // timer FTM3 
+#ifdef SIMPLEFOC_TEENSY_DEBUG
+                SIMPLEFOC_DEBUG("TEENSY-DRV: Using timer FTM3.");
+#endif
               return 3;
           }
         }
     }
   #endif
-
+  
+#ifdef SIMPLEFOC_TEENSY_DEBUG
+  SIMPLEFOC_DEBUG("TEENSY-DRV: ERR: Pins not on timers FTM0 or FTM3!");
+#endif
   return -1;
 
 }
@@ -154,8 +163,6 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
   int timer = _findTimer(pinA_h,pinA_l,pinB_h,pinB_l,pinC_h,pinC_l);
   if(timer<0) return SIMPLEFOC_DRIVER_INIT_FAILED;
 
-
-  
   // find the best combination of prescalers and counter value
   double dead_time = dead_zone/pwm_freq;
   int prescaler = 1; // initial prescaler (1,4 or 16)

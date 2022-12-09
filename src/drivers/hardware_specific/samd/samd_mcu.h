@@ -7,7 +7,7 @@
 // can set this as build-flag in Arduino IDE or PlatformIO
 // #define SIMPLEFOC_SAMD_DEBUG
 
-#include "../hardware_api.h"
+#include "../../hardware_api.h"
 
 
 #if defined(__SAME51J19A__) || defined(__ATSAME51J19A__)

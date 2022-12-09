@@ -6,7 +6,7 @@
 
 #define SIMPLEFOC_DEBUG_RP2040
 
-#include "../hardware_api.h"
+#include "../../hardware_api.h"
 #include "./rp2040_mcu.h"
 
 // these defines determine the polarity of the PWM output. Normally, the polarity is active-high,

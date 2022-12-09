@@ -4,7 +4,7 @@
 
 #include "../../../../communication/SimpleFOCDebug.h"
 
-//#define SIMPLEFOC_STM32_DEBUG
+#define SIMPLEFOC_STM32_DEBUG
 
 ADC_HandleTypeDef hadc;
 

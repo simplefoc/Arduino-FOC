@@ -24,30 +24,9 @@ Therefore this is an attempt to:
    - *Medium-power* BLDC driver (<30Amps): [Arduino <span class="simple">Simple<b>FOC</b>PowerShield</span> ](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
-> NEW RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2.3
-> - stm32 low-side current sensing 
->    - g4 supported
->    - thoroughly tested f1/f4/g4 - [#187](https://github.com/simplefoc/Arduino-FOC/issues/187)
->    - bg431b: added support for VBAT and TEMPERATURE readings [#222](https://github.com/simplefoc/Arduino-FOC/pull/222)
-> - bugfixing
->    - leonardo
->    - mega2560 [#190](https://github.com/simplefoc/Arduino-FOC/issues/190)
->    - inline current sense without driver [#188](https://github.com/simplefoc/Arduino-FOC/issues/188)
->    - bg431b support current sense fix [#210](https://github.com/simplefoc/Arduino-FOC/pull/210)
->    - StepperDriver4PWM wrong init  [#182](https://github.com/simplefoc/Arduino-FOC/issues/182)
->    - open loop back-emf vlotage issue [#219](https://github.com/simplefoc/Arduino-FOC/issues/219)
->    - SAMD51 compile issue [#217](https://github.com/simplefoc/Arduino-FOC/issues/217)
->    - ESP32-S3 compile issue [#198](https://github.com/simplefoc/Arduino-FOC/issues/198)
->    - ESP32 compile issue [#208](https://github.com/simplefoc/Arduino-FOC/issues/208), [#207](https://github.com/simplefoc/Arduino-FOC/issues/207)
->    - magnetic sensor direction finding more robust [#173](https://github.com/simplefoc/Arduino-FOC/issues/173), [#164](https://github.com/simplefoc/Arduino-FOC/pull/164)
->    - `StepDirListener` improved timing [#169](https://github.com/simplefoc/Arduino-FOC/issues/169), [#209](https://github.com/simplefoc/Arduino-FOC/pull/209)
-> - API changes
->    - `setPhaseVoltage` is now public function 
->    - `getVelocity` can now be called as many times as necessary (it recalculates the velocity if the time between calls is longer then `min_elapsed_time` - default 0.1ms)
->    - BG431 board can be used only with `LowsideCurrentSense` class!
->    - `initFOC` fails if current sense not initialised
->       - driver and curent sense have to be well initialised for `initFOC` to start
->       - `cs.init()` and `driver.init()` return `1` if well initialised and `0` if failed 
+> NEXT RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.0
+> - Teensy 3.x inital support for 6pwm
+> - Teensy 4.x inital support for 6pwm
 ## Arduino *SimpleFOClibrary* v2.2.3
 
 <p align="">

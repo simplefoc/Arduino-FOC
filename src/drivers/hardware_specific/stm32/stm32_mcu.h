@@ -1,6 +1,6 @@
 #ifndef STM32_DRIVER_MCU_DEF
 #define STM32_DRIVER_MCU_DEF
-#include "../hardware_api.h"
+#include "../../hardware_api.h"
 
 #if defined(_STM32_DEF_)
 
