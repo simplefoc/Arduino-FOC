@@ -9,6 +9,11 @@ BLDCDriver6PWM driver = BLDCDriver6PWM(22,23, 9,10, 6,20, 8);
 // BLDCDriver6PWM driver = BLDCDriver6PWM(2,14, 7,8, 35,36, 8);
 
 void setup() {
+  Serial.begin(115200);
+  // Enable debugging
+  // Driver init will show debugging output
+  SimpleFOCDebug::enable(&Serial);
+
   // pwm frequency to be used [Hz]
   driver.pwm_frequency = 30000;
   // dead zone percentage of the duty cycle - default 0.02 - 2%
