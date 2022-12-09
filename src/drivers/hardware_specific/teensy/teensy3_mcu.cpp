@@ -146,7 +146,7 @@ int _findTimer( const int Ah, const int Al,  const int Bh, const int Bl, const i
 void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l) {
   if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
-  unsigned long pwm_freq = 4*pwm_frequency; // center-aligned pwm has 4 times lower freq
+  unsigned long pwm_freq = 2*pwm_frequency; // center-aligned pwm has 4 times lower freq
   _setHighFrequency(pwm_freq, pinA_h);
   _setHighFrequency(pwm_freq, pinA_l);
   _setHighFrequency(pwm_freq, pinB_h);
