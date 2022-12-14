@@ -129,6 +129,8 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
 
 // function configuring pair of high-low side pwm channels, 32khz frequency and center aligned pwm
 // supports Arudino/ATmega2560
+// https://ww1.microchip.com/downloads/en/devicedoc/atmel-2549-8-bit-avr-microcontroller-atmega640-1280-1281-2560-2561_datasheet.pdf
+// https://docs.arduino.cc/hacking/hardware/PinMapping2560
 int _configureComplementaryPair(int pinH, int pinL) {
   if( (pinH == 4 && pinL == 13 ) || (pinH == 13 && pinL == 4 ) ){
     // configure the pwm phase-corrected mode
@@ -150,6 +152,24 @@ int _configureComplementaryPair(int pinH, int pinL) {
     // configure complementary pwm on low side
     if(pinH == 10 ) TCCR2A = 0b10110000 | (TCCR2A & 0b00001111) ;
     else TCCR2A = 0b11100000 | (TCCR2A & 0b00001111) ;
+  }else if((pinH == 5 && pinL == 2 ) || (pinH == 2 && pinL == 5 ) ){
+    // set prescaler to 1 - 32kHz freq
+    TCCR3B = ((TCCR3B & 0b11111000) | 0x01);
+    // configure complementary pwm on low side
+    if(pinH == 5 ) TCCR3A = 0b10110000 | (TCCR3A & 0b00001111) ;
+    else TCCR3A = 0b11100000 | (TCCR3A & 0b00001111) ;
+  }else if((pinH == 6 && pinL == 7 ) || (pinH == 7 && pinL == 6 ) ){
+    // set prescaler to 1 - 32kHz freq
+    TCCR4B = ((TCCR4B & 0b11111000) | 0x01);
+    // configure complementary pwm on low side
+    if(pinH == 6 ) TCCR4A = 0b10110000 | (TCCR4A & 0b00001111) ;
+    else TCCR4A = 0b11100000 | (TCCR4A & 0b00001111) ;
+  }else if((pinH == 46 && pinL == 45 ) || (pinH == 45 && pinL == 46 ) ){
+    // set prescaler to 1 - 32kHz freq
+    TCCR5B = ((TCCR5B & 0b11111000) | 0x01);
+    // configure complementary pwm on low side
+    if(pinH == 46 ) TCCR5A = 0b10110000 | (TCCR5A & 0b00001111) ;
+    else TCCR5A = 0b11100000 | (TCCR5A & 0b00001111) ;
   }else{
     return -1;
   }
