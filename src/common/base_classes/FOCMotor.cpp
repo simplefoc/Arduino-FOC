@@ -94,18 +94,21 @@ void FOCMotor::monitor() {
   bool printed = 0;
 
   if(monitor_variables & _MON_TARGET){
-    monitor_port->print(target,4);
-    monitor_port->print("\t");
+    if(!printed) monitor_port->print(monitor_start_char);
+    else monitor_port->print(monitor_separation);
+    monitor_port->print(target,monitor_decimals);    
     printed= true;
   }
   if(monitor_variables & _MON_VOLT_Q) {
-    monitor_port->print(voltage.q,4);
-    monitor_port->print("\t");
+    if(!printed) monitor_port->print(monitor_start_char);
+    else monitor_port->print(monitor_separation);
+    monitor_port->print(voltage.q,monitor_decimals);
     printed= true;
   }
   if(monitor_variables & _MON_VOLT_D) {
-    monitor_port->print(voltage.d,4);
-    monitor_port->print("\t");
+    if(!printed) monitor_port->print(monitor_start_char);
+    else monitor_port->print(monitor_separation);
+    monitor_port->print(voltage.d,monitor_decimals);
     printed= true;
   }
   // read currents if possible - even in voltage mode (if current_sense available)
@@ -117,27 +120,32 @@ void FOCMotor::monitor() {
       c.d = LPF_current_d(c.d);
     }
     if(monitor_variables & _MON_CURR_Q) {
-      monitor_port->print(c.q*1000, 2); // mAmps
-      monitor_port->print("\t");
+      if(!printed) monitor_port->print(monitor_start_char);
+      else monitor_port->print(monitor_separation);
+      monitor_port->print(c.q*1000, monitor_decimals); // mAmps
       printed= true;
     }
     if(monitor_variables & _MON_CURR_D) {
-      monitor_port->print(c.d*1000, 2); // mAmps
-      monitor_port->print("\t");
+      if(!printed) monitor_port->print(monitor_start_char);
+      else monitor_port->print(monitor_separation);
+      monitor_port->print(c.d*1000, monitor_decimals); // mAmps
       printed= true;
     }
   }
  
   if(monitor_variables & _MON_VEL) {
-    monitor_port->print(shaft_velocity,4);
-    monitor_port->print("\t");
+    if(!printed) monitor_port->print(monitor_start_char);
+    else monitor_port->print(monitor_separation);
+    monitor_port->print(shaft_velocity,monitor_decimals);
     printed= true;
   }
   if(monitor_variables & _MON_ANGLE) {
-    monitor_port->print(shaft_angle,4);
+    if(!printed) monitor_port->print(monitor_start_char);
+    else monitor_port->print(monitor_separation);
+    monitor_port->print(shaft_angle,monitor_decimals);
     printed= true;
   }
-  if(printed) monitor_port->println();
+  if(printed) monitor_port->println(monitor_end_char);
   
 }
 

@@ -223,6 +223,10 @@ class FOCMotor
      */
     void monitor();
     unsigned int monitor_downsample = DEF_MON_DOWNSMAPLE; //!< show monitor outputs each monitor_downsample calls 
+    char monitor_start_char = 0; //!< monitor starting character 
+    char monitor_end_char = 0; //!< monitor outputs ending character 
+    char monitor_separation = '\t'; //!< monitor outputs separation character
+    unsigned int  monitor_decimals = 4; //!< monitor outputs decimal places
     // initial monitoring will display target, voltage, velocity and angle
     uint8_t monitor_variables = _MON_TARGET | _MON_VOLT_Q | _MON_VEL | _MON_ANGLE; //!< Bit array holding the map of variables the user wants to monitor
    
