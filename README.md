@@ -27,6 +27,8 @@ Therefore this is an attempt to:
 > NEXT RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.0
 > - Teensy 3.x inital support for 6pwm
 > - Teensy 4.x inital support for 6pwm
+> - Example for v3.1 SimpleFOCShield 
+> - bugfix - current sense align - added offset exchange when exchaning pins
 ## Arduino *SimpleFOClibrary* v2.2.3
 
 <p align="">
