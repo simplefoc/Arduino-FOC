@@ -42,7 +42,7 @@ void doB(){encoder.handleB();}
 
 // commander interface
 Commander command = Commander(Serial);
-void onMotor(char* cmd){ command.motor(&motor, cmd); }
+void onMotor(char* cmd){ command.motor(&motion, cmd); }
 
 void setup() {
 
@@ -108,8 +108,6 @@ void setup() {
   // define the motor id
   command.add('A', onMotor, "motor");
 
-  Serial.println(F("Full control example: "));
-  Serial.println(F("Run user commands to configure and the motor (find the full command list in docs.simplefoc.com) \n "));
   Serial.println(F("Initial motion control loop is voltage loop."));
   Serial.println(F("Initial target voltage 2V."));
 
