@@ -327,7 +327,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
           }
           // print the variables
           for(int i = 0; i < 7; i++){
-            print( (motor->monitor_variables & (1 << 6-i)) >> (6-i));
+            print( (motor->monitor_variables & (1 << (6-i))) >> (6-i));
           }
           println("");
           break;
