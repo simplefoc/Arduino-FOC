@@ -23,6 +23,7 @@ public:
     ~PIDController() = default;
 
     float operator() (float error);
+    void reset();
 
     float P; //!< Proportional gain 
     float I; //!< Integral gain 
