@@ -1,6 +1,35 @@
 #include "BLDCMotor.h"
 #include "./communication/SimpleFOCDebug.h"
 
+
+// see https://www.youtube.com/watch?v=InzXA7mWBWE Slide 5
+// each is 60 degrees with values for 3 phases of 1=positive -1=negative 0=high-z
+int trap_120_map[6][3] = {
+    {_HIGH_IMPEDANCE,1,-1},
+    {-1,1,_HIGH_IMPEDANCE},
+    {-1,_HIGH_IMPEDANCE,1},
+    {_HIGH_IMPEDANCE,-1,1},
+    {1,-1,_HIGH_IMPEDANCE},
+    {1,_HIGH_IMPEDANCE,-1} 
+};
+
+// see https://www.youtube.com/watch?v=InzXA7mWBWE Slide 8
+// each is 30 degrees with values for 3 phases of 1=positive -1=negative 0=high-z
+int trap_150_map[12][3] = {
+    {_HIGH_IMPEDANCE,1,-1},
+    {-1,1,-1},
+    {-1,1,_HIGH_IMPEDANCE},
+    {-1,1,1},
+    {-1,_HIGH_IMPEDANCE,1},
+    {-1,-1,1},
+    {_HIGH_IMPEDANCE,-1,1},
+    {1,-1,1},
+    {1,-1,_HIGH_IMPEDANCE},
+    {1,-1,-1},
+    {1,_HIGH_IMPEDANCE,-1},
+    {1,1,-1} 
+};
+
 // BLDCMotor( int pp , float R)
 // - pp            - pole pair number
 // - R             - motor phase resistance
@@ -427,7 +456,7 @@ void BLDCMotor::move(float new_target) {
 // Function implementing Space Vector PWM and Sine PWM algorithms
 //
 // Function using sine approximation
-// regular sin + cos ~300us    (no memory usaage)
+// regular sin + cos ~300us    (no memory usage)
 // approx  _sin + _cos ~110us  (400Byte ~ 20% of memory)
 void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
 
@@ -439,13 +468,10 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
   {
     case FOCModulationType::Trapezoid_120 :
       // see https://www.youtube.com/watch?v=InzXA7mWBWE Slide 5
-      static int trap_120_map[6][3] = {
-        {_HIGH_IMPEDANCE,1,-1},{-1,1,_HIGH_IMPEDANCE},{-1,_HIGH_IMPEDANCE,1},{_HIGH_IMPEDANCE,-1,1},{1,-1,_HIGH_IMPEDANCE},{1,_HIGH_IMPEDANCE,-1} // each is 60 degrees with values for 3 phases of 1=positive -1=negative 0=high-z
-      };
-      // static int trap_120_state = 0;
+      // determine the sector
       sector = 6 * (_normalizeAngle(angle_el + _PI_6 ) / _2PI); // adding PI/6 to align with other modes
       // centering the voltages around either
-      // modulation_centered == true > driver.volage_limit/2
+      // modulation_centered == true > driver.voltage_limit/2
       // modulation_centered == false > or Adaptable centering, all phases drawn to 0 when Uq=0
       center = modulation_centered ? (driver->voltage_limit)/2 : Uq;
 
@@ -470,13 +496,10 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
 
     case FOCModulationType::Trapezoid_150 :
       // see https://www.youtube.com/watch?v=InzXA7mWBWE Slide 8
-      static int trap_150_map[12][3] = {
-        {_HIGH_IMPEDANCE,1,-1},{-1,1,-1},{-1,1,_HIGH_IMPEDANCE},{-1,1,1},{-1,_HIGH_IMPEDANCE,1},{-1,-1,1},{_HIGH_IMPEDANCE,-1,1},{1,-1,1},{1,-1,_HIGH_IMPEDANCE},{1,-1,-1},{1,_HIGH_IMPEDANCE,-1},{1,1,-1} // each is 30 degrees with values for 3 phases of 1=positive -1=negative 0=high-z
-      };
-      // static int trap_150_state = 0;
+      // determine the sector
       sector = 12 * (_normalizeAngle(angle_el + _PI_6 ) / _2PI); // adding PI/6 to align with other modes
       // centering the voltages around either
-      // modulation_centered == true > driver.volage_limit/2
+      // modulation_centered == true > driver.voltage_limit/2
       // modulation_centered == false > or Adaptable centering, all phases drawn to 0 when Uq=0
       center = modulation_centered ? (driver->voltage_limit)/2 : Uq;
 
@@ -489,12 +512,17 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
         Ua = trap_150_map[sector][0] * Uq + center;
         Ub = center;
         Uc = trap_150_map[sector][2] * Uq + center;
-        driver->setPhaseState(PhaseState::PHASE_ON, PhaseState::PHASE_OFF, PhaseState::PHASE_ON);// disable phase if possible
-      }else{
+        driver->setPhaseState(PhaseState::PHASE_ON, PhaseState::PHASE_OFF, PhaseState::PHASE_ON); // disable phase if possible
+      }else if(trap_150_map[sector][2]  == _HIGH_IMPEDANCE){
         Ua = trap_150_map[sector][0] * Uq + center;
         Ub = trap_150_map[sector][1] * Uq + center;
         Uc = center;
-        driver->setPhaseState(PhaseState::PHASE_ON, PhaseState::PHASE_ON, PhaseState::PHASE_OFF);// disable phase if possible
+        driver->setPhaseState(PhaseState::PHASE_ON, PhaseState::PHASE_ON, PhaseState::PHASE_OFF); // disable phase if possible
+      }else{
+        Ua = trap_150_map[sector][0] * Uq + center;
+        Ub = trap_150_map[sector][1] * Uq + center;
+        Uc = trap_150_map[sector][2] * Uq + center;
+        driver->setPhaseState(PhaseState::PHASE_ON, PhaseState::PHASE_ON, PhaseState::PHASE_ON); // enable all phases
       }
 
     break;
@@ -525,7 +553,7 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
         Ub -= Umin;
         Uc -= Umin;
       }
-      driver->setPhaseState(PhaseState::PHASE_ON, PhaseState::PHASE_ON, PhaseState::PHASE_ON);
+
       break;
 
     case FOCModulationType::SpaceVectorPWM :
@@ -611,7 +639,6 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
       Ua = Ta*driver->voltage_limit;
       Ub = Tb*driver->voltage_limit;
       Uc = Tc*driver->voltage_limit;
-      driver->setPhaseState(PhaseState::PHASE_ON, PhaseState::PHASE_ON, PhaseState::PHASE_ON);
       break;
 
   }
