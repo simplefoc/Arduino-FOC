@@ -2,8 +2,12 @@
 
 #if defined(__AVR_ATmega2560__)
 
+#define _PWM_FREQUENCY 32000
+#define _PWM_FREQUENCY_MAX 32000
+#define _PWM_FREQUENCY_MIN 4000
+
 // set pwm frequency to 32KHz
-void _pinHighFrequency(const int pin){
+void _pinHighFrequency(const int pin, const long frequency){
   bool high_fq = false;
   // set 32kHz frequency if requested freq is higher than the middle of the range (14kHz)
   // else set the 4kHz
