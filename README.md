@@ -25,10 +25,13 @@ Therefore this is an attempt to:
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
 > NEXT RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.0
-> - Teensy 3.x inital support for 6pwm
-> - Teensy 4.x inital support for 6pwm
+> - Teensy 3.x initial support for 6pwm
+> - Teensy 4.x initial support for 6pwm
 > - Example for v3.1 SimpleFOCShield 
-> - bugfix - current sense align - added offset exchange when exchaning pins
+> - More flexible monitoring API 
+>   - start, end and separator characters
+>   - decimal places (settable through commander)
+> - bugfix - current sense align - added offset exchange when exchanging pins
 ## Arduino *SimpleFOClibrary* v2.2.3
 
 <p align="">

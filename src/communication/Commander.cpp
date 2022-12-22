@@ -109,7 +109,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
   char cmd = user_command[0];
   char sub_cmd = user_command[1];
   // check if there is a subcommand or not
-  int value_index = (sub_cmd >= 'A'  && sub_cmd <= 'Z') ?  2 :  1;
+  int value_index = (sub_cmd >= 'A'  && sub_cmd <= 'Z') ||  (sub_cmd == '#') ?  2 :  1;
   // check if get command
   bool GET = isSentinel(user_command[value_index]);
   // parse command values
@@ -311,12 +311,23 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
           motor->monitor_variables = (uint8_t) 0;
           println(F("clear"));
           break;
+        case CMD_DECIMAL:
+          printVerbose(F("decimal: "));
+          motor->monitor_decimals = value;
+          println((int)motor->monitor_decimals);
+          break;
         case SCMD_SET:
-          if(!GET) motor->monitor_variables = (uint8_t) 0;
+          if(!GET){
+            // set the variables
+            motor->monitor_variables = (uint8_t) 0;
+            for(int i = 0; i < 7; i++){
+              if(isSentinel(user_command[value_index+i])) break;
+              motor->monitor_variables |=  (user_command[value_index+i] - '0') << (6-i);
+            }
+          }
+          // print the variables
           for(int i = 0; i < 7; i++){
-            if(isSentinel(user_command[value_index+i])) break;
-            if(!GET) motor->monitor_variables |=  (user_command[value_index+i] - '0') << (6-i);
-            print( (user_command[value_index+i] - '0') );
+            print( (motor->monitor_variables & (1 << 6-i)) >> (6-i));
           }
           println("");
           break;
