@@ -375,7 +375,7 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 //  - BLDC driver - 6PWM setting
 //  - hardware specific
 */
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
+void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params){
       bldc_6pwm_motor_slots_t* p = ((NRF52DriverParams*)params)->slot.slot6pwm;
       float dead_time = ((NRF52DriverParams*)params)->dead_time;
       p->mcpwm_channel_sequence[0] = (int)(_constrain(dc_a-dead_time,0,1)*pwm_range) | 0x8000;
@@ -385,6 +385,8 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
       p->mcpwm_channel_sequence[4] = (int)(_constrain(dc_c-dead_time,0,1)*pwm_range) | 0x8000;
       p->mcpwm_channel_sequence[5] = (int)(_constrain(dc_c+dead_time,0,1)*pwm_range);     
       NRF_EGU0->TASKS_TRIGGER[0] = 1;
+
+      _UNUSED(phase_state);
 }
 
 

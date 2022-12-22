@@ -64,12 +64,12 @@ int BLDCDriver3PWM::init() {
 
 
 // Set voltage to the pwm pin
-void BLDCDriver3PWM::setPhaseState(int sa, int sb, int sc) {
+void BLDCDriver3PWM::setPhaseState(PhaseState sa, PhaseState sb, PhaseState sc) {
   // disable if needed
   if( _isset(enableA_pin) &&  _isset(enableB_pin)  && _isset(enableC_pin) ){
-    digitalWrite(enableA_pin, sa == _HIGH_IMPEDANCE ? LOW : HIGH);
-    digitalWrite(enableB_pin, sb == _HIGH_IMPEDANCE ? LOW : HIGH);
-    digitalWrite(enableC_pin, sc == _HIGH_IMPEDANCE ? LOW : HIGH);
+    digitalWrite(enableA_pin, sa == PhaseState::PHASE_ON ? enable_active_high:!enable_active_high);
+    digitalWrite(enableB_pin, sb == PhaseState::PHASE_ON ? enable_active_high:!enable_active_high);
+    digitalWrite(enableC_pin, sc == PhaseState::PHASE_ON ? enable_active_high:!enable_active_high);
   }
 }
 

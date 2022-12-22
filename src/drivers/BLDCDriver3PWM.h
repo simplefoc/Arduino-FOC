@@ -56,7 +56,7 @@ class BLDCDriver3PWM: public BLDCDriver
      * @param sb - phase B state : active / disabled ( high impedance )
      * @param sa - phase C state : active / disabled ( high impedance )
     */
-    virtual void setPhaseState(int sa, int sb, int sc) override;
+    virtual void setPhaseState(PhaseState sa, PhaseState sb, PhaseState sc) override;
   private:
 };
 
