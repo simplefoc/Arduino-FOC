@@ -32,6 +32,11 @@ Therefore this is an attempt to:
 >   - start, end and separator characters
 >   - decimal places (settable through commander)
 > - bugfix - current sense align - added offset exchange when exchanging pins
+> - bugfix - trapezoid 150 fixed
+> - phase disable in 6pwm mode 
+>   - stm32 - software and hardware 6pwm
+>   - atmega328 
+>   - atmega2560
 ## Arduino *SimpleFOClibrary* v2.2.3
 
 <p align="">
