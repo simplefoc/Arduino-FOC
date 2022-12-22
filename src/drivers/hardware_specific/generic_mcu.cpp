@@ -122,3 +122,13 @@ __attribute__((weak)) void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc
   _UNUSED(phase_state);
   _UNUSED(params);
 }
+
+// Function setting the phase state. i.e. active / disabled
+// - BLDC driver - 6PWM setting
+// - hardware specific
+__attribute__((weak)) void _setPhaseState(int sa, int sb, int sc, void* params){
+  _UNUSED(sa);
+  _UNUSED(sb);
+  _UNUSED(sc);
+  _UNUSED(params);
+}

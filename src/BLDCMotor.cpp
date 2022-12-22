@@ -525,7 +525,7 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
         Ub -= Umin;
         Uc -= Umin;
       }
-
+      driver->setPhaseState(PhaseState::PHASE_ON, PhaseState::PHASE_ON, PhaseState::PHASE_ON);
       break;
 
     case FOCModulationType::SpaceVectorPWM :
@@ -611,6 +611,7 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
       Ua = Ta*driver->voltage_limit;
       Ub = Tb*driver->voltage_limit;
       Uc = Tc*driver->voltage_limit;
+      driver->setPhaseState(PhaseState::PHASE_ON, PhaseState::PHASE_ON, PhaseState::PHASE_ON);
       break;
 
   }

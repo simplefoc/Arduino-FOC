@@ -297,6 +297,9 @@ STM32DriverParams* _initHardware6PWMPair(long PWM_freq, float dead_zone, PinMap*
   LL_TIM_CC_EnableChannel(HT->getHandle()->Instance, getLLChannel(pinH) | getLLChannel(pinL));
   HT->pause();
 
+  // make sure timer output goes to LOW when timer channels are temporarily disabled
+  LL_TIM_SetOffStates(HT->getHandle()->Instance, LL_TIM_OSSI_DISABLE, LL_TIM_OSSR_ENABLE);
+
   params->timers[paramsPos] = HT;
   params->timers[paramsPos+1] = HT;
   params->channels[paramsPos] = channel1;
@@ -772,16 +775,38 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 
 
 
+void _setSinglePhaseState(PhaseState state, HardwareTimer *HT, int channel1,int channel2) {
+  _UNUSED(channel2);
+  switch (state) {
+    case PhaseState::PHASE_OFF:
+      // Due to a weird quirk in the arduino timer API, pauseChannel only disables the complementary channel (e.g. CC1NE).
+      // To actually make the phase floating, we must also set pwm to 0.
+      HT->pauseChannel(channel1);
+      break;
+    default:
+      HT->resumeChannel(channel1);
+      break;
+  }
+}
 
 
 // Function setting the duty cycle to the pwm pin (ex. analogWrite())
 // - BLDC driver - 6PWM setting
 // - hardware specific
-void _writeDutyCycle6PWM(float dc_a, float dc_b, float dc_c, PhaseState *phase_state, void* params){
+void _writeDutyCycle6PWM(float dc_a, float dc_b, float dc_c, PhaseState* phase_state, void* params){
   switch(((STM32DriverParams*)params)->interface_type){
     case _HARDWARE_6PWM:
+      // phase a
+      _setSinglePhaseState(phase_state[0], ((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], ((STM32DriverParams*)params)->channels[1]);
+      if(phase_state[0] == PhaseState::PHASE_OFF) dc_a = 0.0f;
       _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _PWM_RANGE*dc_a, _PWM_RESOLUTION);
+      // phase b
+      _setSinglePhaseState(phase_state[1], ((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[2], ((STM32DriverParams*)params)->channels[3]);
+      if(phase_state[1] == PhaseState::PHASE_OFF) dc_b = 0.0f;
       _setPwm(((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[2], _PWM_RANGE*dc_b, _PWM_RESOLUTION);
+      // phase c
+      _setSinglePhaseState(phase_state[2], ((STM32DriverParams*)params)->timers[4], ((STM32DriverParams*)params)->channels[4], ((STM32DriverParams*)params)->channels[5]);
+      if(phase_state[2] == PhaseState::PHASE_OFF) dc_c = 0.0f;
       _setPwm(((STM32DriverParams*)params)->timers[4], ((STM32DriverParams*)params)->channels[4], _PWM_RANGE*dc_c, _PWM_RESOLUTION);
       break;
     case _SOFTWARE_6PWM:
@@ -816,8 +841,6 @@ void _writeDutyCycle6PWM(float dc_a, float dc_b, float dc_c, PhaseState *phase_s
   }
   _UNUSED(phase_state);
 }
-
-
 
 
 
