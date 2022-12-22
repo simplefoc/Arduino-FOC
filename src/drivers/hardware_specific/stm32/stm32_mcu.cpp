@@ -777,7 +777,7 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 // Function setting the duty cycle to the pwm pin (ex. analogWrite())
 // - BLDC driver - 6PWM setting
 // - hardware specific
-void _writeDutyCycle6PWM(float dc_a, float dc_b, float dc_c, void* params){
+void _writeDutyCycle6PWM(float dc_a, float dc_b, float dc_c, PhaseState *phase_state, void* params){
   switch(((STM32DriverParams*)params)->interface_type){
     case _HARDWARE_6PWM:
       _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _PWM_RANGE*dc_a, _PWM_RESOLUTION);
@@ -786,14 +786,35 @@ void _writeDutyCycle6PWM(float dc_a, float dc_b, float dc_c, void* params){
       break;
     case _SOFTWARE_6PWM:
       float dead_zone = ((STM32DriverParams*)params)->dead_zone  / 2.0f;
-      _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _constrain(dc_a - dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(((STM32DriverParams*)params)->timers[1], ((STM32DriverParams*)params)->channels[1], _constrain(dc_a + dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[2], _constrain(dc_b - dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(((STM32DriverParams*)params)->timers[3], ((STM32DriverParams*)params)->channels[3], _constrain(dc_b + dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(((STM32DriverParams*)params)->timers[4], ((STM32DriverParams*)params)->channels[4], _constrain(dc_c - dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
-      _setPwm(((STM32DriverParams*)params)->timers[5], ((STM32DriverParams*)params)->channels[5], _constrain(dc_c + dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
+      if (phase_state[0] == PhaseState::PHASE_ON || phase_state[0] == PhaseState::PHASE_HI)
+        _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _constrain(dc_a - dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
+      else
+        _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], 0.0f, _PWM_RESOLUTION);
+      if (phase_state[0] == PhaseState::PHASE_ON || phase_state[0] == PhaseState::PHASE_LO)
+        _setPwm(((STM32DriverParams*)params)->timers[1], ((STM32DriverParams*)params)->channels[1], _constrain(dc_a + dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
+      else
+        _setPwm(((STM32DriverParams*)params)->timers[1], ((STM32DriverParams*)params)->channels[1], 0.0f, _PWM_RESOLUTION);
+
+      if (phase_state[1] == PhaseState::PHASE_ON || phase_state[1] == PhaseState::PHASE_HI)
+        _setPwm(((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[2], _constrain(dc_b - dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
+      else
+        _setPwm(((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[2], 0.0f, _PWM_RESOLUTION);
+      if (phase_state[1] == PhaseState::PHASE_ON || phase_state[1] == PhaseState::PHASE_LO)
+        _setPwm(((STM32DriverParams*)params)->timers[3], ((STM32DriverParams*)params)->channels[3], _constrain(dc_b + dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
+      else
+        _setPwm(((STM32DriverParams*)params)->timers[3], ((STM32DriverParams*)params)->channels[3], 0.0f, _PWM_RESOLUTION);
+
+      if (phase_state[2] == PhaseState::PHASE_ON || phase_state[2] == PhaseState::PHASE_HI)
+        _setPwm(((STM32DriverParams*)params)->timers[4], ((STM32DriverParams*)params)->channels[4], _constrain(dc_c - dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
+      else
+        _setPwm(((STM32DriverParams*)params)->timers[4], ((STM32DriverParams*)params)->channels[4], 0.0f, _PWM_RESOLUTION);
+      if (phase_state[2] == PhaseState::PHASE_ON || phase_state[2] == PhaseState::PHASE_LO)
+        _setPwm(((STM32DriverParams*)params)->timers[5], ((STM32DriverParams*)params)->channels[5], _constrain(dc_c + dead_zone, 0.0f, 1.0f)*_PWM_RANGE, _PWM_RESOLUTION);
+      else
+        _setPwm(((STM32DriverParams*)params)->timers[5], ((STM32DriverParams*)params)->channels[5], 0.0f, _PWM_RESOLUTION);
       break;
   }
+  _UNUSED(phase_state);
 }
 
 

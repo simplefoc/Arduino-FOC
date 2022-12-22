@@ -380,7 +380,7 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 // Function setting the duty cycle to the pwm pin (ex. analogWrite())
 // - BLDC driver - 6PWM setting
 // - hardware specific
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
+void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params){
       // se the PWM on the slot timers
       // transform duty cycle from [0,1] to [0,100.0]
       mcpwm_set_duty(((ESP32MCPWMDriverParams*)params)->mcpwm_unit, MCPWM_TIMER_0, MCPWM_OPR_A, dc_a*100.0);
@@ -389,6 +389,7 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
       mcpwm_set_duty(((ESP32MCPWMDriverParams*)params)->mcpwm_unit, MCPWM_TIMER_1, MCPWM_OPR_B, dc_b*100.0);
       mcpwm_set_duty(((ESP32MCPWMDriverParams*)params)->mcpwm_unit, MCPWM_TIMER_2, MCPWM_OPR_A, dc_c*100.0);
       mcpwm_set_duty(((ESP32MCPWMDriverParams*)params)->mcpwm_unit, MCPWM_TIMER_2, MCPWM_OPR_B, dc_c*100.0);
+      _UNUSED(phase_state);
 }
 
 #endif

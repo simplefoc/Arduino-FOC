@@ -41,6 +41,9 @@ class BLDCDriver6PWM: public BLDCDriver
 
     float dead_zone; //!< a percentage of dead-time(zone) (both high and low side in low) for each pwm cycle [0,1]
 
+    PhaseState phase_state[3]; //!< phase state (active / disabled)
+
+
     /** 
      * Set phase voltages to the harware 
      * 
@@ -57,7 +60,7 @@ class BLDCDriver6PWM: public BLDCDriver
      * @param sb - phase B state : active / disabled ( high impedance )
      * @param sa - phase C state : active / disabled ( high impedance )
     */
-    virtual void setPhaseState(int sa, int sb, int sc) override;
+    virtual void setPhaseState(PhaseState sa, PhaseState sb, PhaseState sc) override;
 
   private:
         
