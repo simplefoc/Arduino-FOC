@@ -13,7 +13,8 @@ BLDCMotor::BLDCMotor(int pp, float _R, float _KV)
   // save phase resistance number
   phase_resistance = _R;
   // save back emf constant KV = 1/KV
-  KV_rating = _KV;
+  // 1/sqrt(2) - rms value
+  KV_rating = _KV*_SQRT2;
 
   // torque control type is voltage by default
   torque_controller = TorqueControlType::voltage;
