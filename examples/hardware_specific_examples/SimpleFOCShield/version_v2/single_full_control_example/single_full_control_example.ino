@@ -17,7 +17,7 @@ InlineCurrentSense current_sense = InlineCurrentSense(0.01, 50.0, A0, A2);
 
 // commander communication instance
 Commander command = Commander(Serial);
-void doTarget(char* cmd){ command.scalar(&motor.target, cmd); }
+void doMotion(char* cmd){ command.motion(&motor, cmd); }
 // void doMotor(char* cmd){ command.motor(&motor, cmd); }
 
 void setup() {
@@ -34,6 +34,8 @@ void setup() {
   driver.init();
   // link driver
   motor.linkDriver(&driver);
+  // link current sense and the driver
+  current_sense.linkDriver(&driver);
 
   // set control loop type to be used
   motor.controller = MotionControlType::torque;
@@ -74,7 +76,7 @@ void setup() {
   motor.target = 2;
 
   // subscribe motor to the commander
-  command.add('T', doTarget, "target");
+  command.add('T', doMotion, "motion control");
   // command.add('M', doMotor, "motor");
   
   // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)

@@ -205,6 +205,7 @@ void Encoder::init(){
   // change it if the mode is quadrature
   if(quadrature == Quadrature::ON) cpr = 4*cpr;
 
+  // we don't call Sensor::init() here because init is handled in Encoder class.
 }
 
 // function enabling hardware interrupts of the for the callback provided

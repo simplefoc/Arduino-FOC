@@ -21,13 +21,12 @@ class LowsideCurrentSense: public CurrentSense{
       @param phB B phase adc pin
       @param phC C phase adc pin (optional)
     */
-    LowsideCurrentSense(float shunt_resistor, float gain, int pinA, int pinB, int pinC = NOT_SET);
+    LowsideCurrentSense(float shunt_resistor, float gain, int pinA, int pinB, int pinC = _NC);
 
     // CurrentSense interface implementing functions
-    void init() override;
+    int init() override;
     PhaseCurrent_s getPhaseCurrents() override;
-    int driverSync(BLDCDriver *driver) override;
-    int driverAlign(BLDCDriver *driver, float voltage) override;
+    int driverAlign(float align_voltage) override;
 
     // ADC measuremnet gain for each phase
     // support for different gains for different phases of more commonly - inverted phase currents
@@ -41,6 +40,9 @@ class LowsideCurrentSense: public CurrentSense{
     // LowPassFilter lpf_b{DEF_LPF_PER_PHASE_CURRENT_SENSE_Tf}; //!<  current B low pass filter
     // LowPassFilter lpf_c{DEF_LPF_PER_PHASE_CURRENT_SENSE_Tf}; //!<  current C low pass filter
 
+    float offset_ia; //!< zero current A voltage value (center of the adc reading)
+    float offset_ib; //!< zero current B voltage value (center of the adc reading)
+    float offset_ic; //!< zero current C voltage value (center of the adc reading)
   private:
 
     // hardware variables
@@ -57,9 +59,6 @@ class LowsideCurrentSense: public CurrentSense{
      *  Function finding zero offsets of the ADC
      */
     void calibrateOffsets();
-    float offset_ia; //!< zero current A voltage value (center of the adc reading)
-    float offset_ib; //!< zero current B voltage value (center of the adc reading)
-    float offset_ic; //!< zero current C voltage value (center of the adc reading)
 
 };
 

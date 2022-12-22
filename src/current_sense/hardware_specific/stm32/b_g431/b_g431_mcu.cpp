@@ -1,10 +1,16 @@
-#include "../hardware_api.h"
-#include "stm32g4_hal.h"
+#include "../../../hardware_api.h"
 
-#if defined(STM32G4xx) 
-#define _ADC_VOLTAGE 3.3
-#define _ADC_RESOLUTION 4096.0
-#define ADC_BUF_LEN_1 2
+#if defined(ARDUINO_B_G431B_ESC1) 
+
+#include "b_g431_hal.h"
+#include "Arduino.h"
+#include "../stm32_mcu.h"
+#include "../../../../drivers/hardware_specific/stm32_mcu.h"
+#include "communication/SimpleFOCDebug.h"
+
+#define _ADC_VOLTAGE 3.3f
+#define _ADC_RESOLUTION 4096.0f
+#define ADC_BUF_LEN_1 5
 #define ADC_BUF_LEN_2 1
 
 static ADC_HandleTypeDef hadc1;
@@ -16,27 +22,30 @@ static OPAMP_HandleTypeDef hopamp3;
 static DMA_HandleTypeDef hdma_adc1;
 static DMA_HandleTypeDef hdma_adc2;
 
-uint16_t adcBuffer1[ADC_BUF_LEN_1] = {0}; // Buffer for store the results of the ADC conversion
-uint16_t adcBuffer2[ADC_BUF_LEN_2] = {0}; // Buffer for store the results of the ADC conversion
-
-#define _ADC_CONV ( (_ADC_VOLTAGE) / (_ADC_RESOLUTION) )
+volatile uint16_t adcBuffer1[ADC_BUF_LEN_1] = {0}; // Buffer for store the results of the ADC conversion
+volatile uint16_t adcBuffer2[ADC_BUF_LEN_2] = {0}; // Buffer for store the results of the ADC conversion
 
 // function reading an ADC value and returning the read voltage
 // As DMA is being used just return the DMA result
-float _readADCVoltageInline(const int pin){
+float _readADCVoltageInline(const int pin, const void* cs_params){
   uint32_t raw_adc = 0;
   if(pin == PA2)  // = ADC1_IN3 = phase U (OP1_OUT) on B-G431B-ESC1
     raw_adc = adcBuffer1[1];
   else if(pin == PA6) // = ADC2_IN3 = phase V (OP2_OUT) on B-G431B-ESC1
     raw_adc = adcBuffer2[0];
+#ifdef PB1
   else if(pin == PB1) // = ADC1_IN12 = phase W (OP3_OUT) on B-G431B-ESC1
     raw_adc = adcBuffer1[0];
+#endif
 
-  return raw_adc * _ADC_CONV;
-}
-// do the same for low side sensing
-float _readADCVoltageLowSide(const int pin){
-  return _readADCVoltageInline(pin);
+  else if (pin == A_POTENTIOMETER)
+    raw_adc = adcBuffer1[2];
+  else if (pin == A_TEMPERATURE)
+    raw_adc = adcBuffer1[3];
+  else if (pin == A_VBUS)
+    raw_adc = adcBuffer1[4];
+
+  return raw_adc * ((Stm32CurrentSenseParams*)cs_params)->adc_voltage_conv;
 }
 
 void _configureOPAMP(OPAMP_HandleTypeDef *hopamp, OPAMP_TypeDef *OPAMPx_Def){
@@ -52,7 +61,7 @@ void _configureOPAMP(OPAMP_HandleTypeDef *hopamp, OPAMP_TypeDef *OPAMPx_Def){
   hopamp->Init.UserTrimming = OPAMP_TRIMMING_FACTORY;
   if (HAL_OPAMP_Init(hopamp) != HAL_OK)
   {
-    Error_Handler();
+    SIMPLEFOC_DEBUG("HAL_OPAMP_Init failed!");
   }
 }
 void _configureOPAMPs(OPAMP_HandleTypeDef *OPAMPA, OPAMP_HandleTypeDef *OPAMPB, OPAMP_HandleTypeDef *OPAMPC){
@@ -75,12 +84,25 @@ void MX_DMA1_Init(ADC_HandleTypeDef *hadc, DMA_HandleTypeDef *hdma_adc, DMA_Chan
   HAL_DMA_DeInit(hdma_adc);
   if (HAL_DMA_Init(hdma_adc) != HAL_OK)
   {
-    Error_Handler();
+    SIMPLEFOC_DEBUG("HAL_DMA_Init failed!");
   }
   __HAL_LINKDMA(hadc, DMA_Handle, *hdma_adc);
 }
 
-void _configureADCInline(const int pinA,const int pinB,const int pinC){
+void* _configureADCInline(const void* driver_params, const int pinA,const int pinB,const int pinC){
+  _UNUSED(driver_params);
+  _UNUSED(pinA);
+  _UNUSED(pinB);
+  _UNUSED(pinC);
+
+  SIMPLEFOC_DEBUG("B-G431B does not implement inline current sense. Use low-side current sense instead.");
+  return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
+}
+
+
+void* _configureADCLowSide(const void* driver_params, const int pinA,const int pinB,const int pinC){
+  _UNUSED(driver_params);
+
   HAL_Init();
   MX_GPIO_Init();
   MX_DMA_Init(); 
@@ -93,28 +115,24 @@ void _configureADCInline(const int pinA,const int pinB,const int pinC){
 
   if (HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adcBuffer1, ADC_BUF_LEN_1) != HAL_OK)
   {
-    Error_Handler();
+    SIMPLEFOC_DEBUG("DMA read init failed");
   }
   if (HAL_ADC_Start_DMA(&hadc2, (uint32_t*)adcBuffer2, ADC_BUF_LEN_2) != HAL_OK)
   {
-    Error_Handler();
+    SIMPLEFOC_DEBUG("DMA read init failed");
   }
 
   HAL_OPAMP_Start(&hopamp1);
   HAL_OPAMP_Start(&hopamp2);
   HAL_OPAMP_Start(&hopamp3); 
+  
+  Stm32CurrentSenseParams* params = new Stm32CurrentSenseParams {
+    .pins = { pinA, pinB, pinC },
+    .adc_voltage_conv = (_ADC_VOLTAGE) / (_ADC_RESOLUTION),
+    .timer_handle = (HardwareTimer *)(HardwareTimer_Handle[get_timer_index(TIM1)]->__this)
+  };
 
-  // Check if the ADC DMA is collecting any data.
-  // If this fails, it likely means timer1 has not started. Verify that your application starts
-  // the motor pwm (usually BLDCDriver6PWM::init()) before initializing the ADC engine.
-  _delay(5);
-  if (adcBuffer1[0] == 0 || adcBuffer1[1] == 0 || adcBuffer2[0] == 0) {
-    Error_Handler();
-  }
-}
-// do the same for low side
-void _configureADCLowSide(const int pinA,const int pinB,const int pinC){
-  _configureADCInline(pinA, pinB, pinC);
+  return params;
 }
 
 extern "C" {
@@ -125,6 +143,29 @@ void DMA1_Channel1_IRQHandler(void) {
 void DMA1_Channel2_IRQHandler(void) {
    HAL_DMA_IRQHandler(&hdma_adc2);
 }
+}
+
+void _driverSyncLowSide(void* _driver_params, void* _cs_params){
+  STM32DriverParams* driver_params = (STM32DriverParams*)_driver_params;
+  Stm32CurrentSenseParams* cs_params = (Stm32CurrentSenseParams*)_cs_params;
+   
+  // stop all the timers for the driver
+  _stopTimers(driver_params->timers, 6);
+
+  // if timer has repetition counter - it will downsample using it
+  // and it does not need the software downsample
+  if( IS_TIM_REPETITION_COUNTER_INSTANCE(cs_params->timer_handle->getHandle()->Instance) ){
+    // adjust the initial timer state such that the trigger for DMA transfer aligns with the pwm peaks instead of throughs.
+    // only necessary for the timers that have repetition counters
+    cs_params->timer_handle->getHandle()->Instance->CR1 |= TIM_CR1_DIR;
+    cs_params->timer_handle->getHandle()->Instance->CNT =  cs_params->timer_handle->getHandle()->Instance->ARR;
+  }
+  // set the trigger output event
+  LL_TIM_SetTriggerOutput(cs_params->timer_handle->getHandle()->Instance, LL_TIM_TRGO_UPDATE);
+
+  // restart all the timers of the driver
+  _startTimers(driver_params->timers, 6);
+
 }
 
 #endif

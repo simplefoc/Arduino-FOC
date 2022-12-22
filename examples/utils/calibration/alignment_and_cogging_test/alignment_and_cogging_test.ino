@@ -35,9 +35,10 @@ void testAlignmentAndCogging(int direction) {
 
   for (int i = 0; i < sample_count; i++) {
 
-    float electricAngle = (float) direction * i * motor.pole_pairs * shaft_rotation / sample_count;
+    float shaftAngle = (float) direction * i * shaft_rotation / sample_count;
+    float electricAngle = (float) shaftAngle * motor.pole_pairs;
     // move and wait
-    motor.move(electricAngle * PI / 180);
+    motor.move(shaftAngle * PI / 180);
     _delay(5);
 
     // measure

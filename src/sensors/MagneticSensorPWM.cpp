@@ -27,13 +27,15 @@ void MagneticSensorPWM::init(){
     // initial hardware
     pinMode(pinPWM, INPUT);
     raw_count = getRawCount();
+    
+    this->Sensor::init(); // call base class init
 }
 
 // get current angle (rad)
 float MagneticSensorPWM::getSensorAngle(){
     // raw data from sensor
     raw_count = getRawCount();
-    return( (float) (raw_count) / (float)cpr) * _2PI;
+    return( (float) (raw_count - min_raw_count) / (float)cpr) * _2PI;
 }
 
 

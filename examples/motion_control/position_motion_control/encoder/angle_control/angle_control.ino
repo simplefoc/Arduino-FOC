@@ -24,9 +24,6 @@
  *
  */
 #include <SimpleFOC.h>
-// software interrupt library
-#include <PciManager.h>
-#include <PciListenerImp.h>
 
 // BLDC motor & driver instance
 BLDCMotor motor = BLDCMotor(11);
@@ -36,15 +33,12 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 //StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
 
 // encoder instance
-Encoder encoder = Encoder(2, 3, 8192, A0);
+Encoder encoder = Encoder(2, 3, 8192);
 
 // Interrupt routine intialisation
 // channel A and B callbacks
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
-void doIndex(){encoder.handleIndex();}
-// If no available hadware interrupt pins use the software interrupt
-PciListenerImp listenerIndex(encoder.index_pin, doIndex);
 
 // angle set point variable
 float target_angle = 0;
@@ -57,8 +51,6 @@ void setup() {
   // initialize encoder sensor hardware
   encoder.init();
   encoder.enableInterrupts(doA, doB);
-  // software interrupts
-  PciManager.registerListener(&listenerIndex);
   // link the motor to the sensor
   motor.linkSensor(&encoder);
 
@@ -71,8 +63,6 @@ void setup() {
 
   // aligning voltage [V]
   motor.voltage_sensor_align = 3;
-  // index search velocity [rad/s]
-  motor.velocity_index_search = 3;
 
   // set motion control loop to be used
   motor.controller = MotionControlType::angle;

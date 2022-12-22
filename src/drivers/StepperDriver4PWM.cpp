@@ -54,8 +54,9 @@ int StepperDriver4PWM::init() {
 
   // Set the pwm frequency to the pins
   // hardware specific function - depending on driver and mcu
-  _configure4PWM(pwm_frequency, pwm1A, pwm1B, pwm2A, pwm2B);
-  return 0;
+  params = _configure4PWM(pwm_frequency, pwm1A, pwm1B, pwm2A, pwm2B);
+  initialized = (params!=SIMPLEFOC_DRIVER_INIT_FAILED);  
+  return params!=SIMPLEFOC_DRIVER_INIT_FAILED;
 }
 
 
@@ -76,5 +77,5 @@ void StepperDriver4PWM::setPwm(float Ualpha, float Ubeta) {
   else
     duty_cycle2A = _constrain(abs(Ubeta)/voltage_power_supply,0.0f,1.0f);
   // write to hardware
-  _writeDutyCycle4PWM(duty_cycle1A, duty_cycle1B, duty_cycle2A, duty_cycle2B, pwm1A, pwm1B, pwm2A, pwm2B);
+  _writeDutyCycle4PWM(duty_cycle1A, duty_cycle1B, duty_cycle2A, duty_cycle2B, params);
 }

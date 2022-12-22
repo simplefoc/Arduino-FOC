@@ -24,8 +24,9 @@ class StepperMotor: public FOCMotor
       StepperMotor class constructor
       @param pp  pole pair number 
       @param R  motor phase resistance
+      @param KV  motor KV rating (1/K_bemf) - rpm/V
     */
-    StepperMotor(int pp,  float R = NOT_SET);
+    StepperMotor(int pp,  float R = NOT_SET, float KV = NOT_SET);
 
     /**
      * Function linking a motor and a foc driver 
@@ -77,10 +78,7 @@ class StepperMotor: public FOCMotor
     
     float	Ualpha,Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
 
-  private:
-  
-    // FOC methods 
-    /**
+  /**
     * Method using FOC to set Uq to the motor at the optimal angle
     * Heart of the FOC algorithm
     * 
@@ -88,8 +86,10 @@ class StepperMotor: public FOCMotor
     * @param Ud Current voltage in d axis to set to the motor
     * @param angle_el current electrical angle of the motor
     */
-    void setPhaseVoltage(float Uq, float Ud , float angle_el);
+    void setPhaseVoltage(float Uq, float Ud, float angle_el) override;
 
+  private:
+  
     /** Sensor alignment to electrical 0 angle of the motor */
     int alignSensor();
     /** Motor and sensor alignment to the sensors absolute 0 angle  */

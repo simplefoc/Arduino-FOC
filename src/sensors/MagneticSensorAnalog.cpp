@@ -24,6 +24,8 @@ MagneticSensorAnalog::MagneticSensorAnalog(uint8_t _pinAnalog, int _min_raw_coun
 
 void MagneticSensorAnalog::init(){
 	raw_count = getRawCount();
+
+  this->Sensor::init(); // call base class init
 }
 
 //  Shaft angle calculation

@@ -22,7 +22,9 @@ LowsideCurrentSense	KEYWORD1
 CurrentSense	KEYWORD1   
 Commander	KEYWORD1   
 StepDirListener	KEYWORD1   
-
+GenericCurrentSense	KEYWORD1   
+GenericSensor	KEYWORD1   
+SimpleFOCDebug	KEYWORD1   
 
 initFOC	KEYWORD2
 loopFOC	KEYWORD2
@@ -89,7 +91,7 @@ getFOCCurrents	KEYWORD2
 getDCCurrent	KEYWORD2
 setPwm	KEYWORD2
 driverAlign	KEYWORD2
-driverSync	KEYWORD2
+linkDriver	KEYWORD2
 add	KEYWORD2
 run	KEYWORD2
 attach	KEYWORD2
@@ -102,6 +104,8 @@ lpf	KEYWORD2
 motor	KEYWORD2
 handlePWM	KEYWORD2
 enableInterrupt	KEYWORD2
+readCallback	KEYWORD2
+initCallback	KEYWORD2
 
 
 
@@ -118,6 +122,7 @@ pullup	KEYWORD2
 quadrature	KEYWORD2
 foc_modulation	KEYWORD2
 target	KEYWORD2
+motion	KEYWORD2
 pwm_frequency	KEYWORD2
 dead_zone	KEYWORD2
 gain_a	KEYWORD2
@@ -230,6 +235,7 @@ _PI_3	LITERAL1
 _SQRT3	LITERAL1
 _PI	LITERAL1
 _HIGH_Z	LITERAL1
+_NC	LITERAL1
 
 _MON_TARGET	LITERAL1
 _MON_VOLT_Q	LITERAL1

@@ -56,7 +56,7 @@ void setup() {
   Serial.println("-\n");
 
   float pp_search_voltage = 4; // maximum power_supply_voltage/2
-  float pp_search_angle = 6*M_PI; // search electrical angle to turn
+  float pp_search_angle = 6*_PI; // search electrical angle to turn
 
   // move motor to the electrical angle 0
   motor.controller = MotionControlType::angle_openloop;
@@ -73,6 +73,7 @@ void setup() {
   while(motor_angle <= pp_search_angle){
     motor_angle += 0.01f;
     motor.move(motor_angle);
+    _delay(1);
   }
   _delay(1000);
   // read the encoder value for 180
@@ -89,9 +90,9 @@ void setup() {
   Serial.print(F("Estimated PP : "));
   Serial.println(pp);
   Serial.println(F("PP = Electrical angle / Encoder angle "));
-  Serial.print(pp_search_angle*180/M_PI);
+  Serial.print(pp_search_angle*180/_PI);
   Serial.print("/");
-  Serial.print((angle_end-angle_begin)*180/M_PI);
+  Serial.print((angle_end-angle_begin)*180/_PI);
   Serial.print(" = ");
   Serial.println((pp_search_angle)/(angle_end-angle_begin));
   Serial.println();

@@ -58,8 +58,11 @@ int BLDCDriver6PWM::init() {
 
   // configure 6pwm
   // hardware specific function - depending on driver and mcu
-  return _configure6PWM(pwm_frequency, dead_zone, pwmA_h,pwmA_l, pwmB_h,pwmB_l, pwmC_h,pwmC_l);
+  params = _configure6PWM(pwm_frequency, dead_zone, pwmA_h,pwmA_l, pwmB_h,pwmB_l, pwmC_h,pwmC_l);
+  initialized = (params!=SIMPLEFOC_DRIVER_INIT_FAILED);
+  return params!=SIMPLEFOC_DRIVER_INIT_FAILED;
 }
+
 
 // Set voltage to the pwm pin
 void BLDCDriver6PWM::setPwm(float Ua, float Ub, float Uc) {
@@ -74,11 +77,14 @@ void BLDCDriver6PWM::setPwm(float Ua, float Ub, float Uc) {
   dc_c = _constrain(Uc / voltage_power_supply, 0.0f , 1.0f );
   // hardware specific writing
   // hardware specific function - depending on driver and mcu
-  _writeDutyCycle6PWM(dc_a, dc_b, dc_c, dead_zone, pwmA_h,pwmA_l, pwmB_h,pwmB_l, pwmC_h,pwmC_l);
+  _writeDutyCycle6PWM(dc_a, dc_b, dc_c, params);
 }
 
 
 // Set voltage to the pwm pin
 void BLDCDriver6PWM::setPhaseState(int sa, int sb, int sc) {
+  _UNUSED(sa);
+  _UNUSED(sb);
+  _UNUSED(sc);
   // TODO implement disabling
 }

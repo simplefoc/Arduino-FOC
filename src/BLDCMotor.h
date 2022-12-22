@@ -19,15 +19,16 @@ class BLDCMotor: public FOCMotor
      BLDCMotor class constructor
      @param pp pole pairs number
      @param R  motor phase resistance
+     @param KV  motor KV rating (1/K_bemf) - rpm/V
      */ 
-    BLDCMotor(int pp,  float R = NOT_SET);
+    BLDCMotor(int pp,  float R = NOT_SET, float KV = NOT_SET);
     
     /**
      * Function linking a motor and a foc driver 
      * 
      * @param driver BLDCDriver class implementing all the hardware specific functions necessary PWM setting
      */
-    void linkDriver(BLDCDriver* driver);
+    virtual void linkDriver(BLDCDriver* driver);
 
     /** 
       * BLDCDriver link:
@@ -69,10 +70,7 @@ class BLDCMotor: public FOCMotor
     float Ua, Ub, Uc;//!< Current phase voltages Ua,Ub and Uc set to motor
     float	Ualpha, Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
 
-
-  private:
-    // FOC methods 
-    /**
+  /**
     * Method using FOC to set Uq to the motor at the optimal angle
     * Heart of the FOC algorithm
     * 
@@ -80,7 +78,11 @@ class BLDCMotor: public FOCMotor
     * @param Ud Current voltage in d axis to set to the motor
     * @param angle_el current electrical angle of the motor
     */
-    void setPhaseVoltage(float Uq, float Ud, float angle_el);
+    void setPhaseVoltage(float Uq, float Ud, float angle_el) override;
+
+  private:
+    // FOC methods 
+
     /** Sensor alignment to electrical 0 angle of the motor */
     int alignSensor();
     /** Current sense and motor phase alignment */
