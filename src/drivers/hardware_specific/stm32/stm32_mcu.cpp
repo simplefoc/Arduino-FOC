@@ -41,6 +41,34 @@ void _setPwm(HardwareTimer *HT, uint32_t channel, uint32_t value, int resolution
 
 
 
+int getLLChannel(PinMap* timer) {
+#if defined(TIM_CCER_CC1NE)
+  if (STM_PIN_INVERTED(timer->function)) {
+    switch (STM_PIN_CHANNEL(timer->function)) {
+      case 1: return LL_TIM_CHANNEL_CH1N;
+      case 2: return LL_TIM_CHANNEL_CH2N;
+      case 3: return LL_TIM_CHANNEL_CH3N;
+#if defined(LL_TIM_CHANNEL_CH4N)
+      case 4: return LL_TIM_CHANNEL_CH4N;
+#endif
+      default: return -1;
+    }
+  } else
+#endif
+  {
+    switch (STM_PIN_CHANNEL(timer->function)) {
+      case 1: return LL_TIM_CHANNEL_CH1;
+      case 2: return LL_TIM_CHANNEL_CH2;
+      case 3: return LL_TIM_CHANNEL_CH3;
+      case 4: return LL_TIM_CHANNEL_CH4;
+      default: return -1;
+    }
+  }
+  return -1;
+}
+
+
+
 
 
 // init pin pwm
@@ -63,6 +91,9 @@ HardwareTimer* _initPinPWM(uint32_t PWM_freq, PinMap* timer) {
   if (init)
     HT->setOverflow(PWM_freq, HERTZ_FORMAT);
   HT->setMode(channel, TIMER_OUTPUT_COMPARE_PWM1, timer->pin);
+  #if SIMPLEFOC_PWM_ACTIVE_HIGH==false
+  LL_TIM_OC_SetPolarity(HT->getHandle()->Instance, getLLChannel(timer), LL_TIM_OCPOLARITY_LOW);
+  #endif
 #ifdef SIMPLEFOC_STM32_DEBUG
   SIMPLEFOC_DEBUG("STM32-DRV: Configuring high timer ", (int)getTimerNumber(get_timer_index(HardwareTimer_Handle[index]->handle.Instance)));
   SIMPLEFOC_DEBUG("STM32-DRV: Configuring high channel ", (int)channel);
@@ -78,7 +109,11 @@ HardwareTimer* _initPinPWM(uint32_t PWM_freq, PinMap* timer) {
 
 // init high side pin
 HardwareTimer* _initPinPWMHigh(uint32_t PWM_freq, PinMap* timer) {
-  return _initPinPWM(PWM_freq, timer);
+  HardwareTimer* HT = _initPinPWM(PWM_freq, timer);
+  #if SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH==false && SIMPLEFOC_PWM_ACTIVE_HIGH==true
+  LL_TIM_OC_SetPolarity(HT->getHandle()->Instance, getLLChannel(timer), LL_TIM_OCPOLARITY_LOW);
+  #endif
+  return HT;
 }
 
 // init low side pin
@@ -107,6 +142,9 @@ HardwareTimer* _initPinPWMLow(uint32_t PWM_freq, PinMap* timer)
     HT->setOverflow(PWM_freq, HERTZ_FORMAT);
   // sets internal fields of HT, but we can't set polarity here
   HT->setMode(channel, TIMER_OUTPUT_COMPARE_PWM2, timer->pin);
+  #if SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH==false
+  LL_TIM_OC_SetPolarity(HT->getHandle()->Instance, getLLChannel(timer), LL_TIM_OCPOLARITY_LOW);
+  #endif
   return HT;
 }
 
@@ -213,34 +251,6 @@ void _alignTimersNew() {
 
 
 
-int getLLChannel(PinMap* timer) {
-#if defined(TIM_CCER_CC1NE)
-  if (STM_PIN_INVERTED(timer->function)) {
-    switch (STM_PIN_CHANNEL(timer->function)) {
-      case 1: return LL_TIM_CHANNEL_CH1N;
-      case 2: return LL_TIM_CHANNEL_CH2N;
-      case 3: return LL_TIM_CHANNEL_CH3N;
-#if defined(LL_TIM_CHANNEL_CH4N)
-      case 4: return LL_TIM_CHANNEL_CH4N;
-#endif
-      default: return -1;
-    }
-  } else
-#endif
-  {
-    switch (STM_PIN_CHANNEL(timer->function)) {
-      case 1: return LL_TIM_CHANNEL_CH1;
-      case 2: return LL_TIM_CHANNEL_CH2;
-      case 3: return LL_TIM_CHANNEL_CH3;
-      case 4: return LL_TIM_CHANNEL_CH4;
-      default: return -1;
-    }
-  }
-  return -1;
-}
-
-
-
 
 // configure hardware 6pwm for a complementary pair of channels
 STM32DriverParams* _initHardware6PWMPair(long PWM_freq, float dead_zone, PinMap* pinH, PinMap* pinL, STM32DriverParams* params, int paramsPos) {
@@ -278,8 +288,13 @@ STM32DriverParams* _initHardware6PWMPair(long PWM_freq, float dead_zone, PinMap*
   uint32_t dead_time_ns = (float)(1e9f/PWM_freq)*dead_zone;
   uint32_t dead_time = __LL_TIM_CALC_DEADTIME(SystemCoreClock, LL_TIM_GetClockDivision(HT->getHandle()->Instance), dead_time_ns);
   LL_TIM_OC_SetDeadTime(HT->getHandle()->Instance, dead_time); // deadtime is non linear!
+  #if SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH==false
+  LL_TIM_OC_SetPolarity(HT->getHandle()->Instance, getLLChannel(pinH), LL_TIM_OCPOLARITY_LOW);
+  #endif
+  #if SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH==false
+  LL_TIM_OC_SetPolarity(HT->getHandle()->Instance, getLLChannel(pinL), LL_TIM_OCPOLARITY_LOW);
+  #endif
   LL_TIM_CC_EnableChannel(HT->getHandle()->Instance, getLLChannel(pinH) | getLLChannel(pinL));
-
   HT->pause();
 
   params->timers[paramsPos] = HT;
@@ -496,7 +511,36 @@ int findBestTimerCombination(int numPins, int pins[], PinMap* pinTimers[]) {
 
 
 
+void* _configure1PWM(long pwm_frequency, const int pinA) {
+  if (numTimerPinsUsed+1 > SIMPLEFOC_STM32_MAX_PINTIMERSUSED) {
+    SIMPLEFOC_DEBUG("STM32-DRV: ERR: too many pins used");
+    return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+  }
 
+  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
+  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
+  // center-aligned frequency is uses two periods
+  pwm_frequency *=2;
+
+  int pins[1] = { pinA };
+  PinMap* pinTimers[1] = { NP };
+  if (findBestTimerCombination(1, pins, pinTimers)<0)
+    return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+
+  HardwareTimer* HT1 = _initPinPWM(pwm_frequency, pinTimers[0]);\
+  // allign the timers
+  _alignTimersNew();
+  
+  uint32_t channel1 = STM_PIN_CHANNEL(pinTimers[0]->function);
+
+  STM32DriverParams* params = new STM32DriverParams {
+    .timers = { HT1 },
+    .channels = { channel1 },
+    .pwm_frequency = pwm_frequency
+  };
+  timerPinsUsed[numTimerPinsUsed++] = pinTimers[0];
+  return params;
+}
 
 
 
@@ -625,6 +669,16 @@ void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const in
   timerPinsUsed[numTimerPinsUsed++] = pinTimers[2];
   timerPinsUsed[numTimerPinsUsed++] = pinTimers[3];
   return params;
+}
+
+
+
+// function setting the pwm duty cycle to the hardware
+// - DC motor - 1PWM setting
+// - hardware speciffic
+void _writeDutyCycle1PWM(float dc_a, void* params){
+  // transform duty cycle from [0,1] to [0,255]
+  _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _PWM_RANGE*dc_a, _PWM_RESOLUTION);
 }
 
 

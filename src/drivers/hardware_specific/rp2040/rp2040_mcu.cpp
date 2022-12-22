@@ -9,24 +9,6 @@
 #include "../../hardware_api.h"
 #include "./rp2040_mcu.h"
 
-// these defines determine the polarity of the PWM output. Normally, the polarity is active-high,
-// i.e. a high-level PWM output is expected to switch on the MOSFET. But should your driver design
-// require inverted polarity, you can change the defines below, or set them via your build environment
-// or board definition files.
-
-// used for 2-PWM, 3-PWM, and 4-PWM modes
-#ifndef SIMPLEFOC_PWM_ACTIVE_HIGH
-#define SIMPLEFOC_PWM_ACTIVE_HIGH true
-#endif
-// used fof 6-PWM mode, high-side
-#ifndef SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH
-#define SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH true
-#endif
-// used fof 6-PWM mode, low-side
-#ifndef SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH
-#define SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH true
-#endif
-
 
 #define _PWM_FREQUENCY 24000
 #define _PWM_FREQUENCY_MAX 66000
