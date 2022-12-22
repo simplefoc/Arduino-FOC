@@ -161,30 +161,8 @@ int _configureComplementaryPair(const int pinH,const int pinL, long frequency) {
   // set 32kHz frequency if requested freq is higher than the middle of the range (14kHz)
   // else set the 4kHz
   if(frequency >= 0.5*(_PWM_FREQUENCY_MAX-_PWM_FREQUENCY_MIN))  high_fq=true; 
-  //  High PWM frequency
-  //  https://sites.google.com/site/qeewiki/books/avr-guide/timers-on-the-ATmega2560
-  //  https://forum.arduino.cc/index.php?topic=72092.0
-  if (pin == 13 || pin == 4  ) {
-      TCCR0A = ((TCCR0A & 0b11111100) | 0x01); // configure the pwm phase-corrected mode
-      if(high_fq) TCCR0B = ((TCCR0B & 0b11110000) | 0x01); // set prescaler to 1 - 32kHz
-      else TCCR0B = ((TCCR0B & 0b11110000) | 0x02); // set prescaler to 2 - 4kHz
-  }
-  else if (pin == 12 || pin == 11 )
-      if(high_fq) TCCR1B = ((TCCR1B & 0b11110000) | 0x01); // set prescaler to 1 - 32kHz
-      else TCCR1B = ((TCCR1B & 0b11110000) | 0x02); // set prescaler to 2 - 4kHz
-  else if (pin == 10 || pin == 9 )
-      if(high_fq) TCCR2B = ((TCCR2B & 0b11110000) | 0x01); // set prescaler to 1 - 32kHz
-      else TCCR2B = ((TCCR2B & 0b11110000) | 0x02); // set prescaler to 2 - 4kHz
-  else if (pin == 5 || pin == 3 || pin == 2)
-      if(high_fq) TCCR3B = ((TCCR3B & 0b11110000) | 0x01); // set prescaler to 1 - 32kHz
-      else TCCR3B = ((TCCR3B & 0b11110000) | 0x02); // set prescaler to 2 - 4kHz
-  else if (pin == 8 || pin == 7 || pin == 6)
-      if(high_fq) TCCR4B = ((TCCR4B & 0b11110000) | 0x01); // set prescaler to 1 - 32kHz
-      else TCCR4B = ((TCCR4B & 0b11110000) | 0x02); // set prescaler to 2 - 4kHz
-  else if (pin == 44 || pin == 45 || pin == 46)
-      if(high_fq) TCCR5B = ((TCCR5B & 0b11110000) | 0x01); // set prescaler to 1 - 32kHz
-      else TCCR5B = ((TCCR5B & 0b11110000) | 0x02); // set prescaler to 2 - 4kHz
 
+  // configure pin pairs
   if( (pinH == 4 && pinL == 13 ) || (pinH == 13 && pinL == 4 ) ){
     // configure the pwm phase-corrected mode
     TCCR0A = ((TCCR0A & 0b11111100) | 0x01);
