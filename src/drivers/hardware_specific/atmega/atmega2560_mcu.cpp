@@ -1,6 +1,6 @@
 #include "../../hardware_api.h"
 
-#if defined(__AVR_ATmega2560__)
+#if defined(__AVR_ATmega2560__) || defined(AVR_ATmega1280)
 
 #define _PWM_FREQUENCY 32000
 #define _PWM_FREQUENCY_MAX 32000
