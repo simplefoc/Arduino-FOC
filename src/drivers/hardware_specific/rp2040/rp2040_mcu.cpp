@@ -8,7 +8,7 @@
 
 #include "../../hardware_api.h"
 #include "./rp2040_mcu.h"
-
+#include "hardware/pwm.h"
 
 #define _PWM_FREQUENCY 24000
 #define _PWM_FREQUENCY_MAX 66000
