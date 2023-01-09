@@ -36,6 +36,7 @@ FOCMotor::FOCMotor()
   //monitor_port 
   monitor_port = nullptr;
   //sensor 
+  sensor_offset = 0.0f;
   sensor = nullptr;
   //current sensor 
   current_sense = nullptr;
