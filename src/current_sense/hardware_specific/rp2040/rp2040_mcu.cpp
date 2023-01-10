@@ -151,10 +151,9 @@ bool RP2040ADCEngine::init() {
     for (int i = 3; i>=0; i--) {
         if (channelsEnabled[i]){
             adc_gpio_init(i+26);
-            enableMask |= 0x01;
+            enableMask |= (0x01<<i);
             channelCount++;
         }
-        enableMask = (enableMask<<1);
     }
     adc_set_round_robin(enableMask);
     adc_fifo_setup(
