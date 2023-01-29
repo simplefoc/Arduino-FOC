@@ -221,6 +221,14 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
       if(_isset(motor->phase_resistance)) println(motor->phase_resistance);
       else println(0);
       break;
+    case CMD_INDUCTANCE:
+      printVerbose(F("L phase: "));
+      if(!GET){
+        motor->phase_inductance = value;
+      }
+      if(_isset(motor->phase_inductance)) println(motor->phase_inductance);
+      else println(0);
+      break;
     case CMD_KV_RATING:
       printVerbose(F("Motor KV: "));
       if(!GET){

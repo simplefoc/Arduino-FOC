@@ -23,10 +23,11 @@ class StepperMotor: public FOCMotor
     /**
       StepperMotor class constructor
       @param pp  pole pair number 
-      @param R  motor phase resistance
-      @param KV  motor KV rating (1/K_bemf) - rpm/V
+     @param R  motor phase resistance - [Ohm]
+     @param KV  motor KV rating (1/K_bemf) - rpm/V
+     @param L  motor phase inductance - [H]
     */
-    StepperMotor(int pp,  float R = NOT_SET, float KV = NOT_SET);
+    StepperMotor(int pp,  float R = NOT_SET, float KV = NOT_SET, float L = NOT_SET);
 
     /**
      * Function linking a motor and a foc driver 

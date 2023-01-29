@@ -37,6 +37,10 @@ Therefore this is an attempt to:
 >   - stm32 - software and hardware 6pwm
 >   - atmega328 
 >   - atmega2560
+> - Lag compensation using motor inductance [#246](https://github.com/simplefoc/Arduino-FOC/issues/246)
+>   - current control through voltage torque mode enhancement
+>   - extended `BLDCMotor` and `StepperMotor` constructors to receive the inductance paramerer
+>   - can also be set using `motor.phase_inductance` or through `Commander`
 ## Arduino *SimpleFOClibrary* v2.2.3
 
 <p align="">

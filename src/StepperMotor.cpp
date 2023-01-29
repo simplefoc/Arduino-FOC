@@ -6,7 +6,8 @@
 // - pp            - pole pair number
 // - R             - motor phase resistance
 // - KV            - motor kv rating (rmp/v)
-StepperMotor::StepperMotor(int pp, float _R, float _KV)
+// - L             - motor phase inductance [H]
+StepperMotor::StepperMotor(int pp, float _R, float _KV, float _inductance)
 : FOCMotor()
 {
   // number od pole pairs
@@ -16,6 +17,8 @@ StepperMotor::StepperMotor(int pp, float _R, float _KV)
   // save back emf constant KV = 1/K_bemf
   // usually used rms
   KV_rating = _KV*_SQRT2;
+  // save phase inductance
+  phase_inductance = _inductance;
 
   // torque control type is voltage by default
   // current and foc_current not supported yet
@@ -296,7 +299,9 @@ void StepperMotor::move(float new_target) {
       if(!_isset(phase_resistance))  voltage.q = target; // if voltage torque control
       else  voltage.q =  target*phase_resistance + voltage_bemf;
       voltage.q = _constrain(voltage.q, -voltage_limit, voltage_limit);
-      voltage.d = 0;
+      // set d-component (lag compensation if known inductance)
+      if(!_isset(phase_inductance)) voltage.d = 0;
+      else voltage.d = _constrain( -target*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit);
       break;
     case MotionControlType::angle:
       // angle set point
@@ -309,7 +314,9 @@ void StepperMotor::move(float new_target) {
       // use voltage if phase-resistance not provided
       if(!_isset(phase_resistance))  voltage.q = current_sp;
       else  voltage.q =  _constrain( current_sp*phase_resistance + voltage_bemf , -voltage_limit, voltage_limit);
-        voltage.d = 0;
+      // set d-component (lag compensation if known inductance)
+      if(!_isset(phase_inductance)) voltage.d = 0;
+      else voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit);
       break;
     case MotionControlType::velocity:
       // velocity set point
@@ -320,19 +327,21 @@ void StepperMotor::move(float new_target) {
       // use voltage if phase-resistance not provided
       if(!_isset(phase_resistance))  voltage.q = current_sp;
       else  voltage.q = _constrain( current_sp*phase_resistance + voltage_bemf , -voltage_limit, voltage_limit);
-      voltage.d = 0;
+      // set d-component (lag compensation if known inductance)
+      if(!_isset(phase_inductance)) voltage.d = 0;
+      else voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit);
       break;
     case MotionControlType::velocity_openloop:
       // velocity control in open loop
       shaft_velocity_sp = target;
       voltage.q = velocityOpenloop(shaft_velocity_sp); // returns the voltage that is set to the motor
-      voltage.d = 0;
+      voltage.d = 0; // TODO d-component lag-compensation 
       break;
     case MotionControlType::angle_openloop:
       // angle control in open loop
       shaft_angle_sp = target;
       voltage.q = angleOpenloop(shaft_angle_sp); // returns the voltage that is set to the motor
-      voltage.d = 0;
+      voltage.d = 0; // TODO d-component lag-compensation 
       break;
   }
 }
