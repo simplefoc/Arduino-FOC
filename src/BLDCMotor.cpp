@@ -34,7 +34,8 @@ int trap_150_map[12][3] = {
 // - pp            - pole pair number
 // - R             - motor phase resistance
 // - KV            - motor kv rating (rmp/v)
-BLDCMotor::BLDCMotor(int pp, float _R, float _KV)
+// - L             - motor phase inductance
+BLDCMotor::BLDCMotor(int pp, float _R, float _KV, float _inductance)
 : FOCMotor()
 {
   // save pole pairs number
@@ -44,6 +45,8 @@ BLDCMotor::BLDCMotor(int pp, float _R, float _KV)
   // save back emf constant KV = 1/KV
   // 1/sqrt(2) - rms value
   KV_rating = _KV*_SQRT2;
+  // save phase inductance
+  phase_inductance = _inductance;
 
   // torque control type is voltage by default
   torque_controller = TorqueControlType::voltage;
@@ -335,7 +338,9 @@ void BLDCMotor::loopFOC() {
       current.q = LPF_current_q(current.q);
       // calculate the phase voltage
       voltage.q = PID_current_q(current_sp - current.q);
-      voltage.d = 0;
+      // d voltage  - lag compensation
+      if(_isset(phase_inductance)) voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit);
+      else voltage.d = 0;
       break;
     case TorqueControlType::foc_current:
       if(!current_sense) return;
@@ -347,6 +352,8 @@ void BLDCMotor::loopFOC() {
       // calculate the phase voltages
       voltage.q = PID_current_q(current_sp - current.q);
       voltage.d = PID_current_d(-current.d);
+      // d voltage - lag compensation - TODO verify
+      // if(_isset(phase_inductance)) voltage.d = _constrain( voltage.d - current_sp*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit);
       break;
     default:
       // no torque control selected
@@ -397,7 +404,9 @@ void BLDCMotor::move(float new_target) {
         if(!_isset(phase_resistance))  voltage.q = target;
         else  voltage.q =  target*phase_resistance + voltage_bemf;
         voltage.q = _constrain(voltage.q, -voltage_limit, voltage_limit);
-        voltage.d = 0;
+        // set d-component (lag compensation if known inductance)
+        if(!_isset(phase_inductance)) voltage.d = 0;
+        else voltage.d = _constrain( -target*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit);
       }else{
         current_sp = target; // if current/foc_current torque control
       }
@@ -417,7 +426,9 @@ void BLDCMotor::move(float new_target) {
         // use voltage if phase-resistance not provided
         if(!_isset(phase_resistance))  voltage.q = current_sp;
         else  voltage.q =  _constrain( current_sp*phase_resistance + voltage_bemf , -voltage_limit, voltage_limit);
-        voltage.d = 0;
+        // set d-component (lag compensation if known inductance)
+        if(!_isset(phase_inductance)) voltage.d = 0;
+        else voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit);
       }
       break;
     case MotionControlType::velocity:
@@ -430,7 +441,9 @@ void BLDCMotor::move(float new_target) {
         // use voltage if phase-resistance not provided
         if(!_isset(phase_resistance))  voltage.q = current_sp;
         else  voltage.q = _constrain( current_sp*phase_resistance + voltage_bemf , -voltage_limit, voltage_limit);
-        voltage.d = 0;
+        // set d-component (lag compensation if known inductance)
+        if(!_isset(phase_inductance)) voltage.d = 0;
+        else voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit);
       }
       break;
     case MotionControlType::velocity_openloop:

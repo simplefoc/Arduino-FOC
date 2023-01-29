@@ -173,18 +173,19 @@ class FOCMotor
     float	phase_resistance; //!< motor phase resistance
     int pole_pairs;//!< motor pole pairs number
     float KV_rating; //!< motor KV rating
+    float	phase_inductance; //!< motor phase inductance
 
     // limiting variables
-    float voltage_limit; //!< Voltage limitting variable - global limit
-    float current_limit; //!< Current limitting variable - global limit
-    float velocity_limit; //!< Velocity limitting variable - global limit
+    float voltage_limit; //!< Voltage limiting variable - global limit
+    float current_limit; //!< Current limiting variable - global limit
+    float velocity_limit; //!< Velocity limiting variable - global limit
 
     // motor status vairables
     int8_t enabled = 0;//!< enabled or disabled motor flag
     FOCMotorStatus motor_status = FOCMotorStatus::motor_uninitialized; //!< motor status
     
     // pwm modulation related variables
-    FOCModulationType foc_modulation;//!<  parameter derterniming modulation algorithm
+    FOCModulationType foc_modulation;//!<  parameter determining modulation algorithm
     int8_t modulation_centered = 1;//!< flag (1) centered modulation around driver limit /2  or  (0) pulled to 0
 
 
