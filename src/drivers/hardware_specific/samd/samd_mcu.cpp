@@ -808,11 +808,14 @@ void printAllPinInfos() {
 		SimpleFOCDebug::print("  E=");
 		if (association.tccE>=0) {
 			int tcn = GetTCNumber(association.tccE);
-			if (tcn>=TCC_INST_NUM)
+			if (tcn>=TCC_INST_NUM){
 				SimpleFOCDebug::print(" TC");
-			else
+				SimpleFOCDebug::print(tcn-TCC_INST_NUM);
+			}
+			else {
 				SimpleFOCDebug::print("TCC");
-			SimpleFOCDebug::print(tcn);
+				SimpleFOCDebug::print(tcn);
+			}
 			SimpleFOCDebug::print("-");
 			SimpleFOCDebug::print(GetTCChannelNumber(association.tccE));
 			SimpleFOCDebug::print("[");
@@ -827,11 +830,14 @@ void printAllPinInfos() {
 		SimpleFOCDebug::print(" F=");
 		if (association.tccF>=0) {
 			int tcn = GetTCNumber(association.tccF);
-			if (tcn>=TCC_INST_NUM)
+			if (tcn>=TCC_INST_NUM){
 				SimpleFOCDebug::print(" TC");
-			else
+				SimpleFOCDebug::print(tcn-TCC_INST_NUM);
+			}
+			else {
 				SimpleFOCDebug::print("TCC");
-			SimpleFOCDebug::print(tcn);
+				SimpleFOCDebug::print(tcn);
+			}
 			SimpleFOCDebug::print("-");
 			SimpleFOCDebug::print(GetTCChannelNumber(association.tccF));
 			SimpleFOCDebug::print("[");
