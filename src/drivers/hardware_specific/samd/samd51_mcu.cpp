@@ -90,7 +90,7 @@ struct wo_association WO_associations[] = {
 		{ PORTA,  12, TC2_CH0,		0, TCC0_CH0, 		6, TCC1_CH2, 		2},
 		{ PORTA,  13, TC2_CH1,		1, TCC0_CH1, 		7, TCC1_CH3, 		3},
 		{ PORTA,  14, TC3_CH0,		0, TCC2_CH0, 		0, TCC1_CH2, 		2},
-		{ PORTA,  15, TC3_CH1,		1, TCC1_CH1, 		1, TCC1_CH3, 		3},
+		{ PORTA,  15, TC3_CH1,		1, TCC2_CH1, 		1, TCC1_CH3, 		3},
 		{ PORTA,  16, TC2_CH0,		0, TCC1_CH0, 		0, TCC0_CH4, 		4},
 		{ PORTA,  17, TC2_CH1,		1, TCC1_CH1, 		1, TCC0_CH5, 		5},
 		{ PORTA,  18, TC3_CH0,		0, TCC1_CH2, 		2, TCC0_CH0, 		6},
@@ -124,7 +124,7 @@ struct wo_association WO_associations[] = {
 		{ PORTB,  26, NOT_ON_TIMER,	0, TCC1_CH2, 		2, NOT_ON_TIMER, 	0},
 		{ PORTB,  27, NOT_ON_TIMER,	0, TCC1_CH3, 		3, NOT_ON_TIMER, 	0},
 		{ PORTB,  28, NOT_ON_TIMER,	0, TCC1_CH0, 		4, NOT_ON_TIMER, 	0},
-		{ PORTB,  29, NOT_ON_TIMER,	1, TCC1_CH1, 		5, NOT_ON_TIMER,	0},
+		{ PORTB,  29, NOT_ON_TIMER,	0, TCC1_CH1, 		5, NOT_ON_TIMER,	0},
 		// PC24-PC28, PA27, RESET -> no TC/TCC peripherals
 		{ PORTA,  30, TC6_CH0,		0, TCC2_CH0, 		0, NOT_ON_TIMER, 	0},
 		{ PORTA,  31, TC6_CH1,		1, TCC2_CH1, 		1, NOT_ON_TIMER, 	0},
