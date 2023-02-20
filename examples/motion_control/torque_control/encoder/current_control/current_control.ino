@@ -17,7 +17,7 @@ void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 
 // current sensor
-InlineCurrentSense current_sense = InlineCurrentSense(0.01, 50.0, A0, A2);
+InlineCurrentSense current_sense = InlineCurrentSense(0.01f, 50.0f, A0, A2);
 
 // current set point variable
 float target_current = 0;
