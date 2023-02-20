@@ -13,7 +13,7 @@ void doB(){encoder.handleB();}
 
 // inline current sensor instance
 // check if your board has R010 (0.01 ohm resistor) or R006 (0.006 mOhm resistor)
-InlineCurrentSense current_sense = InlineCurrentSense(0.01, 50.0, A0, A2);
+InlineCurrentSense current_sense = InlineCurrentSense(0.01f, 50.0f, A0, A2);
 
 // commander communication instance
 Commander command = Commander(Serial);

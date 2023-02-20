@@ -19,6 +19,20 @@ LowsideCurrentSense::LowsideCurrentSense(float _shunt_resistor, float _gain, int
     gain_c = volts_to_amps_ratio;
 }
 
+
+LowsideCurrentSense::LowsideCurrentSense(float _mVpA, int _pinA, int _pinB, int _pinC){
+    pinA = _pinA;
+    pinB = _pinB;
+    pinC = _pinC;
+
+    volts_to_amps_ratio = _mVpA / 1000.0f; // mV to amps
+    // gains for each phase
+    gain_a = volts_to_amps_ratio;
+    gain_b = volts_to_amps_ratio;
+    gain_c = volts_to_amps_ratio;
+}   
+
+
 // Lowside sensor init function
 int LowsideCurrentSense::init(){
     // configure ADC variables
