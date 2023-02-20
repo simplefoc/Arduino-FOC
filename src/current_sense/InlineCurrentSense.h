@@ -21,6 +21,14 @@ class InlineCurrentSense: public CurrentSense{
       @param phC C phase adc pin (optional)
     */
     InlineCurrentSense(float shunt_resistor, float gain, int pinA, int pinB, int pinC = NOT_SET);
+    /**
+      InlineCurrentSense class constructor
+      @param mVpA mV per Amp ratio
+      @param phA A phase adc pin
+      @param phB B phase adc pin
+      @param phC C phase adc pin (optional)
+    */
+    InlineCurrentSense(float mVpA, int pinA, int pinB, int pinC = NOT_SET);
 
     // CurrentSense interface implementing functions 
     int init() override;
