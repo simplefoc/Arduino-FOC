@@ -7,7 +7,7 @@
 // shunt resistor value
 // gain value
 // pins phase A,B, (C optional)
-InlineCurrentSense current_sense = InlineCurrentSense(0.01, 50.0, A0, A2);
+InlineCurrentSense current_sense = InlineCurrentSense(0.01f, 50.0f, A0, A2);
 
 
 void setup() {
