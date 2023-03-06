@@ -9,7 +9,7 @@
 /**
  *  Low pass filter class
  */
-class LowPassFilter : public Filter
+class LowPassFilter
 {
 public:
     /**
@@ -20,6 +20,8 @@ public:
 
     float operator() (float x);
     float Tf; //!< Low pass filter time constant
+    float y_prev;
+    float timestamp_prev;
 
 };
 

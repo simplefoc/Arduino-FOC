@@ -1,31 +1,70 @@
 #include "median_filter.h"
 
-MedianFilter::MedianFilter(int samples)
+MedianFilter::MedianFilter()
 {
-    this->samples = samples;
-    y_prev = 0.0f;
-    timestamp_prev = _micros();
+    for (int i = 0; i < NUM_SAMPLES; i++)
+    {
+        // initialize steps since addition to zero measurements with increasing indexes for addition time
+        // this way we will flush them sequentially out of the arrays as real data comes in
+        steps_since_addition[i] = i;
+        sorted_measurements[i] = 0;
+    }
+    
 }
 
 float MedianFilter::operator() (float x)
 {
-    sample_history.push_back(x);
-    if(sample_history.size()>samples){
-        sample_history.pop_front();
+    // find the element which will be replaced and omit it in a temporary array
+    int temp_ssa[NUM_SAMPLES-1];
+    int temp_sm[NUM_SAMPLES-1];
+    int j = 0; // index for reduced arrays
+    for (int i = 0; i < NUM_SAMPLES; i++)
+    {
+        if (steps_since_addition[i]==NUM_SAMPLES-1)
+        {
+            // do nothing for this index i
+        } else {
+            temp_ssa[j] = steps_since_addition[i];
+            temp_sm[j] = sorted_measurements[i];
+            j++;
+        }
     }
-    // calculate median over sample history
-    std::deque<float> copydeque = sample_history;
 
-    //sort vector in ascending order
-    sort(copydeque.begin(),copydeque.end());
+    // find the insertion site in the temporary sorted array of measurements, there are NUM_SAMPLES possible positions
+    int index_insert = NUM_SAMPLES-1; // if this value is not modified we would insert at the end of the sorted array
+    for (int i = 0; i < NUM_SAMPLES-1; i++)
+    {
+        if (x<temp_sm[i])
+        {
+            index_insert = i;
+            break;
+        }
+    }
 
+    // reconstruct the updated arrays from the temporary arrays and the new measurement
+    j = 0; //reset auxillary index
+    for (int i = 0; i < NUM_SAMPLES; i++)
+    {
+        if (i==index_insert)
+        {
+            steps_since_addition[i] = 0;
+            sorted_measurements[i] = x;
+        } else {
+            steps_since_addition[i] = temp_ssa[j] + 1; // increase steps since last addition by one
+            sorted_measurements[i] = temp_sm[i];
+            j++; // increase auxillary counter for temporary array
+        }
+        
+    }
+    
     float median;
-    int size = copydeque.size();
-    if (size%2==0)
+    if (NUM_SAMPLES%2==0)
     { //even number of elements
-        median = (copydeque[size/2-1] + copydeque[size / 2]) / 2.0;
+        median = (sorted_measurements[NUM_SAMPLES/2-1] + sorted_measurements[NUM_SAMPLES / 2]) / 2.0;
     } else { //odd number of elements
-        median = copydeque[size/2];
+        median = sorted_measurements[NUM_SAMPLES/2];
     }
+
+    return median;
 
 }

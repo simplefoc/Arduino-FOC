@@ -15,7 +15,7 @@ private:
 public:
     Filter();
     ~Filter() = default;
-    virtual operator() (float x) = 0;
+    virtual float operator() (float x) = 0;
     
 protected:
     unsigned long timestamp_prev;  //!< Last execution timestamp
