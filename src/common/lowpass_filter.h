@@ -4,11 +4,12 @@
 
 #include "time_utils.h"
 #include "foc_utils.h"
+#include "filter.h"
 
 /**
  *  Low pass filter class
  */
-class LowPassFilter
+class LowPassFilter : public Filter
 {
 public:
     /**
@@ -20,9 +21,6 @@ public:
     float operator() (float x);
     float Tf; //!< Low pass filter time constant
 
-protected:
-    unsigned long timestamp_prev;  //!< Last execution timestamp
-    float y_prev; //!< filtered value in previous execution step 
 };
 
 #endif // LOWPASS_FILTER_H
