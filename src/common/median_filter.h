@@ -1,6 +1,5 @@
-#ifndef MEIDAN_FILTER_H
+#ifndef MEDIAN_FILTER_H
 #define MEDIAN_FILTER_H
-
 
 #define NUM_SAMPLES 5
 
