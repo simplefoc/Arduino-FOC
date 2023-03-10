@@ -25,7 +25,7 @@ InlineCurrentSense::InlineCurrentSense(float _mVpA, int _pinA, int _pinB, int _p
     pinB = _pinB;
     pinC = _pinC;
 
-    volts_to_amps_ratio = _mVpA / 1000.0f; // mV to amps
+    volts_to_amps_ratio = 1000.0f / _mVpA; // mV to amps
     // gains for each phase
     gain_a = volts_to_amps_ratio;
     gain_b = volts_to_amps_ratio;
