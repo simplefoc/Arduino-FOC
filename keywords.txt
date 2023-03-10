@@ -135,6 +135,7 @@ zero_electric_angle	KEYWORD2
 verbose	KEYWORD2
 decimal_places	KEYWORD2
 phase_resistance	KEYWORD2
+phase_inductance	KEYWORD2
 modulation_centered	KEYWORD2
 
 
@@ -168,6 +169,10 @@ voltage_power_supply	KEYWORD2
 voltage_sensor_align	KEYWORD2
 velocity_index_search	KEYWORD2
 monitor_downsample	KEYWORD2
+monitor_start_char	KEYWORD2
+monitor_end_char	KEYWORD2
+monitor_separator	KEYWORD2
+monitor_decimals	KEYWORD2
 monitor_variables	KEYWORD2
 motion_downsample	KEYWORD2
 
