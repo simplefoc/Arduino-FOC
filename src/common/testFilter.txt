@@ -36,7 +36,8 @@ int main()
     for(int i = 0; i<n_inputs; i++){
         result = mf(inputs[i]);
         cout << result << " ";
-        /*cout << "SSA :";
+        /*
+        cout << "SSA :";
         for(int j = 0;j<5;j++) cout << mf.steps_since_addition[j] << " ";
         cout << endl << "SM  :";
         for(int j = 0;j<5;j++) cout << mf.sorted_measurements[j] << " ";

@@ -4,7 +4,6 @@
 
 #include "time_utils.h"
 #include "foc_utils.h"
-#include "filter.h"
 
 /**
  *  Low pass filter class
