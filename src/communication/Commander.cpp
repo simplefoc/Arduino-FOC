@@ -62,7 +62,7 @@ void Commander::run(char* user_input){
   switch(id){
     case CMD_SCAN:
       for(int i=0; i < call_count; i++){
-          printMachineReadable(F("?"));
+          printMachineReadable(CMD_SCAN);
           print(call_ids[i]);
           print(":");
           if(call_label[i]) println(call_label[i]);
@@ -72,6 +72,7 @@ void Commander::run(char* user_input){
     case CMD_VERBOSE:
       if(!isSentinel(user_input[1])) verbose = (VerboseMode)atoi(&user_input[1]);
       printVerbose(F("Verb:"));
+      printMachineReadable(CMD_VERBOSE);
       switch (verbose){
       case VerboseMode::nothing:
         println(F("off!"));
@@ -88,7 +89,7 @@ void Commander::run(char* user_input){
     case CMD_DECIMAL:
       if(!isSentinel(user_input[1])) decimal_places = atoi(&user_input[1]);
       printVerbose(F("Decimal:"));
-      printMachineReadable(F("#"));
+      printMachineReadable(CMD_DECIMAL);
       println(decimal_places);
       break;
     default:
