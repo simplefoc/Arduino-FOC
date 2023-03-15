@@ -2,6 +2,7 @@
 #define SENSOR_H
 
 #include <inttypes.h>
+#include "../median_filter.h"
 
 /**
  *  Direction structure
@@ -124,6 +125,9 @@ class Sensor{
          * to sensor.getAngle() and sensor.getVelocity()
          */
         virtual void init();
+
+        // use a median filter for filtering of sensor values at main loop speed
+        MedianFilter mf = MedianFilter();
 
         // velocity calculation variables
         float velocity=0.0f;

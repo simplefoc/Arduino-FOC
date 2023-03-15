@@ -10,7 +10,15 @@ MedianFilter::MedianFilter()
         // initialize steps since addition to zero measurements with increasing indexes for addition time
         // this way we will flush them sequentially out of the arrays as real data comes in
         steps_since_addition[i] = i;
-        sorted_measurements[i] = i+1;
+        sorted_measurements[i] = 0;
+    }
+    
+}
+
+void MedianFilter::init(float start_angle){
+    for (int i = 0; i < NUM_SAMPLES; i++)
+    {
+        sorted_measurements[i] = start_angle;
     }
     
 }

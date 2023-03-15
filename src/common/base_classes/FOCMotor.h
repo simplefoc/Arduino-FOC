@@ -10,7 +10,6 @@
 #include "../defaults.h"
 #include "../pid.h"
 #include "../lowpass_filter.h"
-#include "../median_filter.h"
 
 
 // monitoring bitmap
@@ -200,8 +199,6 @@ class FOCMotor
     LowPassFilter LPF_current_d{DEF_CURR_FILTER_Tf};//!<  parameter determining the current Low pass filter configuration 
     PIDController PID_velocity{DEF_PID_VEL_P,DEF_PID_VEL_I,DEF_PID_VEL_D,DEF_PID_VEL_RAMP,DEF_PID_VEL_LIMIT};//!< parameter determining the velocity PID configuration
     PIDController P_angle{DEF_P_ANGLE_P,0,0,0,DEF_VEL_LIM};	//!< parameter determining the position PID configuration 
-    MedianFilter MF_velocity;
-    MedianFilter MF_angle;
     LowPassFilter LPF_velocity{DEF_VEL_FILTER_Tf};//!<  parameter determining the velocity Low pass filter configuration 
     LowPassFilter LPF_angle{0.0};//!<  parameter determining the angle low pass filter configuration 
     unsigned int motion_downsample = DEF_MOTION_DOWNSMAPLE; //!< parameter defining the ratio of downsampling for move commad

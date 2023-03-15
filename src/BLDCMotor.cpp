@@ -63,6 +63,7 @@ void BLDCMotor::init() {
   enable();
   _delay(500);
   motor_status = FOCMotorStatus::motor_uncalibrated;
+  SIMPLEFOC_DEBUG("MOT: Motion downsampling initialized to ", (int) motion_downsample);
 }
 
 

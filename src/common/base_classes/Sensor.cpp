@@ -5,7 +5,11 @@
 
 
 void Sensor::update() {
-    float val = getSensorAngle();
+    // this function is executed at the beginning of the loopFOC() routine
+    // filtering that is applied on the direct stream of incoming sensor values can be placed here
+    // but will also impact execution time.
+    // median filtering n+1 samples induces a delay of n*t_loop
+    float val = mf(getSensorAngle());
     angle_prev_ts = _micros();
     float d_angle = val - angle_prev;
     // if overflow happened track it as full rotation
@@ -40,6 +44,8 @@ void Sensor::init() {
     delayMicroseconds(1);
     angle_prev = getSensorAngle(); // call again
     angle_prev_ts = _micros();
+    // initialize median Filter to initial value by flushing buffer
+    mf.init(angle_prev);
 }
 
 

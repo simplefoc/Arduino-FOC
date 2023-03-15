@@ -57,22 +57,24 @@ void FOCMotor::linkCurrentSense(CurrentSense* _current_sense) {
 }
 
 // shaft angle calculation
+// only called in motor.move() function!!
 float FOCMotor::shaftAngle() {
   // if no sensor linked return previous value ( for open loop )
   if(!sensor) return shaft_angle;
-  //return sensor_direction*LPF_angle(sensor->getAngle()) - sensor_offset;
+  return sensor_direction*LPF_angle(sensor->getAngle()) - sensor_offset;
   //return sensor_direction*MF_angle(sensor->getAngle()) - sensor_offset;
   // use median filter for outlier rejection, add low pass filter on top
-  return sensor_direction*LPF_angle(MF_angle(sensor->getAngle())) - sensor_offset;
+  // return sensor_direction*LPF_angle(MF_angle(sensor->getAngle())) - sensor_offset;
 }
 // shaft velocity calculation
+// only called in motor.move() function!!
 float FOCMotor::shaftVelocity() {
   // if no sensor linked return previous value ( for open loop )
   if(!sensor) return shaft_velocity;
-  //return sensor_direction*LPF_velocity(sensor->getVelocity());
+  return sensor_direction*LPF_velocity(sensor->getVelocity());
   //return sensor_direction * MF_velocity(sensor->getVelocity()) - sensor_offset;
   // use median filter for outlier rejection, add low pass filter on top
-  return sensor_direction*LPF_velocity(MF_velocity(sensor->getVelocity())) - sensor_offset;
+  //return sensor_direction*LPF_velocity(MF_velocity(sensor->getVelocity())) - sensor_offset;
 }
 
 float FOCMotor::electricalAngle(){

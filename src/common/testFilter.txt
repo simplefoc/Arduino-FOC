@@ -15,12 +15,13 @@ int main()
 {
     // create a median Filter
     MedianFilter mf = MedianFilter();
+    mf.init(0.0);
 
     // supply a range of inputs
-    int n_inputs = 15;
+    int n_inputs = 39;
     //float inputs[] = {0,0,0,0,0,0.5,0.5,0.5,0.5,0.5,1,1,1,1,1,1};
     //float inputs[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    float inputs[] = {0,1,2,0,1,2,0,1,2,0,1,2,0,1,2,}; // should stabilize at 1
+    float inputs[] = {0,1,2,0,1,2,0,1,2,0,1,2,0,1,2,0,1,2,0,1,2,0,1,2,0,1,2,0,1,2,0,1,2,0,1,2,0,1,2}; // should stabilize at 1
 
     // print the filtered result to the command line
     // initial state
