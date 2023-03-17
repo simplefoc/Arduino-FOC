@@ -63,6 +63,7 @@ float MagneticSensorPWM::getSensorAngle(){
     // raw data from sensor
     raw_count = getRawCount();
     if (raw_count > max_raw_count) raw_count = max_raw_count;
+    if (raw_count < min_raw_count) raw_count = min_raw_count;
     return( (float) (raw_count - min_raw_count) / (float)cpr) * _2PI;
 }
 
