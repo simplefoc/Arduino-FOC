@@ -10,12 +10,23 @@
 
 class MagneticSensorPWM: public Sensor{
  public:
-  /**
-    * MagneticSensorPWM class constructor
-    * @param _pinPWM the pin to read the PWM sensor input signal
+   /** MagneticSensorPWM(uint8_t _pinPWM, int _min, int _max)
+    * @param _pinPWM  the pin that is reading the pwm from magnetic sensor
+    * @param _min_raw_count  the smallest expected reading
+    * @param _max_raw_count  the largest expected reading
     */
     MagneticSensorPWM(uint8_t _pinPWM,int _min = 0, int _max = 0);
-
+    /** MagneticSensorPWM(uint8_t _pinPWM, int freqHz, int _total_pwm_clocks, int _min_pwm_clocks, int _max_pwm_clocks)
+     * 
+     * Constructor that computes the min and max raw counts based on the PWM frequency and the number of PWM clocks in one period
+     * 
+     * @param _pinPWM  the pin that is reading the pwm from magnetic sensor
+     * @param freqHz  the frequency of the PWM signal, in Hz, e.g. 115, 230, 460 or 920 for the AS5600, depending on the PWM frequency setting
+     * @param _total_pwm_clocks  the total number of PWM clocks in one period, e.g. 4351 for the AS5600
+     * @param _min_pwm_clocks  the 0 value returned by the sensor, in PWM clocks, e.g. 128 for the AS5600
+     * @param _max_pwm_clocks  the largest value returned by the sensor, in PWM clocks, e.g. 4223 for the AS5600
+     */
+    MagneticSensorPWM(uint8_t _pinPWM, int freqHz, int _total_pwm_clocks, int _min_pwm_clocks, int _max_pwm_clocks);
 
     // initialize the sensor hardware
     void init();
