@@ -43,7 +43,7 @@ MagneticSensorPWM::MagneticSensorPWM(uint8_t _pinPWM, int freqHz, int _total_pwm
     // define if the sensor uses interrupts
     is_interrupt_based = false;
 
-    min_elapsed_time = 1000000/freqHz; // set the minimum time between two readings
+    min_elapsed_time = 1.0f/freqHz; // set the minimum time between two readings
 
     // define as not set
     last_call_us = _micros();
