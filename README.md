@@ -33,6 +33,8 @@ Therefore this is an attempt to:
 >   - decimal places (settable through commander)
 > - bugfix - current sense align - added offset exchange when exchanging pins
 > - bugfix - trapezoid 150 fixed
+> - bugfix - MagneticSensorPWM bugfixes
+> - current sensing support for STM32L4xx series thanks to @triple6 (discord)
 > - phase disable in 6pwm mode 
 >   - stm32 - software and hardware 6pwm
 >   - atmega328 
