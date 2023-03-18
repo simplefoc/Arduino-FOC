@@ -25,14 +25,24 @@ Therefore this is an attempt to:
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
 > NEXT RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.0
+> - Arduino Mega 6pwm more timers supported 
+> - Arduino boards - frequency change support either 32kHz or 4kHz
+> - Arduino Uno - synched timers in 3pwm and 6pwm mode [#71](https://github.com/simplefoc/Arduino-FOC/issues/71)
 > - Teensy 3.x initial support for 6pwm
 > - Teensy 4.x initial support for 6pwm
 > - Example for v3.1 SimpleFOCShield 
+> - RP2040 compatibility for earlehillpower core [#234](https://github.com/simplefoc/Arduino-FOC/pull/234) [#236](https://github.com/simplefoc/Arduino-FOC/pull/236)
 > - More flexible monitoring API 
 >   - start, end and separator characters
 >   - decimal places (settable through commander)
+> - Added machine readable verbose mode in `Commander` [#233](https://github.com/simplefoc/Arduino-FOC/pull/233)
+> - *Simple**FOC**WebController* - Web based user interface for SimpleFOC by [@geekuillaume](https://github.com/geekuillaume) - [webcontroller.simplefoc.com](webcontroller.simplefoc.com)
+> - bugfix - `MagneticSensorPWM` multiple occasions - [#258](https://github.com/simplefoc/Arduino-FOC/pull/258)
 > - bugfix - current sense align - added offset exchange when exchanging pins
 > - bugfix - trapezoid 150 fixed
+> - bugfix - 4pwm on ESP8266 [#224](https://github.com/simplefoc/Arduino-FOC/pull/224)
+> - Additional `InlineCurrentSense` and `LowsideCurrentSense` constructor using milliVolts per Amp [#253](https://github.com/simplefoc/Arduino-FOC/pull/253)
+> - STM32L4xx current sense support by [@Triple6](https://github.com/Triple6) (discord) [#257](https://github.com/simplefoc/Arduino-FOC/pull/257)
 > - phase disable in 6pwm mode 
 >   - stm32 - software and hardware 6pwm
 >   - atmega328 
@@ -41,7 +51,7 @@ Therefore this is an attempt to:
 >   - current control through voltage torque mode enhancement
 >   - extended `BLDCMotor` and `StepperMotor` constructors to receive the inductance paramerer
 >   - can also be set using `motor.phase_inductance` or through `Commander`
-## Arduino *SimpleFOClibrary* v2.2.3
+## Arduino *SimpleFOClibrary* v2.3
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">
@@ -223,11 +233,3 @@ If you are interested in citing  *Simple**FOC**library* or some other component 
 }
 
 ```
-
-
-## Arduino FOC repo structure
-Branch  | Description | Status
------------- | ------------- | ------------ 
-[master](https://github.com/simplefoc/Arduino-FOC) | Stable and tested library version | ![Library Compile](https://github.com/simplefoc/Arduino-FOC/workflows/Library%20Compile/badge.svg)
-[dev](https://github.com/simplefoc/Arduino-FOC/tree/dev) | Development library version | ![Library Dev Compile](https://github.com/simplefoc/Arduino-FOC/workflows/Library%20Dev%20Compile/badge.svg?branch=dev)
-[minimal](https://github.com/simplefoc/Arduino-FOC/tree/minimal) | Minimal Arduino example with integrated library | ![MinimalBuild](https://github.com/simplefoc/Arduino-FOC/workflows/MinimalBuild/badge.svg?branch=minimal)
