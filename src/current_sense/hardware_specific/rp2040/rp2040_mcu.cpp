@@ -241,6 +241,7 @@ void RP2040ADCEngine::start() {
 
 void RP2040ADCEngine::stop() {
     adc_run(false);
+    irq_set_enabled(DMA_IRQ_0, false);
     dma_channel_abort(readDMAChannel);
     // if (triggerPWMSlice>=0)
     //     dma_channel_abort(triggerDMAChannel);
