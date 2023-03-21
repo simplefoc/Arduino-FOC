@@ -15,10 +15,15 @@
 #define _SOFTWARE_6PWM 0
 #define _ERROR_6PWM -1
 
+// 8pwm parameters
+#define _HARDWARE_8PWM 1
+#define _SOFTWARE_8PWM 0
+#define _ERROR_8PWM -1
+
 
 typedef struct STM32DriverParams {
-  HardwareTimer* timers[6] = {NULL};
-  uint32_t channels[6];
+  HardwareTimer* timers[8] = {NULL};
+  uint32_t channels[8];
   long pwm_frequency;
   float dead_zone;
   uint8_t interface_type;

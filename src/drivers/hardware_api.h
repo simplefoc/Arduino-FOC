@@ -36,7 +36,7 @@
 // will be returned as a void pointer from the _configurexPWM functions
 // will be provided to the _writeDutyCyclexPWM() as a void pointer
 typedef struct GenericDriverParams {
-  int pins[6];
+  int pins[8];
   long pwm_frequency;
   float dead_zone;
 } GenericDriverParams;
@@ -115,6 +115,27 @@ void* _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const
 void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l);
 
 /** 
+ * Configuring PWM frequency, resolution and alignment
+ * - Stepper driver - 8PWM setting
+ * - hardware specific
+ * 
+ * @param pwm_frequency - frequency in hertz - if applicable
+ * @param pin1A pin1A stepper driver
+ * @param pin1B pin1B stepper driver
+ * @param pin2A pin2A stepper driver
+ * @param pin2B pin2B stepper driver
+ * @param pin3A pin3A stepper driver
+ * @param pin3B pin3B stepper driver
+ * @param pin4A pin4A stepper driver
+ * @param pin4B pin4B stepper driver
+ * 
+ * @return -1 if failed, or pointer to internal driver parameters struct if successful
+ */
+void* _configure8PWM(long pwm_frequency, float dead_zone, const int pin1A, const int pin1B, const int pin2A, const int pin2B,
+                     const int pin3A, const int pin3B, const int pin4A, const int pin4B);
+
+
+/** 
  * Function setting the duty cycle to the pwm pin (ex. analogWrite())
  * - Stepper driver - 2PWM setting
  * - hardware specific
@@ -175,6 +196,25 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
  * 
  */ 
 void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params);
+
+
+/**
+
+*Function setting the duty cycle to the pwm pin (ex. analogWrite())
+* - Stepper driver - 8PWM setting
+* - hardware specific
+*@param dc_1a duty cycle phase 1A [0, 1]
+*@param dc_1b duty cycle phase 1B [0, 1]
+*@param dc_1c duty cycle phase 1C [0, 1]
+*@param dc_1d duty cycle phase 1D [0, 1]
+*@param dc_2a duty cycle phase 2A [0, 1]
+*@param dc_2b duty cycle phase 2B [0, 1]
+*@param dc_2c duty cycle phase 2C [0, 1]
+*@param dc_2d duty cycle phase 2D [0, 1]
+*@param params the driver parameters
+*/
+
+void _writeDutyCycle8PWM(float dc_1a, float dc_1b, float dc_1c, float dc_1d, float dc_2a, float dc_2b, float dc_2c, float dc_2d, void* params);
 
 
 #endif
