@@ -6,7 +6,7 @@
 // ~50us (int array)
 // precision +-0.005
 // it has to receive an angle in between 0 and 2PI
-WEAK float _sin(float a){
+__attribute__((weak)) float _sin(float a){
   // int array instead of float array
   // 4x200 points per 360 deg
   // 2x storage save (int 2Byte float 4 Byte )
@@ -37,7 +37,7 @@ WEAK float _sin(float a){
 // ~56us (int array)
 // precision +-0.005
 // it has to receive an angle in between 0 and 2PI
-WEAK float _cos(float a){
+__attribute__((weak)) float _cos(float a){
   float a_sin = a + _PI_2;
   a_sin = a_sin > _2PI ? a_sin - _2PI : a_sin;
   return _sin(a_sin);
@@ -45,7 +45,7 @@ WEAK float _cos(float a){
 
 
 // normalizing radian angle to [0,2PI]
-WEAK float _normalizeAngle(float angle){
+__attribute__((weak)) float _normalizeAngle(float angle){
   float a = fmod(angle, _2PI);
   return a >= 0 ? a : (a + _2PI);
 }
@@ -58,7 +58,7 @@ float _electricalAngle(float shaft_angle, int pole_pairs) {
 // square root approximation function using
 // https://reprap.org/forum/read.php?147,219210
 // https://en.wikipedia.org/wiki/Fast_inverse_square_root
-WEAK float _sqrtApprox(float number) {//low in fat
+__attribute__((weak)) float _sqrtApprox(float number) {//low in fat
   // float x;
   // const float f = 1.5F; // better precision
 
