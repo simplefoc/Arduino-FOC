@@ -47,7 +47,8 @@ int StepperDriver8PWM::init() {
 
   if( _isset(enable_pin1) ) pinMode(enable_pin1, OUTPUT);
   if( _isset(enable_pin2) ) pinMode(enable_pin2, OUTPUT);
-
+  if( _isset(enable_pin3) ) pinMode(enable_pin3, OUTPUT);
+  if( _isset(enable_pin4) ) pinMode(enable_pin4, OUTPUT);
   // sanity check for the voltage limit configuration
   if( !_isset(voltage_limit) || voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
 
