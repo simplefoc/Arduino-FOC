@@ -27,15 +27,7 @@ void* params = 0; // pointer to hardware specific parameters of driver
  */
 virtual void setPwm(float Ua, float Ub) = 0;
 
-/** 
- * Set phase voltages to the hardware for 4-phase driver
- * 
- * @param Ua phase A voltage
- * @param Ub phase B voltage
- * @param Uc phase C voltage
- * @param Ud phase D voltage
- */
-virtual void setPwm(float Ua, float Ub, float Uc, float Ud) = 0;
+
 
 };
 
