@@ -115,5 +115,7 @@ void loop() {
 #include "communication/Commander.h"
 #include "communication/StepDirListener.h"
 #include "communication/SimpleFOCDebug.h"
+#include "common/median_filter.h" // expose median filter 
+
 
 #endif
