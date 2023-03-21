@@ -184,34 +184,6 @@ void _alignPWMTimers(HardwareTimer *HT1, HardwareTimer *HT2, HardwareTimer *HT3,
   HT4->resume();
 }
 
-// align the timers to end the init
-void _alignPWMTimers(HardwareTimer *HT1, HardwareTimer *HT2, HardwareTimer *HT3, HardwareTimer *HT4, HardwareTimer *HT5, HardwareTimer *HT6, HardwareTimer *HT7, HardwareTimer *HT8)
-{
-  HT1->pause();
-  HT1->refresh();
-  HT2->pause();
-  HT2->refresh();
-  HT3->pause();
-  HT3->refresh();
-  HT4->pause();
-  HT4->refresh();
-  HT5->pause();
-  HT5->refresh();
-  HT6->pause();
-  HT6->refresh();
-  HT7->pause();
-  HT7->refresh();
-  HT8->pause();
-  HT8->refresh();
-  HT1->resume();
-  HT2->resume();
-  HT3->resume();
-  HT4->resume();
-  HT5->resume();
-  HT6->resume();
-  HT7->resume();
-  HT8->resume();
-}
 
 
 
@@ -686,8 +658,6 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
 
 
 
-
-
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 8PWM setting
 // - hardware specific
@@ -699,7 +669,7 @@ void* _configure8PWM(long pwm_frequency, float dead_zone, const int pin1A, const
     return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
   }
   if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
-  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to |%0kHz max
+  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
   // center-aligned frequency is uses two periods
   pwm_frequency *=2;
 
