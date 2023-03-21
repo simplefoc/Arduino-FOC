@@ -25,6 +25,8 @@ StepperDriver8PWM::StepperDriver8PWM(int ph1A, int ph1B, int ph2A, int ph2B, int
 
   pinMode(enable_pin1, OUTPUT);
   pinMode(enable_pin2, OUTPUT);
+  pinMode(enable_pin3, OUTPUT);
+  pinMode(enable_pin4, OUTPUT);
   disable();
 
     // dead zone initial - 2%
