@@ -371,6 +371,70 @@ void StepperMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
   driver->setPwm(Ualpha, Ubeta);
 }
 
+// Method using FOC to set Uq and Ud to the motor at the optimal angle
+// Function implementing Sine PWM algorithms
+// - space vector not implemented yet
+//
+
+int32_t float_to_q31(float input) {
+    int32_t q31 = (int32_t) (input * 2147483648.0f);
+    q31 = (q31 > 0) ? (q31 << 1) : (-q31 << 1);
+    return q31;
+}
+
+#define pi 3.1415926535897932384626433f
+
+int32_t q31_value;
+float value_f32_sine = 0;
+float value_f32_cosine = 0;
+float cordic_cosine = 0.0f;
+float cordic_sine = 0.0f;
+
+float wrap_to_1(float x) {
+    while (x > 1.0f) {
+        x -= 2.0f;
+    }
+    while (x < -1.0f) {
+        x += 2.0f;
+    }
+    return x;
+}
+
+void StepperMotor::setPhaseVoltageCORDIC(float Uq, float Ud, float angle_el) {
+  // Sinusoidal PWM modulation
+  // Inverse Park transformation
+
+  // WHO U GONNA CALL? CORDIC ->
+
+q31_value = float_to_q31(angle_el / (2.0f * pi));
+
+CORDIC->WDATA = q31_value;
+cordic_sine = CORDIC->RDATA;
+cordic_cosine = CORDIC->RDATA;
+
+value_f32_sine = (float)cordic_sine/(float)0x80000000;
+value_f32_cosine = (float)cordic_cosine/(float)0x80000000;
+
+if (angle < 0){
+value_f32_sine = wrap_to_1(value_f32_sine);
+value_f32_sine = value_f32_sine * -1;
+}
+
+if (angle > 0){
+value_f32_sine = wrap_to_1(value_f32_sine);
+}
+
+value_f32_cosine = wrap_to_1(value_f32_cosine);
+
+  // Inverse park transform
+  Ualpha =  value_f32_cosine * Ud - cordic_sine * Uq;  // -sin(angle) * Uq;
+  Ubeta =  cordic_sine * Ud + value_f32_cosine * Uq;    //  cos(angle) * Uq;
+
+  // set the voltages in hardware
+  driver->setPwm(Ualpha, Ubeta);
+}
+
+
 // Function (iterative) generating open loop movement for target velocity
 // - target_velocity - rad/s
 // it uses voltage_limit variable
