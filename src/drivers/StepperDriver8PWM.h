@@ -1,5 +1,5 @@
-#ifndef STEPPER_DRIVER_4PWM_h
-#define STEPPER_DRIVER_4PWM_h
+#ifndef STEPPER_DRIVER_8PWM_h
+#define STEPPER_DRIVER_8PWM_h
 
 #include "../common/base_classes/StepperDriver.h"
 #include "../common/foc_utils.h"
