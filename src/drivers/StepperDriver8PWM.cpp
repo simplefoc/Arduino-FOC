@@ -22,7 +22,6 @@ StepperDriver8PWM::StepperDriver8PWM(int ph1A, int ph1B, int ph2A, int ph2B, int
   voltage_limit = NOT_SET;
   pwm_frequency = NOT_SET;
 
- 
 
   pinMode(enable_pin1, OUTPUT);
   pinMode(enable_pin2, OUTPUT);
@@ -32,13 +31,6 @@ StepperDriver8PWM::StepperDriver8PWM(int ph1A, int ph1B, int ph2A, int ph2B, int
   dead_zone = 0.02f;
   
 }
-
-
-
-
-
-
-
 
 // init hardware pins for 8PWM control
 int StepperDriver8PWM::init() {
@@ -65,7 +57,6 @@ int StepperDriver8PWM::init() {
   initialized = (params!=SIMPLEFOC_DRIVER_INIT_FAILED);  
   return params!=SIMPLEFOC_DRIVER_INIT_FAILED;
 }
-
 
 
 // Set voltage to the pwm pin for 8PWM control
@@ -100,3 +91,5 @@ void StepperDriver8PWM::setPwm(float Ualpha, float Ubeta) {
   _writeDutyCycle8PWM(duty_cycle1A_h1, duty_cycle1A_h2, duty_cycle1B_h1, duty_cycle1B_h2,
                       duty_cycle2A_h1, duty_cycle2A_h2, duty_cycle2B_h1, duty_cycle2B_h2, params);
 }
+
+
