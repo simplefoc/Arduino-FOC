@@ -137,6 +137,11 @@ class FOCMotor
     */
     virtual void setPhaseVoltage(float Uq, float Ud, float angle_el)=0;
     
+
+    // CORDIC 
+    
+    virtual void setPhaseVoltageCORDIC(float Uq, float Ud, float angle_el)=0;
+
     // State calculation methods 
     /** Shaft angle calculation in radians [rad] */
     float shaftAngle();
