@@ -427,8 +427,8 @@ value_f32_sine = wrap_to_1(value_f32_sine);
 value_f32_cosine = wrap_to_1(value_f32_cosine);
 
   // Inverse park transform
-  Ualpha =  value_f32_cosine * Ud - cordic_sine * Uq;  // -sin(angle) * Uq;
-  Ubeta =  cordic_sine * Ud + value_f32_cosine * Uq;    //  cos(angle) * Uq;
+  Ualpha =  value_f32_cosine * Ud - value_f32_sine * Uq;  // -sin(angle) * Uq;
+  Ubeta =  value_f32_sine * Ud + value_f32_cosine * Uq;    //  cos(angle) * Uq;
 
   // set the voltages in hardware
   driver->setPwm(Ualpha, Ubeta);
