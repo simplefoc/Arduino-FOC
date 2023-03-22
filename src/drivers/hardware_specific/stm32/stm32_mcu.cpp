@@ -733,6 +733,16 @@ void configure8PWM(void)
     sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
     HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig);
     
+    // Set TIM8 dead time values to 50 ns
+    TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfigTIM8 = {0};
+    sBreakDeadTimeConfigTIM8.OffStateRunMode = TIM_OSSR_DISABLE;
+    sBreakDeadTimeConfigTIM8.OffStateIDLEMode = TIM_OSSI_DISABLE;
+    sBreakDeadTimeConfigTIM8.LockLevel = TIM_LOCKLEVEL_OFF;
+    sBreakDeadTimeConfigTIM8.DeadTime = 50;
+    sBreakDeadTimeConfigTIM8.BreakState = TIM_BREAK_DISABLE;
+    sBreakDeadTimeConfigTIM8.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
+    sBreakDeadTimeConfigTIM8.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
+    HAL_TIMEx_ConfigBreakDeadTime(&htim8, &sBreakDeadTimeConfigTIM8);
 
 
     // Configure TIM1 channels 1-6 for PWM output
