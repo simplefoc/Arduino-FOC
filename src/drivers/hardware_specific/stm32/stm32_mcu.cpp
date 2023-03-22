@@ -681,23 +681,25 @@ void configure8PWM(void)
     __HAL_RCC_TIM1_CLK_ENABLE();
     __HAL_RCC_TIM8_CLK_ENABLE();
 
-    // Configure TIM1 pins for alternate function mode with push-pull output
-    GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Alternate = GPIO_AF6_TIM1; 
-    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+    // Configure GPIO pins for STSPIN32G4 internal FET driver
+      
+      __HAL_RCC_GPIOE_CLK_ENABLE();   // enable GPIO clock
+      GPIO_InitStruct.Pin = GPIO_PIN_9 | GPIO_PIN_8 | GPIO_PIN_11 | GPIO_PIN_10 | GPIO_PIN_13 | GPIO_PIN_12;
+      GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;  // alternate function mode with push-pull output
+      GPIO_InitStruct.Pull = GPIO_NOPULL;
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+      GPIO_InitStruct.Alternate = GPIO_AF6_TIM1;
+      HAL_GPIO_Init(GPIOE, &GPIO_InitStruct); 
 
     // Configure TIM8 pins for alternate function mode with push-pull output
-    GPIO_InitStruct.Pin = GPIO_PIN_0;
+    GPIO_InitStruct.Pin = GPIO_PIN_14 | GPIO_PIN_0;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Alternate = GPIO_AF3_TIM8;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-    // Configure additional TIM8 pin for PWM output
-    GPIO_InitStruct.Pin = GPIO_PIN_14;
+    GPIO_InitStruct.Alternate = GPIO_AF3_TIM8; 
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);     
+
+    
 
     // Set TIM1 and TIM8 dead time values to 50 ns
     TIM_MasterConfigTypeDef sMasterConfig = {0};
@@ -747,8 +749,8 @@ void configure8PWM(void)
     HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, LL_TIM_CHANNEL_CH3N);
 
     // Configure PWM output on TIM8 channel 1 and additional channel
-    HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC, LL_TIM_CHANNEL_CH2N);
     HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC, LL_TIM_CHANNEL_CH2);
+    HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC, LL_TIM_CHANNEL_CH2N);
 
     // Start TIM1 and TIM8 PWM outputs
     HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH1);
@@ -757,8 +759,8 @@ void configure8PWM(void)
     HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH2N);
     HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH3);
     HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH3N);
-    HAL_TIM_PWM_Start(&htim8, LL_TIM_CHANNEL_CH2N);
     HAL_TIM_PWM_Start(&htim8, LL_TIM_CHANNEL_CH2);
+    HAL_TIM_PWM_Start(&htim8, LL_TIM_CHANNEL_CH2N);
 }
 
 
