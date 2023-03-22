@@ -664,33 +664,38 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
 #include "stm32g4xx_hal_tim.h"
 #include "stm32g4xx_hal_tim_ex.h"
 
+// Declare timer handles for TIM1 and TIM8
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim8;
 
+// Function to configure PWM output on TIM1 channels 1-6 and TIM8 channel 1
 void configure8PWM(void)
 {
+    // Initialize HAL library
     HAL_Init();
 
+    // GPIO pin initialization struct
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
     // Enable clock for TIM1 and TIM8
     __HAL_RCC_TIM1_CLK_ENABLE();
     __HAL_RCC_TIM8_CLK_ENABLE();
 
-    // Configure TIM1 pins
+    // Configure TIM1 pins for alternate function mode with push-pull output
     GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Alternate = GPIO_AF6_TIM1; 
     HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-    // Configure TIM8 pins
+    // Configure TIM8 pins for alternate function mode with push-pull output
     GPIO_InitStruct.Pin = GPIO_PIN_0;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Alternate = GPIO_AF3_TIM8;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+    // Configure additional TIM8 pin for PWM output
     GPIO_InitStruct.Pin = GPIO_PIN_14;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
@@ -725,42 +730,35 @@ void configure8PWM(void)
     sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
     sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
     HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig);
-    HAL_TIMEx_ConfigBreakDeadTime(&htim8, &sBreakDeadTimeConfig);
+    
 
-    // Configure PWM mode for TIM1 channels 1-6
+
+    // Configure TIM1 channels 1-6 for PWM output
     TIM_OC_InitTypeDef sConfigOC = {0};
     sConfigOC.OCMode = TIM_OCMODE_PWM1;
     sConfigOC.Pulse = 0;
     sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, LL_TIM_CHANNEL_CH1);
+    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, LL_TIM_CHANNEL_CH1N);
+    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, LL_TIM_CHANNEL_CH2);
+    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, LL_TIM_CHANNEL_CH2N);
+    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, LL_TIM_CHANNEL_CH3);
+    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, LL_TIM_CHANNEL_CH3N);
 
-    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_1);
-    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_2);
-    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_3);
-    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_4);
-    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_5);
-    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_6);
+    // Configure PWM output on TIM8 channel 1 and additional channel
+    HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC, LL_TIM_CHANNEL_CH2N);
+    HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC, LL_TIM_CHANNEL_CH2);
 
-    // Configure PWM mode for TIM8 channel 1
-    sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    sConfigOC.Pulse = 0;
-    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
-
-    HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC, TIM_CHANNEL_1);
-
-    // Start TIM1 and TIM8 PWM signals
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_5);
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_6);
-    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);
-
-
+    // Start TIM1 and TIM8 PWM outputs
+    HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH1);
+    HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH1N);
+    HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH2);
+    HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH2N);
+    HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH3);
+    HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH3N);
+    HAL_TIM_PWM_Start(&htim8, LL_TIM_CHANNEL_CH2N);
+    HAL_TIM_PWM_Start(&htim8, LL_TIM_CHANNEL_CH2);
 }
 
 
