@@ -16,6 +16,8 @@
 #define _ERROR_6PWM -1
 
 // 8pwm parameters
+#define _HAS_CORDIC 0
+#define _USE_CORDIC 0 
 #define _HARDWARE_8PWM 1
 #define _SOFTWARE_8PWM 0
 #define _ERROR_8PWM -1
