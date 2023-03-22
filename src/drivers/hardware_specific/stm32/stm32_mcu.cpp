@@ -658,65 +658,117 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
 
 
 
-// function setting the high pwm frequency to the supplied pins
-// - Stepper motor - 8PWM setting
-// - hardware specific
-void* _configure8PWM(long pwm_frequency, float dead_zone, const int pin1A, const int pin1B, const int pin2A, const int pin2B,
-                     const int pin3A, const int pin3B, const int pin4A, const int pin4B)
+
+#include "stm32g4xx_hal.h"
+#include "stm32g4xx_hal_gpio.h"
+#include "stm32g4xx_hal_tim.h"
+#include "stm32g4xx_hal_tim_ex.h"
+
+TIM_HandleTypeDef htim1;
+TIM_HandleTypeDef htim8;
+
+void configure8PWM(void)
 {
-  if (numTimerPinsUsed+8 > SIMPLEFOC_STM32_MAX_PINTIMERSUSED) {
-    SIMPLEFOC_DEBUG("STM32-DRV: ERR: too many pins used");
-    return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
-  }
-  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
-  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
-  // center-aligned frequency is uses two periods
-  pwm_frequency *=2;
+  
+    HAL_Init();
 
-  // find configuration
-  int pins[8] = { pin1A, pin1B, pin2A, pin2B, pin3A, pin3B, pin4A, pin4B };
-  PinMap* pinTimers[8] = { NP, NP, NP, NP, NP, NP, NP, NP };
-  int score = findBestTimerCombination(8, pins, pinTimers);
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    
+    // Enable clock for TIM1 and TIM8
+    __HAL_RCC_TIM1_CLK_ENABLE();
+    __HAL_RCC_TIM8_CLK_ENABLE();
+    
+    // Configure TIM1 pins
+    GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_7 | GPIO_PIN_9 | GPIO_PIN_6 | GPIO_PIN_0 | GPIO_PIN_1;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Alternate = GPIO_AF6_TIM1;  
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    
+    // Configure TIM8 pins
+    GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Alternate = GPIO_AF3_TIM8;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    
+    // Set TIM1 and TIM8 dead time values to 50 ns
+    TIM_MasterConfigTypeDef sMasterConfig = {0};
+    TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
+    htim1.Instance = TIM1;
+    htim1.Init.Prescaler = 0;
+    htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim1.Init.Period = 100;
+    htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    htim1.Init.RepetitionCounter= 0;
+    HAL_TIM_PWM_Init(&htim1);
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
+    sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
+    sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
+    sBreakDeadTimeConfig.DeadTime = 50;
+    sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
+    sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
+    sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
+    HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig);
+    HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig);
 
-  STM32DriverParams* params;
-  // configure accordingly
-  if (score<0)
-    params = (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
-  else if (score<10)  // hardware pwm
-    params = _initHardware8PWMInterface(pwm_frequency, dead_zone, pinTimers[0], pinTimers[1], pinTimers[2], pinTimers[3], pinTimers[4], pinTimers[5], pinTimers[6], pinTimers[7]);
-  else {  // software pwm
-    HardwareTimer* HT1 = _initPinPWMHigh(pwm_frequency, pinTimers[0]);
-    HardwareTimer* HT2 = _initPinPWMLow(pwm_frequency, pinTimers[1]);
-    HardwareTimer* HT3 = _initPinPWMHigh(pwm_frequency, pinTimers[2]);
-    HardwareTimer* HT4 = _initPinPWMLow(pwm_frequency, pinTimers[3]);
-    HardwareTimer* HT5 = _initPinPWMHigh(pwm_frequency, pinTimers[4]);
-    HardwareTimer* HT6 = _initPinPWMLow(pwm_frequency, pinTimers[5]);
-    HardwareTimer* HT7 = _initPinPWMHigh(pwm_frequency, pinTimers[6]);
-    HardwareTimer* HT8 = _initPinPWMLow(pwm_frequency, pinTimers[7]);
-    uint32_t channel1 = STM_PIN_CHANNEL(pinTimers[0]->function);
-    uint32_t channel2 = STM_PIN_CHANNEL(pinTimers[1]->function);
-    uint32_t channel3 = STM_PIN_CHANNEL(pinTimers[2]->function);
-    uint32_t channel4 = STM_PIN_CHANNEL(pinTimers[3]->function);
-    uint32_t channel5 = STM_PIN_CHANNEL(pinTimers[4]->function);
-    uint32_t channel6 = STM_PIN_CHANNEL(pinTimers[5]->function);
-    uint32_t channel7 = STM_PIN_CHANNEL(pinTimers[6]->function);
-    uint32_t channel8 = STM_PIN_CHANNEL(pinTimers[7]->function);
-    params = new STM32DriverParams {
-     
- .timers = { HT1, HT2, HT3, HT4, HT5, HT6, HT7, HT8},
-      .channels = { channel1, channel2, channel3, channel4, channel5, channel6, channel7, channel8 },
-      .pwm_frequency = pwm_frequency,
-      .dead_zone = dead_zone,
-      .interface_type = _SOFTWARE_8PWM
-    };
-  }
-  if (score>=0) {
-    for (int i=0; i<8; i++)
-      timerPinsUsed[numTimerPinsUsed++] = pinTimers[i];
-    _alignTimersNew();
-  }
-  return params; // success
-}
+      // Continue with configuring TIM8
+    htim8.Instance = TIM8;
+    htim8.Init.Prescaler = 0;
+    htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim8.Init.Period = 100;
+    htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    htim8.Init.RepetitionCounter= 0;
+    HAL_TIM_PWM_Init(&htim8);
+    HAL_TIMEx_ConfigBreakDeadTime(&htim8, &sBreakDeadTimeConfig);
+    HAL_TIMEx_MasterConfigSynchronization(&htim8, &sMasterConfig);
+
+            // Configure TIM1 and TIM8 PWM channels
+        TIM_OC_InitTypeDef sConfigOC = {0};
+        sConfigOC.OCMode = TIM_OCMODE_PWM1;
+        sConfigOC.Pulse = 0;
+        sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+        sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+        sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+        sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+        sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+
+        // TIM1 Channel 1
+        HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_1);
+        HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+
+        // TIM1 Channel 2
+        HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_2);
+        HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+
+        // TIM1 Channel 3
+        HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_3);
+        HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
+
+        // TIM1 Channel 4
+        HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_4);
+        HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
+
+        // TIM1 Channel 5
+        HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_5);
+        HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_5);
+
+        // TIM1 Channel 6
+        HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_6);
+        HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_6);
+
+        // TIM8 Channel 1
+        HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC, TIM_CHANNEL_1);
+        HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);
+
+        // TIM8 Channel 2
+        HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC, TIM_CHANNEL_2);
+        HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_2);
+        }
 
 
 
