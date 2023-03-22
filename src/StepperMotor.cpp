@@ -399,7 +399,11 @@ float wrap_to_1(float x) {
     }
     return x;
 }
-
+/// @runger();
+/// @brief 
+/// @param Uq 
+/// @param Ud 
+/// @param angle_el 
 void StepperMotor::setPhaseVoltageCORDIC(float Uq, float Ud, float angle_el) {
   // Sinusoidal PWM modulation
   // Inverse Park transformation
@@ -415,20 +419,20 @@ cordic_cosine = CORDIC->RDATA;
 value_f32_sine = (float)cordic_sine/(float)0x80000000;
 value_f32_cosine = (float)cordic_cosine/(float)0x80000000;
 
-if (angle < 0){
+if (angle_el < 0){
 value_f32_sine = wrap_to_1(value_f32_sine);
 value_f32_sine = value_f32_sine * -1;
 }
 
-if (angle > 0){
+if (angle_el > 0){
 value_f32_sine = wrap_to_1(value_f32_sine);
 }
 
 value_f32_cosine = wrap_to_1(value_f32_cosine);
 
   // Inverse park transform
-  Ualpha =  value_f32_cosine * Ud - cordic_sine * Uq;  // -sin(angle) * Uq;
-  Ubeta =  cordic_sine * Ud + value_f32_cosine * Uq;    //  cos(angle) * Uq;
+  Ualpha =  value_f32_cosine * Ud - value_f32_sine * Uq;  // -sin(angle) * Uq;
+  Ubeta =  value_f32_sine * Ud + value_f32_cosine * Uq;    //  cos(angle) * Uq;
 
   // set the voltages in hardware
   driver->setPwm(Ualpha, Ubeta);
