@@ -768,7 +768,8 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
     HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC, LL_TIM_CHANNEL_CH2);
     HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC, LL_TIM_CHANNEL_CH2N);
 
-     // Enable PWM outputs
+
+        // Enable PWM outputs
         HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH1);
         HAL_TIMEx_PWMN_Start(&htim1, LL_TIM_CHANNEL_CH1N);
 
@@ -780,7 +781,7 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
 
         HAL_TIM_PWM_Start(&htim8, LL_TIM_CHANNEL_CH2);
         HAL_TIMEx_PWMN_Start(&htim8, LL_TIM_CHANNEL_CH2N);
-		
+    
 
     // Configure TIM1 for PWM output
     TIM1->CR1 |= TIM_CR1_ARPE; // Auto-reload preload enable
@@ -817,8 +818,6 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
 
 }
 
-
-
 /*
 
 Yes, it makes sense to have these two parts next to each other. The first part of the code initializes and starts the PWM outputs of the timers (TIM1 and TIM8),
@@ -832,6 +831,8 @@ Furthermore, the second part of the code relies on the first part to have starte
 the code next to each other to ensure that the timers are properly initialized and configured for PWM output.
 
 */
+
+
 
 
         
@@ -903,56 +904,62 @@ public:
     EightPWM(int period, TIM_HandleTypeDef tim1_handle, TIM_HandleTypeDef tim8_handle)
     : period(period), tim1_handle(tim1_handle), tim8_handle(tim8_handle) {}
 
-    void writeDutyCycle(float duty_cycle1A_h1, float duty_cycle1A_h2, float duty_cycle1B_h1, float duty_cycle1B_h2,
-                      float duty_cycle2A_h1, float duty_cycle2A_h2, float duty_cycle2B_h1, float duty_cycle2B_h2) {
+   void writeDutyCycle(float duty_cycle1_h1, float duty_cycle1_h2, float duty_cycle2_h1, float duty_cycle2_h2,
+                    float duty_cycle3_h1, float duty_cycle3_h2, float duty_cycle4_h1, float duty_cycle4_h2) {
 
-        // Scale duty cycles to the PWM period
-        uint16_t duty1A_h1 = (uint16_t)(duty_cycle1A_h1 * period);
-        uint16_t duty1A_h2 = (uint16_t)(duty_cycle1A_h2 * period);
-        uint16_t duty1B_h1 = (uint16_t)(duty_cycle1B_h1 * period);
-        uint16_t duty1B_h2 = (uint16_t)(duty_cycle1B_h2 * period);
-        uint16_t duty2A_h1 = (uint16_t)(duty_cycle2A_h1 * period);
-        uint16_t duty2A_h2 = (uint16_t)(duty_cycle2A_h2 * period);
-        uint16_t duty2B_h1 = (uint16_t)(duty_cycle2B_h1 * period);
-        uint16_t duty2B_h2 = (uint16_t)(duty_cycle2B_h2 * period);
+    // Scale duty cycles to the PWM period
+    uint16_t duty1_h1 = (uint16_t)(duty_cycle1_h1 * period);
+    uint16_t duty1_h2 = (uint16_t)(duty_cycle1_h2 * period);
+    uint16_t duty2_h1 = (uint16_t)(duty_cycle2_h1 * period);
+    uint16_t duty2_h2 = (uint16_t)(duty_cycle2_h2 * period);
+    uint16_t duty3_h1 = (uint16_t)(duty_cycle3_h1 * period);
+    uint16_t duty3_h2 = (uint16_t)(duty_cycle3_h2 * period);
+    uint16_t duty4_h1 = (uint16_t)(duty_cycle4_h1 * period);
+    uint16_t duty4_h2 = (uint16_t)(duty_cycle4_h2 * period);
 
-        // Set duty cycles for TIM1 channels
-        __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH1, duty1A_h1);
-        __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH1N, duty1A_h2);
-        __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH2, duty1B_h1);
-        __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH2N, duty1B_h2);
-        __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH3, duty2A_h1);
-        __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH3N, duty2A_h2);
+    // Set duty cycles for half-bridge driver 1
+    __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH1, duty1_h1);
+    __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH1N, duty1_h2);
 
-        // Set duty cycles for TIM8 channels
-        __HAL_TIM_SET_COMPARE(&tim8_handle, LL_TIM_CHANNEL_CH2, duty2B_h1);
-        __HAL_TIM_SET_COMPARE(&tim8_handle, LL_TIM_CHANNEL_CH2N, duty2B_h2);
+    // Set duty cycles for half-bridge driver 2
+    __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH2, duty2_h1);
+    __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH2N, duty2_h2);
 
-        // Enable PWM outputs
-        HAL_TIM_PWM_Start(&tim1_handle, LL_TIM_CHANNEL_CH1);
-        HAL_TIMEx_PWMN_Start(&tim1_handle, LL_TIM_CHANNEL_CH1);
-        HAL_TIM_PWM_Start(&tim1_handle, LL_TIM_CHANNEL_CH1N);
-        HAL_TIMEx_PWMN_Start(&tim1_handle, LL_TIM_CHANNEL_CH1N);
-        HAL_TIM_PWM_Start(&tim1_handle, LL_TIM_CHANNEL_CH2);
-        HAL_TIMEx_PWMN_Start(&tim1_handle, LL_TIM_CHANNEL_CH2);
-        HAL_TIM_PWM_Start(&tim1_handle, LL_TIM_CHANNEL_CH2N);
-        HAL_TIMEx_PWMN_Start(&tim1_handle, LL_TIM_CHANNEL_CH2N);
-        HAL_TIM_PWM_Start(&tim1_handle, LL_TIM_CHANNEL_CH3);
-        HAL_TIMEx_PWMN_Start(&tim1_handle, LL_TIM_CHANNEL_CH3);
-        HAL_TIM_PWM_Start(&tim1_handle, LL_TIM_CHANNEL_CH3N);
-        HAL_TIMEx_PWMN_Start(&tim1_handle, LL_TIM_CHANNEL_CH3N);
-        HAL_TIM_PWM_Start(&tim8_handle, LL_TIM_CHANNEL_CH2);
-        HAL_TIMEx_PWMN_Start(&tim8_handle, LL_TIM_CHANNEL_CH2);
-        HAL_TIM_PWM_Start(&tim8_handle, LL_TIM_CHANNEL_CH2N);
-        HAL_TIMEx_PWMN_Start(&tim8_handle, LL_TIM_CHANNEL_CH2N);
-    }
+    // Set duty cycles for half-bridge driver 3
+    __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH3, duty3_h1);
+    __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH3N, duty3_h2);
+
+    // Set duty cycles for half-bridge driver 4
+    __HAL_TIM_SET_COMPARE(&tim8_handle, LL_TIM_CHANNEL_CH2, duty4_h1);
+    __HAL_TIM_SET_COMPARE(&tim8_handle, LL_TIM_CHANNEL_CH2N, duty4_h2);
+}
 
 private:
     int period;
     TIM_HandleTypeDef tim1_handle;
     TIM_HandleTypeDef tim8_handle;
-};
 
+/*
+
+Yes, you can call the "__HAL_TIM_SET_COMPARE" function without calling "HAL_TIM_PWM_Start" 
+and "HAL_TIMEx_PWMN_Start" functions every time, as long as the timer 
+and channel configuration have been properly set up beforehand.
+
+The "__HAL_TIM_SET_COMPARE" function is used to set the compare value for a specific 
+timer channel. This function does not start the PWM output on the channel, it simply 
+sets the compare value. Once the compare value is set, the timer will automatically 
+generate PWM output on the corresponding channel when the timer counter reaches the 
+compare value.
+
+Therefore, if you have already set up the timer and channel configuration and called 
+the "HAL_TIM_PWM_Start" and "HAL_TIMEx_PWMN_Start" functions once, you do not need to call 
+them again every time you update the compare value using "__HAL_TIM_SET_COMPARE". You can 
+simply call "__HAL_TIM_SET_COMPARE" to update the compare value and the timer will generate the
+ PWM output automatically on the corresponding channel.
+*/
+
+
+};
 
 // Configuring PWM frequency, resolution and alignment
 // - BLDC driver - 6PWM setting
