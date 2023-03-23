@@ -686,7 +686,7 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
       GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
       GPIO_InitStruct.Pull = GPIO_NOPULL;
       GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-      GPIO_InitStruct.Alternate = GPIO_AF6_TIM1;
+      GPIO_InitStruct.Alternate = GPIO_AF2_TIM1;
       HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
             // Configure PA14 and PB0 as TIM8 channels
@@ -696,18 +696,18 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
       GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
       GPIO_InitStruct.Pull = GPIO_NOPULL;
       GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-      GPIO_InitStruct.Alternate = GPIO_AF3_TIM8;
+      GPIO_InitStruct.Alternate = GPIO_AF5_TIM8;
       HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
       GPIO_InitStruct.Pin = GPIO_PIN_0;
       GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
       GPIO_InitStruct.Pull = GPIO_NOPULL;
       GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-      GPIO_InitStruct.Alternate = GPIO_AF3_TIM8;
+      GPIO_InitStruct.Alternate = GPIO_AF4_TIM8;
       HAL_GPIO_Init(GPIOB, &GPIO_InitStruct); 
 
     
 
-    // Set TIM1 and TIM8 dead time values to 50 ns
+    //Set initial values
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
     htim1.Instance = TIM1;
@@ -730,6 +730,8 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
     sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
     HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig);
 
+
+    // Set TIM1 dead time values to 50 ns
     sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
     sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
     sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
@@ -750,23 +752,30 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
     sBreakDeadTimeConfigTIM8.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
     HAL_TIMEx_ConfigBreakDeadTime(&htim8, &sBreakDeadTimeConfigTIM8);
 
+      // Configure TIM1 channels 1-6 for PWM output
+      TIM_OC_InitTypeDef sConfigOC1 = {0};
+      sConfigOC1.OCMode = TIM_OCMODE_PWM1;
+      sConfigOC1.Pulse = 0;
+      sConfigOC1.OCPolarity = TIM_OCPOLARITY_HIGH;
+      sConfigOC1.OCFastMode = TIM_OCFAST_DISABLE;
 
-    // Configure TIM1 channels 1-6 for PWM output
-    TIM_OC_InitTypeDef sConfigOC = {0};
-    sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    sConfigOC.Pulse = 0;
-    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, LL_TIM_CHANNEL_CH1);
-    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, LL_TIM_CHANNEL_CH1N);
-    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, LL_TIM_CHANNEL_CH2);
-    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, LL_TIM_CHANNEL_CH2N);
-    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, LL_TIM_CHANNEL_CH3);
-    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, LL_TIM_CHANNEL_CH3N);
+      TIM_OC_InitTypeDef sConfigOC2 = {0};
+      sConfigOC2.OCMode = TIM_OCMODE_PWM2;
+      sConfigOC2.Pulse = 0;
+      sConfigOC2.OCPolarity = TIM_OCPOLARITY_HIGH;
+      sConfigOC2.OCFastMode = TIM_OCFAST_DISABLE;
 
-    // Configure PWM output on TIM8 channel 1 and additional channel
-    HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC, LL_TIM_CHANNEL_CH2);
-    HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC, LL_TIM_CHANNEL_CH2N);
+      HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC1, LL_TIM_CHANNEL_CH1);
+      HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC2, LL_TIM_CHANNEL_CH1N);
+      HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC1, LL_TIM_CHANNEL_CH2);
+      HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC2, LL_TIM_CHANNEL_CH2N);
+      HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC1, LL_TIM_CHANNEL_CH3);
+      HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC2, LL_TIM_CHANNEL_CH3N);
+
+      // Configure PWM output on TIM8 channel 1 and additional channel
+      HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC1, LL_TIM_CHANNEL_CH2);
+      HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC2, LL_TIM_CHANNEL_CH2N);
+
 
 
         // Enable PWM outputs
@@ -883,28 +892,15 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
 
 
 
-class EightPWMParams {
-public:
-    int period;
-    TIM_HandleTypeDef tim1_handle;
-    TIM_HandleTypeDef tim8_handle;
-    
-    // Public members and methods go here
-};
-
-struct EightPWMConfig {
-    uint16_t freq;  // PWM frequency in Hz
-    float duty_cycle_max;  // Maximum duty cycle as a fraction of the period (0.0 to 1.0)
-};
 
 
-       // Scale duty cycles to the PWM period
-       class EightPWM {
-public:
-    EightPWM(int period, TIM_HandleTypeDef tim1_handle, TIM_HandleTypeDef tim8_handle)
-    : period(period), tim1_handle(tim1_handle), tim8_handle(tim8_handle) {}
 
-   void writeDutyCycle(float duty_cycle1_h1, float duty_cycle1_h2, float duty_cycle2_h1, float duty_cycle2_h2,
+
+
+   int period;
+       
+
+   void _writeDutyCycle8PWM(float duty_cycle1_h1, float duty_cycle1_h2, float duty_cycle2_h1, float duty_cycle2_h2,
                     float duty_cycle3_h1, float duty_cycle3_h2, float duty_cycle4_h1, float duty_cycle4_h2) {
 
     // Scale duty cycles to the PWM period
@@ -918,26 +914,26 @@ public:
     uint16_t duty4_h2 = (uint16_t)(duty_cycle4_h2 * period);
 
     // Set duty cycles for half-bridge driver 1
-    __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH1, duty1_h1);
-    __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH1N, duty1_h2);
+    __HAL_TIM_SET_COMPARE(&htim1, LL_TIM_CHANNEL_CH1, duty1_h1);
+    __HAL_TIM_SET_COMPARE(&htim1, LL_TIM_CHANNEL_CH1N, duty1_h2);
 
     // Set duty cycles for half-bridge driver 2
-    __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH2, duty2_h1);
-    __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH2N, duty2_h2);
+    __HAL_TIM_SET_COMPARE(&htim1, LL_TIM_CHANNEL_CH2, duty2_h1);
+    __HAL_TIM_SET_COMPARE(&htim1, LL_TIM_CHANNEL_CH2N, duty2_h2);
 
     // Set duty cycles for half-bridge driver 3
-    __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH3, duty3_h1);
-    __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH3N, duty3_h2);
+    __HAL_TIM_SET_COMPARE(&htim1, LL_TIM_CHANNEL_CH3, duty3_h1);
+    __HAL_TIM_SET_COMPARE(&htim1, LL_TIM_CHANNEL_CH3N, duty3_h2);
 
     // Set duty cycles for half-bridge driver 4
-    __HAL_TIM_SET_COMPARE(&tim8_handle, LL_TIM_CHANNEL_CH2, duty4_h1);
-    __HAL_TIM_SET_COMPARE(&tim8_handle, LL_TIM_CHANNEL_CH2N, duty4_h2);
+    __HAL_TIM_SET_COMPARE(&htim8, LL_TIM_CHANNEL_CH2, duty4_h1);
+    __HAL_TIM_SET_COMPARE(&htim8, LL_TIM_CHANNEL_CH2N, duty4_h2);
+
+
 }
 
-private:
-    int period;
-    TIM_HandleTypeDef tim1_handle;
-    TIM_HandleTypeDef tim8_handle;
+
+  
 
 /*
 
@@ -959,7 +955,7 @@ simply call "__HAL_TIM_SET_COMPARE" to update the compare value and the timer wi
 */
 
 
-};
+
 
 // Configuring PWM frequency, resolution and alignment
 // - BLDC driver - 6PWM setting
