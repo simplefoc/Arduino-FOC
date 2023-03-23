@@ -691,13 +691,13 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
       GPIO_InitStruct.Alternate = GPIO_AF6_TIM1;
       HAL_GPIO_Init(GPIOE, &GPIO_InitStruct); 
 
-    // Configure TIM8 pins for alternate function mode with push-pull output
-    GPIO_InitStruct.Pin = GPIO_PIN_14 | GPIO_PIN_0;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Alternate = GPIO_AF3_TIM8; 
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);     
+      // Configure TIM8 pins for alternate function mode with push-pull output
+      GPIO_InitStruct.Pin = GPIO_PIN_14 | GPIO_PIN_0;
+      GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+      GPIO_InitStruct.Pull = GPIO_NOPULL;
+      GPIO_InitStruct.Alternate = GPIO_AF3_TIM8; 
+      HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+      HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);     
 
     
 
@@ -774,26 +774,26 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
 
 
 
-TIM1->CR1 |= TIM_CR1_ARPE; // Auto-reload preload enable
-TIM1->CR1 &= ~TIM_CR1_DIR; // Up counting mode
-TIM1->CCMR1 |= TIM_CCMR1_OC1PE | TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2; // PWM mode 1 on OC1
-TIM1->CCER |= TIM_CCER_CC1E; // Enable output on OC1
-TIM1->PSC = 0; // Set prescaler to 0
-TIM1->ARR = (SystemCoreClock / (38000 * 2)) - 1; // Set auto-reload value for 38kHz frequency
-TIM1->CCR1 = (SystemCoreClock / (38000 * 2)) / 2; // Set duty cycle to 50%
-TIM1->BDTR |= TIM_BDTR_MOE; // Main output enable
+    TIM1->CR1 |= TIM_CR1_ARPE; // Auto-reload preload enable
+    TIM1->CR1 &= ~TIM_CR1_DIR; // Up counting mode
+    TIM1->CCMR1 |= TIM_CCMR1_OC1PE | TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2; // PWM mode 1 on OC1
+    TIM1->CCER |= TIM_CCER_CC1E; // Enable output on OC1
+    TIM1->PSC = 0; // Set prescaler to 0
+    TIM1->ARR = (SystemCoreClock / (38000 * 2)) - 1; // Set auto-reload value for 38kHz frequency
+    TIM1->CCR1 = (SystemCoreClock / (38000 * 2)) / 2; // Set duty cycle to 50%
+    TIM1->BDTR |= TIM_BDTR_MOE; // Main output enable
 
-TIM8->CR1 |= TIM_CR1_ARPE; // Auto-reload preload enable
-TIM8->CR1 &= ~TIM_CR1_DIR; // Up counting mode
-TIM8->CCMR1 |= TIM_CCMR1_OC1PE | TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2; // PWM mode 1 on OC1
-TIM8->CCER |= TIM_CCER_CC1E; // Enable output on OC1
-TIM8->PSC = 0; // Set prescaler to 0
-TIM8->ARR = (SystemCoreClock / (38000 * 2)) - 1; // Set auto-reload value for 38kHz frequency
-TIM8->CCR1 = (SystemCoreClock / (38000 * 2)) / 2; // Set duty cycle to 50%
-TIM8->BDTR |= TIM_BDTR_MOE; // Main output enable
+    TIM8->CR1 |= TIM_CR1_ARPE; // Auto-reload preload enable
+    TIM8->CR1 &= ~TIM_CR1_DIR; // Up counting mode
+    TIM8->CCMR1 |= TIM_CCMR1_OC1PE | TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2; // PWM mode 1 on OC1
+    TIM8->CCER |= TIM_CCER_CC1E; // Enable output on OC1
+    TIM8->PSC = 0; // Set prescaler to 0
+    TIM8->ARR = (SystemCoreClock / (38000 * 2)) - 1; // Set auto-reload value for 38kHz frequency
+    TIM8->CCR1 = (SystemCoreClock / (38000 * 2)) / 2; // Set duty cycle to 50%
+    TIM8->BDTR |= TIM_BDTR_MOE; // Main output enable
 
-// Set initial dead time value
-TIM1->BDTR |= (uint32_t)(50 / 11.9);
+    // Set initial dead time value
+    TIM1->BDTR |= (uint32_t)(50 / 11.9);
 
     
    return NULL;
