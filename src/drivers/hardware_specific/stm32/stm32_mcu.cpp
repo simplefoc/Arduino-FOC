@@ -768,15 +768,19 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
     HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC, LL_TIM_CHANNEL_CH2);
     HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC, LL_TIM_CHANNEL_CH2N);
 
-    // Start TIM1 and TIM8 PWM outputs
-    HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH1);
-    HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH1N);
-    HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH2);
-    HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH2N);
-    HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH3);
-    HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH3N);
-    HAL_TIM_PWM_Start(&htim8, LL_TIM_CHANNEL_CH2);
-    HAL_TIM_PWM_Start(&htim8, LL_TIM_CHANNEL_CH2N);
+     // Enable PWM outputs
+        HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH1);
+        HAL_TIMEx_PWMN_Start(&htim1, LL_TIM_CHANNEL_CH1N);
+
+        HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH2);
+        HAL_TIMEx_PWMN_Start(&htim1, LL_TIM_CHANNEL_CH2N);
+
+        HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH3);
+        HAL_TIMEx_PWMN_Start(&htim1, LL_TIM_CHANNEL_CH3N);
+
+        HAL_TIM_PWM_Start(&htim8, LL_TIM_CHANNEL_CH2);
+        HAL_TIMEx_PWMN_Start(&htim8, LL_TIM_CHANNEL_CH2N);
+		
 
     // Configure TIM1 for PWM output
     TIM1->CR1 |= TIM_CR1_ARPE; // Auto-reload preload enable
