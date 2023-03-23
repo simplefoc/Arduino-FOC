@@ -778,31 +778,37 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
     HAL_TIM_PWM_Start(&htim8, LL_TIM_CHANNEL_CH2);
     HAL_TIM_PWM_Start(&htim8, LL_TIM_CHANNEL_CH2N);
 
-
-
+    // Configure TIM1 for PWM output
     TIM1->CR1 |= TIM_CR1_ARPE; // Auto-reload preload enable
     TIM1->CR1 &= ~TIM_CR1_DIR; // Up counting mode
     TIM1->CCMR1 |= TIM_CCMR1_OC1PE | TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2; // PWM mode 1 on OC1
-    TIM1->CCER |= TIM_CCER_CC1E; // Enable output on OC1
+    TIM1->CCMR2 |= TIM_CCMR2_OC3PE | TIM_CCMR2_OC4PE | TIM_CCMR2_OC3M_1 | TIM_CCMR2_OC3M_2 | TIM_CCMR2_OC4M_1 | TIM_CCMR2_OC4M_2; // PWM mode 1 on OC3 and OC4
+    TIM1->CCER |= TIM_CCER_CC1E | TIM_CCER_CC3E | TIM_CCER_CC4E; // Enable output on OC1, OC3, and OC4
     TIM1->PSC = 0; // Set prescaler to 0
     TIM1->ARR = (SystemCoreClock / (38000 * 2)) - 1; // Set auto-reload value for 38kHz frequency
-    TIM1->CCR1 = (SystemCoreClock / (38000 * 2)) / 2; // Set duty cycle to 50%
+    TIM1->CCR1 = 0; // Set duty cycle to 0%
+    TIM1->CCR3 = 0; // Set duty cycle to 0%
+    TIM1->CCR4 = 0; // Set duty cycle to 0%
     TIM1->BDTR |= TIM_BDTR_MOE; // Main output enable
 
+    // Configure TIM8 for PWM output
     TIM8->CR1 |= TIM_CR1_ARPE; // Auto-reload preload enable
     TIM8->CR1 &= ~TIM_CR1_DIR; // Up counting mode
     TIM8->CCMR1 |= TIM_CCMR1_OC1PE | TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2; // PWM mode 1 on OC1
     TIM8->CCER |= TIM_CCER_CC1E; // Enable output on OC1
     TIM8->PSC = 0; // Set prescaler to 0
     TIM8->ARR = (SystemCoreClock / (38000 * 2)) - 1; // Set auto-reload value for 38kHz frequency
-    TIM8->CCR1 = (SystemCoreClock / (38000 * 2)) / 2; // Set duty cycle to 50%
+    TIM8->CCR1 = 0; // Set duty cycle to 0%
     TIM8->BDTR |= TIM_BDTR_MOE; // Main output enable
 
-    // Set initial dead time value
-    TIM1->BDTR |= (uint32_t)(50 / 11.9);
+    // Start TIM1 and TIM8 PWM outputs
+    TIM1->EGR |= TIM_EGR_UG; // Generate update event to load new settings
+    TIM8->EGR |= TIM_EGR_UG; // Generate update event to load new settings
+    TIM1->CR1 |= TIM_CR1_CEN; // Enable TIM1 counter
+    TIM8->CR1 |= TIM_CR1_CEN; // Enable TIM8 counter
 
-    
-   return NULL;
+        
+      return NULL;
 
 
 }
