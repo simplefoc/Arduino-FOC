@@ -815,7 +815,19 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
 
 
 
+/*
 
+Yes, it makes sense to have these two parts next to each other. The first part of the code initializes and starts the PWM outputs of the timers (TIM1 and TIM8),
+ while the second part of the code configures the timers for PWM output and sets their various parameters, such as duty cycle, frequency, and so on.
+
+By having these two parts of the code next to each other, the programmer can ensure that the timers are properly configured and started before any other code is executed. 
+This can be important in systems where the timing of signals is critical, as it can prevent race conditions and other timing issues that might arise if the timers were not properly configured 
+and started before other code began executing.
+
+Furthermore, the second part of the code relies on the first part to have started the timers before it can properly configure them. Therefore, it is logical to have these two parts of 
+the code next to each other to ensure that the timers are properly initialized and configured for PWM output.
+
+*/
 
 
         
