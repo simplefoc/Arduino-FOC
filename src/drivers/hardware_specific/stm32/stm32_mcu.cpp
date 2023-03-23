@@ -713,7 +713,7 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
     htim1.Instance = TIM1;
     htim1.Init.Prescaler = 0;
     htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim1.Init.Period = 255;
+    htim1.Init.Period = 65536;
     htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim1.Init.RepetitionCounter = 0;
     HAL_TIM_PWM_Init(&htim1);
@@ -721,7 +721,7 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
     htim8.Instance = TIM8;
     htim8.Init.Prescaler = 0;
     htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim8.Init.Period = 255;
+    htim8.Init.Period = 65536;
     htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim8.Init.RepetitionCounter = 0;
     HAL_TIM_PWM_Init(&htim8);
