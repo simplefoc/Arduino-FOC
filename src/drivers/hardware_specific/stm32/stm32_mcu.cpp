@@ -657,22 +657,22 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
 }
 
 
-
-
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_hal_gpio.h"
 #include "stm32g4xx_hal_tim.h"
 #include "stm32g4xx_hal_tim_ex.h"
+
+
+
 
 // Declare timer handles for TIM1 and TIM8
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim8;
 
 // Function to configure PWM output on TIM1 channels 1-6 and TIM8 channel 1
-void configure8PWM(void)
-{
-    // Initialize HAL library
-    HAL_Init();
+void* _configure8PWM(long pwm_frequency, float dead_zone)
+{ 
+    
 
     // GPIO pin initialization struct
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -771,6 +771,34 @@ void configure8PWM(void)
     HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH3N);
     HAL_TIM_PWM_Start(&htim8, LL_TIM_CHANNEL_CH2);
     HAL_TIM_PWM_Start(&htim8, LL_TIM_CHANNEL_CH2N);
+
+
+
+TIM1->CR1 |= TIM_CR1_ARPE; // Auto-reload preload enable
+TIM1->CR1 &= ~TIM_CR1_DIR; // Up counting mode
+TIM1->CCMR1 |= TIM_CCMR1_OC1PE | TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2; // PWM mode 1 on OC1
+TIM1->CCER |= TIM_CCER_CC1E; // Enable output on OC1
+TIM1->PSC = 0; // Set prescaler to 0
+TIM1->ARR = (SystemCoreClock / (38000 * 2)) - 1; // Set auto-reload value for 38kHz frequency
+TIM1->CCR1 = (SystemCoreClock / (38000 * 2)) / 2; // Set duty cycle to 50%
+TIM1->BDTR |= TIM_BDTR_MOE; // Main output enable
+
+TIM8->CR1 |= TIM_CR1_ARPE; // Auto-reload preload enable
+TIM8->CR1 &= ~TIM_CR1_DIR; // Up counting mode
+TIM8->CCMR1 |= TIM_CCMR1_OC1PE | TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2; // PWM mode 1 on OC1
+TIM8->CCER |= TIM_CCER_CC1E; // Enable output on OC1
+TIM8->PSC = 0; // Set prescaler to 0
+TIM8->ARR = (SystemCoreClock / (38000 * 2)) - 1; // Set auto-reload value for 38kHz frequency
+TIM8->CCR1 = (SystemCoreClock / (38000 * 2)) / 2; // Set duty cycle to 50%
+TIM8->BDTR |= TIM_BDTR_MOE; // Main output enable
+
+// Set initial dead time value
+TIM1->BDTR |= (uint32_t)(50 / 11.9);
+
+    
+   return NULL;
+
+
 }
 
 
@@ -823,20 +851,79 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
   _setPwm(((STM32DriverParams*)params)->timers[3], ((STM32DriverParams*)params)->channels[3], _PWM_RANGE*dc_2b, _PWM_RESOLUTION);
 }
 
-// function setting the pwm duty cycle to the hardware
-// - Stepper motor - 8PWM setting
-// - hardware specific
-void _writeDutyCycle8PWM(float dc_1a, float dc_1b, float dc_2a, float dc_2b, float dc_3a, float dc_3b, float dc_4a, float dc_4b, void* params) {
-  // transform duty cycle from [0,1] to [0,4095]
-  _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _PWM_RANGE * dc_1a, _PWM_RESOLUTION);
-  _setPwm(((STM32DriverParams*)params)->timers[1], ((STM32DriverParams*)params)->channels[1], _PWM_RANGE * dc_1b, _PWM_RESOLUTION);
-  _setPwm(((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[2], _PWM_RANGE * dc_2a, _PWM_RESOLUTION);
-  _setPwm(((STM32DriverParams*)params)->timers[3], ((STM32DriverParams*)params)->channels[3], _PWM_RANGE * dc_2b, _PWM_RESOLUTION);
-  _setPwm(((STM32DriverParams*)params)->timers[4], ((STM32DriverParams*)params)->channels[4], _PWM_RANGE * dc_3a, _PWM_RESOLUTION);
-  _setPwm(((STM32DriverParams*)params)->timers[5], ((STM32DriverParams*)params)->channels[5], _PWM_RANGE * dc_3b, _PWM_RESOLUTION);
-  _setPwm(((STM32DriverParams*)params)->timers[6], ((STM32DriverParams*)params)->channels[6], _PWM_RANGE * dc_4a, _PWM_RESOLUTION);
-  _setPwm(((STM32DriverParams*)params)->timers[7], ((STM32DriverParams*)params)->channels[7], _PWM_RANGE * dc_4b, _PWM_RESOLUTION);
-}
+
+
+
+class EightPWMParams {
+public:
+    int period;
+    TIM_HandleTypeDef tim1_handle;
+    TIM_HandleTypeDef tim8_handle;
+    
+    // Public members and methods go here
+};
+
+struct EightPWMConfig {
+    uint16_t freq;  // PWM frequency in Hz
+    float duty_cycle_max;  // Maximum duty cycle as a fraction of the period (0.0 to 1.0)
+};
+
+
+       // Scale duty cycles to the PWM period
+       class EightPWM {
+public:
+    EightPWM(int period, TIM_HandleTypeDef tim1_handle, TIM_HandleTypeDef tim8_handle)
+    : period(period), tim1_handle(tim1_handle), tim8_handle(tim8_handle) {}
+
+    void writeDutyCycle(float duty_cycle1A_h1, float duty_cycle1A_h2, float duty_cycle1B_h1, float duty_cycle1B_h2,
+                      float duty_cycle2A_h1, float duty_cycle2A_h2, float duty_cycle2B_h1, float duty_cycle2B_h2) {
+
+        // Scale duty cycles to the PWM period
+        uint16_t duty1A_h1 = (uint16_t)(duty_cycle1A_h1 * period);
+        uint16_t duty1A_h2 = (uint16_t)(duty_cycle1A_h2 * period);
+        uint16_t duty1B_h1 = (uint16_t)(duty_cycle1B_h1 * period);
+        uint16_t duty1B_h2 = (uint16_t)(duty_cycle1B_h2 * period);
+        uint16_t duty2A_h1 = (uint16_t)(duty_cycle2A_h1 * period);
+        uint16_t duty2A_h2 = (uint16_t)(duty_cycle2A_h2 * period);
+        uint16_t duty2B_h1 = (uint16_t)(duty_cycle2B_h1 * period);
+        uint16_t duty2B_h2 = (uint16_t)(duty_cycle2B_h2 * period);
+
+        // Set duty cycles for TIM1 channels
+        __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH1, duty1A_h1);
+        __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH1N, duty1A_h2);
+        __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH2, duty1B_h1);
+        __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH2N, duty1B_h2);
+        __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH3, duty2A_h1);
+        __HAL_TIM_SET_COMPARE(&tim1_handle, LL_TIM_CHANNEL_CH3N, duty2A_h2);
+
+        // Set duty cycles for TIM8 channels
+        __HAL_TIM_SET_COMPARE(&tim8_handle, LL_TIM_CHANNEL_CH2, duty2B_h1);
+        __HAL_TIM_SET_COMPARE(&tim8_handle, LL_TIM_CHANNEL_CH2N, duty2B_h2);
+
+        // Enable PWM outputs
+        HAL_TIM_PWM_Start(&tim1_handle, LL_TIM_CHANNEL_CH1);
+        HAL_TIMEx_PWMN_Start(&tim1_handle, LL_TIM_CHANNEL_CH1);
+        HAL_TIM_PWM_Start(&tim1_handle, LL_TIM_CHANNEL_CH1N);
+        HAL_TIMEx_PWMN_Start(&tim1_handle, LL_TIM_CHANNEL_CH1N);
+        HAL_TIM_PWM_Start(&tim1_handle, LL_TIM_CHANNEL_CH2);
+        HAL_TIMEx_PWMN_Start(&tim1_handle, LL_TIM_CHANNEL_CH2);
+        HAL_TIM_PWM_Start(&tim1_handle, LL_TIM_CHANNEL_CH2N);
+        HAL_TIMEx_PWMN_Start(&tim1_handle, LL_TIM_CHANNEL_CH2N);
+        HAL_TIM_PWM_Start(&tim1_handle, LL_TIM_CHANNEL_CH3);
+        HAL_TIMEx_PWMN_Start(&tim1_handle, LL_TIM_CHANNEL_CH3);
+        HAL_TIM_PWM_Start(&tim1_handle, LL_TIM_CHANNEL_CH3N);
+        HAL_TIMEx_PWMN_Start(&tim1_handle, LL_TIM_CHANNEL_CH3N);
+        HAL_TIM_PWM_Start(&tim8_handle, LL_TIM_CHANNEL_CH2);
+        HAL_TIMEx_PWMN_Start(&tim8_handle, LL_TIM_CHANNEL_CH2);
+        HAL_TIM_PWM_Start(&tim8_handle, LL_TIM_CHANNEL_CH2N);
+        HAL_TIMEx_PWMN_Start(&tim8_handle, LL_TIM_CHANNEL_CH2N);
+    }
+
+private:
+    int period;
+    TIM_HandleTypeDef tim1_handle;
+    TIM_HandleTypeDef tim8_handle;
+};
 
 
 // Configuring PWM frequency, resolution and alignment
