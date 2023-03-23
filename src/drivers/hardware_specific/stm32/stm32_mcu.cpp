@@ -681,23 +681,29 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
     __HAL_RCC_TIM1_CLK_ENABLE();
     __HAL_RCC_TIM8_CLK_ENABLE();
 
-    // Configure GPIO pins for STSPIN32G4 internal FET driver
-      
-      __HAL_RCC_GPIOE_CLK_ENABLE();   // enable GPIO clock
-      GPIO_InitStruct.Pin = GPIO_PIN_9 | GPIO_PIN_8 | GPIO_PIN_11 | GPIO_PIN_10 | GPIO_PIN_13 | GPIO_PIN_12;
-      GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;  // alternate function mode with push-pull output
+          // Configure PE8, PE9, PE10, PE11, PE12, PE13 as TIM1 channels
+      GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13;
+      GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
       GPIO_InitStruct.Pull = GPIO_NOPULL;
       GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
       GPIO_InitStruct.Alternate = GPIO_AF6_TIM1;
-      HAL_GPIO_Init(GPIOE, &GPIO_InitStruct); 
+      HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-      // Configure TIM8 pins for alternate function mode with push-pull output
-      GPIO_InitStruct.Pin = GPIO_PIN_14 | GPIO_PIN_0;
+            // Configure PA14 and PB0 as TIM8 channels
+      __HAL_RCC_GPIOA_CLK_ENABLE();
+      __HAL_RCC_GPIOB_CLK_ENABLE();
+      GPIO_InitStruct.Pin = GPIO_PIN_14;
       GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
       GPIO_InitStruct.Pull = GPIO_NOPULL;
-      GPIO_InitStruct.Alternate = GPIO_AF3_TIM8; 
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+      GPIO_InitStruct.Alternate = GPIO_AF3_TIM8;
       HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-      HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);     
+      GPIO_InitStruct.Pin = GPIO_PIN_0;
+      GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+      GPIO_InitStruct.Pull = GPIO_NOPULL;
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+      GPIO_InitStruct.Alternate = GPIO_AF3_TIM8;
+      HAL_GPIO_Init(GPIOB, &GPIO_InitStruct); 
 
     
 
