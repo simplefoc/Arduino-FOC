@@ -680,7 +680,7 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
     // Enable clock for TIM1 and TIM8
     __HAL_RCC_TIM1_CLK_ENABLE();
     __HAL_RCC_TIM8_CLK_ENABLE();
-
+    __HAL_RCC_GPIOE_CLK_ENABLE();
           // Configure PE8, PE9, PE10, PE11, PE12, PE13 as TIM1 channels
       GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13;
       GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -729,6 +729,17 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
     if (HAL_TIM_PWM_Init(&htim8)!= HAL_OK)
     {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
     }else{Serial.println("TIM8 INIT OK!");}
+
+    /*
+    ***************************************************
+    Yes, those values should produce a 38kHz PWM signal.
+    what should the value be for 50Khz PWM signal?
+    The value for a 50kHz PWM signal would be: htim8.Init.Period = 3279;
+    And 50Khz for this: TIM1->ARR = (168000000 / (38000 * 2)) - 1; // Set auto-reload value for 38kHz frequency is egual
+    No, the equation should be changed to calculate the auto-reload value for a 50kHz frequency. 
+    The equation would be: TIM1->ARR = (168000000 / (50000 * 2)) - 1; // Set auto-reload value for 50kHz frequency
+    *******************************************************************************************************************
+    */
 
     sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
     sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
@@ -874,6 +885,7 @@ and they are used for driving push-pull outputs such as MOSFETs.
     TIM1->PSC = 0; // Set prescaler to 0
     TIM1->ARR = (168000000 / (38000 * 2)) - 1; // Set auto-reload value for 38kHz frequency
     TIM1->CCR1 = 0; // Set duty cycle to 0%
+    TIM1->CCR2 = 0; // Set duty cycle to 0%
     TIM1->CCR3 = 0; // Set duty cycle to 0%
     TIM1->CCR4 = 0; // Set duty cycle to 0%
     TIM1->BDTR |= TIM_BDTR_MOE; // Main output enable
@@ -886,6 +898,9 @@ and they are used for driving push-pull outputs such as MOSFETs.
     TIM8->PSC = 0; // Set prescaler to 0
     TIM8->ARR = (168000000 / (38000 * 2)) - 1; // Set auto-reload value for 38kHz frequency
     TIM8->CCR1 = 0; // Set duty cycle to 0%
+    TIM8->CCR2 = 0; // Set duty cycle to 0%
+    TIM8->CCR3 = 0; // Set duty cycle to 0%
+    TIM8->CCR4 = 0; // Set duty cycle to 0%
     TIM8->BDTR |= TIM_BDTR_MOE; // Main output enable
 
     // Start TIM1 and TIM8 PWM outputs
