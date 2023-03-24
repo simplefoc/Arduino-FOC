@@ -680,7 +680,7 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
     // Enable clock for TIM1 and TIM8
     __HAL_RCC_TIM1_CLK_ENABLE();
     __HAL_RCC_TIM8_CLK_ENABLE();
-    __HAL_RCC_GPIOE_CLK_ENABLE();
+
           // Configure PE8, PE9, PE10, PE11, PE12, PE13 as TIM1 channels
       GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13;
       GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -888,13 +888,27 @@ and they are used for driving push-pull outputs such as MOSFETs.
     TIM1->CCR2 = 0; // Set duty cycle to 0%
     TIM1->CCR3 = 0; // Set duty cycle to 0%
     TIM1->CCR4 = 0; // Set duty cycle to 0%
-    TIM1->BDTR |= TIM_BDTR_MOE; // Main output enable
 
-    // Configure TIM8 for PWM output
+    GPIOE->AFR[1] &= ~(GPIO_AFRH_AFRH8); // Clear alternate function for PE8
+    GPIOE->AFR[1] |= (0x2 << GPIO_AFRH_AFRH8_Pos); // Set alternate function for PE8
+    GPIOE->AFR[1] &= ~(GPIO_AFRH_AFRH9); // Clear alternate function for PE9
+    GPIOE->AFR[1] |= (0x2 << GPIO_AFRH_AFRH9_Pos); // Set alternate function for PE9
+    GPIOE->AFR[1] &= ~(GPIO_AFRH_AFRH10); // Clear alternate function for PE10
+    GPIOE->AFR[1] |= (0x2 << GPIO_AFRH_AFRH10_Pos); // Set alternate function for PE10
+    GPIOE->AFR[1] &= ~(GPIO_AFRH_AFRH11); // Clear alternate function for PE11
+    GPIOE->AFR[1] |= (0x2 << GPIO_AFRH_AFRH11_Pos); // Set alternate function for PE11
+    GPIOE->AFR[1] &= ~(GPIO_AFRH_AFRH12); // Clear alternate function for PE12
+    GPIOE->AFR[1] |= (0x2 << GPIO_AFRH_AFRH12_Pos); // Set alternate function for PE12
+    GPIOE->AFR[1] &= ~(GPIO_AFRH_AFRH13); // Clear alternate function for PE13
+    GPIOE->AFR[1] |= (0x2 << GPIO_AFRH_AFRH13_Pos); // Set alternate function for PE13
+    TIM1->BDTR |= TIM_BDTR_MOE; // Main output enable
+// Configure CH2 and CH2N on TIM8
     TIM8->CR1 |= TIM_CR1_ARPE; // Auto-reload preload enable
     TIM8->CR1 &= ~TIM_CR1_DIR; // Up counting mode
-    TIM8->CCMR1 |= TIM_CCMR1_OC1PE | TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2; // PWM mode 1 on OC1
-    TIM8->CCER |= TIM_CCER_CC1E; // Enable output on OC1
+    TIM8->CR1 &= ~TIM_CR1_CMS; // Set counter mode to center-aligned
+    TIM8->CR1 |= TIM_CR1_CMS_0 | TIM_CR1_CMS_1; // Set counter mode to center-aligned 3
+    TIM8->CCMR1 |= TIM_CCMR1_OC2PE | TIM_CCMR1_OC2M_1 | TIM_CCMR1_OC2M_2; // PWM mode 1 on OC2
+    TIM8->CCER |= TIM_CCER_CC2E; // Enable output on OC2
     TIM8->PSC = 0; // Set prescaler to 0
     TIM8->ARR = (168000000 / (38000 * 2)) - 1; // Set auto-reload value for 38kHz frequency
     TIM8->CCR1 = 0; // Set duty cycle to 0%
@@ -903,11 +917,27 @@ and they are used for driving push-pull outputs such as MOSFETs.
     TIM8->CCR4 = 0; // Set duty cycle to 0%
     TIM8->BDTR |= TIM_BDTR_MOE; // Main output enable
 
+    GPIOA->AFR[1] &= ~(GPIO_AFRH_AFRH2); // Clear alternate function for PA14
+    GPIOA->AFR[1] |= (0x8 << GPIO_AFRH_AFRH2_Pos); // Set alternate function for PA14
+    GPIOB->AFR[0] &= ~(GPIO_AFRL_AFRL0); // Clear alternate function for PB0
+    GPIOB->AFR[0] |= (0x8 << GPIO_AFRL_AFRL0_Pos); // Set alternate function for PB0
+    TIM8->BDTR |= TIM_BDTR_MOE; // Main output enable
+
     // Start TIM1 and TIM8 PWM outputs
     TIM1->EGR |= TIM_EGR_UG; // Generate update event to load new settings
     TIM8->EGR |= TIM_EGR_UG; // Generate update event to load new settings
     TIM1->CR1 |= TIM_CR1_CEN; // Enable TIM1 counter
     TIM8->CR1 |= TIM_CR1_CEN; // Enable TIM8 counter
+
+    // Setting ALL pins to LOW
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_8, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_9, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_10, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_11, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_12, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_13, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_14, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
 
         
       return NULL;
