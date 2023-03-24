@@ -712,23 +712,31 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
     TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
     htim1.Instance = TIM1;
     htim1.Init.Prescaler = 0;
-    htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim1.Init.Period = 65536;
+    htim1.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
+    htim1.Init.Period = 4359;
     htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    htim1.Init.RepetitionCounter = 0;
+    htim1.Init.RepetitionCounter = 1;
     HAL_TIM_PWM_Init(&htim1);
 
     htim8.Instance = TIM8;
     htim8.Init.Prescaler = 0;
-    htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim8.Init.Period = 65536;
+    htim8.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
+    htim8.Init.Period = 4359;
     htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    htim8.Init.RepetitionCounter = 0;
+    htim8.Init.RepetitionCounter = 1;
     HAL_TIM_PWM_Init(&htim8);
 
     sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
     sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig);
+    if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig)!= HAL_OK)
+    {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+    }else{Serial.println("Timer TIM1 Synced OK!");}
+
+    if (HAL_TIMEx_MasterConfigSynchronization(&htim8, &sMasterConfig)!= HAL_OK)
+    {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+    }else{Serial.println("Timer TIM8 Synced OK!");}
+
+
 
 
     // Set TIM1 dead time values to 50 ns
@@ -739,7 +747,9 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
     sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
     sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
     sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
-    HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig);
+    if (HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig)!= HAL_OK)
+    {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+    }else{Serial.println("TIM1 DeadTime Set");}
     
     // Set TIM8 dead time values to 50 ns
     TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfigTIM8 = {0};
@@ -750,9 +760,11 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
     sBreakDeadTimeConfigTIM8.BreakState = TIM_BREAK_DISABLE;
     sBreakDeadTimeConfigTIM8.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
     sBreakDeadTimeConfigTIM8.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
-    HAL_TIMEx_ConfigBreakDeadTime(&htim8, &sBreakDeadTimeConfigTIM8);
+    if (HAL_TIMEx_ConfigBreakDeadTime(&htim8, &sBreakDeadTimeConfigTIM8)!= HAL_OK)
+    {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+    }else{Serial.println("TIM8 DeadTime Set");}
 
-      // Configure TIM1 channels 1-6 for PWM output
+          // Configure TIM1 channels 1-6 for PWM output
       TIM_OC_InitTypeDef sConfigOC1 = {0};
       sConfigOC1.OCMode = TIM_OCMODE_PWM1;
       sConfigOC1.Pulse = 0;
@@ -762,34 +774,91 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
       TIM_OC_InitTypeDef sConfigOC2 = {0};
       sConfigOC2.OCMode = TIM_OCMODE_PWM2;
       sConfigOC2.Pulse = 0;
-      sConfigOC2.OCPolarity = TIM_OCPOLARITY_HIGH;
+      sConfigOC2.OCPolarity = TIM_OCPOLARITY_LOW;
       sConfigOC2.OCFastMode = TIM_OCFAST_DISABLE;
 
-      HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC1, LL_TIM_CHANNEL_CH1);
-      HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC2, LL_TIM_CHANNEL_CH1N);
-      HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC1, LL_TIM_CHANNEL_CH2);
-      HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC2, LL_TIM_CHANNEL_CH2N);
-      HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC1, LL_TIM_CHANNEL_CH3);
-      HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC2, LL_TIM_CHANNEL_CH3N);
+      if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC1, LL_TIM_CHANNEL_CH1)!= HAL_OK)
+      {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+      }else{Serial.println("CH1 Config OK");}
+      
+      if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC2, LL_TIM_CHANNEL_CH1N)!= HAL_OK)
+      {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+      }else{Serial.println("CH1N Config OK");}
+
+      if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC1, LL_TIM_CHANNEL_CH2)!= HAL_OK)
+      {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+      }else{Serial.println("CH2 Config OK");}
+
+      if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC2, LL_TIM_CHANNEL_CH2N)!= HAL_OK)
+      {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+      }else{Serial.println("CH2N Config OK");}
+
+      if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC1, LL_TIM_CHANNEL_CH3)!= HAL_OK)
+      {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+      }else{Serial.println("CH3 Config OK");}
+
+      if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC2, LL_TIM_CHANNEL_CH3N)!= HAL_OK)
+      {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+      }else{Serial.println("CH3N Config OK");}
+
 
       // Configure PWM output on TIM8 channel 1 and additional channel
-      HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC1, LL_TIM_CHANNEL_CH2);
-      HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC2, LL_TIM_CHANNEL_CH2N);
+      if (HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC1, LL_TIM_CHANNEL_CH2)!= HAL_OK)
+      {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+      }else{Serial.println("TIM8_CH2 Config OK");}
 
+      if (HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC2, LL_TIM_CHANNEL_CH2N)!= HAL_OK)
+      {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+      }else{Serial.println("TIM8_CH2N Config OK");}
+
+
+/*
+
+For TIM1, you have CH1 and CH1N as complementary outputs, CH2 and CH2N as complementary outputs, 
+and CH3 and CH3N as complementary outputs.
+
+For TIM8, you have CH2 and CH2N as complementary outputs.
+
+Complementary outputs are a pair of signals where one is the inverse of the other, 
+and they are used for driving push-pull outputs such as MOSFETs.
+
+*/
 
 
         // Enable PWM outputs
-        HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH1);
-        HAL_TIMEx_PWMN_Start(&htim1, LL_TIM_CHANNEL_CH1N);
+        if( HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH1)!= HAL_OK)
+        {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+        }else{Serial.println("CH1 Start OK");}
 
-        HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH2);
-        HAL_TIMEx_PWMN_Start(&htim1, LL_TIM_CHANNEL_CH2N);
+        if (HAL_TIMEx_PWMN_Start(&htim1, LL_TIM_CHANNEL_CH1N)!= HAL_OK)
+        {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+        }else{Serial.println("CH1N Start OK");}
 
-        HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH3);
-        HAL_TIMEx_PWMN_Start(&htim1, LL_TIM_CHANNEL_CH3N);
+        if (HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH2)!= HAL_OK)
+        {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+        }else{Serial.println("CH2 Start OK");}
 
-        HAL_TIM_PWM_Start(&htim8, LL_TIM_CHANNEL_CH2);
-        HAL_TIMEx_PWMN_Start(&htim8, LL_TIM_CHANNEL_CH2N);
+        if (HAL_TIMEx_PWMN_Start(&htim1, LL_TIM_CHANNEL_CH2N)!= HAL_OK)
+        {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+        }else{Serial.println("CH2N Start OK");}
+
+        if(HAL_TIM_PWM_Start(&htim1, LL_TIM_CHANNEL_CH3)!= HAL_OK)
+        {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+        }else{Serial.println("CH3 Start OK");}
+
+        if( HAL_TIMEx_PWMN_Start(&htim1, LL_TIM_CHANNEL_CH3N)!= HAL_OK)
+        {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+        }else{Serial.println("CH3N Start OK");}
+
+
+        if (HAL_TIM_PWM_Start(&htim8, LL_TIM_CHANNEL_CH2)!= HAL_OK)
+        {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+        }else{Serial.println("TIM8_CH2 Start OK");}
+
+        if (HAL_TIMEx_PWMN_Start(&htim8, LL_TIM_CHANNEL_CH2N)!= HAL_OK)
+        {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+        }else{Serial.println("TIM8_CH2N Start OK");}
+
     
 
     // Configure TIM1 for PWM output
@@ -799,7 +868,7 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
     TIM1->CCMR2 |= TIM_CCMR2_OC3PE | TIM_CCMR2_OC4PE | TIM_CCMR2_OC3M_1 | TIM_CCMR2_OC3M_2 | TIM_CCMR2_OC4M_1 | TIM_CCMR2_OC4M_2; // PWM mode 1 on OC3 and OC4
     TIM1->CCER |= TIM_CCER_CC1E | TIM_CCER_CC3E | TIM_CCER_CC4E; // Enable output on OC1, OC3, and OC4
     TIM1->PSC = 0; // Set prescaler to 0
-    TIM1->ARR = (SystemCoreClock / (38000 * 2)) - 1; // Set auto-reload value for 38kHz frequency
+    TIM1->ARR = (168000000 / (38000 * 2)) - 1; // Set auto-reload value for 38kHz frequency
     TIM1->CCR1 = 0; // Set duty cycle to 0%
     TIM1->CCR3 = 0; // Set duty cycle to 0%
     TIM1->CCR4 = 0; // Set duty cycle to 0%
@@ -811,7 +880,7 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
     TIM8->CCMR1 |= TIM_CCMR1_OC1PE | TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2; // PWM mode 1 on OC1
     TIM8->CCER |= TIM_CCER_CC1E; // Enable output on OC1
     TIM8->PSC = 0; // Set prescaler to 0
-    TIM8->ARR = (SystemCoreClock / (38000 * 2)) - 1; // Set auto-reload value for 38kHz frequency
+    TIM8->ARR = (168000000 / (38000 * 2)) - 1; // Set auto-reload value for 38kHz frequency
     TIM8->CCR1 = 0; // Set duty cycle to 0%
     TIM8->BDTR |= TIM_BDTR_MOE; // Main output enable
 
