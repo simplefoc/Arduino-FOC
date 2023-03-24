@@ -716,7 +716,9 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
     htim1.Init.Period = 4359;
     htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim1.Init.RepetitionCounter = 1;
-    HAL_TIM_PWM_Init(&htim1);
+    if (HAL_TIM_PWM_Init(&htim1)!= HAL_OK)
+    {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+    }else{Serial.println("TIM1 INIT OK!");}
 
     htim8.Instance = TIM8;
     htim8.Init.Prescaler = 0;
@@ -724,7 +726,9 @@ void* _configure8PWM(long pwm_frequency, float dead_zone)
     htim8.Init.Period = 4359;
     htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim8.Init.RepetitionCounter = 1;
-    HAL_TIM_PWM_Init(&htim8);
+    if (HAL_TIM_PWM_Init(&htim8)!= HAL_OK)
+    {return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
+    }else{Serial.println("TIM8 INIT OK!");}
 
     sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
     sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
