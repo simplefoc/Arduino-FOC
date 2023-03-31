@@ -155,6 +155,7 @@ class FOCMotor
 
     // state variables
     float target; //!< current target value - depends of the controller
+    float feed_forward_velocity = 0.0f; //!< current feed forward velocity
   	float shaft_angle;//!< current motor angle
   	float electrical_angle;//!< current electrical angle
   	float shaft_velocity;//!< current motor velocity 
