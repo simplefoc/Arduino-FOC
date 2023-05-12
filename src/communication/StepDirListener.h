@@ -5,7 +5,7 @@
 #include "../common/foc_utils.h"
 
 
-#if !defined(TARGET_RP2040)
+#if !defined(TARGET_RP2040) && !defined(_SAMD21_) && !defined(_SAMD51_) && !defined(_SAME51_)
 #define PinStatus int
 #endif
 
