@@ -10,6 +10,7 @@
 #include "hardware/dma.h"
 #include "hardware/irq.h"
 #include "hardware/pwm.h"
+#include "hardware/adc.h"
 
 
 /* Singleton instance of the ADC engine */
