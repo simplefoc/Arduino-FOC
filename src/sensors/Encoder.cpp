@@ -101,12 +101,14 @@ void Encoder::handleIndex() {
 
 // Sensor update function. Safely copy volatile interrupt variables into Sensor base class state variables.
 void Encoder::update() {
+  // Copy volatile variables in minimal-duration blocking section to ensure no interrupts are missed
   noInterrupts();
-  // TODO: numerical precision issue here if the pulse_counter overflows the angle will be lost
-  full_rotations = pulse_counter / (int)cpr;
-  angle_prev = _2PI * ((pulse_counter) % ((int)cpr)) / ((float)cpr);
   angle_prev_ts = pulse_timestamp;
+  long copy_pulse_counter = pulse_counter;
   interrupts();
+  // TODO: numerical precision issue here if the pulse_counter overflows the angle will be lost
+  full_rotations = copy_pulse_counter / (int)cpr;
+  angle_prev = _2PI * ((copy_pulse_counter) % ((int)cpr)) / ((float)cpr);
 }
 
 /*
@@ -123,8 +125,11 @@ float Encoder::getSensorAngle(){
   function using mixed time and frequency measurement technique
 */
 float Encoder::getVelocity(){
-  // Make sure no interrupts modify the state variables in the middle of these calculations
+  // Copy volatile variables in minimal-duration blocking section to ensure no interrupts are missed
   noInterrupts();
+  long copy_pulse_counter = pulse_counter;
+  long copy_pulse_timestamp = pulse_timestamp;
+  interrupts();
   // timestamp
   long timestamp_us = _micros();
   // sampling time calculation
@@ -133,8 +138,8 @@ float Encoder::getVelocity(){
   if(Ts <= 0 || Ts > 0.5f) Ts = 1e-3f;
 
   // time from last impulse
-  float Th = (timestamp_us - pulse_timestamp) * 1e-6f;
-  long dN = pulse_counter - prev_pulse_counter;
+  float Th = (timestamp_us - copy_pulse_timestamp) * 1e-6f;
+  long dN = copy_pulse_counter - prev_pulse_counter;
 
   // Pulse per second calculation (Eq.3.)
   // dN - impulses received
@@ -155,9 +160,7 @@ float Encoder::getVelocity(){
   prev_timestamp_us = timestamp_us;
   // save velocity calculation variables
   prev_Th = Th;
-  prev_pulse_counter = pulse_counter;
-  // Re-enable interrupts (ideally this would restore to the previous state rather than unconditionally enabling)
-  interrupts();
+  prev_pulse_counter = copy_pulse_counter;
   return velocity;
 }
 

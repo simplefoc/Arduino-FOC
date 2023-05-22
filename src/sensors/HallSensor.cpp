@@ -96,11 +96,14 @@ void HallSensor::attachSectorCallback(void (*_onSectorChange)(int sector)) {
 
 // Sensor update function. Safely copy volatile interrupt variables into Sensor base class state variables.
 void HallSensor::update() {
+  // Copy volatile variables in minimal-duration blocking section to ensure no interrupts are missed
   noInterrupts();
-  angle_prev = ((float)((electric_rotations * 6 + electric_sector) % cpr) / (float)cpr) * _2PI ;
-  full_rotations = (int32_t)((electric_rotations * 6 + electric_sector) / cpr);
   angle_prev_ts = pulse_timestamp;
+  long last_electric_rotations = electric_rotations;
+  int8_t last_electric_sector = electric_sector;
   interrupts();
+  angle_prev = ((float)((last_electric_rotations * 6 + last_electric_sector) % cpr) / (float)cpr) * _2PI ;
+  full_rotations = (int32_t)((last_electric_rotations * 6 + last_electric_sector) / cpr);
 }
 
 
@@ -119,14 +122,16 @@ float HallSensor::getSensorAngle() {
 */
 float HallSensor::getVelocity(){
   noInterrupts();
-  float vel = 0;
-  if (pulse_diff != 0 && ((long)(_micros() - pulse_timestamp) < pulse_diff*2) ) // last velocity isn't accurate if too old
-    vel = direction * (_2PI / (float)cpr) / (pulse_diff / 1000000.0f);
+  long last_pulse_timestamp = pulse_timestamp;
+  long last_pulse_diff = pulse_diff;
   interrupts();
-  return vel;
+  if (last_pulse_diff == 0 || ((long)(_micros() - last_pulse_timestamp) > last_pulse_diff*2) ) { // last velocity isn't accurate if too old
+    return 0;
+  } else {
+    return direction * (_2PI / (float)cpr) / (last_pulse_diff / 1000000.0f);
+  }
+
 }
-
-
 
 // HallSensor initialisation of the hardware pins 
 // and calculation variables
