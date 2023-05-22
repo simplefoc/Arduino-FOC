@@ -94,8 +94,13 @@ void HallSensor::attachSectorCallback(void (*_onSectorChange)(int sector)) {
 
 
 
-float HallSensor::getSensorAngle() {
-  return getAngle();
+// Sensor update function. Safely copy volatile interrupt variables into Sensor base class state variables.
+void HallSensor::update() {
+  noInterrupts();
+  angle_prev = ((float)((electric_rotations * 6 + electric_sector) % cpr) / (float)cpr) * _2PI ;
+  full_rotations = (int32_t)((electric_rotations * 6 + electric_sector) / cpr);
+  angle_prev_ts = pulse_timestamp;
+  interrupts();
 }
 
 
@@ -104,8 +109,8 @@ float HallSensor::getSensorAngle() {
 	Shaft angle calculation
   TODO: numerical precision issue here if the electrical rotation overflows the angle will be lost
 */
-float HallSensor::getMechanicalAngle() {
-  return ((float)((electric_rotations * 6 + electric_sector) % cpr) / (float)cpr) * _2PI ;
+float HallSensor::getSensorAngle() {
+  return ((float)(electric_rotations * 6 + electric_sector) / (float)cpr) * _2PI ;
 }
 
 /*
@@ -113,35 +118,13 @@ float HallSensor::getMechanicalAngle() {
   function using mixed time and frequency measurement technique
 */
 float HallSensor::getVelocity(){
-  long last_pulse_diff = pulse_diff;
-  if (last_pulse_diff == 0 || ((long)(_micros() - pulse_timestamp) > last_pulse_diff) ) { // last velocity isn't accurate if too old
-    return 0;
-  } else {
-    float vel = direction * (_2PI / (float)cpr) / (last_pulse_diff / 1000000.0f);
-    // quick fix https://github.com/simplefoc/Arduino-FOC/issues/192
-    if(vel < -velocity_max || vel > velocity_max)  vel = 0.0f;   //if velocity is out of range then make it zero
-    return vel;
-  }
-
+  noInterrupts();
+  float vel = 0;
+  if (pulse_diff != 0 && ((long)(_micros() - pulse_timestamp) < pulse_diff*2) ) // last velocity isn't accurate if too old
+    vel = direction * (_2PI / (float)cpr) / (pulse_diff / 1000000.0f);
+  interrupts();
+  return vel;
 }
-
-
-
-float HallSensor::getAngle() {
-  return ((float)(electric_rotations * 6 + electric_sector) / (float)cpr) * _2PI ;
-}
-
-
-double HallSensor::getPreciseAngle() {
-  return ((double)(electric_rotations * 6 + electric_sector) / (double)cpr) * (double)_2PI ;
-}
-
-
-int32_t HallSensor::getFullRotations() {
-  return (int32_t)((electric_rotations * 6 + electric_sector) / cpr);
-}
-
-
 
 
 

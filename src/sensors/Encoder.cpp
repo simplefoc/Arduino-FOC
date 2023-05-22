@@ -99,29 +99,21 @@ void Encoder::handleIndex() {
 }
 
 
+// Sensor update function. Safely copy volatile interrupt variables into Sensor base class state variables.
 void Encoder::update() {
-    // do nothing for Encoder
+  noInterrupts();
+  // TODO: numerical precision issue here if the pulse_counter overflows the angle will be lost
+  full_rotations = pulse_counter / (int)cpr;
+  angle_prev = _2PI * ((pulse_counter) % ((int)cpr)) / ((float)cpr);
+  angle_prev_ts = pulse_timestamp;
+  interrupts();
 }
 
 /*
 	Shaft angle calculation
 */
 float Encoder::getSensorAngle(){
-  return getAngle();
-}
-// TODO: numerical precision issue here if the pulse_counter overflows the angle will be lost
-float Encoder::getMechanicalAngle(){
-  return  _2PI * ((pulse_counter) % ((int)cpr)) / ((float)cpr);
-}
-
-float Encoder::getAngle(){
-  return  _2PI * (pulse_counter) / ((float)cpr);
-}
-double Encoder::getPreciseAngle(){
-  return  _2PI * (pulse_counter) / ((double)cpr);
-}
-int32_t Encoder::getFullRotations(){
-  return  pulse_counter / (int)cpr;
+  return _2PI * (pulse_counter) / ((float)cpr);
 }
 
 
@@ -131,6 +123,8 @@ int32_t Encoder::getFullRotations(){
   function using mixed time and frequency measurement technique
 */
 float Encoder::getVelocity(){
+  // Make sure no interrupts modify the state variables in the middle of these calculations
+  noInterrupts();
   // timestamp
   long timestamp_us = _micros();
   // sampling time calculation
@@ -162,6 +156,8 @@ float Encoder::getVelocity(){
   // save velocity calculation variables
   prev_Th = Th;
   prev_pulse_counter = pulse_counter;
+  // Re-enable interrupts (ideally this would restore to the previous state rather than unconditionally enabling)
+  interrupts();
   return velocity;
 }
 
