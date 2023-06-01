@@ -240,6 +240,7 @@ class Commander
      */
     void motion(FOCMotor* motor, char* user_cmd, char* separator = (char *)" ");
 
+    bool isSentinel(char ch);
   private:
     // Subscribed command callback variables
     CommandCallback call_list[20];//!< array of command callback pointers - 20 is an arbitrary number
@@ -294,7 +295,6 @@ class Commander
 
 
     void printError();
-    bool isSentinel(char ch);
 };
 
 
