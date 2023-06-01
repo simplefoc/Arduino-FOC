@@ -9,10 +9,11 @@
 #include "../../hardware_api.h"
 #include "./rp2040_mcu.h"
 #include "hardware/pwm.h"
+#include "hardware/clocks.h"
 
 #define _PWM_FREQUENCY 24000
 #define _PWM_FREQUENCY_MAX 66000
-#define _PWM_FREQUENCY_MIN 5000
+#define _PWM_FREQUENCY_MIN 1
 
 
 
@@ -30,11 +31,12 @@ void setupPWM(int pin, long pwm_frequency, bool invert, RP2040DriverParams* para
 	params->pins[index] = pin;
 	params->slice[index] = slice;
 	params->chan[index] = chan;
-	pwm_set_clkdiv_int_frac(slice, 1, 0); // fastest pwm we can get
-	pwm_set_phase_correct(slice, true);
-	uint16_t wrapvalue = ((125L * 1000L * 1000L) / pwm_frequency) / 2L - 1L;
-	if (wrapvalue < 999) wrapvalue = 999; // 66kHz, resolution 1000
-	if (wrapvalue > 12499) wrapvalue = 12499; // 20kHz, resolution 12500
+	uint32_t sysclock_hz = frequency_count_khz(CLOCKS_FC0_SRC_VALUE_CLK_SYS) * 1000;
+	uint32_t factor = 4096 * 2 * pwm_frequency;
+	uint32_t div = sysclock_hz / factor;
+	if (sysclock_hz % factor !=0) div+=1;
+	if (div < 16) div = 16;
+	uint32_t wrapvalue = (sysclock_hz * 8) / div / pwm_frequency - 1;
 #ifdef SIMPLEFOC_DEBUG_RP2040
 	SimpleFOCDebug::print("Configuring pin ");
 	SimpleFOCDebug::print(pin);
@@ -44,9 +46,17 @@ void setupPWM(int pin, long pwm_frequency, bool invert, RP2040DriverParams* para
 	SimpleFOCDebug::print((int)chan);
 	SimpleFOCDebug::print(" frequency ");
 	SimpleFOCDebug::print((int)pwm_frequency);
+	SimpleFOCDebug::print(" divisor ");
+	SimpleFOCDebug::print((int)(div>>4));
+	SimpleFOCDebug::print(".");
+	SimpleFOCDebug::print((int)(div&0xF));
 	SimpleFOCDebug::print(" top value ");
-	SimpleFOCDebug::println(wrapvalue);
+	SimpleFOCDebug::println((int)wrapvalue);
 #endif
+	if (wrapvalue < 999)
+		SimpleFOCDebug::println("Warning: PWM resolution is low.");
+	pwm_set_clkdiv_int_frac(slice, div>>4, div&0xF);
+	pwm_set_phase_correct(slice, true);
 	pwm_set_wrap(slice, wrapvalue);
 	wrapvalues[slice] = wrapvalue;
 	if (invert) {
