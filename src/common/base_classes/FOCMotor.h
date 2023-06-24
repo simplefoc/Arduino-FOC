@@ -109,7 +109,7 @@ class FOCMotor
      * @param sensor_direction  sensor natural direction - default is CW
      *
      */  
-    virtual int initFOC( float zero_electric_offset = NOT_SET , Direction sensor_direction = Direction::CW)=0; 
+    virtual int initFOC(float zero_electric_offset = NOT_SET , Direction sensor_direction = Direction::CW)=0; 
     /**
      * Function running FOC algorithm in real-time
      * it calculates the gets motor angle and sets the appropriate voltages 
@@ -209,7 +209,7 @@ class FOCMotor
     // sensor related variabels
     float sensor_offset; //!< user defined sensor zero offset
     float zero_electric_angle = NOT_SET;//!< absolute zero electric angle - if available
-    int sensor_direction = NOT_SET; //!< if sensor_direction == Direction::CCW then direction will be flipped to CW
+    Direction sensor_direction = Direction::UNKNOWN; //!< if sensor_direction == Direction::CCW then direction will be flipped to CW
 
     /**
      * Function providing BLDCMotor class with the 

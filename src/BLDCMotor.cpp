@@ -213,7 +213,7 @@ int BLDCMotor::alignSensor() {
   if(!exit_flag) return exit_flag;
 
   // if unknown natural direction
-  if(!_isset(sensor_direction)){
+  if(sensor_direction==Direction::UNKNOWN){
 
     // find natural direction
     // move one electrical revolution forward
