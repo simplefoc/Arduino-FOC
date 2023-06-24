@@ -593,6 +593,7 @@ bool Commander::isSentinel(char ch)
   else if (ch == '\r')
   {
       printVerbose(F("Warn: \\r detected! \n"));
+      return true; // lets still consider it to end the line...
   }
   return false;
 }
