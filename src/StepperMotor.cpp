@@ -92,20 +92,13 @@ void StepperMotor::enable()
   FOC functions
 */
 // FOC initialization function
-int  StepperMotor::initFOC( float zero_electric_offset, Direction _sensor_direction ) {
+int  StepperMotor::initFOC() {
   int exit_flag = 1;
   
   motor_status = FOCMotorStatus::motor_calibrating;
 
   // align motor if necessary
   // alignment necessary for encoders!
-  if(_isset(zero_electric_offset)){
-    // abosolute zero offset provided - no need to align
-    zero_electric_angle = zero_electric_offset;
-    // set the sensor direction - default CW
-    sensor_direction = _sensor_direction;
-  }
-
   // sensor and motor alignment - can be skipped
   // by setting motor.sensor_direction and motor.zero_electric_angle
   _delay(500);
