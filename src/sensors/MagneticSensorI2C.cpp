@@ -95,7 +95,7 @@ int MagneticSensorI2C::read(uint8_t angle_reg_msb) {
   // notify the device that is aboout to be read
 	wire->beginTransmission(chip_address);
 	wire->write(angle_reg_msb);
-  wire->endTransmission(false);
+  currWireError = wire->endTransmission(false);
 
   // read the data msb and lsb
 	wire->requestFrom(chip_address, (uint8_t)2);

@@ -51,6 +51,9 @@ class MagneticSensorI2C: public Sensor{
     /** experimental function to check and fix SDA locked LOW issues */
     int checkBus(byte sda_pin , byte scl_pin );
 
+    /** current error code from Wire endTransmission() call **/
+    uint8_t currWireError = 0;
+
   private:
     float cpr; //!< Maximum range of the magnetic sensor
     uint16_t lsb_used; //!< Number of bits used in LSB register
