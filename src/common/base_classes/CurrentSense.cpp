@@ -38,8 +38,12 @@ float CurrentSense::getDCCurrent(float motor_electrical_angle){
     // if motor angle provided function returns signed value of the current
     // determine the sign of the current
     // sign(atan2(current.q, current.d)) is the same as c.q > 0 ? 1 : -1  
-    if(motor_electrical_angle) 
-        sign = (i_beta * _cos(motor_electrical_angle) - i_alpha*_sin(motor_electrical_angle)) > 0 ? 1 : -1;  
+    if(motor_electrical_angle) {
+        float ct;
+        float st;
+        _sincos(motor_electrical_angle, &st, &ct);
+        sign = (i_beta*ct - i_alpha*st) > 0 ? 1 : -1;  
+    }
     // return current magnitude
     return sign*_sqrt(i_alpha*i_alpha + i_beta*i_beta);
 }
@@ -78,8 +82,9 @@ DQCurrent_s CurrentSense::getFOCCurrents(float angle_el){
     }
 
     // calculate park transform
-    float ct = _cos(angle_el);
-    float st = _sin(angle_el);
+    float ct;
+    float st;
+    _sincos(angle_el, &st, &ct);
     DQCurrent_s return_current;
     return_current.d = i_alpha * ct + i_beta * st;
     return_current.q = i_beta * ct - i_alpha * st;
