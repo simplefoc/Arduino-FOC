@@ -18,7 +18,7 @@ __attribute__((weak)) float _sin(float a){
   else if(i < 128) {
     t1 = sine_array[128 - i]; t2 = sine_array[127 - i];
   }
-  else if(i < 196) {
+  else if(i < 192) {
     t1 = -sine_array[-128 + i]; t2 = -sine_array[-127 + i];
   }
   else {
