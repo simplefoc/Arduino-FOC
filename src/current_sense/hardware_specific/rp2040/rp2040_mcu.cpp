@@ -10,6 +10,7 @@
 #include "hardware/dma.h"
 #include "hardware/irq.h"
 #include "hardware/pwm.h"
+#include "hardware/adc.h"
 
 
 /* Singleton instance of the ADC engine */
@@ -163,7 +164,6 @@ bool RP2040ADCEngine::init() {
      false,             // We won't see the ERR bit because of 8 bit reads; disable.
      true               // Shift each sample to 8 bits when pushing to FIFO
     );
-    samples_per_second = 20000;
     if (samples_per_second<1 || samples_per_second>=500000) {
         samples_per_second = 0;
         adc_set_clkdiv(0);
@@ -241,6 +241,7 @@ void RP2040ADCEngine::start() {
 
 void RP2040ADCEngine::stop() {
     adc_run(false);
+    irq_set_enabled(DMA_IRQ_0, false);
     dma_channel_abort(readDMAChannel);
     // if (triggerPWMSlice>=0)
     //     dma_channel_abort(triggerDMAChannel);

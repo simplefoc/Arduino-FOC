@@ -206,7 +206,8 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 6PWM setting
 // - hardware specific
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
+void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params){
+  _UNUSED(phase_state);
   // transform duty cycle from [0,1] to [0,255]
   // phase A
   analogWrite(((GenericDriverParams*)params)->pins[0], 255.0f*dc_a);

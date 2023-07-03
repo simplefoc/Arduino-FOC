@@ -28,7 +28,7 @@
 #define _PI_6 0.52359877559f
 #define _RPM_TO_RADS 0.10471975512f
 
-#define NOT_SET -12345.0
+#define NOT_SET -12345.0f
 #define _HIGH_IMPEDANCE 0
 #define _HIGH_Z _HIGH_IMPEDANCE
 #define _ACTIVE 1
@@ -71,6 +71,13 @@ float _sin(float a);
  * @param a angle in between 0 and 2PI
  */
 float _cos(float a);
+/**
+ * Function returning both sine and cosine of the angle in one call.
+ * Internally it uses the _sin and _cos functions, but you may wish to
+ * provide your own implementation which is more optimized.
+ */
+void _sincos(float a, float* s, float* c);
+
 
 /**
  * normalizing radian angle to [0,2PI]

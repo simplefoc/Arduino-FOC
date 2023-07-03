@@ -287,6 +287,11 @@ STM32DriverParams* _initHardware6PWMPair(long PWM_freq, float dead_zone, PinMap*
   // dead time is set in nanoseconds
   uint32_t dead_time_ns = (float)(1e9f/PWM_freq)*dead_zone;
   uint32_t dead_time = __LL_TIM_CALC_DEADTIME(SystemCoreClock, LL_TIM_GetClockDivision(HT->getHandle()->Instance), dead_time_ns);
+  if (dead_time>255) dead_time = 255;
+  if (dead_time==0 && dead_zone>0) {
+    dead_time = 255; // LL_TIM_CALC_DEADTIME returns 0 if dead_time_ns is too large
+    SIMPLEFOC_DEBUG("STM32-DRV: WARN: dead time too large, setting to max");
+  }
   LL_TIM_OC_SetDeadTime(HT->getHandle()->Instance, dead_time); // deadtime is non linear!
   #if SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH==false
   LL_TIM_OC_SetPolarity(HT->getHandle()->Instance, getLLChannel(pinH), LL_TIM_OCPOLARITY_LOW);

@@ -44,7 +44,9 @@ BLDCMotor::BLDCMotor(int pp, float _R, float _KV, float _inductance)
   phase_resistance = _R;
   // save back emf constant KV = 1/KV
   // 1/sqrt(2) - rms value
-  KV_rating = _KV*_SQRT2;
+  KV_rating = NOT_SET;
+  if (_isset(_KV))
+    KV_rating = _KV*_SQRT2;
   // save phase inductance
   phase_inductance = _inductance;
 
@@ -124,20 +126,13 @@ void BLDCMotor::enable()
   FOC functions
 */
 // FOC initialization function
-int  BLDCMotor::initFOC( float zero_electric_offset, Direction _sensor_direction) {
+int  BLDCMotor::initFOC() {
   int exit_flag = 1;
 
   motor_status = FOCMotorStatus::motor_calibrating;
 
   // align motor if necessary
   // alignment necessary for encoders!
-  if(_isset(zero_electric_offset)){
-    // abosolute zero offset provided - no need to align
-    zero_electric_angle = zero_electric_offset;
-    // set the sensor direction - default CW
-    sensor_direction = _sensor_direction;
-  }
-
   // sensor and motor alignment - can be skipped
   // by setting motor.sensor_direction and motor.zero_electric_angle
   _delay(500);
@@ -211,7 +206,7 @@ int BLDCMotor::alignSensor() {
   if(!exit_flag) return exit_flag;
 
   // if unknown natural direction
-  if(!_isset(sensor_direction)){
+  if(sensor_direction==Direction::UNKNOWN){
 
     // find natural direction
     // move one electrical revolution forward
@@ -418,7 +413,8 @@ void BLDCMotor::move(float new_target) {
       // angle set point
       shaft_angle_sp = target;
       // calculate velocity set point
-      shaft_velocity_sp = P_angle( shaft_angle_sp - shaft_angle );
+      shaft_velocity_sp = feed_forward_velocity + P_angle( shaft_angle_sp - shaft_angle );
+      shaft_angle_sp = _constrain(shaft_angle_sp,-velocity_limit, velocity_limit);
       // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
       current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
       // if torque controlled through voltage
@@ -543,12 +539,8 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
     case FOCModulationType::SinePWM :
       // Sinusoidal PWM modulation
       // Inverse Park + Clarke transformation
+      _sincos(angle_el, &_sa, &_ca);
 
-      // angle normalization in between 0 and 2pi
-      // only necessary if using _sin and _cos - approximation functions
-      angle_el = _normalizeAngle(angle_el);
-      _ca = _cos(angle_el);
-      _sa = _sin(angle_el);
       // Inverse park transform
       Ualpha =  _ca * Ud - _sa * Uq;  // -sin(angle) * Uq;
       Ubeta =  _sa * Ud + _ca * Uq;    //  cos(angle) * Uq;
