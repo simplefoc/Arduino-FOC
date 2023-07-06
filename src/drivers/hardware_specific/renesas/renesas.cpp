@@ -226,10 +226,10 @@ bool configureTimerPin(RenesasHardwareDriverParams* params, uint8_t index, bool 
     t->duty_pin = GPT_IO_PIN_GTIOCA_AND_GTIOCB;
     t->ext_cfg.gtioca.output_enabled = true;
     t->ext_cfg.gtiocb.output_enabled = true;
-    t->ext_cfg.gtior_setting.gtior_b.gtioa = 0x03 | (active_high ? 0x00 : 0x10);
-    t->ext_cfg.gtior_setting.gtior_b.oadflt = active_high ? 0x00 : 0x01;
-    t->ext_cfg.gtior_setting.gtior_b.gtiob = 0x03 | (complementary_active_high ? 0x00 : 0x10);
-    t->ext_cfg.gtior_setting.gtior_b.obdflt = complementary_active_high ? 0x00 : 0x01;
+    t->ext_cfg.gtior_setting.gtior_b.gtioa = 0x03 | (!complementary_active_high ? 0x00 : 0x10);
+    t->ext_cfg.gtior_setting.gtior_b.oadflt = !complementary_active_high ? 0x00 : 0x01;
+    t->ext_cfg.gtior_setting.gtior_b.gtiob = 0x03 | (active_high ? 0x00 : 0x10);
+    t->ext_cfg.gtior_setting.gtior_b.obdflt = active_high ? 0x00 : 0x01;
   }
 
   memset(&(t->ctrl), 0, sizeof(gpt_instance_ctrl_t));
@@ -372,26 +372,25 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
   params->dead_zone = (dead_zone==NOT_SET)?RENESAS_DEFAULT_DEAD_ZONE:dead_zone;
 
   bool success = true;
-  if (isHardware6Pwm(pinA_h, pinA_l)) {
-    success &= configureTimerPin(params, 0, !SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, true, (SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH));
-  }
+  if (isHardware6Pwm(pinA_h, pinA_l))
+    success &= configureTimerPin(params, 0, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, true, SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH);
   else {
     success &= configureTimerPin(params, 0, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH);
-    success &= configureTimerPin(params, 1, !(SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH)); // reverse polarity on low side gives desired active high/low behaviour
+    success &= configureTimerPin(params, 1, !SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH); // reverse polarity on low side gives desired active high/low behaviour
   }
-  if (isHardware6Pwm(pinB_h, pinB_l)) {
-    success &= configureTimerPin(params, 2, !SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, true, (SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH));
-  }
+
+  if (isHardware6Pwm(pinB_h, pinB_l))
+    success &= configureTimerPin(params, 2, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, true, SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH);
   else {
     success &= configureTimerPin(params, 2, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH);
-    success &= configureTimerPin(params, 3, !(SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH));
+    success &= configureTimerPin(params, 3, !SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH);
   }
-  if (isHardware6Pwm(pinC_h, pinC_l)) {
-    success &= configureTimerPin(params, 4, !SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, true, (SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH));
-  }
+
+  if (isHardware6Pwm(pinC_h, pinC_l))
+    success &= configureTimerPin(params, 4, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, true, SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH);
   else {
     success &= configureTimerPin(params, 4, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH);
-    success &= configureTimerPin(params, 5, !(SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH));
+    success &= configureTimerPin(params, 5, !SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH);
   }
 
   if (success)
