@@ -137,7 +137,7 @@ bool configureTimerPin(RenesasHardwareDriverParams* params, uint8_t index, bool 
   TimerPWMChannel_t pwm_output = IS_PWM_ON_A(pinCfgs[0]) ? CHANNEL_A : CHANNEL_B;
   if (complementary) {
     TimerPWMChannel_t pwm_output_C = IS_PWM_ON_A(pinCfgs_C[0]) ? CHANNEL_A : CHANNEL_B;
-    if (pwm_output != CHANNEL_A || pwm_output_C != CHANNEL_B) {
+    if (pwm_output_C != CHANNEL_A || pwm_output != CHANNEL_B) {
       SIMPLEFOC_DEBUG("DRV: output A/B mismatch");
       return false;
     }
@@ -373,21 +373,21 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 
   bool success = true;
   if (isHardware6Pwm(pinA_h, pinA_l)) {
-    success &= configureTimerPin(params, 0, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, true, !(SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH));
+    success &= configureTimerPin(params, 0, !SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, true, (SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH));
   }
   else {
     success &= configureTimerPin(params, 0, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH);
     success &= configureTimerPin(params, 1, !(SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH)); // reverse polarity on low side gives desired active high/low behaviour
   }
   if (isHardware6Pwm(pinB_h, pinB_l)) {
-    success &= configureTimerPin(params, 2, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, true, !(SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH));
+    success &= configureTimerPin(params, 2, !SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, true, (SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH));
   }
   else {
     success &= configureTimerPin(params, 2, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH);
     success &= configureTimerPin(params, 3, !(SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH));
   }
   if (isHardware6Pwm(pinC_h, pinC_l)) {
-    success &= configureTimerPin(params, 4, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, true, !(SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH));
+    success &= configureTimerPin(params, 4, !SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, true, (SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH));
   }
   else {
     success &= configureTimerPin(params, 4, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH);
