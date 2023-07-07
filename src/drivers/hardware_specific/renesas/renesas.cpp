@@ -8,23 +8,40 @@
 
 /*
   We use the GPT timers, there are 2 channels (32 bit) + 6 channels (16 bit)
-  Each channel has 2 outputs (GTIOCAx and GTIOCBx) which can be complimentary
+  Each channel has 2 outputs (GTIOCAx and GTIOCBx) which can be complimentary.
 
-  So each timer channel can handle one half-bridge, using either a single or
-  two complimentary PWM signals.
+  So each timer channel can handle one half-bridge, using either a single (3-PWM) or
+  two complimentary PWM signals (6-PWM).
 
   For 1-PWM through 4-PWM, we need as many channels as PWM signals, and we can use 
-  either output A or B of the timer (we can set the polarity).
+  either output A or B of the timer (we can set the polarity) - but not both.
 
   For 6-PWM we need 3 channels, and use both outputs A and B of each channel, then
   we can do hardware dead-time.
   Or we can use seperate channels for high and low side, with software dead-time.
+  Each phase can be either hardware (1 channel) or software (2 channels) dead-time
+  individually, they don't all have to be one or the other.
 
   Selected channels can be started together, so we can keep the phases in sync for
   low-side current sensing and software 6-PWM.
 
   The event system should permit low side current sensing without needing interrupts,
   but this will be handled by the current sense driver.
+
+  Supported:
+    - arbitrary PWM frequencies between 1Hz (minimum we can set with our integer based API)
+      and around 48kHz (more would be possible but the range will be low)
+    - PWM range at 24kHz (default) is 1000
+    - PWM range at 48kHz is 500
+    - polarity setting is supported, in all modes
+    - phase state setting is supported, in 3-PWM, 6-PWM hardware dead-time and 6-PWM software dead-time
+
+  TODOs:
+    - change setDutyCycle to use register access for speed
+    - add event system support for low-side current sensing
+    - perhaps add support to reserve timers used also in 
+      Arduino Pwm.h code, for compatibility with analogWrite()
+    - check if there is a better way for phase-state setting
  */
 
 
@@ -469,47 +486,102 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
 }
 
 
-  // TODO phase-state
+
+void _setSinglePhaseState(RenesasTimerConfig* hi, RenesasTimerConfig* lo, PhaseState state) {
+  gpt_gtior_setting_t gtior;
+  gtior.gtior = hi->ctrl.p_reg->GTIOR;
+  bool on = (state==PHASE_ON) || (state==PHASE_HI);
+
+  if (hi->duty_pin == GPT_IO_PIN_GTIOCA_AND_GTIOCB) {
+    bool ch = false;
+    if (gtior.gtior_b.obe != on) {
+      gtior.gtior_b.obe = on;
+      ch = true;
+    } // B is high side
+    on = (state==PHASE_ON) || (state==PHASE_LO);
+    if (gtior.gtior_b.oae != on) {
+      gtior.gtior_b.oae = on;
+      ch = true;
+    }
+    if (ch)
+      hi->ctrl.p_reg->GTIOR = gtior.gtior;
+    return;
+  }
+
+  if (hi->duty_pin == GPT_IO_PIN_GTIOCA) {
+    if (gtior.gtior_b.oae != on) {
+      gtior.gtior_b.oae = on;
+      hi->ctrl.p_reg->GTIOR = gtior.gtior;
+    }
+  }
+  else if (hi->duty_pin == GPT_IO_PIN_GTIOCB) {
+    if (gtior.gtior_b.obe != on) {
+      gtior.gtior_b.obe = on;
+      hi->ctrl.p_reg->GTIOR = gtior.gtior;
+    }
+  }
+
+  gtior.gtior = lo->ctrl.p_reg->GTIOR;
+  on = (state==PHASE_ON) || (state==PHASE_LO);
+  if (lo->duty_pin == GPT_IO_PIN_GTIOCA) {
+    if (gtior.gtior_b.oae != on) {
+      gtior.gtior_b.oae = on;
+      lo->ctrl.p_reg->GTIOR = gtior.gtior;
+    }
+  }
+  else if (lo->duty_pin == GPT_IO_PIN_GTIOCB) {
+    if (gtior.gtior_b.obe != on) {
+      gtior.gtior_b.obe = on;
+      lo->ctrl.p_reg->GTIOR = gtior.gtior;
+    }
+  }
+
+}
+
+
 void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params){
   RenesasTimerConfig* t = ((RenesasHardwareDriverParams*)params)->timer_config[0];
+  RenesasTimerConfig* t1 = ((RenesasHardwareDriverParams*)params)->timer_config[1];
   uint32_t dt = (uint32_t)(((RenesasHardwareDriverParams*)params)->dead_zone * (float)(t->timer_cfg.period_counts));
   uint32_t duty_cycle_counts = (uint32_t)(dc_a * (float)(t->timer_cfg.period_counts));
   bool hw_deadtime = ((RenesasHardwareDriverParams*)params)->channels[0] == ((RenesasHardwareDriverParams*)params)->channels[1];
   uint32_t dt_act = (duty_cycle_counts>0 && !hw_deadtime)?dt:0;
+  _setSinglePhaseState(t, t1, phase_state[0]);
   if (R_GPT_DutyCycleSet(&(t->ctrl), duty_cycle_counts - dt_act, t->duty_pin) != FSP_SUCCESS) {
       // error
   }
   if (!hw_deadtime) {
-    t = ((RenesasHardwareDriverParams*)params)->timer_config[1];
-    if (R_GPT_DutyCycleSet(&(t->ctrl), duty_cycle_counts + dt_act, t->duty_pin) != FSP_SUCCESS) {
+    if (R_GPT_DutyCycleSet(&(t1->ctrl), duty_cycle_counts + dt_act, t1->duty_pin) != FSP_SUCCESS) {
         // error
     }    
   }
 
   t = ((RenesasHardwareDriverParams*)params)->timer_config[2];
+  t1 = ((RenesasHardwareDriverParams*)params)->timer_config[3];
   duty_cycle_counts = (uint32_t)(dc_b * (float)(t->timer_cfg.period_counts));
   hw_deadtime = ((RenesasHardwareDriverParams*)params)->channels[2] == ((RenesasHardwareDriverParams*)params)->channels[3];
   dt_act = (duty_cycle_counts>0 && !hw_deadtime)?dt:0;
+  _setSinglePhaseState(t, t1, phase_state[1]);
   if (R_GPT_DutyCycleSet(&(t->ctrl), duty_cycle_counts - dt_act, t->duty_pin) != FSP_SUCCESS) {
       // error
   }
   if (!hw_deadtime) {
-    t = ((RenesasHardwareDriverParams*)params)->timer_config[3];
-    if (R_GPT_DutyCycleSet(&(t->ctrl), duty_cycle_counts + dt_act, t->duty_pin) != FSP_SUCCESS) {
+    if (R_GPT_DutyCycleSet(&(t1->ctrl), duty_cycle_counts + dt_act, t1->duty_pin) != FSP_SUCCESS) {
         // error
     }    
   }
 
   t = ((RenesasHardwareDriverParams*)params)->timer_config[4];
+  t1 = ((RenesasHardwareDriverParams*)params)->timer_config[5];
   duty_cycle_counts = (uint32_t)(dc_c * (float)(t->timer_cfg.period_counts));
   hw_deadtime = ((RenesasHardwareDriverParams*)params)->channels[4] == ((RenesasHardwareDriverParams*)params)->channels[5];
   dt_act = (duty_cycle_counts>0 && !hw_deadtime)?dt:0;
+  _setSinglePhaseState(t, t1, phase_state[2]);
   if (R_GPT_DutyCycleSet(&(t->ctrl), duty_cycle_counts, t->duty_pin) != FSP_SUCCESS) {
       // error
   }
   if (!hw_deadtime) {
-    t = ((RenesasHardwareDriverParams*)params)->timer_config[5];
-    if (R_GPT_DutyCycleSet(&(t->ctrl), duty_cycle_counts + dt_act, t->duty_pin) != FSP_SUCCESS) {
+    if (R_GPT_DutyCycleSet(&(t1->ctrl), duty_cycle_counts + dt_act, t1->duty_pin) != FSP_SUCCESS) {
         // error
     }    
   }
