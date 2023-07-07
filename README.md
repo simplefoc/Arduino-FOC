@@ -132,7 +132,9 @@ Please do not hesitate to leave an issue if you have problems/advices/suggestion
 
 Pull requests are welcome, but let's first discuss them in [community forum](https://community.simplefoc.com)!
 
-If you'd like to contribute to this porject but you are not very familiar with github, don't worry, let us know either by posting at the community forum , by posting a github issue or at our discord server.
+If you'd like to contribute to this project but you are not very familiar with github, don't worry, let us know either by posting at the community forum , by posting a github issue or at our discord server.
+
+If you are familiar, we accept pull requests to the dev branch!
 
 ## Arduino code example
 This is a simple Arduino code example implementing the velocity control program of a BLDC motor with encoder. 
