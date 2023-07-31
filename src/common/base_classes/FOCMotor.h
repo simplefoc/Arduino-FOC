@@ -205,7 +205,7 @@ class FOCMotor
     // sensor related variabels
     float sensor_offset; //!< user defined sensor zero offset
     float zero_electric_angle = NOT_SET;//!< absolute zero electric angle - if available
-    Direction sensor_direction = Direction::CW; //!< default is CW. if sensor_direction == Direction::CCW then direction will be flipped compared to CW. Set to UNKNOWN to set by calibration
+    Direction sensor_direction = Direction::UNKNOWN; //!< default is CW. if sensor_direction == Direction::CCW then direction will be flipped compared to CW. Set to UNKNOWN to set by calibration
 
     /**
      * Function providing BLDCMotor class with the 
