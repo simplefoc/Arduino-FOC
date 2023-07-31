@@ -61,7 +61,6 @@ void StepperMotor::init() {
      ||controller==MotionControlType::velocity_openloop)
      && (sensor_direction == Direction::UNKNOWN)) {
       sensor_direction = Direction::CW;
-    }
   }
 
   _delay(500);
