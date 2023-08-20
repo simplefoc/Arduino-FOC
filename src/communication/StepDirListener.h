@@ -5,7 +5,7 @@
 #include "../common/foc_utils.h"
 
 
-#if !defined(TARGET_RP2040) && !defined(_SAMD21_) && !defined(_SAMD51_) && !defined(_SAME51_) && !defined(ARDUINO_UNOR4_WIFI) && !defined(ARDUINO_UNOR4_MINIMA)
+#if !defined(TARGET_RP2040) && !defined(_SAMD21_) && !defined(_SAMD51_) && !defined(_SAME51_) && !defined(ARDUINO_UNOR4_WIFI) && !defined(ARDUINO_UNOR4_MINIMA) && !defined(NRF52_SERIES)
 #define PinStatus int
 #endif
 
