@@ -4,6 +4,12 @@
  */
 #if defined(TARGET_RP2040)
 
+
+#pragma message("")
+#pragma message("SimpleFOC: compiling for RP2040")
+#pragma message("")
+
+
 #define SIMPLEFOC_DEBUG_RP2040
 
 #include "../../hardware_api.h"

@@ -3,6 +3,13 @@
 
 #if defined(ARDUINO_UNOR4_WIFI) || defined(ARDUINO_UNOR4_MINIMA)
 
+
+#pragma message("")
+#pragma message("SimpleFOC: compiling for Arduino/Renesas (UNO R4)")
+#pragma message("")
+
+
+
 #include "communication/SimpleFOCDebug.h"
 #include "FspTimer.h"
 

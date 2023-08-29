@@ -2,6 +2,12 @@
 
 #if defined(ESP_H) && defined(ARDUINO_ARCH_ESP8266)
 
+
+#pragma message("")
+#pragma message("SimpleFOC: compiling for ESP8266")
+#pragma message("")
+
+
 #define _PWM_FREQUENCY 25000 // 25khz
 #define _PWM_FREQUENCY_MAX 50000 // 50khz
 

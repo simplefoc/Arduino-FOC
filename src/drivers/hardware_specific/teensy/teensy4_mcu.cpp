@@ -7,6 +7,12 @@
 // - Teensy 4.1 
 #if defined(__arm__) && defined(CORE_TEENSY) && ( defined(__IMXRT1062__) || defined(ARDUINO_TEENSY40) || defined(ARDUINO_TEENSY41) || defined(ARDUINO_TEENSY_MICROMOD) )
 
+
+#pragma message("")
+#pragma message("SimpleFOC: compiling for Teensy 4.x")
+#pragma message("")
+
+
 // half_cycle of the PWM variable
 int half_cycle = 0;
 

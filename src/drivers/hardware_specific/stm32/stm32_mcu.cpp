@@ -4,6 +4,10 @@
 
 #if defined(_STM32_DEF_)
 
+#pragma message("")
+#pragma message("SimpleFOC: compiling for STM32")
+#pragma message("")
+
 
 //#define SIMPLEFOC_STM32_DEBUG
 

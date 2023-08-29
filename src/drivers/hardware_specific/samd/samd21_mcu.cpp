@@ -7,6 +7,10 @@
 #ifdef _SAMD21_
 
 
+#pragma message("")
+#pragma message("SimpleFOC: compiling for SAMD21")
+#pragma message("")
+
 
 #ifndef TCC3_CH0
 #define TCC3_CH0 NOT_ON_TIMER
