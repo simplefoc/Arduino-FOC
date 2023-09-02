@@ -114,7 +114,7 @@ int  StepperMotor::initFOC() {
     // added the shaft_angle update
     sensor->update();
     shaft_angle = sensor->getAngle();
-  }else SIMPLEFOC_DEBUG("MOT: No sensor.");
+  } else { SIMPLEFOC_DEBUG("MOT: No sensor."); }
 
   if(exit_flag){
     SIMPLEFOC_DEBUG("MOT: Ready.");
@@ -177,10 +177,13 @@ int StepperMotor::alignSensor() {
     float moved =  fabs(mid_angle - end_angle);
     if( fabs(moved*pole_pairs - _2PI) > 0.5f ) { // 0.5f is arbitrary number it can be lower or higher!
       SIMPLEFOC_DEBUG("MOT: PP check: fail - estimated pp: ", _2PI/moved);
-    } else 
+    } else {
       SIMPLEFOC_DEBUG("MOT: PP check: OK!");
+    }
 
-  }else SIMPLEFOC_DEBUG("MOT: Skip dir calib.");
+  } else { 
+    SIMPLEFOC_DEBUG("MOT: Skip dir calib.");
+  }
 
   // zero electric angle not known
   if(!_isset(zero_electric_angle)){
@@ -200,7 +203,7 @@ int StepperMotor::alignSensor() {
     // stop everything
     setPhaseVoltage(0, 0, 0);
     _delay(200);
-  }else SIMPLEFOC_DEBUG("MOT: Skip offset calib.");
+  } else { SIMPLEFOC_DEBUG("MOT: Skip offset calib."); }
   return exit_flag;
 }
 
@@ -229,7 +232,7 @@ int StepperMotor::absoluteZeroSearch() {
   // check if the zero found
   if(monitor_port){
     if(sensor->needsSearch()) SIMPLEFOC_DEBUG("MOT: Error: Not found!");
-    else SIMPLEFOC_DEBUG("MOT: Success!");
+    else { SIMPLEFOC_DEBUG("MOT: Success!"); }
   }
   return !sensor->needsSearch();
 }
