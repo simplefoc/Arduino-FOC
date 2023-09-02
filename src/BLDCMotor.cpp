@@ -167,7 +167,7 @@ int  BLDCMotor::initFOC() {
         exit_flag *= alignCurrentSense();
       }
     }
-    else SIMPLEFOC_DEBUG("MOT: No current sense.");
+    else { SIMPLEFOC_DEBUG("MOT: No current sense."); }
   }
 
   if(exit_flag){
@@ -252,10 +252,11 @@ int BLDCMotor::alignSensor() {
     // check pole pair number
     if( fabs(moved*pole_pairs - _2PI) > 0.5f ) { // 0.5f is arbitrary number it can be lower or higher!
       SIMPLEFOC_DEBUG("MOT: PP check: fail - estimated pp: ", _2PI/moved);
-    } else 
+    } else {
       SIMPLEFOC_DEBUG("MOT: PP check: OK!");
+    }
 
-  } else SIMPLEFOC_DEBUG("MOT: Skip dir calib.");
+  } else { SIMPLEFOC_DEBUG("MOT: Skip dir calib."); }
 
   // zero electric angle not known
   if(!_isset(zero_electric_angle)){
@@ -276,7 +277,7 @@ int BLDCMotor::alignSensor() {
     // stop everything
     setPhaseVoltage(0, 0, 0);
     _delay(200);
-  }else SIMPLEFOC_DEBUG("MOT: Skip offset calib.");
+  } else { SIMPLEFOC_DEBUG("MOT: Skip offset calib."); }
   return exit_flag;
 }
 
@@ -305,8 +306,8 @@ int BLDCMotor::absoluteZeroSearch() {
   voltage_limit = limit_volt;
   // check if the zero found
   if(monitor_port){
-    if(sensor->needsSearch()) SIMPLEFOC_DEBUG("MOT: Error: Not found!");
-    else SIMPLEFOC_DEBUG("MOT: Success!");
+    if(sensor->needsSearch()) { SIMPLEFOC_DEBUG("MOT: Error: Not found!"); }
+    else { SIMPLEFOC_DEBUG("MOT: Success!"); }
   }
   return !sensor->needsSearch();
 }
