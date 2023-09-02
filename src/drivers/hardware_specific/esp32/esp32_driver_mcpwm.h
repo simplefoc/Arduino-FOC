@@ -81,6 +81,7 @@ typedef struct ESP32MCPWMDriverParams {
   mcpwm_unit_t mcpwm_unit;
   mcpwm_operator_t mcpwm_operator1;
   mcpwm_operator_t mcpwm_operator2;
+  float deadtime;
 } ESP32MCPWMDriverParams;
 
 
