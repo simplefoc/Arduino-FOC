@@ -10,6 +10,10 @@
 #if defined(__arm__) && defined(CORE_TEENSY) &&  (defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MKL26Z64__) || defined(__MK64FX512__) || defined(__MK66FX1M0__))
 
 
+#pragma message("")
+#pragma message("SimpleFOC: compiling for Teensy 3.x")
+#pragma message("")
+
 // pin definition from https://github.com/PaulStoffregen/cores/blob/286511f3ec849a6c9e0ec8b73ad6a2fada52e44c/teensy3/pins_teensy.c
 #if defined(__MK20DX128__)
 #define FTM0_CH0_PIN 22

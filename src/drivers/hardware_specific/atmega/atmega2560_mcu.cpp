@@ -2,6 +2,12 @@
 
 #if defined(__AVR_ATmega2560__) || defined(AVR_ATmega1280)
 
+
+#pragma message("")
+#pragma message("SimpleFOC: compiling for Arduino/ATmega2560 or Arduino/ATmega1280")
+#pragma message("")
+
+
 #define _PWM_FREQUENCY 32000
 #define _PWM_FREQUENCY_MAX 32000
 #define _PWM_FREQUENCY_MIN 4000
