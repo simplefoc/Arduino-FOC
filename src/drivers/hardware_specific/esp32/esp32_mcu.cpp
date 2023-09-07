@@ -2,6 +2,10 @@
 
 #if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC)
 
+#ifndef SIMPLEFOC_ESP32_HW_DEADTIME
+  #define SIMPLEFOC_ESP32_HW_DEADTIME true // TODO: Change to false when sw-deadtime & phase_state is approved ready for general use.
+#endif
+
 // define bldc motor slots array
 bldc_3pwm_motor_slots_t esp32_bldc_3pwm_motor_slots[4] =  {
   {_EMPTY_SLOT, &MCPWM0, MCPWM_UNIT_0, MCPWM_OPR_A, MCPWM0A, MCPWM1A, MCPWM2A}, // 1st motor will be MCPWM0 channel A
