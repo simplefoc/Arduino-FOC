@@ -25,6 +25,7 @@ float _readADCVoltageInline(const int pinA, const void* cs_params) {
     // return readings from the same ADC conversion run. The ADC on RP2040 is anyway in round robin mode :-(
     // like this we either have to block interrupts, or of course have the chance of reading across
     // new ADC conversions, which probably won't improve the accuracy.
+    _UNUSED(cs_params);
 
     if (pinA>=26 && pinA<=29 && engine.channelsEnabled[pinA-26]) {
         return engine.lastResults.raw[pinA-26]*engine.adc_conv;
@@ -36,6 +37,8 @@ float _readADCVoltageInline(const int pinA, const void* cs_params) {
 
 
 void* _configureADCInline(const void *driver_params, const int pinA, const int pinB, const int pinC) {
+    _UNUSED(driver_params);
+
     if( _isset(pinA) )
         engine.addPin(pinA);
     if( _isset(pinB) )
