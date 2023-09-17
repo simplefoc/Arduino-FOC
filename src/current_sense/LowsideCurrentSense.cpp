@@ -1,4 +1,5 @@
 #include "LowsideCurrentSense.h"
+#include "communication/SimpleFOCDebug.h"
 // LowsideCurrentSensor constructor
 //  - shunt_resistor  - shunt resistor value
 //  - gain  - current-sense op-amp gain
@@ -35,6 +36,12 @@ LowsideCurrentSense::LowsideCurrentSense(float _mVpA, int _pinA, int _pinB, int 
 
 // Lowside sensor init function
 int LowsideCurrentSense::init(){
+
+    if (driver==nullptr) {
+        SIMPLEFOC_DEBUG("CUR: Driver not linked!");
+        return 0;
+    }
+
     // configure ADC variables
     params = _configureADCLowSide(driver->params,pinA,pinB,pinC);
     // if init failed return fail
@@ -89,9 +96,11 @@ PhaseCurrent_s LowsideCurrentSense::getPhaseCurrents(){
 // 3 - success but gains inverted
 // 4 - success but pins reconfigured and gains inverted
 int LowsideCurrentSense::driverAlign(float voltage){
-    
+        
     int exit_flag = 1;
     if(skip_align) return exit_flag;
+
+    if (!initialized) return 0;
 
     if(_isset(pinA)){
         // set phase A active and phases B and C down

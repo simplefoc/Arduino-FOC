@@ -62,6 +62,8 @@ int GenericCurrentSense::driverAlign(float voltage){
     int exit_flag = 1;
     if(skip_align) return exit_flag;
 
+    if (!initialized) return 0;
+
     // // set phase A active and phases B and C down
     // driver->setPwm(voltage, 0, 0);
     // _delay(200);
