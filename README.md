@@ -30,8 +30,9 @@ Therefore this is an attempt to:
 > - Expose I2C errors in MagneticSensorI2C (thanks to [@padok](https://github.com/padok))
 > - Improved default trig functions (sine, cosine) - faster, smaller
 > - Overridable trig functions - plug in your own optimized versions
-> - bugfix: microseconds overflow in velocity mode
-> - bugfix: KV initialization
+> - Bugfix: microseconds overflow in velocity mode
+> - Bugfix: KV initialization
+> - Compatibility with newest versions of Arduino framework for STM32, Renesas, ESP32, Atmel SAM, Atmel AVR, nRF52 and RP2040
 
 ## Arduino *SimpleFOClibrary* v2.3.1
 
