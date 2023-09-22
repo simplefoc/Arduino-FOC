@@ -60,6 +60,7 @@ void loop() {
 
   // open loop velocity movement
   // using motor.voltage_limit and motor.velocity_limit
+  // to turn the motor "backwards", just set a negative target_velocity
   motor.move(target_velocity);
 
   // user communication

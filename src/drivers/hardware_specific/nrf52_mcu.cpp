@@ -3,6 +3,10 @@
 
 #if defined(NRF52_SERIES)
 
+#pragma message("")
+#pragma message("SimpleFOC: compiling for NRF52")
+#pragma message("")
+
 
 #define PWM_CLK (16000000)
 #define PWM_FREQ (40000)

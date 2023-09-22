@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Arduino.h"
+
 #if defined(TARGET_RP2040)
 
 

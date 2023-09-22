@@ -56,8 +56,19 @@ void MagneticSensorPWM::init(){
     // initial hardware
     pinMode(pinPWM, INPUT);
     raw_count = getRawCount();
+    pulse_timestamp = _micros();
     
     this->Sensor::init(); // call base class init
+}
+
+// Sensor update function. Safely copy volatile interrupt variables into Sensor base class state variables.
+void MagneticSensorPWM::update() {
+  if (is_interrupt_based)
+    noInterrupts();
+  Sensor::update();
+  angle_prev_ts = pulse_timestamp; // Timestamp of actual sample, before the time-consuming PWM communication
+  if (is_interrupt_based)
+    interrupts();
 }
 
 // get current angle (rad)
@@ -73,7 +84,8 @@ float MagneticSensorPWM::getSensorAngle(){
 // read the raw counter of the magnetic sensor
 int MagneticSensorPWM::getRawCount(){
     if (!is_interrupt_based){ // if it's not interrupt based read the value in a blocking way
-        pulse_length_us = pulseIn(pinPWM, HIGH);
+        pulse_timestamp = _micros(); // ideally this should be done right at the rising edge of the pulse
+        pulse_length_us = pulseIn(pinPWM, HIGH, 1200); // 1200us timeout, should this be configurable?
     }
     return pulse_length_us;
 }
@@ -84,7 +96,10 @@ void MagneticSensorPWM::handlePWM() {
     unsigned long now_us = _micros();
 
     // if falling edge, calculate the pulse length
-    if (!digitalRead(pinPWM)) pulse_length_us = now_us - last_call_us;
+    if (!digitalRead(pinPWM)) {
+        pulse_length_us = now_us - last_call_us;
+        pulse_timestamp = last_call_us; // angle was sampled at the rising edge of the pulse, so use that timestamp
+    }
 
     // save the currrent timestamp for the next call
     last_call_us = now_us;

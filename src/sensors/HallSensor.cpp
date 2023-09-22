@@ -94,8 +94,16 @@ void HallSensor::attachSectorCallback(void (*_onSectorChange)(int sector)) {
 
 
 
-float HallSensor::getSensorAngle() {
-  return getAngle();
+// Sensor update function. Safely copy volatile interrupt variables into Sensor base class state variables.
+void HallSensor::update() {
+  // Copy volatile variables in minimal-duration blocking section to ensure no interrupts are missed
+  noInterrupts();
+  angle_prev_ts = pulse_timestamp;
+  long last_electric_rotations = electric_rotations;
+  int8_t last_electric_sector = electric_sector;
+  interrupts();
+  angle_prev = ((float)((last_electric_rotations * 6 + last_electric_sector) % cpr) / (float)cpr) * _2PI ;
+  full_rotations = (int32_t)((last_electric_rotations * 6 + last_electric_sector) / cpr);
 }
 
 
@@ -104,8 +112,8 @@ float HallSensor::getSensorAngle() {
 	Shaft angle calculation
   TODO: numerical precision issue here if the electrical rotation overflows the angle will be lost
 */
-float HallSensor::getMechanicalAngle() {
-  return ((float)((electric_rotations * 6 + electric_sector) % cpr) / (float)cpr) * _2PI ;
+float HallSensor::getSensorAngle() {
+  return ((float)(electric_rotations * 6 + electric_sector) / (float)cpr) * _2PI ;
 }
 
 /*
@@ -113,37 +121,17 @@ float HallSensor::getMechanicalAngle() {
   function using mixed time and frequency measurement technique
 */
 float HallSensor::getVelocity(){
+  noInterrupts();
+  long last_pulse_timestamp = pulse_timestamp;
   long last_pulse_diff = pulse_diff;
-  if (last_pulse_diff == 0 || ((long)(_micros() - pulse_timestamp) > last_pulse_diff) ) { // last velocity isn't accurate if too old
+  interrupts();
+  if (last_pulse_diff == 0 || ((long)(_micros() - last_pulse_timestamp) > last_pulse_diff*2) ) { // last velocity isn't accurate if too old
     return 0;
   } else {
-    float vel = direction * (_2PI / (float)cpr) / (last_pulse_diff / 1000000.0f);
-    // quick fix https://github.com/simplefoc/Arduino-FOC/issues/192
-    if(vel < -velocity_max || vel > velocity_max)  vel = 0.0f;   //if velocity is out of range then make it zero
-    return vel;
+    return direction * (_2PI / (float)cpr) / (last_pulse_diff / 1000000.0f);
   }
 
 }
-
-
-
-float HallSensor::getAngle() {
-  return ((float)(electric_rotations * 6 + electric_sector) / (float)cpr) * _2PI ;
-}
-
-
-double HallSensor::getPreciseAngle() {
-  return ((double)(electric_rotations * 6 + electric_sector) / (double)cpr) * (double)_2PI ;
-}
-
-
-int32_t HallSensor::getFullRotations() {
-  return (int32_t)((electric_rotations * 6 + electric_sector) / cpr);
-}
-
-
-
-
 
 // HallSensor initialisation of the hardware pins 
 // and calculation variables

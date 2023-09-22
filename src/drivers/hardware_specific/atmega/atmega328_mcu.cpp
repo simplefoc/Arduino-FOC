@@ -2,6 +2,10 @@
 
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega328PB__)
 
+#pragma message("")
+#pragma message("SimpleFOC: compiling for Arduino/ATmega328 ATmega168 ATmega328PB")
+#pragma message("")
+
 #define _PWM_FREQUENCY 32000
 #define _PWM_FREQUENCY_MAX 32000
 #define _PWM_FREQUENCY_MIN 4000

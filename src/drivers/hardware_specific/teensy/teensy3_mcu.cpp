@@ -10,6 +10,10 @@
 #if defined(__arm__) && defined(CORE_TEENSY) &&  (defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MKL26Z64__) || defined(__MK64FX512__) || defined(__MK66FX1M0__))
 
 
+#pragma message("")
+#pragma message("SimpleFOC: compiling for Teensy 3.x")
+#pragma message("")
+
 // pin definition from https://github.com/PaulStoffregen/cores/blob/286511f3ec849a6c9e0ec8b73ad6a2fada52e44c/teensy3/pins_teensy.c
 #if defined(__MK20DX128__)
 #define FTM0_CH0_PIN 22
@@ -206,7 +210,8 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 6PWM setting
 // - hardware specific
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
+void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params){
+  _UNUSED(phase_state);
   // transform duty cycle from [0,1] to [0,255]
   // phase A
   analogWrite(((GenericDriverParams*)params)->pins[0], 255.0f*dc_a);

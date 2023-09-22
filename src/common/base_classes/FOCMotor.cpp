@@ -82,8 +82,10 @@ float FOCMotor::electricalAngle(){
 // function implementing the monitor_port setter
 void FOCMotor::useMonitoring(Print &print){
   monitor_port = &print; //operate on the address of print
+  #ifndef SIMPLEFOC_DISABLE_DEBUG
   SimpleFOCDebug::enable(&print);
   SIMPLEFOC_DEBUG("MOT: Monitor enabled!");
+  #endif
 }
 
 // utility function intended to be used with serial plotter to monitor motor variables

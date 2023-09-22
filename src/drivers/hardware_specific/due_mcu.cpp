@@ -2,6 +2,12 @@
 
 #if defined(__arm__) && defined(__SAM3X8E__)
 
+
+#pragma message("")
+#pragma message("SimpleFOC: compiling for Arduino/Due")
+#pragma message("")
+
+
 #define _PWM_FREQUENCY 25000 // 25khz
 #define _PWM_FREQUENCY_MAX 50000 // 50khz
 

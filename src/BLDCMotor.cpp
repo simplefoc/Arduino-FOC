@@ -44,7 +44,9 @@ BLDCMotor::BLDCMotor(int pp, float _R, float _KV, float _inductance)
   phase_resistance = _R;
   // save back emf constant KV = 1/KV
   // 1/sqrt(2) - rms value
-  KV_rating = _KV*_SQRT2;
+  KV_rating = NOT_SET;
+  if (_isset(_KV))
+    KV_rating = _KV*_SQRT2;
   // save phase inductance
   phase_inductance = _inductance;
 
@@ -90,6 +92,13 @@ void BLDCMotor::init() {
   }
   P_angle.limit = velocity_limit;
 
+  // if using open loop control, set a CW as the default direction if not already set
+  if ((controller==MotionControlType::angle_openloop
+     ||controller==MotionControlType::velocity_openloop)
+     && (sensor_direction == Direction::UNKNOWN)) {
+      sensor_direction = Direction::CW;
+  }
+
   _delay(500);
   // enable motor
   SIMPLEFOC_DEBUG("MOT: Enable driver.");
@@ -124,20 +133,13 @@ void BLDCMotor::enable()
   FOC functions
 */
 // FOC initialization function
-int  BLDCMotor::initFOC( float zero_electric_offset, Direction _sensor_direction) {
+int  BLDCMotor::initFOC() {
   int exit_flag = 1;
 
   motor_status = FOCMotorStatus::motor_calibrating;
 
   // align motor if necessary
   // alignment necessary for encoders!
-  if(_isset(zero_electric_offset)){
-    // abosolute zero offset provided - no need to align
-    zero_electric_angle = zero_electric_offset;
-    // set the sensor direction - default CW
-    sensor_direction = _sensor_direction;
-  }
-
   // sensor and motor alignment - can be skipped
   // by setting motor.sensor_direction and motor.zero_electric_angle
   _delay(500);
@@ -165,7 +167,7 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction _sensor_direction
         exit_flag *= alignCurrentSense();
       }
     }
-    else SIMPLEFOC_DEBUG("MOT: No current sense.");
+    else { SIMPLEFOC_DEBUG("MOT: No current sense."); }
   }
 
   if(exit_flag){
@@ -211,7 +213,7 @@ int BLDCMotor::alignSensor() {
   if(!exit_flag) return exit_flag;
 
   // if unknown natural direction
-  if(!_isset(sensor_direction)){
+  if(sensor_direction==Direction::UNKNOWN){
 
     // find natural direction
     // move one electrical revolution forward
@@ -250,10 +252,11 @@ int BLDCMotor::alignSensor() {
     // check pole pair number
     if( fabs(moved*pole_pairs - _2PI) > 0.5f ) { // 0.5f is arbitrary number it can be lower or higher!
       SIMPLEFOC_DEBUG("MOT: PP check: fail - estimated pp: ", _2PI/moved);
-    } else 
+    } else {
       SIMPLEFOC_DEBUG("MOT: PP check: OK!");
+    }
 
-  } else SIMPLEFOC_DEBUG("MOT: Skip dir calib.");
+  } else { SIMPLEFOC_DEBUG("MOT: Skip dir calib."); }
 
   // zero electric angle not known
   if(!_isset(zero_electric_angle)){
@@ -274,7 +277,7 @@ int BLDCMotor::alignSensor() {
     // stop everything
     setPhaseVoltage(0, 0, 0);
     _delay(200);
-  }else SIMPLEFOC_DEBUG("MOT: Skip offset calib.");
+  } else { SIMPLEFOC_DEBUG("MOT: Skip offset calib."); }
   return exit_flag;
 }
 
@@ -303,8 +306,8 @@ int BLDCMotor::absoluteZeroSearch() {
   voltage_limit = limit_volt;
   // check if the zero found
   if(monitor_port){
-    if(sensor->needsSearch()) SIMPLEFOC_DEBUG("MOT: Error: Not found!");
-    else SIMPLEFOC_DEBUG("MOT: Success!");
+    if(sensor->needsSearch()) { SIMPLEFOC_DEBUG("MOT: Error: Not found!"); }
+    else { SIMPLEFOC_DEBUG("MOT: Success!"); }
   }
   return !sensor->needsSearch();
 }
@@ -418,7 +421,8 @@ void BLDCMotor::move(float new_target) {
       // angle set point
       shaft_angle_sp = target;
       // calculate velocity set point
-      shaft_velocity_sp = P_angle( shaft_angle_sp - shaft_angle );
+      shaft_velocity_sp = feed_forward_velocity + P_angle( shaft_angle_sp - shaft_angle );
+      shaft_angle_sp = _constrain(shaft_angle_sp,-velocity_limit, velocity_limit);
       // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
       current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
       // if torque controlled through voltage
@@ -543,12 +547,8 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
     case FOCModulationType::SinePWM :
       // Sinusoidal PWM modulation
       // Inverse Park + Clarke transformation
+      _sincos(angle_el, &_sa, &_ca);
 
-      // angle normalization in between 0 and 2pi
-      // only necessary if using _sin and _cos - approximation functions
-      angle_el = _normalizeAngle(angle_el);
-      _ca = _cos(angle_el);
-      _sa = _sin(angle_el);
       // Inverse park transform
       Ualpha =  _ca * Ud - _sa * Uq;  // -sin(angle) * Uq;
       Ubeta =  _sa * Ud + _ca * Uq;    //  cos(angle) * Uq;

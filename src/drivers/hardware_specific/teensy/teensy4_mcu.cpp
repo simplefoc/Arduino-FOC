@@ -7,6 +7,12 @@
 // - Teensy 4.1 
 #if defined(__arm__) && defined(CORE_TEENSY) && ( defined(__IMXRT1062__) || defined(ARDUINO_TEENSY40) || defined(ARDUINO_TEENSY41) || defined(ARDUINO_TEENSY_MICROMOD) )
 
+
+#pragma message("")
+#pragma message("SimpleFOC: compiling for Teensy 4.x")
+#pragma message("")
+
+
 // half_cycle of the PWM variable
 int half_cycle = 0;
 
@@ -290,7 +296,8 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 6PWM setting
 // - hardware specific
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
+void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params){
+  _UNUSED(phase_state);
   write_pwm_pair (((Teensy4DriverParams*)params)->flextimers[0], ((Teensy4DriverParams*)params)->submodules[0], dc_a);
   write_pwm_pair (((Teensy4DriverParams*)params)->flextimers[1], ((Teensy4DriverParams*)params)->submodules[1], dc_b);
   write_pwm_pair (((Teensy4DriverParams*)params)->flextimers[2], ((Teensy4DriverParams*)params)->submodules[2], dc_c);

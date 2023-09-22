@@ -24,34 +24,20 @@ Therefore this is an attempt to:
    - *Medium-power* BLDC driver (<30Amps): [Arduino <span class="simple">Simple<b>FOC</b>PowerShield</span> ](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
-> NEW RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.0
-> - Arduino Mega 6pwm more timers supported 
-> - Arduino boards - frequency change support either 32kHz or 4kHz
-> - Arduino Uno - synched timers in 3pwm and 6pwm mode [#71](https://github.com/simplefoc/Arduino-FOC/issues/71)
-> - Teensy 3.x initial support for 6pwm
-> - Teensy 4.x initial support for 6pwm
-> - Example for v3.1 SimpleFOCShield 
-> - RP2040 compatibility for earlehillpower core [#234](https://github.com/simplefoc/Arduino-FOC/pull/234) [#236](https://github.com/simplefoc/Arduino-FOC/pull/236)
-> - More flexible monitoring API 
->   - start, end and separator characters
->   - decimal places (settable through commander)
-> - Added machine readable verbose mode in `Commander` [#233](https://github.com/simplefoc/Arduino-FOC/pull/233)
-> - *Simple**FOC**WebController* - Web based user interface for SimpleFOC by [@geekuillaume](https://github.com/geekuillaume) - [webcontroller.simplefoc.com](webcontroller.simplefoc.com)
-> - bugfix - `MagneticSensorPWM` multiple occasions - [#258](https://github.com/simplefoc/Arduino-FOC/pull/258)
-> - bugfix - current sense align - added offset exchange when exchanging pins
-> - bugfix - trapezoid 150 fixed
-> - bugfix - 4pwm on ESP8266 [#224](https://github.com/simplefoc/Arduino-FOC/pull/224)
-> - Additional `InlineCurrentSense` and `LowsideCurrentSense` constructor using milliVolts per Amp [#253](https://github.com/simplefoc/Arduino-FOC/pull/253)
-> - STM32L4xx current sense support by [@Triple6](https://github.com/Triple6) (discord) [#257](https://github.com/simplefoc/Arduino-FOC/pull/257)
-> - phase disable in 6pwm mode 
->   - stm32 - software and hardware 6pwm
->   - atmega328 
->   - atmega2560
-> - Lag compensation using motor inductance [#246](https://github.com/simplefoc/Arduino-FOC/issues/246)
->   - current control through voltage torque mode enhancement
->   - extended `BLDCMotor` and `StepperMotor` constructors to receive the inductance paramerer
->   - can also be set using `motor.phase_inductance` or through `Commander`
-## Arduino *SimpleFOClibrary* v2.3
+> NEW RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.1
+> - Support for Arduino UNO R4 Minima (Renesas R7FA4M1 MCU - note UNO R4 WiFi is not yet supported)
+> - Support setting PWM polarity on ESP32 (thanks to [@mcells](https://github.com/mcells))
+> - Expose I2C errors in MagneticSensorI2C (thanks to [@padok](https://github.com/padok))
+> - Improved default trig functions (sine, cosine) - faster, smaller
+> - Overridable trig functions - plug in your own optimized versions
+> - Bugfix: microseconds overflow in velocity mode [#287](https://github.com/simplefoc/Arduino-FOC/issues/287)
+> - Bugfix: KV initialization ([5fc3128](https://github.com/simplefoc/Arduino-FOC/commit/5fc3128d282b65c141ca486327c6235089999627))
+> - And more bugfixes - see the [complete list of 2.3.1 fixes here](https://github.com/simplefoc/Arduino-FOC/issues?q=is%3Aissue+milestone%3A2.3.1_Release)
+> - Change: simplify initFOC() API ([d57d32d](https://github.com/simplefoc/Arduino-FOC/commit/d57d32dd8715dbed4e476469bc3de0c052f1d531). [5231e5e](https://github.com/simplefoc/Arduino-FOC/commit/5231e5e1d044b0cc33ede67664b6ef2f9d0a8cdf), [10c5b87](https://github.com/simplefoc/Arduino-FOC/commit/10c5b872672cab72df16ddd738bbf09bcce95d28))
+> - Change: check for linked driver in currentsense and exit gracefully ([5ef4d9d](https://github.com/simplefoc/Arduino-FOC/commit/5ef4d9d5a92e03da0dd5af7f624243ab30f1b688))
+> - Compatibility with newest versions of Arduino framework for STM32, Renesas, ESP32, Atmel SAM, Atmel AVR, nRF52 and RP2040
+
+## Arduino *SimpleFOClibrary* v2.3.1
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">
@@ -78,7 +64,7 @@ This video demonstrates the *Simple**FOC**library* basic usage, electronic conne
 - **Cross-platform**:
    - Seamless code transfer from one microcontroller family to another 
    - Supports multiple [MCU architectures](https://docs.simplefoc.com/microcontrollers):
-      - Arduino: UNO, MEGA, DUE, Leonardo ....
+      - Arduino: UNO R4, UNO, MEGA, DUE, Leonardo, Nano, Nano33 ....
       - STM32
       - ESP32
       - Teensy
@@ -132,7 +118,9 @@ Please do not hesitate to leave an issue if you have problems/advices/suggestion
 
 Pull requests are welcome, but let's first discuss them in [community forum](https://community.simplefoc.com)!
 
-If you'd like to contribute to this porject but you are not very familiar with github, don't worry, let us know either by posting at the community forum , by posting a github issue or at our discord server.
+If you'd like to contribute to this project but you are not very familiar with github, don't worry, let us know either by posting at the community forum , by posting a github issue or at our discord server.
+
+If you are familiar, we accept pull requests to the dev branch!
 
 ## Arduino code example
 This is a simple Arduino code example implementing the velocity control program of a BLDC motor with encoder. 

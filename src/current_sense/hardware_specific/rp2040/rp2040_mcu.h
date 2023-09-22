@@ -22,6 +22,9 @@
  * Inline sensing is supported by offering a user-selectable fixed ADC sampling rate, which can be set between 500kHz and 1Hz.
  * After starting the engine it will continuously sample and provide new values at the configured rate.
  * 
+ * The default sampling rate is 20kHz, which is suitable for 2 channels assuming you a 5kHz main loop speed (a new measurement is used per
+ * main loop iteration).
+ * 
  * Low-side sensing is currently not supported.
  * 
  * The SimpleFOC PWM driver for RP2040 syncs all the slices, so the PWM trigger is applied to the first used slice. For current
@@ -74,7 +77,7 @@ public:
 
     ADCResults getLastResults(); // TODO find a better API and representation for this
 
-    int samples_per_second = 0; // leave at 0 to convert in tight loop
+    int samples_per_second = 20000; // 20kHz default (assuming 2 shunts and 5kHz loop speed), set to 0 to convert in tight loop
     float adc_conv = (SIMPLEFOC_RP2040_ADC_VDDA / SIMPLEFOC_RP2040_ADC_RESOLUTION); // conversion from raw ADC to float
 
     //int triggerPWMSlice = -1;

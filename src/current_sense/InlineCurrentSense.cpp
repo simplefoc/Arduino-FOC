@@ -1,4 +1,5 @@
 #include "InlineCurrentSense.h"
+#include "communication/SimpleFOCDebug.h"
 // InlineCurrentSensor constructor
 //  - shunt_resistor  - shunt resistor value
 //  - gain  - current-sense op-amp gain
@@ -92,6 +93,13 @@ int InlineCurrentSense::driverAlign(float voltage){
     
     int exit_flag = 1;
     if(skip_align) return exit_flag;
+
+    if (driver==nullptr) {
+        SIMPLEFOC_DEBUG("CUR: No driver linked!");
+        return 0;
+    }
+
+    if (!initialized) return 0;
 
     if(_isset(pinA)){
         // set phase A active and phases B and C down
