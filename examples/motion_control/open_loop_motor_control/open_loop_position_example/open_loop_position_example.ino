@@ -62,6 +62,7 @@ void setup() {
 void loop() {
   // open  loop angle movements
   // using motor.voltage_limit and motor.velocity_limit
+  // angles can be positive or negative, negative angles correspond to opposite motor direction
   motor.move(target_position);
   
   // user communication

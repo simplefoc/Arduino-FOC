@@ -13,6 +13,8 @@
 #include "communication/SimpleFOCDebug.h"
 #include "FspTimer.h"
 
+#define GPT_OPEN                                         (0x00475054ULL)
+
 /*
   We use the GPT timers, there are 2 channels (32 bit) + 6 channels (16 bit)
   Each channel has 2 outputs (GTIOCAx and GTIOCBx) which can be complimentary.
@@ -202,6 +204,7 @@ bool configureTimerPin(RenesasHardwareDriverParams* params, uint8_t index, bool 
   t->timer_cfg.p_context = nullptr;
   t->timer_cfg.p_extend = &(t->ext_cfg);
   t->timer_cfg.cycle_end_ipl = BSP_IRQ_DISABLED;
+  t->timer_cfg.cycle_end_irq = FSP_INVALID_VECTOR;
 
   t->ext_cfg.p_pwm_cfg = &(t->pwm_cfg);
   t->pwm_cfg.trough_ipl = BSP_IRQ_DISABLED;
@@ -256,6 +259,14 @@ bool configureTimerPin(RenesasHardwareDriverParams* params, uint8_t index, bool 
     t->ext_cfg.gtior_setting.gtior_b.obdflt = active_high ? 0x00 : 0x01;
   }
 
+  // lets stop the timer in case its running
+  if (GPT_OPEN == t->ctrl.open) {
+    if (R_GPT_Stop(&(t->ctrl)) != FSP_SUCCESS) {
+      SIMPLEFOC_DEBUG("DRV: timer stop failed");
+      return false;
+    }
+  }
+
   memset(&(t->ctrl), 0, sizeof(gpt_instance_ctrl_t));
   err = R_GPT_Open(&(t->ctrl),&(t->timer_cfg));
   if ((err != FSP_ERR_ALREADY_OPEN) && (err != FSP_SUCCESS)) {
@@ -294,7 +305,7 @@ bool configureTimerPin(RenesasHardwareDriverParams* params, uint8_t index, bool 
 bool startTimerChannels(RenesasHardwareDriverParams* params, int num_channels) {
   uint32_t mask = 0;
   for (int i = 0; i < num_channels; i++) {
-    RenesasTimerConfig* t = params->timer_config[i];
+    // RenesasTimerConfig* t = params->timer_config[i];
     // if (R_GPT_Start(&(t->ctrl)) != FSP_SUCCESS) {
     //   SIMPLEFOC_DEBUG("DRV: timer start failed");
     //   return false;

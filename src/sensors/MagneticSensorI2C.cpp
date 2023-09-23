@@ -28,7 +28,7 @@ MagneticSensorI2C::MagneticSensorI2C(uint8_t _chip_address, int _bit_resolution,
   // angle read register of the magnetic sensor
   angle_register_msb = _angle_register_msb;
   // register maximum value (counts per revolution)
-  cpr = pow(2, _bit_resolution);
+  cpr = _powtwo(_bit_resolution);
 
   // depending on the sensor architecture there are different combinations of
   // LSB and MSB register used bits
@@ -48,7 +48,7 @@ MagneticSensorI2C::MagneticSensorI2C(MagneticSensorI2CConfig_s config){
   // angle read register of the magnetic sensor
   angle_register_msb = config.angle_register;
   // register maximum value (counts per revolution)
-  cpr = pow(2, config.bit_resolution);
+  cpr = _powtwo(config.bit_resolution);
 
   int bits_used_msb = config.data_start_bit - 7;
   lsb_used = config.bit_resolution - bits_used_msb;
