@@ -39,12 +39,8 @@ DQCurrent_s CurrentSense::getFOCCurrents(float angle_el){
     ABCurrent_s ABcurrent = getABCurrents(current);
     
     // calculate park transform
-    float ct;
-    float st;
-    _sincos(angle_el, &st, &ct);
-    DQCurrent_s return_current;
-    return_current.d = ABcurrent.alpha * ct + ABcurrent.beta * st;
-    return_current.q = ABcurrent.beta * ct - ABcurrent.alpha * st;
+    DQCurrent_s return_current = getDQCurrents(ABcurrent,angle_el);
+
     return return_current;
 }
 
@@ -82,6 +78,20 @@ ABCurrent_s CurrentSense::getABCurrents(PhaseCurrent_s current){
     return_ABcurrent.alpha = i_alpha;
     return_ABcurrent.beta = i_beta;
     return return_ABcurrent;
+}
+
+// function used with the foc algorihtm
+//   calculating D and Q currents from Alpha Beta currents and electrical angle
+//   - function calculating Clarke transform of the phase currents
+DQCurrent_s CurrentSense::getDQCurrents(ABCurrent_s current, float angle_el){
+ // calculate park transform
+    float ct;
+    float st;
+    _sincos(angle_el, &st, &ct);
+    DQCurrent_s return_current;
+    return_current.d = current.alpha * ct + current.beta * st;
+    return_current.q = current.beta * ct - current.alpha * st;
+    return return_current;
 }
 
 /**

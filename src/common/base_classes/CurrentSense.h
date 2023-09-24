@@ -78,6 +78,15 @@ class CurrentSense{
      */
     ABCurrent_s getABCurrents(PhaseCurrent_s current);
 
+    /**
+     * Function used for Park transform in FOC control
+     *   It reads the Alpha Beta currents and electircal angle of the motor 
+     *   It returns the D and Q currents
+     * 
+     * @param current - phase current
+     */
+    DQCurrent_s getDQCurrents(ABCurrent_s current,float angle_el);
+
 
 };
 
