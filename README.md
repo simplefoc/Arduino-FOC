@@ -26,8 +26,10 @@ Therefore this is an attempt to:
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
 > NEW RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.2
+> - Improved [space vector modulation code](https://github.com/simplefoc/Arduino-FOC/pull/309) thanks to [@Candas1](https://github.com/Candas1)
 > - Bugfix for teensy3.2 - [#321](https://github.com/simplefoc/Arduino-FOC/pull/321)
 > - Added teensy3/4 compile to the github CI using platformio
+> - And more bugfixes - see the [complete list of 2.3.2 fixes here](https://github.com/simplefoc/Arduino-FOC/issues?q=is%3Aissue+milestone%3A2.3.2_Release)
 
 ## Arduino *SimpleFOClibrary* v2.3.2
 

@@ -134,7 +134,7 @@ int StepperMotor::alignSensor() {
   SIMPLEFOC_DEBUG("MOT: Align sensor.");
 
   // if unknown natural direction
-  if(!_isset(sensor_direction)){
+  if(sensor_direction == Direction::UNKNOWN){
     // check if sensor needs zero search
     if(sensor->needsSearch()) exit_flag = absoluteZeroSearch();
     // stop init if not found index

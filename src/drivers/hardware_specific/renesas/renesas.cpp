@@ -144,7 +144,7 @@ bool configureTimerPin(RenesasHardwareDriverParams* params, uint8_t index, bool 
   uint8_t timer_channel = GET_CHANNEL(pinCfgs[0]);
   // check its not used
   if (channel_used[timer_channel]) {
-    SIMPLEFOC_DEBUG("DRV: channel in use");
+    SIMPLEFOC_DEBUG("DRV: channel in use: ", timer_channel);
     return false;
   }
 
@@ -262,26 +262,17 @@ bool configureTimerPin(RenesasHardwareDriverParams* params, uint8_t index, bool 
     t->ext_cfg.gtior_setting.gtior_b.gtiob = 0x03 | (active_high ? 0x00 : 0x10);
     t->ext_cfg.gtior_setting.gtior_b.obdflt = active_high ? 0x00 : 0x01;
   }
-
-  // lets stop the timer in case its running
-  if (GPT_OPEN == t->ctrl.open) {
-    if (R_GPT_Stop(&(t->ctrl)) != FSP_SUCCESS) {
-      SIMPLEFOC_DEBUG("DRV: timer stop failed");
-      return false;
-    }
-  }
-
   memset(&(t->ctrl), 0, sizeof(gpt_instance_ctrl_t));
   err = R_GPT_Open(&(t->ctrl),&(t->timer_cfg));
   if ((err != FSP_ERR_ALREADY_OPEN) && (err != FSP_SUCCESS)) {
     SIMPLEFOC_DEBUG("DRV: open failed");
     return false;
   }
-  #if defined(SIMPLEFOC_RESENSAS_DEBUG)
   if (err == FSP_ERR_ALREADY_OPEN) {
     SimpleFOCDebug::println("DRV: timer already open");
+    return false;
   }
-  #endif
+
   err = R_GPT_PeriodSet(&(t->ctrl), t->timer_cfg.period_counts);
   if (err != FSP_SUCCESS) {
     SIMPLEFOC_DEBUG("DRV: period set failed");
