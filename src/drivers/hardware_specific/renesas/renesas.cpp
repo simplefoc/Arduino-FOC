@@ -207,6 +207,10 @@ bool configureTimerPin(RenesasHardwareDriverParams* params, uint8_t index, bool 
   t->timer_cfg.cycle_end_irq = FSP_INVALID_VECTOR;
 
   t->ext_cfg.p_pwm_cfg = &(t->pwm_cfg);
+  t->ext_cfg.capture_a_ipl = BSP_IRQ_DISABLED;
+  t->ext_cfg.capture_a_irq = FSP_INVALID_VECTOR;
+  t->ext_cfg.capture_b_ipl = BSP_IRQ_DISABLED;
+  t->ext_cfg.capture_b_irq = FSP_INVALID_VECTOR;
   t->pwm_cfg.trough_ipl = BSP_IRQ_DISABLED;
   t->pwm_cfg.trough_irq = FSP_INVALID_VECTOR;
   t->pwm_cfg.poeg_link = GPT_POEG_LINK_POEG0;
