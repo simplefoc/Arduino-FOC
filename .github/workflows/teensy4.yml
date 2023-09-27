@@ -25,7 +25,7 @@ jobs:
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
 
-- name: Run PlatformIO
+      - name: Run PlatformIO
         run: pio ci --lib="." --board=teensy41 --board=teensy40
         env:
           PLATFORMIO_CI_SRC: ${{ matrix.example }}
