@@ -1,0 +1,31 @@
+name: PlatformIO CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        example: [examples/hardware_specific_examples/Teensy/Teensy4/bldc_driver_6pwm_standalone/bldc_driver_6pwm_standalone.ino,examples/hardware_specific_examples/Teensy/Teensy4/open_loop_velocity_6pwm/open_loop_velocity_6pwm.ino|]
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install PlatformIO Core
+        run: pip install --upgrade platformio
+
+- name: Run PlatformIO
+        run: pio ci --lib="." --board=teensy41 --board=teensy40
+        env:
+          PLATFORMIO_CI_SRC: ${{ matrix.example }}
