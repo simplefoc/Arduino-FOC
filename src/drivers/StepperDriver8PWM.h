@@ -38,15 +38,13 @@ class StepperDriver8PWM : public StepperDriver {
 
     float dead_zone; //!< a percentage of dead-time(zone) (both high and low side in low) for each pwm cycle [0,1]
 
+    PhaseState phase_state[4]; //!< phase state (active / disabled)
+
     // hardware variables
-    int pwm1A; //!< phase 1A pwm pin number
-    int pwm1B; //!< phase 1B pwm pin number
-    int pwm2A; //!< phase 2A pwm pin number
-    int pwm2B; //!< phase 2B pwm pin number
-    int pwm3A; //!< phase 3A pwm pin number
-    int pwm3B; //!< phase 3B pwm pin number
-    int pwm4A; //!< phase 4A pwm pin number
-    int pwm4B; //!< phase 4B pwm pin number
+    int pwm1A, pwm1B;  //!< phase 1A pwm pin number
+    int pwm2A, pwm2B; 
+    int pwm3A, pwm3B; 
+    int pwm4A, pwm4B; 
     int enable_pin1; //!< enable pin number phase 1
     int enable_pin2; //!< enable pin number phase 2
     int enable_pin3; //!< enable pin number phase 3
@@ -59,6 +57,8 @@ class StepperDriver8PWM : public StepperDriver {
      * @param Ub phase B voltage
     */
     void setPwm(float Ua, float Ub) override;
+
+
   private:
         
 };

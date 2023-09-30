@@ -79,6 +79,8 @@ class StepperMotor: public FOCMotor
     
     float	Ualpha,Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
 
+    uint16_t countervalue; //!< counter value for the open loop control TIM3->CNT;
+
   /**
     * Method using FOC to set Uq to the motor at the optimal angle
     * Heart of the FOC algorithm
@@ -93,10 +95,15 @@ class StepperMotor: public FOCMotor
 
     void setPhaseVoltageCORDIC(float Uq, float Ud, float angle_el) override;
 
-  private:
+
+    void setPhaseVoltageCORDIC_LL(float Uq, float Ud, float angle_el) override;
+
+    int alignSensor();
+
+ 
   
     /** Sensor alignment to electrical 0 angle of the motor */
-    int alignSensor();
+    
     /** Motor and sensor alignment to the sensors absolute 0 angle  */
     int absoluteZeroSearch();
         
@@ -117,6 +124,8 @@ class StepperMotor: public FOCMotor
     float angleOpenloop(float target_angle);
     // open loop variables
     long open_loop_timestamp;
+
+     private:
 };
 
 

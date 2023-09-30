@@ -1,5 +1,7 @@
 #include "StepperMotor.h"
 #include "./communication/SimpleFOCDebug.h"
+#include "arm_math.h"
+
 
 
 // StepperMotor(int pp)
@@ -187,19 +189,19 @@ int StepperMotor::alignSensor() {
     // align the electrical phases of the motor and sensor
     // set angle -90(270 = 3PI/2) degrees
     setPhaseVoltage(voltage_sensor_align, 0,  _3PI_2);
-    _delay(700);
+    _delay(2000);
     // read the sensor
     sensor->update();
     // get the current zero electric angle
     zero_electric_angle = 0;
     zero_electric_angle = electricalAngle();
-    _delay(20);
+    _delay(2000);
     if(monitor_port){
       SIMPLEFOC_DEBUG("MOT: Zero elec. angle: ", zero_electric_angle);
     }
     // stop everything
     setPhaseVoltage(0, 0, 0);
-    _delay(200);
+    _delay(1000);
   }else SIMPLEFOC_DEBUG("MOT: Skip offset calib.");
   return exit_flag;
 }
@@ -257,7 +259,7 @@ void StepperMotor::loopFOC() {
   electrical_angle = electricalAngle();
 
   // set the phase voltage - FOC heart function :)
-  setPhaseVoltage(voltage.q, voltage.d, electrical_angle);
+  setPhaseVoltageCORDIC_LL(voltage.q, voltage.d, electrical_angle);
 }
 
 // Iterative function running outer loop of the FOC algorithm
@@ -357,6 +359,8 @@ void StepperMotor::move(float new_target) {
 void StepperMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
   // Sinusoidal PWM modulation
   // Inverse Park transformation
+////SerialUSB.println("ange_el ->  ");
+//SerialUSB.println(angle_el);
 
   // angle normalization in between 0 and 2pi
   // only necessary if using _sin and _cos - approximation functions
@@ -367,8 +371,18 @@ void StepperMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
   Ualpha =  _ca * Ud - _sa * Uq;  // -sin(angle) * Uq;
   Ubeta =  _sa * Ud + _ca * Uq;    //  cos(angle) * Uq;
 
-  // set the voltages in hardware
+  //set the voltages in hardware
   driver->setPwm(Ualpha, Ubeta);
+/*
+  Serial.print("Ualpha:");
+  Serial.print(Ualpha, 8);
+  Serial.print(",");
+  Serial.print("Ubeta:");
+  Serial.print(Ubeta, 8);  
+  Serial.println();
+
+  */
+
 }
 
 // Method using FOC to set Uq and Ud to the motor at the optimal angle
@@ -387,8 +401,8 @@ int32_t float_to_q31(float input) {
 int32_t q31_value;
 float value_f32_sine = 0;
 float value_f32_cosine = 0;
-float cordic_cosine = 0.0f;
-float cordic_sine = 0.0f;
+q31_t cordic_cosine;
+q31_t cordic_sine;
 
 float wrap_to_1(float x) {
     while (x > 1.0f) {
@@ -404,38 +418,84 @@ float wrap_to_1(float x) {
 /// @param Uq 
 /// @param Ud 
 /// @param angle_el 
+
+#define PI32f 3.141592f
+
+float cordic_sin_value;
+float cordic_cos_value;
+
+void StepperMotor::setPhaseVoltageCORDIC_LL(float Uq, float Ud, float angle_el) {
+  
+ 
+ // convert angle flot to CORDICq31 format
+  uint32_t angle31 = (uint32_t)(angle_el * (1UL << 31) / (1.0f * PI));
+
+  /* Write angle and start CORDIC execution */
+
+ // WHO U GONNA CALL? CORDIC ->
+
+ CORDIC->WDATA = angle31;
+ q31_t cosOutput = (int32_t)CORDIC->RDATA;
+
+   // convert q31 result to float
+  cordic_cos_value = (float)cosOutput / (float)0x80000000;
+
+  /* Read sine */
+  q31_t sinOutput = (int32_t)CORDIC->RDATA;
+
+  // convert q31 results to float
+  cordic_sin_value = (float)sinOutput / (float)0x80000000;
+
+
+
+//value_f32_sine = wrap_to_1(value_f32_sine);
+//value_f32_cosine = wrap_to_1(value_f32_cosine);
+
+
+  // Inverse park transform
+  //Ualpha =  value_f32_cosine * Ud - value_f32_sine * Uq;  // -sin(angle) * Uq;
+  //Ubeta =  value_f32_sine * Ud + value_f32_cosine * Uq;    //  cos(angle) * Uq;
+
+  arm_inv_park_f32(Ud, Uq, &Ualpha, &Ubeta, cordic_sin_value, cordic_cos_value);
+
+ 
+
+  // set the voltages in hardware
+ driver->setPwm(Ualpha, Ubeta);
+
+ 
+  
+}
+
+ 
 void StepperMotor::setPhaseVoltageCORDIC(float Uq, float Ud, float angle_el) {
-  // Sinusoidal PWM modulation
-  // Inverse Park transformation
+  
+ 
+uint32_t q1_31_angle = (uint32_t)(angle_el * (1UL << 31) / (1.0f * PI));
 
-  // WHO U GONNA CALL? CORDIC ->
-
-q31_value = float_to_q31(angle_el / (2.0f * pi));
-
-CORDIC->WDATA = q31_value;
+ // WHO U GONNA CALL? CORDIC ->
+CORDIC->WDATA = q1_31_angle;
 cordic_sine = CORDIC->RDATA;
 cordic_cosine = CORDIC->RDATA;
 
 value_f32_sine = (float)cordic_sine/(float)0x80000000;
 value_f32_cosine = (float)cordic_cosine/(float)0x80000000;
 
-if (angle_el < 0){
 value_f32_sine = wrap_to_1(value_f32_sine);
-value_f32_sine = value_f32_sine * -1;
-}
-
-if (angle_el > 0){
-value_f32_sine = wrap_to_1(value_f32_sine);
-}
-
 value_f32_cosine = wrap_to_1(value_f32_cosine);
 
+
   // Inverse park transform
-  Ualpha =  value_f32_cosine * Ud - value_f32_sine * Uq;  // -sin(angle) * Uq;
-  Ubeta =  value_f32_sine * Ud + value_f32_cosine * Uq;    //  cos(angle) * Uq;
+  //Ualpha =  value_f32_cosine * Ud - value_f32_sine * Uq;  // -sin(angle) * Uq;
+  //Ubeta =  value_f32_sine * Ud + value_f32_cosine * Uq;    //  cos(angle) * Uq;
+
+  arm_inv_park_f32(Ud, Uq, &Ualpha, &Ubeta, value_f32_sine, value_f32_cosine);
 
   // set the voltages in hardware
   driver->setPwm(Ualpha, Ubeta);
+
+ 
+  
 }
 
 

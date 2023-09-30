@@ -18,11 +18,11 @@
 #endif
 // used for 6-PWM mode, high-side
 #ifndef SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH
-#define SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH true
+#define SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH false
 #endif
 // used for 6-PWM mode, low-side
 #ifndef SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH
-#define SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH true
+#define SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH false
 #endif
 
 
@@ -131,8 +131,7 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
  * 
  * @return -1 if failed, or pointer to internal driver parameters struct if successful
  */
-void* _configure8PWM(long pwm_frequency, float dead_zone, const int pin1A, const int pin1B, const int pin2A, const int pin2B,
-                     const int pin3A, const int pin3B, const int pin4A, const int pin4B);
+void* _configure8PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l, const int pinD_h, const int pinD_l);
 
 
 /** 
@@ -214,7 +213,7 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_
 *@param params the driver parameters
 */
 
-void _writeDutyCycle8PWM(float dc_1a, float dc_1b, float dc_1c, float dc_1d, float dc_2a, float dc_2b, float dc_2c, float dc_2d, void* params);
+void _writeDutyCycle8PWM(float dc_1a, float dc_1b, float dc_1c, float dc_1d, PhaseState *phase_state, void* params);
 
 
 #endif

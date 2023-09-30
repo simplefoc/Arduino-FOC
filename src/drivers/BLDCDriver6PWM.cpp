@@ -55,7 +55,7 @@ int BLDCDriver6PWM::init() {
   pinMode(pwmB_l, OUTPUT);
   pinMode(pwmC_l, OUTPUT);
   if(_isset(enable_pin)) pinMode(enable_pin, OUTPUT);
-
+  Serial.println("Setting Pins to Output!");
 
   // sanity check for the voltage limit configuration
   if( !_isset(voltage_limit) || voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
@@ -73,6 +73,12 @@ int BLDCDriver6PWM::init() {
   params = _configure6PWM(pwm_frequency, dead_zone, pwmA_h,pwmA_l, pwmB_h,pwmB_l, pwmC_h,pwmC_l);
   initialized = (params!=SIMPLEFOC_DRIVER_INIT_FAILED);
   return params!=SIMPLEFOC_DRIVER_INIT_FAILED;
+
+ // set phase state to enabled - if driver was successfully initialized
+  phase_state[0] = PhaseState::PHASE_ON;
+  phase_state[1] = PhaseState::PHASE_ON;
+  phase_state[2] = PhaseState::PHASE_ON;
+  
 }
 
 

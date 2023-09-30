@@ -19,6 +19,12 @@ float voltage_limit; //!< limiting voltage set to the motor
 bool initialized = false; // true if driver was successfully initialized
 void* params = 0; // pointer to hardware specific parameters of driver
 
+float dc_1a; //!< currently set duty cycle on phaseA
+float dc_1b; //!< currently set duty cycle on phaseB
+float dc_1c; //!< currently set duty cycle on phaseC
+float dc_1d; //!< currently set duty cycle on phaseC
+
+
 /** 
  * Set phase voltages to the hardware 
  * 

@@ -187,7 +187,7 @@ uint32_t _timerToRegularTRGO(HardwareTimer* timer){
 #endif
 #ifdef TIM8 // if defined timer 8
   else if(timer->getHandle()->Instance == TIM8) 
-    return ADC_EXTERNALTRIG_T8_TRGO;
+    return ADC_EXTERNALTRIG_T7_TRGO;
 #endif
 #ifdef TIM15 // if defined timer 15
   else if(timer->getHandle()->Instance == TIM15) 

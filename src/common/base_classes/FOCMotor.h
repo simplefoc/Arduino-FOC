@@ -142,6 +142,8 @@ class FOCMotor
     
     virtual void setPhaseVoltageCORDIC(float Uq, float Ud, float angle_el)=0;
 
+    virtual void setPhaseVoltageCORDIC_LL(float Uq, float Ud, float angle_el)=0;
+
     // State calculation methods 
     /** Shaft angle calculation in radians [rad] */
     float shaftAngle();
@@ -162,6 +164,7 @@ class FOCMotor
     float target; //!< current target value - depends of the controller
   	float shaft_angle;//!< current motor angle
   	float electrical_angle;//!< current electrical angle
+    float electrical_angle2;//!< current electrical angle
   	float shaft_velocity;//!< current motor velocity 
     float current_sp;//!< target current ( q current )
     float shaft_velocity_sp;//!< current target velocity
