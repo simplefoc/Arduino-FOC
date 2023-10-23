@@ -79,6 +79,11 @@ float _cos(float a);
  */
 void _sincos(float a, float* s, float* c);
 
+/**
+ * Function approximating atan2 
+ * 
+ */
+float _atan2(float y, float x);
 
 /**
  * normalizing radian angle to [0,2PI]
