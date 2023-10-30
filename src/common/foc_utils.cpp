@@ -91,7 +91,8 @@ __attribute__((weak)) float _sqrtApprox(float number) {//low in fat
   // const float f = 1.5F; // better precision
 
   // x = number * 0.5F;
-  float y = number;
+  float y;
+  y = number;
   uint32_t i = *reinterpret_cast<uint32_t*>(&y);
   i = 0x5f375a86 - ( i >> 1 );
   y = *reinterpret_cast<float*>(&i);
