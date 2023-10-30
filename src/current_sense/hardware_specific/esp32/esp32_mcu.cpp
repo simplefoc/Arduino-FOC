@@ -121,6 +121,8 @@ void _driverSyncLowSide(void* driver_params, void* cs_params){
     mcpwm_isr_register(mcpwm_unit, mcpwm1_isr_handler, NULL, ESP_INTR_FLAG_IRAM, NULL);  //Set ISR Handler
 }
 
+static void IRAM_ATTR mcpwm0_isr_handler(void*) __attribute__ ((unused));
+
 // Read currents when interrupt is triggered
 static void IRAM_ATTR mcpwm0_isr_handler(void*){
   // // high side
@@ -139,6 +141,7 @@ static void IRAM_ATTR mcpwm0_isr_handler(void*){
   // MCPWM0.int_clr.timer0_tez_int_clr = mcpwm_intr_status_0;
 }
 
+static void IRAM_ATTR mcpwm1_isr_handler(void*) __attribute__ ((unused));
 
 // Read currents when interrupt is triggered
 static void IRAM_ATTR mcpwm1_isr_handler(void*){

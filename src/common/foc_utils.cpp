@@ -87,14 +87,10 @@ float _electricalAngle(float shaft_angle, int pole_pairs) {
 // https://reprap.org/forum/read.php?147,219210
 // https://en.wikipedia.org/wiki/Fast_inverse_square_root
 __attribute__((weak)) float _sqrtApprox(float number) {//low in fat
-  // float x;
-  // const float f = 1.5F; // better precision
-
-  // x = number * 0.5F;
-  float y = number;
-  long i = * ( long * ) &y;
-  i = 0x5f375a86 - ( i >> 1 );
-  y = * ( float * ) &i;
-  // y = y * ( f - ( x * y * y ) ); // better precision
-  return number * y;
+  union {
+    float    f;
+    uint32_t i;
+  } y = { .f = number };
+  y.i = 0x5f375a86 - ( y.i >> 1 );
+  return number * y.f;
 }
