@@ -92,9 +92,9 @@ __attribute__((weak)) float _sqrtApprox(float number) {//low in fat
 
   // x = number * 0.5F;
   float y = number;
-  long i = * ( long * ) &y;
+  uint32_t i = *reinterpret_cast<uint32_t*>(&y);
   i = 0x5f375a86 - ( i >> 1 );
-  y = * ( float * ) &i;
+  y = *reinterpret_cast<float*>(&i);
   // y = y * ( f - ( x * y * y ) ); // better precision
   return number * y;
 }
