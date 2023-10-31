@@ -5,11 +5,6 @@
 #include "../common/foc_utils.h"
 
 
-#if !defined(TARGET_RP2040) && !defined(_SAMD21_) && !defined(_SAMD51_) && !defined(_SAME51_) && !defined(ARDUINO_UNOR4_WIFI) && !defined(ARDUINO_UNOR4_MINIMA) && !defined(NRF52_SERIES) && !defined(ARDUINO_ARCH_MEGAAVR)
-#define PinStatus int
-#endif
-
-
 /**
  * Step/Dir listenner class for easier interraction with this communication interface.
  */
@@ -53,7 +48,7 @@ class StepDirListener
     int pin_step; //!< step pin
     int pin_dir; //!< direction pin
     long count; //!< current counter value - should be set to 0 for homing
-    PinStatus polarity = RISING; //!< polarity of the step pin
+    decltype(RISING) polarity = RISING; //!< polarity of the step pin
 
   private:
     float* attached_variable = nullptr; //!< pointer to the attached variable 
