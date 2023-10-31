@@ -62,6 +62,7 @@ class HallSensor: public Sensor{
 
     // whether last step was CW (+1) or CCW (-1).  
     Direction direction;
+    Direction old_direction;
 
     void attachSectorCallback(void (*onSectorChange)(int a) = nullptr);
 
