@@ -53,7 +53,6 @@ void HallSensor::updateState() {
   hall_state = new_hall_state;
 
   int8_t new_electric_sector = ELECTRIC_SECTORS[hall_state];
-  static Direction old_direction;
   if (new_electric_sector - electric_sector > 3) {
     //underflow
     direction = Direction::CCW;
