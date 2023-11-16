@@ -66,7 +66,12 @@ void _driverSyncLowSide(void* _driver_params, void* _cs_params){
   HAL_ADCEx_Calibration_Start(cs_params->adc_handle,ADC_SINGLE_ENDED);
 
   // start the adc 
+  #ifdef SIMPLEFOC_STM32_ADC_INTERRUPT
   HAL_ADCEx_InjectedStart_IT(cs_params->adc_handle);
+  #else
+  HAL_ADCEx_InjectedStart(cs_params->adc_handle);
+  #endif
+  
   // restart all the timers of the driver
   _startTimers(driver_params->timers, 6);
 }
@@ -75,13 +80,18 @@ void _driverSyncLowSide(void* _driver_params, void* _cs_params){
 // function reading an ADC value and returning the read voltage
 float _readADCVoltageLowSide(const int pin, const void* cs_params){
   for(int i=0; i < 3; i++){
-    if( pin == ((Stm32CurrentSenseParams*)cs_params)->pins[i]) // found in the buffer
-      return adc_val[_adcToIndex(((Stm32CurrentSenseParams*)cs_params)->adc_handle)][i] * ((Stm32CurrentSenseParams*)cs_params)->adc_voltage_conv;
+    if( pin == ((Stm32CurrentSenseParams*)cs_params)->pins[i]){ // found in the buffer
+      #ifdef SIMPLEFOC_STM32_ADC_INTERRUPT
+        return adc_val[_adcToIndex(((Stm32CurrentSenseParams*)cs_params)->adc_handle)][i] * ((Stm32CurrentSenseParams*)cs_params)->adc_voltage_conv;
+      #else
+        return HAL_ADCEx_InjectedGetValue(((Stm32CurrentSenseParams*)cs_params)->adc_handle,i+1) * ((Stm32CurrentSenseParams*)cs_params)->adc_voltage_conv;
+      #endif
+    }
   } 
   return 0;
 }
 
-
+#ifdef SIMPLEFOC_STM32_ADC_INTERRUPT
 extern "C" {
   void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef *AdcHandle){
     // calculate the instance
@@ -98,5 +108,6 @@ extern "C" {
     adc_val[adc_index][2]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_3);  
   }
 }
+#endif
 
 #endif
