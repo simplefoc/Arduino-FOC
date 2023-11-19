@@ -1,7 +1,8 @@
 # SimpleFOClibrary - **Simple** Field Oriented Control (FOC) **library** <br> 
 ### A Cross-Platform FOC implementation for BLDC and Stepper motors<br> based on the Arduino IDE and PlatformIO 
 
-![Library Compile](https://github.com/simplefoc/Arduino-FOC/workflows/Library%20Compile/badge.svg)
+![Library Compile](https://github.com/simplefoc/Arduino-FOC/workflows/Library%20Compile/badge.svg) [![PlatformIO - Teensy build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml) 
+
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/simplefoc/arduino-foc)
 ![GitHub Release Date](https://img.shields.io/github/release-date/simplefoc/arduino-foc?color=blue)
 ![GitHub commits since tagged version](https://img.shields.io/github/commits-since/simplefoc/arduino-foc/latest/dev)
@@ -24,20 +25,13 @@ Therefore this is an attempt to:
    - *Medium-power* BLDC driver (<30Amps): [Arduino <span class="simple">Simple<b>FOC</b>PowerShield</span> ](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
-> NEW RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.1
-> - Support for Arduino UNO R4 Minima (Renesas R7FA4M1 MCU - note UNO R4 WiFi is not yet supported)
-> - Support setting PWM polarity on ESP32 (thanks to [@mcells](https://github.com/mcells))
-> - Expose I2C errors in MagneticSensorI2C (thanks to [@padok](https://github.com/padok))
-> - Improved default trig functions (sine, cosine) - faster, smaller
-> - Overridable trig functions - plug in your own optimized versions
-> - Bugfix: microseconds overflow in velocity mode [#287](https://github.com/simplefoc/Arduino-FOC/issues/287)
-> - Bugfix: KV initialization ([5fc3128](https://github.com/simplefoc/Arduino-FOC/commit/5fc3128d282b65c141ca486327c6235089999627))
-> - And more bugfixes - see the [complete list of 2.3.1 fixes here](https://github.com/simplefoc/Arduino-FOC/issues?q=is%3Aissue+milestone%3A2.3.1_Release)
-> - Change: simplify initFOC() API ([d57d32d](https://github.com/simplefoc/Arduino-FOC/commit/d57d32dd8715dbed4e476469bc3de0c052f1d531). [5231e5e](https://github.com/simplefoc/Arduino-FOC/commit/5231e5e1d044b0cc33ede67664b6ef2f9d0a8cdf), [10c5b87](https://github.com/simplefoc/Arduino-FOC/commit/10c5b872672cab72df16ddd738bbf09bcce95d28))
-> - Change: check for linked driver in currentsense and exit gracefully ([5ef4d9d](https://github.com/simplefoc/Arduino-FOC/commit/5ef4d9d5a92e03da0dd5af7f624243ab30f1b688))
-> - Compatibility with newest versions of Arduino framework for STM32, Renesas, ESP32, Atmel SAM, Atmel AVR, nRF52 and RP2040
+> NEW RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.2
+> - Improved [space vector modulation code](https://github.com/simplefoc/Arduino-FOC/pull/309) thanks to [@Candas1](https://github.com/Candas1)
+> - Bugfix for teensy3.2 - [#321](https://github.com/simplefoc/Arduino-FOC/pull/321)
+> - Added teensy3/4 compile to the github CI using platformio
+> - And more bugfixes - see the [complete list of 2.3.2 fixes here](https://github.com/simplefoc/Arduino-FOC/issues?q=is%3Aissue+milestone%3A2.3.2_Release)
 
-## Arduino *SimpleFOClibrary* v2.3.1
+## Arduino *SimpleFOClibrary* v2.3.2
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">

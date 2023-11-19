@@ -133,6 +133,7 @@ sensor_direction	KEYWORD2
 sensor_offset	KEYWORD2
 zero_electric_angle	KEYWORD2
 verbose	KEYWORD2
+verboseMode	KEYWORD1
 decimal_places	KEYWORD2
 phase_resistance	KEYWORD2
 phase_inductance	KEYWORD2

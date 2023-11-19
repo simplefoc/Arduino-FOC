@@ -6,7 +6,8 @@
 #include "freertos/task.h"
 #include "rom/ets_sys.h"
 #include "esp_attr.h"
-#include "esp_intr.h"
+//#include "esp_intr.h" deprecated
+#include "esp_intr_alloc.h"
 #include "soc/rtc_io_reg.h"
 #include "soc/rtc_cntl_reg.h"
 #include "soc/sens_reg.h"

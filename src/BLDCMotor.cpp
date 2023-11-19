@@ -422,7 +422,7 @@ void BLDCMotor::move(float new_target) {
       shaft_angle_sp = target;
       // calculate velocity set point
       shaft_velocity_sp = feed_forward_velocity + P_angle( shaft_angle_sp - shaft_angle );
-      shaft_angle_sp = _constrain(shaft_angle_sp,-velocity_limit, velocity_limit);
+      shaft_velocity_sp = _constrain(shaft_velocity_sp,-velocity_limit, velocity_limit);
       // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
       current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
       // if torque controlled through voltage
@@ -561,6 +561,8 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
 
       center = driver->voltage_limit/2;
       if (foc_modulation == FOCModulationType::SpaceVectorPWM){
+        // discussed here: https://community.simplefoc.com/t/embedded-world-2023-stm32-cordic-co-processor/3107/165?u=candas1
+        // a bit more info here: https://microchipdeveloper.com/mct5001:which-zsm-is-best
         // Midpoint Clamp
         float Umin = min(Ua, min(Ub, Uc));
         float Umax = max(Ua, max(Ub, Uc));
