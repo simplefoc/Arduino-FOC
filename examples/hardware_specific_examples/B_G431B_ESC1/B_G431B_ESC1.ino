@@ -5,13 +5,13 @@
 #include <SimpleFOC.h>
 
 // Motor instance
-BLDCMotor motor = BLDCMotor(11);
+BLDCMotor motor = BLDCMotor(12);
 BLDCDriver6PWM driver = BLDCDriver6PWM(A_PHASE_UH, A_PHASE_UL, A_PHASE_VH, A_PHASE_VL, A_PHASE_WH, A_PHASE_WL);
 LowsideCurrentSense currentSense = LowsideCurrentSense(0.003f, -64.0f/7.0f, A_OP1_OUT, A_OP2_OUT, A_OP3_OUT);
 
 
-// encoder instance
-Encoder encoder = Encoder(A_HALL2, A_HALL3, 2048, A_HALL1);
+// encoder instance,Hall or quadrature encoder in B-G431B-ESC1
+Encoder encoder = Encoder(A_ENCODER_A,A_ENCODER_B,5000);
 
 // Interrupt routine intialisation
 // channel A and B callbacks
@@ -54,10 +54,11 @@ void setup() {
 
   // set motion control loop to be used
   motor.controller = MotionControlType::velocity;
+  motor.torque_controller=TorqueControlType::foc_current;
+  motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
 
   // contoller configuration 
   // default parameters in defaults.h
-
   // velocity PI controller parameters
   motor.PID_velocity.P = 0.2;
   motor.PID_velocity.I = 20;
@@ -99,7 +100,7 @@ void loop() {
 
   // Motion control function
   motor.move();
-
+  motor.loopFOC();
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
   // motor.monitor();
