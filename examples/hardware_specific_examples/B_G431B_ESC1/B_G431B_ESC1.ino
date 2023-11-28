@@ -96,6 +96,7 @@ void setup() {
 
 void loop() {
   // main FOC algorithm function
+  motor.loopFOC();
 
   // Motion control function
   motor.move();
