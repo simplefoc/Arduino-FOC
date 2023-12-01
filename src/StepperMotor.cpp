@@ -134,7 +134,7 @@ int StepperMotor::alignSensor() {
   SIMPLEFOC_DEBUG("MOT: Align sensor.");
 
   // if unknown natural direction
-  if(!_isset(sensor_direction)){
+  if(sensor_direction == Direction::UNKNOWN){
     // check if sensor needs zero search
     if(sensor->needsSearch()) exit_flag = absoluteZeroSearch();
     // stop init if not found index
@@ -311,7 +311,7 @@ void StepperMotor::move(float new_target) {
       shaft_angle_sp = target;
       // calculate velocity set point
       shaft_velocity_sp = feed_forward_velocity + P_angle( shaft_angle_sp - shaft_angle );
-      shaft_angle_sp = _constrain(shaft_angle_sp, -velocity_limit, velocity_limit);
+      shaft_velocity_sp = _constrain(shaft_velocity_sp, -velocity_limit, velocity_limit);
       // calculate the torque command
       current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
       // if torque controlled through voltage

@@ -44,6 +44,33 @@ __attribute__((weak)) void _sincos(float a, float* s, float* c){
   *c = _cos(a);
 }
 
+// fast_atan2 based on https://math.stackexchange.com/a/1105038/81278
+// Via Odrive project
+// https://github.com/odriverobotics/ODrive/blob/master/Firmware/MotorControl/utils.cpp
+// This function is MIT licenced, copyright Oskar Weigl/Odrive Robotics
+// The origin for Odrive atan2 is public domain. Thanks to Odrive for making
+// it easy to borrow.
+__attribute__((weak)) float _atan2(float y, float x) {
+    // a := min (|x|, |y|) / max (|x|, |y|)
+    float abs_y = fabsf(y);
+    float abs_x = fabsf(x);
+    // inject FLT_MIN in denominator to avoid division by zero
+    float a = min(abs_x, abs_y) / (max(abs_x, abs_y));
+    // s := a * a
+    float s = a * a;
+    // r := ((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a + a
+    float r =
+        ((-0.0464964749f * s + 0.15931422f) * s - 0.327622764f) * s * a + a;
+    // if |y| > |x| then r := 1.57079637 - r
+    if (abs_y > abs_x) r = 1.57079637f - r;
+    // if x < 0 then r := 3.14159274 - r
+    if (x < 0.0f) r = 3.14159274f - r;
+    // if y < 0 then r := -r
+    if (y < 0.0f) r = -r;
+
+    return r;
+  }
+
 
 // normalizing radian angle to [0,2PI]
 __attribute__((weak)) float _normalizeAngle(float angle){
@@ -60,14 +87,10 @@ float _electricalAngle(float shaft_angle, int pole_pairs) {
 // https://reprap.org/forum/read.php?147,219210
 // https://en.wikipedia.org/wiki/Fast_inverse_square_root
 __attribute__((weak)) float _sqrtApprox(float number) {//low in fat
-  // float x;
-  // const float f = 1.5F; // better precision
-
-  // x = number * 0.5F;
-  float y = number;
-  long i = * ( long * ) &y;
-  i = 0x5f375a86 - ( i >> 1 );
-  y = * ( float * ) &i;
-  // y = y * ( f - ( x * y * y ) ); // better precision
-  return number * y;
+  union {
+    float    f;
+    uint32_t i;
+  } y = { .f = number };
+  y.i = 0x5f375a86 - ( y.i >> 1 );
+  return number * y.f;
 }

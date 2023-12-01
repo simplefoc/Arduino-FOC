@@ -422,7 +422,7 @@ void BLDCMotor::move(float new_target) {
       shaft_angle_sp = target;
       // calculate velocity set point
       shaft_velocity_sp = feed_forward_velocity + P_angle( shaft_angle_sp - shaft_angle );
-      shaft_angle_sp = _constrain(shaft_angle_sp,-velocity_limit, velocity_limit);
+      shaft_velocity_sp = _constrain(shaft_velocity_sp,-velocity_limit, velocity_limit);
       // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
       current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
       // if torque controlled through voltage
@@ -545,6 +545,7 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
     break;
 
     case FOCModulationType::SinePWM :
+    case FOCModulationType::SpaceVectorPWM :
       // Sinusoidal PWM modulation
       // Inverse Park + Clarke transformation
       _sincos(angle_el, &_sa, &_ca);
@@ -553,105 +554,32 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
       Ualpha =  _ca * Ud - _sa * Uq;  // -sin(angle) * Uq;
       Ubeta =  _sa * Ud + _ca * Uq;    //  cos(angle) * Uq;
 
-      // center = modulation_centered ? (driver->voltage_limit)/2 : Uq;
-      center = driver->voltage_limit/2;
       // Clarke transform
-      Ua = Ualpha + center;
-      Ub = -0.5f * Ualpha  + _SQRT3_2 * Ubeta + center;
-      Uc = -0.5f * Ualpha - _SQRT3_2 * Ubeta + center;
+      Ua = Ualpha;
+      Ub = -0.5f * Ualpha + _SQRT3_2 * Ubeta;
+      Uc = -0.5f * Ualpha - _SQRT3_2 * Ubeta;
+
+      center = driver->voltage_limit/2;
+      if (foc_modulation == FOCModulationType::SpaceVectorPWM){
+        // discussed here: https://community.simplefoc.com/t/embedded-world-2023-stm32-cordic-co-processor/3107/165?u=candas1
+        // a bit more info here: https://microchipdeveloper.com/mct5001:which-zsm-is-best
+        // Midpoint Clamp
+        float Umin = min(Ua, min(Ub, Uc));
+        float Umax = max(Ua, max(Ub, Uc));
+        center -= (Umax+Umin) / 2;
+      } 
 
       if (!modulation_centered) {
         float Umin = min(Ua, min(Ub, Uc));
         Ua -= Umin;
         Ub -= Umin;
         Uc -= Umin;
+      }else{
+        Ua += center;
+        Ub += center;
+        Uc += center;
       }
 
-      break;
-
-    case FOCModulationType::SpaceVectorPWM :
-      // Nice video explaining the SpaceVectorModulation (SVPWM) algorithm
-      // https://www.youtube.com/watch?v=QMSWUMEAejg
-
-      // the algorithm goes
-      // 1) Ualpha, Ubeta
-      // 2) Uout = sqrt(Ualpha^2 + Ubeta^2)
-      // 3) angle_el = atan2(Ubeta, Ualpha)
-      //
-      // equivalent to 2)  because the magnitude does not change is:
-      // Uout = sqrt(Ud^2 + Uq^2)
-      // equivalent to 3) is
-      // angle_el = angle_el + atan2(Uq,Ud)
-
-      float Uout;
-      // a bit of optitmisation
-      if(Ud){ // only if Ud and Uq set
-        // _sqrt is an approx of sqrt (3-4% error)
-        Uout = _sqrt(Ud*Ud + Uq*Uq) / driver->voltage_limit;
-        // angle normalisation in between 0 and 2pi
-        // only necessary if using _sin and _cos - approximation functions
-        angle_el = _normalizeAngle(angle_el + atan2(Uq, Ud));
-      }else{// only Uq available - no need for atan2 and sqrt
-        Uout = Uq / driver->voltage_limit;
-        // angle normalisation in between 0 and 2pi
-        // only necessary if using _sin and _cos - approximation functions
-        angle_el = _normalizeAngle(angle_el + _PI_2);
-      }
-      // find the sector we are in currently
-      sector = floor(angle_el / _PI_3) + 1;
-      // calculate the duty cycles
-      float T1 = _SQRT3*_sin(sector*_PI_3 - angle_el) * Uout;
-      float T2 = _SQRT3*_sin(angle_el - (sector-1.0f)*_PI_3) * Uout;
-      // two versions possible
-      float T0 = 0; // pulled to 0 - better for low power supply voltage
-      if (modulation_centered) {
-        T0 = 1 - T1 - T2; // modulation_centered around driver->voltage_limit/2
-      }
-
-      // calculate the duty cycles(times)
-      float Ta,Tb,Tc;
-      switch(sector){
-        case 1:
-          Ta = T1 + T2 + T0/2;
-          Tb = T2 + T0/2;
-          Tc = T0/2;
-          break;
-        case 2:
-          Ta = T1 +  T0/2;
-          Tb = T1 + T2 + T0/2;
-          Tc = T0/2;
-          break;
-        case 3:
-          Ta = T0/2;
-          Tb = T1 + T2 + T0/2;
-          Tc = T2 + T0/2;
-          break;
-        case 4:
-          Ta = T0/2;
-          Tb = T1+ T0/2;
-          Tc = T1 + T2 + T0/2;
-          break;
-        case 5:
-          Ta = T2 + T0/2;
-          Tb = T0/2;
-          Tc = T1 + T2 + T0/2;
-          break;
-        case 6:
-          Ta = T1 + T2 + T0/2;
-          Tb = T0/2;
-          Tc = T1 + T0/2;
-          break;
-        default:
-         // possible error state
-          Ta = 0;
-          Tb = 0;
-          Tc = 0;
-      }
-
-      // calculate the phase voltages and center
-      Ua = Ta*driver->voltage_limit;
-      Ub = Tb*driver->voltage_limit;
-      Uc = Tc*driver->voltage_limit;
       break;
 
   }

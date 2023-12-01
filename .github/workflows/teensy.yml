@@ -1,0 +1,41 @@
+name: PlatformIO - Teensy build
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest        
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install PlatformIO Core
+        run: pip install --upgrade platformio
+
+      - name: PIO Run Teensy 4
+        run: pio ci --lib="." --board=teensy41 --board=teensy40
+        env:
+          PLATFORMIO_CI_SRC: examples/hardware_specific_examples/Teensy/Teensy4/bldc_driver_6pwm_standalone/bldc_driver_6pwm_standalone.ino
+      
+      - name: PIO Run Teensy 4
+        run: pio ci --lib="." --board=teensy41 --board=teensy40
+        env:
+          PLATFORMIO_CI_SRC: examples/hardware_specific_examples/Teensy/Teensy4/open_loop_velocity_6pwm/open_loop_velocity_6pwm.ino
+      
+      - name: PIO Run Teensy 3
+        run: pio ci --lib="." --board=teensy31 --board=teensy30 --board=teensy35 --board=teensy36
+        env:
+          PLATFORMIO_CI_SRC: examples/hardware_specific_examples/Teensy/Teensy3/bldc_driver_6pwm_standalone/bldc_driver_6pwm_standalone.ino
+          
+      - name: PIO Run Teensy 3
+        run: pio ci --lib="." --board=teensy31 --board=teensy30 --board=teensy35 --board=teensy36
+        env:
+          PLATFORMIO_CI_SRC: examples/hardware_specific_examples/Teensy/Teensy3/open_loop_velocity_6pwm/open_loop_velocity_6pwm.ino
