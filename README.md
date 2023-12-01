@@ -27,9 +27,16 @@ Therefore this is an attempt to:
 
 > NEW RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.2
 > - Improved [space vector modulation code](https://github.com/simplefoc/Arduino-FOC/pull/309) thanks to [@Candas1](https://github.com/Candas1)
+> - Bugfix for stepper motor initialization
+> - Bugfix for current sensing when only 2 phase currents available - please re-check your current sense PID tuning
 > - Bugfix for teensy3.2 - [#321](https://github.com/simplefoc/Arduino-FOC/pull/321)
 > - Added teensy3/4 compile to the github CI using platformio
-> - And more bugfixes - see the [complete list of 2.3.2 fixes here](https://github.com/simplefoc/Arduino-FOC/issues?q=is%3Aissue+milestone%3A2.3.2_Release)
+> - Fix compile issues with recent versions of ESP32 framework
+> - Add ADC calibration on STM32 MCUs
+> - Bugfix for crash when using ADC2 on ESP32s - [thanks to @mcells](https://github.com/simplefoc/Arduino-FOC/pull/346)
+> - Bugfix for renesas PWM on UNO R4 WiFi - [thanks to @facchinm](https://github.com/simplefoc/Arduino-FOC/pull/322)
+> - And more bugfixes - see the complete list of 2.3.2 [fixes and PRs](https://github.com/simplefoc/Arduino-FOC/milestone/9?closed=1)
+
 
 ## Arduino *SimpleFOClibrary* v2.3.2
 
