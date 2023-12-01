@@ -124,9 +124,11 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
     HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected);
   }
   
+  #ifdef SIMPLEFOC_STM32_ADC_INTERRUPT
   // enable interrupt
   HAL_NVIC_SetPriority(ADC1_2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(ADC1_2_IRQn);
+  #endif
   
   cs_params->adc_handle = &hadc;
 
@@ -151,6 +153,7 @@ void _adc_gpio_init(Stm32CurrentSenseParams* cs_params, const int pinA, const in
 
 }
 
+#ifdef SIMPLEFOC_STM32_ADC_INTERRUPT
 extern "C" {
   void ADC1_2_IRQHandler(void)
   {
@@ -158,5 +161,6 @@ extern "C" {
   }
   
 }
+#endif
 
 #endif
