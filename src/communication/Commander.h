@@ -91,7 +91,7 @@ class Commander
      * @param onCommand  - function pointer void function(char*)
      * @param label      - string label to be displayed when scan command sent
      */
-    void add(char id , CommandCallback onCommand, char* label = nullptr);
+    void add(char id , CommandCallback onCommand, const char* label = nullptr);
 
     // printing variables
     VerboseMode verbose = VerboseMode::user_friendly; //!< flag signaling that the commands should output user understanable text
