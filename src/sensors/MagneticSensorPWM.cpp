@@ -85,7 +85,7 @@ float MagneticSensorPWM::getSensorAngle(){
 int MagneticSensorPWM::getRawCount(){
     if (!is_interrupt_based){ // if it's not interrupt based read the value in a blocking way
         pulse_timestamp = _micros(); // ideally this should be done right at the rising edge of the pulse
-        pulse_length_us = pulseIn(pinPWM, HIGH, 1200); // 1200us timeout, should this be configurable?
+        pulse_length_us = pulseIn(pinPWM, HIGH, timeout_us); // 1200us timeout, should this be configurable?
     }
     return pulse_length_us;
 }

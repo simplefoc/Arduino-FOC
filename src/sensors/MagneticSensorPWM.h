@@ -44,6 +44,8 @@ class MagneticSensorPWM: public Sensor{
     void enableInterrupt(void (*doPWM)());
     unsigned long pulse_length_us;
 
+    unsigned int timeout_us = 1200;
+
   private:
     // raw count (typically in range of 0-1023)
     int raw_count;
