@@ -46,7 +46,7 @@ BLDCMotor::BLDCMotor(int pp, float _R, float _KV, float _inductance)
   // 1/sqrt(2) - rms value
   KV_rating = NOT_SET;
   if (_isset(_KV))
-    KV_rating = _KV*_SQRT2;
+    KV_rating = _KV;
   // save phase inductance
   phase_inductance = _inductance;
 
@@ -396,7 +396,7 @@ void BLDCMotor::move(float new_target) {
   if(_isset(new_target)) target = new_target;
   
   // calculate the back-emf voltage if KV_rating available U_bemf = vel*(1/KV)
-  if (_isset(KV_rating)) voltage_bemf = shaft_velocity/KV_rating/_RPM_TO_RADS;
+  if (_isset(KV_rating)) voltage_bemf = shaft_velocity/(KV_rating*_SQRT3)/_RPM_TO_RADS;
   // estimate the motor current if phase reistance available and current_sense not available
   if(!current_sense && _isset(phase_resistance)) current.q = (voltage.q - voltage_bemf)/phase_resistance;
 
