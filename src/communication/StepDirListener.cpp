@@ -30,18 +30,15 @@ void StepDirListener::attach(float* pos_var, float* vel_var){
 
 
 void StepDirListener::handle(){ 
-  // read step status
-  //bool step = digitalRead(pin_step);
-  // update counter only on rising edge 
-  //if(step && step != step_active){
+  // read dir status
     dir_state = digitalRead(pin_dir);
-    if(dir_state) 
+    if(dir_state) {
         count++;
-    else 
+    } else { 
         count--;
-   //}
+   }
    current_pulse_time = _micros();
-   //step_active = step;
+
    // if attached variable update it
    if(attached_position) {
         *attached_position = getValue();
@@ -59,12 +56,21 @@ void StepDirListener::handle(){
 }
 // calculate the position from counter
 float StepDirListener::getValue(){
-    return (float) count * counter_to_value;
+    noInterrupts();
+    float position_value = (float) count * counter_to_value;
+    interrupts();
+    return position_value;
 }
 float StepDirListener::getVelocityValue(){
-    elapsed_time = current_pulse_time - prev_pulse_time;
-    if (elapsed_time == 0) {
-        // caps feedfoarward velocity based on time precision
+
+    noInterrupts();
+    int tmp_pulse_time = current_pulse_time;
+    int tmp_prev_pulse_time = prev_pulse_time;
+    interrupts();
+
+    elapsed_time = tmp_pulse_time - tmp_prev_pulse_time;
+    if (elapsed_time <= 0) {
+        // caps feedforward velocity based on time precision
         // if zero microseconds have elapsed, assume 1us has elapsed
         elapsed_time = 1;
     }
@@ -73,9 +79,14 @@ float StepDirListener::getVelocityValue(){
     return (float) counter_to_value * 1e6 / elapsed_time; 
 }
 
-void StepDirListener::cleanLowVelocity(){
+void StepDirListener::update(){
+    noInterrupts();
+    int tmp_prev_pulse_time = prev_pulse_time;
+    int tmp_elapsed_time = elapsed_time;
+    interrupts();
+
     int current_time = _micros();
-    if ((current_time - prev_pulse_time) > 5 * elapsed_time) {
+    if ((current_time - tmp_prev_pulse_time) > 5 * tmp_elapsed_time) {
         *attached_velocity = 0;
     }
 }

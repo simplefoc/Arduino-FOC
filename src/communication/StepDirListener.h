@@ -57,24 +57,24 @@ class StepDirListener
     float getVelocityValue();
     /**
      * Deal with zero velocity by setting velocity to zero 
-     * if it's been a long time since the last pulses
+     * if it's been a long time since the last pulse.
      * call this in the main loop somewhat often
      **/
-    void cleanLowVelocity();
+    void update();
     // variables
     int pin_step; //!< step pin
     int pin_dir; //!< direction pin
     long count; //!< current counter value - should be set to 0 for homing
+    float counter_to_value; //!< step counter to value 
     PinStatus polarity = RISING; //!< polarity of the step pin
 
   private:
-    float* attached_position = nullptr; //!< pointer to the attached variable 
-    float* attached_velocity = nullptr; //!< pointer to the attached variable 
-    float counter_to_value; //!< step counter to value 
-    int prev_pulse_time;
-    int current_pulse_time;
-    int elapsed_time;
-    bool dir_state;
+    volatile float* attached_position = nullptr; //!< pointer to the attached variable 
+    volatile float* attached_velocity = nullptr; //!< pointer to the attached variable 
+    volatile int prev_pulse_time;
+    volatile int current_pulse_time;
+    volatile int elapsed_time;
+    volatile bool dir_state;
     //bool step_active = 0; //!< current step pin status (HIGH/LOW) - debouncing variable
 
 };
