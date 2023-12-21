@@ -1,6 +1,10 @@
-#include "../hardware_api.h"
+#include "../../hardware_api.h"
 
 #if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && ( !defined(SOC_MCPWM_SUPPORTED) || defined(SIMPLEFOC_ESP32_USELEDC) )
+
+#pragma message("")
+#pragma message("SimpleFOC: compiling for ESP32 LEDC driver")
+#pragma message("")
 
 #include "driver/ledc.h"
 

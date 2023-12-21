@@ -4,6 +4,28 @@
 #include "../common/foc_utils.h"
 #include "../common/time_utils.h"
 #include "../communication/SimpleFOCDebug.h"
+#include "../common/base_classes/BLDCDriver.h"
+
+
+// these defines determine the polarity of the PWM output. Normally, the polarity is active-high,
+// i.e. a high-level PWM output is expected to switch on the MOSFET. But should your driver design
+// require inverted polarity, you can change the defines below, or set them via your build environment
+// or board definition files.
+
+// used for 1-PWM, 2-PWM, 3-PWM, and 4-PWM modes
+#ifndef SIMPLEFOC_PWM_ACTIVE_HIGH
+#define SIMPLEFOC_PWM_ACTIVE_HIGH true
+#endif
+// used for 6-PWM mode, high-side
+#ifndef SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH
+#define SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH true
+#endif
+// used for 6-PWM mode, low-side
+#ifndef SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH
+#define SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH true
+#endif
+
+
 
 
 // flag returned if driver init fails
@@ -18,6 +40,7 @@ typedef struct GenericDriverParams {
   long pwm_frequency;
   float dead_zone;
 } GenericDriverParams;
+
 
 /** 
  * Configuring PWM frequency, resolution and alignment
@@ -147,9 +170,11 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
  * @param dc_a  duty cycle phase A [0, 1]
  * @param dc_b  duty cycle phase B [0, 1]
  * @param dc_c  duty cycle phase C [0, 1]
+ * @param phase_state  pointer to PhaseState[3] array
  * @param params  the driver parameters
  * 
  */ 
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params);
+void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params);
+
 
 #endif

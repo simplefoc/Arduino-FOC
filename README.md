@@ -1,7 +1,8 @@
 # SimpleFOClibrary - **Simple** Field Oriented Control (FOC) **library** <br> 
 ### A Cross-Platform FOC implementation for BLDC and Stepper motors<br> based on the Arduino IDE and PlatformIO 
 
-![Library Compile](https://github.com/simplefoc/Arduino-FOC/workflows/Library%20Compile/badge.svg)
+![Library Compile](https://github.com/simplefoc/Arduino-FOC/workflows/Library%20Compile/badge.svg) [![PlatformIO - Teensy build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml) 
+
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/simplefoc/arduino-foc)
 ![GitHub Release Date](https://img.shields.io/github/release-date/simplefoc/arduino-foc?color=blue)
 ![GitHub commits since tagged version](https://img.shields.io/github/commits-since/simplefoc/arduino-foc/latest/dev)
@@ -24,31 +25,20 @@ Therefore this is an attempt to:
    - *Medium-power* BLDC driver (<30Amps): [Arduino <span class="simple">Simple<b>FOC</b>PowerShield</span> ](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
-> NEW RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.2.3
-> - stm32 low-side current sensing 
->    - g4 supported
->    - thoroughly tested f1/f4/g4 - [#187](https://github.com/simplefoc/Arduino-FOC/issues/187)
->    - bg431b: added support for VBAT and TEMPERATURE readings [#222](https://github.com/simplefoc/Arduino-FOC/pull/222)
-> - bugfixing
->    - leonardo
->    - mega2560 [#190](https://github.com/simplefoc/Arduino-FOC/issues/190)
->    - inline current sense without driver [#188](https://github.com/simplefoc/Arduino-FOC/issues/188)
->    - bg431b support current sense fix [#210](https://github.com/simplefoc/Arduino-FOC/pull/210)
->    - StepperDriver4PWM wrong init  [#182](https://github.com/simplefoc/Arduino-FOC/issues/182)
->    - open loop back-emf vlotage issue [#219](https://github.com/simplefoc/Arduino-FOC/issues/219)
->    - SAMD51 compile issue [#217](https://github.com/simplefoc/Arduino-FOC/issues/217)
->    - ESP32-S3 compile issue [#198](https://github.com/simplefoc/Arduino-FOC/issues/198)
->    - ESP32 compile issue [#208](https://github.com/simplefoc/Arduino-FOC/issues/208), [#207](https://github.com/simplefoc/Arduino-FOC/issues/207)
->    - magnetic sensor direction finding more robust [#173](https://github.com/simplefoc/Arduino-FOC/issues/173), [#164](https://github.com/simplefoc/Arduino-FOC/pull/164)
->    - `StepDirListener` improved timing [#169](https://github.com/simplefoc/Arduino-FOC/issues/169), [#209](https://github.com/simplefoc/Arduino-FOC/pull/209)
-> - API changes
->    - `setPhaseVoltage` is now public function 
->    - `getVelocity` can now be called as many times as necessary (it recalculates the velocity if the time between calls is longer then `minDeltaT` - default 0.1ms)
->    - BG431 board can be used only with `LowsideCurrentSense` class!
->    - `initFOC` fails if current sense not initialised
->       - driver and curent sense have to be well initialised for `initFOC` to start
->       - `cs.init()` and `driver.init()` return `1` if well initialised and `0` if failed 
-## Arduino *SimpleFOClibrary* v2.2.3
+> NEW RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.2
+> - Improved [space vector modulation code](https://github.com/simplefoc/Arduino-FOC/pull/309) thanks to [@Candas1](https://github.com/Candas1)
+> - Bugfix for stepper motor initialization
+> - Bugfix for current sensing when only 2 phase currents available - please re-check your current sense PID tuning
+> - Bugfix for teensy3.2 - [#321](https://github.com/simplefoc/Arduino-FOC/pull/321)
+> - Added teensy3/4 compile to the github CI using platformio
+> - Fix compile issues with recent versions of ESP32 framework
+> - Add ADC calibration on STM32 MCUs
+> - Bugfix for crash when using ADC2 on ESP32s - [thanks to @mcells](https://github.com/simplefoc/Arduino-FOC/pull/346)
+> - Bugfix for renesas PWM on UNO R4 WiFi - [thanks to @facchinm](https://github.com/simplefoc/Arduino-FOC/pull/322)
+> - And more bugfixes - see the complete list of 2.3.2 [fixes and PRs](https://github.com/simplefoc/Arduino-FOC/milestone/9?closed=1)
+
+
+## Arduino *SimpleFOClibrary* v2.3.2
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">
@@ -75,7 +65,7 @@ This video demonstrates the *Simple**FOC**library* basic usage, electronic conne
 - **Cross-platform**:
    - Seamless code transfer from one microcontroller family to another 
    - Supports multiple [MCU architectures](https://docs.simplefoc.com/microcontrollers):
-      - Arduino: UNO, MEGA, DUE, Leonardo ....
+      - Arduino: UNO R4, UNO, MEGA, DUE, Leonardo, Nano, Nano33 ....
       - STM32
       - ESP32
       - Teensy
@@ -129,7 +119,9 @@ Please do not hesitate to leave an issue if you have problems/advices/suggestion
 
 Pull requests are welcome, but let's first discuss them in [community forum](https://community.simplefoc.com)!
 
-If you'd like to contribute to this porject but you are not very familiar with github, don't worry, let us know either by posting at the community forum , by posting a github issue or at our discord server.
+If you'd like to contribute to this project but you are not very familiar with github, don't worry, let us know either by posting at the community forum , by posting a github issue or at our discord server.
+
+If you are familiar, we accept pull requests to the dev branch!
 
 ## Arduino code example
 This is a simple Arduino code example implementing the velocity control program of a BLDC motor with encoder. 
@@ -230,11 +222,3 @@ If you are interested in citing  *Simple**FOC**library* or some other component 
 }
 
 ```
-
-
-## Arduino FOC repo structure
-Branch  | Description | Status
------------- | ------------- | ------------ 
-[master](https://github.com/simplefoc/Arduino-FOC) | Stable and tested library version | ![Library Compile](https://github.com/simplefoc/Arduino-FOC/workflows/Library%20Compile/badge.svg)
-[dev](https://github.com/simplefoc/Arduino-FOC/tree/dev) | Development library version | ![Library Dev Compile](https://github.com/simplefoc/Arduino-FOC/workflows/Library%20Dev%20Compile/badge.svg?branch=dev)
-[minimal](https://github.com/simplefoc/Arduino-FOC/tree/minimal) | Minimal Arduino example with integrated library | ![MinimalBuild](https://github.com/simplefoc/Arduino-FOC/workflows/MinimalBuild/badge.svg?branch=minimal)

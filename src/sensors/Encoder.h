@@ -61,12 +61,8 @@ class Encoder: public Sensor{
     // Abstract functions of the Sensor class implementation
     /** get current angle (rad) */
     float getSensorAngle() override;
-    float getMechanicalAngle() override;
     /**  get current angular velocity (rad/s) */
     float getVelocity() override;
-    float getAngle() override;
-    double getPreciseAngle() override;
-    int32_t getFullRotations() override;
     virtual void update() override;
 
     /**

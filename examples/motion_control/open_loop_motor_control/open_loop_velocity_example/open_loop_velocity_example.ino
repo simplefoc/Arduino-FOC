@@ -37,7 +37,7 @@ void setup() {
   // limiting motor movements
   // limit the voltage to be set to the motor
   // start very low for high resistance motors
-  // currnet = resistance*voltage, so try to be well under 1Amp
+  // current = voltage / resistance, so try to be well under 1Amp
   motor.voltage_limit = 3;   // [V]
  
   // open loop control config
@@ -60,6 +60,7 @@ void loop() {
 
   // open loop velocity movement
   // using motor.voltage_limit and motor.velocity_limit
+  // to turn the motor "backwards", just set a negative target_velocity
   motor.move(target_velocity);
 
   // user communication

@@ -5,7 +5,7 @@
 #include "b_g431_hal.h"
 #include "Arduino.h"
 #include "../stm32_mcu.h"
-#include "../../../../drivers/hardware_specific/stm32_mcu.h"
+#include "../../../../drivers/hardware_specific/stm32/stm32_mcu.h"
 #include "communication/SimpleFOCDebug.h"
 
 #define _ADC_VOLTAGE 3.3f
@@ -109,6 +109,9 @@ void* _configureADCLowSide(const void* driver_params, const int pinA,const int p
   _configureOPAMPs(&hopamp1, &hopamp3, &hopamp2);
   MX_ADC1_Init(&hadc1);
   MX_ADC2_Init(&hadc2);
+
+  HAL_ADCEx_Calibration_Start(&hadc1,ADC_SINGLE_ENDED);
+  HAL_ADCEx_Calibration_Start(&hadc2,ADC_SINGLE_ENDED);
 
   MX_DMA1_Init(&hadc1, &hdma_adc1, DMA1_Channel1, DMA_REQUEST_ADC1);
   MX_DMA1_Init(&hadc2, &hdma_adc2, DMA1_Channel2, DMA_REQUEST_ADC2);

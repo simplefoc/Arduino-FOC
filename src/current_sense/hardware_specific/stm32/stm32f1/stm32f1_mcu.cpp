@@ -3,7 +3,7 @@
 #if defined(STM32F1xx) 
 #include "../../../../common/foc_utils.h"
 #include "../../../../drivers/hardware_api.h"
-#include "../../../../drivers/hardware_specific/stm32_mcu.h"
+#include "../../../../drivers/hardware_specific/stm32/stm32_mcu.h"
 #include "../../../hardware_api.h"
 #include "../stm32_mcu.h"
 #include "stm32f1_hal.h"
@@ -66,6 +66,10 @@ void _driverSyncLowSide(void* _driver_params, void* _cs_params){
   }
   // set the trigger output event
   LL_TIM_SetTriggerOutput(cs_params->timer_handle->getHandle()->Instance, LL_TIM_TRGO_UPDATE);
+
+  // Start the adc calibration
+  HAL_ADCEx_Calibration_Start(cs_params->adc_handle);
+
   // start the adc 
   HAL_ADCEx_InjectedStart_IT(cs_params->adc_handle);
 

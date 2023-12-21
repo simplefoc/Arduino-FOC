@@ -12,7 +12,7 @@ void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 
 // inline current sensor instance
-InlineCurrentSense current_sense = InlineCurrentSense(0.001, 50.0, A0, A1);
+InlineCurrentSense current_sense = InlineCurrentSense(0.001f, 50.0f, A0, A1);
 
 // commander communication instance
 Commander command = Commander(Serial);

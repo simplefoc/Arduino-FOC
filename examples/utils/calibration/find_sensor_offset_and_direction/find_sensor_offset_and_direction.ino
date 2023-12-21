@@ -2,8 +2,9 @@
  * Simple example intended to help users find the zero offset and natural direction of the sensor. 
  * 
  * These values can further be used to avoid motor and sensor alignment procedure. 
- * 
- * motor.initFOC(zero_offset, sensor_direction);
+ * To use these values add them to the code:");
+ *    motor.sensor_direction=Direction::CW; // or Direction::CCW
+ *    motor.zero_electric_angle=1.2345;     // use the real value!
  * 
  * This will only work for abosolute value sensors - magnetic sensors. 
  * Bypassing the alignment procedure is not possible for the encoders and for the current implementation of the Hall sensors. 
@@ -44,6 +45,9 @@ void setup() {
   // set motion control loop to be used
   motor.controller = MotionControlType::torque;
 
+  // force direction search - because default is CW
+  motor.sensor_direction = Direction::UNKNOWN;
+
   // initialize motor
   motor.init();
   // align sensor and start FOC
@@ -54,9 +58,16 @@ void setup() {
   Serial.println("Sensor zero offset is:");
   Serial.println(motor.zero_electric_angle, 4);
   Serial.println("Sensor natural direction is: ");
-  Serial.println(motor.sensor_direction == 1 ? "Direction::CW" : "Direction::CCW");
+  Serial.println(motor.sensor_direction == Direction::CW ? "Direction::CW" : "Direction::CCW");
 
-  Serial.println("To use these values provide them to the: motor.initFOC(offset, direction)");
+  Serial.println("To use these values add them to the code:");
+  Serial.print("   motor.sensor_direction=");
+  Serial.print(motor.sensor_direction == Direction::CW ? "Direction::CW" : "Direction::CCW");
+  Serial.println(";");
+  Serial.print("   motor.zero_electric_angle=");
+  Serial.print(motor.zero_electric_angle, 4);
+  Serial.println(";");
+
   _delay(1000);
   Serial.println("If motor is not moving the alignment procedure was not successfull!!");
 }

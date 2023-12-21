@@ -56,3 +56,9 @@ float PIDController::operator() (float error){
     timestamp_prev = timestamp_now;
     return output;
 }
+
+void PIDController::reset(){
+    integral_prev = 0.0f;
+    output_prev = 0.0f;
+    error_prev = 0.0f;
+}

@@ -29,7 +29,7 @@
 
 // Motor instance
 BLDCMotor motor = BLDCMotor(11);
-BLDCDriver6PWM driver = BLDCDriver6PWM(INH_A,INH_A, INH_B,INH_B, INH_C,INL_C, EN_GATE);
+BLDCDriver6PWM driver = BLDCDriver6PWM(INH_A,INL_A, INH_B,INL_B, INH_C,INL_C, EN_GATE);
 
 // encoder instance
 Encoder encoder = Encoder(2, 3, 8192);
@@ -106,10 +106,8 @@ void setup() {
   motor.target = 2;
 
   // define the motor id
-  command.add('A', onMotor, "motor");
+  command.add('M', onMotor, "motor");
 
-  Serial.println(F("Full control example: "));
-  Serial.println(F("Run user commands to configure and the motor (find the full command list in docs.simplefoc.com) \n "));
   Serial.println(F("Initial motion control loop is voltage loop."));
   Serial.println(F("Initial target voltage 2V."));
 

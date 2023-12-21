@@ -11,10 +11,10 @@ Commander::Commander(char eol, bool echo){
 }
 
 
-void Commander::add(char id, CommandCallback onCommand, char* label ){
+void Commander::add(char id, CommandCallback onCommand, const char* label ){
   call_list[call_count] = onCommand;
   call_ids[call_count] = id;
-  call_label[call_count] = label;
+  call_label[call_count] = (char*)label;
   call_count++;
 }
 
@@ -62,6 +62,7 @@ void Commander::run(char* user_input){
   switch(id){
     case CMD_SCAN:
       for(int i=0; i < call_count; i++){
+          printMachineReadable(CMD_SCAN);
           print(call_ids[i]);
           print(":");
           if(call_label[i]) println(call_label[i]);
@@ -71,6 +72,7 @@ void Commander::run(char* user_input){
     case CMD_VERBOSE:
       if(!isSentinel(user_input[1])) verbose = (VerboseMode)atoi(&user_input[1]);
       printVerbose(F("Verb:"));
+      printMachineReadable(CMD_VERBOSE);
       switch (verbose){
       case VerboseMode::nothing:
         println(F("off!"));
@@ -79,16 +81,21 @@ void Commander::run(char* user_input){
       case VerboseMode::user_friendly:
         println(F("on!"));
         break;
+      case VerboseMode::machine_readable:
+        printlnMachineReadable(F("machine"));
+        break;
       }
       break;
     case CMD_DECIMAL:
       if(!isSentinel(user_input[1])) decimal_places = atoi(&user_input[1]);
       printVerbose(F("Decimal:"));
+      printMachineReadable(CMD_DECIMAL);
       println(decimal_places);
       break;
     default:
       for(int i=0; i < call_count; i++){
         if(id == call_ids[i]){
+          printMachineReadable(user_input[0]);
           call_list[i](&user_input[1]);
           break;
         }
@@ -100,7 +107,7 @@ void Commander::run(char* user_input){
 void Commander::motor(FOCMotor* motor, char* user_command) {
 
   // if target setting
-  if(isDigit(user_command[0]) || user_command[0] == '-' || user_command[0] == '+'){
+  if(isDigit(user_command[0]) || user_command[0] == '-' || user_command[0] == '+' || isSentinel(user_command[0])){
     target(motor, user_command);
     return;
   }
@@ -109,12 +116,15 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
   char cmd = user_command[0];
   char sub_cmd = user_command[1];
   // check if there is a subcommand or not
-  int value_index = (sub_cmd >= 'A'  && sub_cmd <= 'Z') ?  2 :  1;
+  int value_index = (sub_cmd >= 'A'  && sub_cmd <= 'Z') ||  (sub_cmd == '#') ?  2 :  1;
   // check if get command
   bool GET = isSentinel(user_command[value_index]);
   // parse command values
   float value = atof(&user_command[value_index]);
-
+  printMachineReadable(cmd);
+  if (sub_cmd >= 'A'  && sub_cmd <= 'Z') {
+    printMachineReadable(sub_cmd);
+  }
 
   // a bit of optimisation of variable memory for Arduino UNO (atmega328)
   switch(cmd){
@@ -221,6 +231,14 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
       if(_isset(motor->phase_resistance)) println(motor->phase_resistance);
       else println(0);
       break;
+    case CMD_INDUCTANCE:
+      printVerbose(F("L phase: "));
+      if(!GET){
+        motor->phase_inductance = value;
+      }
+      if(_isset(motor->phase_inductance)) println(motor->phase_inductance);
+      else println(0);
+      break;
     case CMD_KV_RATING:
       printVerbose(F("Motor KV: "));
       if(!GET){
@@ -311,12 +329,23 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
           motor->monitor_variables = (uint8_t) 0;
           println(F("clear"));
           break;
+        case CMD_DECIMAL:
+          printVerbose(F("decimal: "));
+          motor->monitor_decimals = value;
+          println((int)motor->monitor_decimals);
+          break;
         case SCMD_SET:
-          if(!GET) motor->monitor_variables = (uint8_t) 0;
+          if(!GET){
+            // set the variables
+            motor->monitor_variables = (uint8_t) 0;
+            for(int i = 0; i < 7; i++){
+              if(isSentinel(user_command[value_index+i])) break;
+              motor->monitor_variables |=  (user_command[value_index+i] - '0') << (6-i);
+            }
+          }
+          // print the variables
           for(int i = 0; i < 7; i++){
-            if(isSentinel(user_command[value_index+i])) break;
-            if(!GET) motor->monitor_variables |=  (user_command[value_index+i] - '0') << (6-i);
-            print( (user_command[value_index+i] - '0') );
+            print( (motor->monitor_variables & (1 << (6-i))) >> (6-i));
           }
           println("");
           break;
@@ -468,8 +497,11 @@ void Commander::scalar(float* value,  char* user_cmd){
 
 void Commander::target(FOCMotor* motor,  char* user_cmd, char* separator){
   // if no values sent
-  if(isSentinel(user_cmd[0])) return;
-  
+  if(isSentinel(user_cmd[0])) {
+    printlnMachineReadable(motor->target);
+    return;
+  };
+
   float pos, vel, torque;
   char* next_value;
   switch(motor->controller){
@@ -561,6 +593,7 @@ bool Commander::isSentinel(char ch)
   else if (ch == '\r')
   {
       printVerbose(F("Warn: \\r detected! \n"));
+      return true; // lets still consider it to end the line...
   }
   return false;
 }
@@ -614,6 +647,39 @@ void Commander::printVerbose(const char* message){
 void Commander::printVerbose(const __FlashStringHelper *message){
   if(verbose == VerboseMode::user_friendly) print(message);
 }
+
+void Commander::printMachineReadable(const int number){
+  if(verbose == VerboseMode::machine_readable) print(number);
+}
+void Commander::printMachineReadable(const float number){
+  if(verbose == VerboseMode::machine_readable) print(number);
+}
+void Commander::printMachineReadable(const char* message){
+  if(verbose == VerboseMode::machine_readable) print(message);
+}
+void Commander::printMachineReadable(const __FlashStringHelper *message){
+  if(verbose == VerboseMode::machine_readable) print(message);
+}
+void Commander::printMachineReadable(const char message){
+  if(verbose == VerboseMode::machine_readable) print(message);
+}
+
+void Commander::printlnMachineReadable(const int number){
+  if(verbose == VerboseMode::machine_readable) println(number);
+}
+void Commander::printlnMachineReadable(const float number){
+  if(verbose == VerboseMode::machine_readable) println(number);
+}
+void Commander::printlnMachineReadable(const char* message){
+  if(verbose == VerboseMode::machine_readable) println(message);
+}
+void Commander::printlnMachineReadable(const __FlashStringHelper *message){
+  if(verbose == VerboseMode::machine_readable) println(message);
+}
+void Commander::printlnMachineReadable(const char message){
+  if(verbose == VerboseMode::machine_readable) println(message);
+}
+
 void Commander::printError(){
  println(F("err"));
 }

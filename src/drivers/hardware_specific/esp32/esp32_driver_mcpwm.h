@@ -1,9 +1,16 @@
 #ifndef ESP32_DRIVER_MCPWM_H
 #define ESP32_DRIVER_MCPWM_H
 
-#include "../hardware_api.h"
+#include "../../hardware_api.h"
 
 #if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC)
+
+
+
+#pragma message("")
+#pragma message("SimpleFOC: compiling for ESP32 MCPWM driver")
+#pragma message("")
+
 
 #include "driver/mcpwm.h"
 #include "soc/mcpwm_reg.h"
@@ -81,6 +88,7 @@ typedef struct ESP32MCPWMDriverParams {
   mcpwm_unit_t mcpwm_unit;
   mcpwm_operator_t mcpwm_operator1;
   mcpwm_operator_t mcpwm_operator2;
+  float deadtime;
 } ESP32MCPWMDriverParams;
 
 

@@ -15,7 +15,8 @@
 enum VerboseMode : uint8_t {
   nothing       = 0x00, // display nothing - good for monitoring
   on_request    = 0x01, // display only on user request
-  user_friendly = 0x02  // display textual messages to the user
+  user_friendly = 0x02,  // display textual messages to the user
+  machine_readable = 0x03 // display machine readable commands, matching commands to set each settings
 };
 
 
@@ -90,7 +91,7 @@ class Commander
      * @param onCommand  - function pointer void function(char*)
      * @param label      - string label to be displayed when scan command sent
      */
-    void add(char id , CommandCallback onCommand, char* label = nullptr);
+    void add(char id , CommandCallback onCommand, const char* label = nullptr);
 
     // printing variables
     VerboseMode verbose = VerboseMode::user_friendly; //!< flag signaling that the commands should output user understanable text
@@ -239,6 +240,7 @@ class Commander
      */
     void motion(FOCMotor* motor, char* user_cmd, char* separator = (char *)" ");
 
+    bool isSentinel(char ch);
   private:
     // Subscribed command callback variables
     CommandCallback call_list[20];//!< array of command callback pointers - 20 is an arbitrary number
@@ -279,8 +281,20 @@ class Commander
     void println(const __FlashStringHelper *message);
     void println(const char message);
 
+    void printMachineReadable(const float number);
+    void printMachineReadable(const int number);
+    void printMachineReadable(const char* message);
+    void printMachineReadable(const __FlashStringHelper *message);
+    void printMachineReadable(const char message);
+
+    void printlnMachineReadable(const float number);
+    void printlnMachineReadable(const int number);
+    void printlnMachineReadable(const char* message);
+    void printlnMachineReadable(const __FlashStringHelper *message);
+    void printlnMachineReadable(const char message);
+
+
     void printError();
-    bool isSentinel(char ch);
 };
 
 

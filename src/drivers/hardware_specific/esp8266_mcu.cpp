@@ -2,6 +2,12 @@
 
 #if defined(ESP_H) && defined(ARDUINO_ARCH_ESP8266)
 
+
+#pragma message("")
+#pragma message("SimpleFOC: compiling for ESP8266")
+#pragma message("")
+
+
 #define _PWM_FREQUENCY 25000 // 25khz
 #define _PWM_FREQUENCY_MAX 50000 // 50khz
 
@@ -70,7 +76,7 @@ void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const in
   _setHighFrequency(pwm_frequency, pinC);
   _setHighFrequency(pwm_frequency, pinD);
   GenericDriverParams* params = new GenericDriverParams {
-    .pins = { pin1A, pin1B, pin2A, pin2B },
+    .pins = { pinA, pinB, pinC, pinD },
     .pwm_frequency = pwm_frequency
   };
   return params;

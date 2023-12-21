@@ -1,7 +1,8 @@
+
 #include "../hardware_api.h"
 
 // if the mcu doen't have defiend analogWrite
-#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32)
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && !defined(analogWrite)
   __attribute__((weak)) void analogWrite(uint8_t pin, int value){ };
 #endif
 
@@ -115,9 +116,10 @@ __attribute__((weak)) void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float 
 // Function setting the duty cycle to the pwm pin (ex. analogWrite())
 // - BLDC driver - 6PWM setting
 // - hardware specific
-__attribute__((weak)) void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
+__attribute__((weak)) void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params){
   _UNUSED(dc_a);
   _UNUSED(dc_b);
   _UNUSED(dc_c);
+  _UNUSED(phase_state);
   _UNUSED(params);
 }

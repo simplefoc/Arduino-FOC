@@ -15,6 +15,7 @@
  #define CMD_SENSOR    'S' //!< sensor offsets
  #define CMD_MONITOR   'M' //!< monitoring
  #define CMD_RESIST    'R' //!< motor phase resistance
+ #define CMD_INDUCTANCE    'I' //!< motor phase inductance
  #define CMD_KV_RATING 'K' //!< motor kv rating
  #define CMD_PWMMOD   'W' //!< pwm modulation
 

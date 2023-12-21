@@ -3,6 +3,12 @@
 
 #if defined(TARGET_PORTENTA_H7)
 
+
+#pragma message("")
+#pragma message("SimpleFOC: compiling for Arduino/Portenta_H7")
+#pragma message("")
+
+
 #include "pwmout_api.h"
 #include "pinDefinitions.h"
 #include "platform/mbed_critical.h"

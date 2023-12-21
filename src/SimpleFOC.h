@@ -45,7 +45,7 @@
 //  BLDCMotor( pole_pairs )
 BLDCMotor motor = BLDCMotor(11);
 //  BLDCDriver( pin_pwmA, pin_pwmB, pin_pwmC, enable (optional) )
-BLDCDriver3PWM motor = BLDCDriver3PWM(9, 10, 11, 8);
+BLDCDriver3PWM driver = BLDCDriver3PWM(9, 10, 11, 8);
 //  Encoder(pin_A, pin_B, CPR)
 Encoder encoder = Encoder(2, 3, 2048);
 // channel A and B callbacks

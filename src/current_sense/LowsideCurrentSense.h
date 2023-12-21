@@ -22,6 +22,14 @@ class LowsideCurrentSense: public CurrentSense{
       @param phC C phase adc pin (optional)
     */
     LowsideCurrentSense(float shunt_resistor, float gain, int pinA, int pinB, int pinC = _NC);
+    /**
+      LowsideCurrentSense class constructor
+      @param mVpA mV per Amp ratio
+      @param phA A phase adc pin
+      @param phB B phase adc pin
+      @param phC C phase adc pin (optional)
+    */
+    LowsideCurrentSense(float mVpA, int pinA, int pinB, int pinC = _NC);
 
     // CurrentSense interface implementing functions
     int init() override;
