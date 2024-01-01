@@ -53,17 +53,16 @@ class HallSensor: public Sensor{
     int cpr;//!< HallSensor cpr number
 
     // Abstract functions of the Sensor class implementation
+    /** Interrupt-safe update */
+    void update() override;
     /** get current angle (rad) */
     float getSensorAngle() override;
-    float getMechanicalAngle() override;
-    float getAngle() override;
     /**  get current angular velocity (rad/s) */
     float getVelocity() override;
-    double getPreciseAngle() override;
-    int32_t getFullRotations() override;
 
     // whether last step was CW (+1) or CCW (-1).  
     Direction direction;
+    Direction old_direction;
 
     void attachSectorCallback(void (*onSectorChange)(int a) = nullptr);
 

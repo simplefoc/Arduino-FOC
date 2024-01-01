@@ -6,7 +6,8 @@
 #include "freertos/task.h"
 #include "rom/ets_sys.h"
 #include "esp_attr.h"
-#include "esp_intr.h"
+//#include "esp_intr.h" deprecated
+#include "esp_intr_alloc.h"
 #include "soc/rtc_io_reg.h"
 #include "soc/rtc_cntl_reg.h"
 #include "soc/sens_reg.h"
@@ -153,9 +154,8 @@ bool IRAM_ATTR __adcStart(uint8_t pin){
     }
 
     if(channel > 9){
-        channel -= 10;
         CLEAR_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M);
-        SET_PERI_REG_BITS(SENS_SAR_MEAS_START2_REG, SENS_SAR2_EN_PAD, (1 << channel), SENS_SAR2_EN_PAD_S);
+        SET_PERI_REG_BITS(SENS_SAR_MEAS_START2_REG, SENS_SAR2_EN_PAD, (1 << (channel - 10)), SENS_SAR2_EN_PAD_S);
         SET_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M);
     } else {
         CLEAR_PERI_REG_MASK(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_SAR_M);
@@ -224,9 +224,8 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
     __analogInit();
 
     if(channel > 9){
-        channel -= 10;
         CLEAR_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M);
-        SET_PERI_REG_BITS(SENS_SAR_MEAS_START2_REG, SENS_SAR2_EN_PAD, (1 << channel), SENS_SAR2_EN_PAD_S);
+        SET_PERI_REG_BITS(SENS_SAR_MEAS_START2_REG, SENS_SAR2_EN_PAD, (1 << (channel - 10)), SENS_SAR2_EN_PAD_S);
         SET_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M);
     } else {
         CLEAR_PERI_REG_MASK(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_SAR_M);

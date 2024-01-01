@@ -56,6 +56,13 @@ void StepperMotor::init() {
   }
   P_angle.limit = velocity_limit;
 
+  // if using open loop control, set a CW as the default direction if not already set
+  if ((controller==MotionControlType::angle_openloop
+     ||controller==MotionControlType::velocity_openloop)
+     && (sensor_direction == Direction::UNKNOWN)) {
+      sensor_direction = Direction::CW;
+  }
+
   _delay(500);
   // enable motor
   SIMPLEFOC_DEBUG("MOT: Enable driver.");
@@ -92,20 +99,13 @@ void StepperMotor::enable()
   FOC functions
 */
 // FOC initialization function
-int  StepperMotor::initFOC( float zero_electric_offset, Direction _sensor_direction ) {
+int  StepperMotor::initFOC() {
   int exit_flag = 1;
   
   motor_status = FOCMotorStatus::motor_calibrating;
 
   // align motor if necessary
   // alignment necessary for encoders!
-  if(_isset(zero_electric_offset)){
-    // abosolute zero offset provided - no need to align
-    zero_electric_angle = zero_electric_offset;
-    // set the sensor direction - default CW
-    sensor_direction = _sensor_direction;
-  }
-
   // sensor and motor alignment - can be skipped
   // by setting motor.sensor_direction and motor.zero_electric_angle
   _delay(500);
@@ -114,7 +114,7 @@ int  StepperMotor::initFOC( float zero_electric_offset, Direction _sensor_direct
     // added the shaft_angle update
     sensor->update();
     shaft_angle = sensor->getAngle();
-  }else SIMPLEFOC_DEBUG("MOT: No sensor.");
+  } else { SIMPLEFOC_DEBUG("MOT: No sensor."); }
 
   if(exit_flag){
     SIMPLEFOC_DEBUG("MOT: Ready.");
@@ -134,7 +134,7 @@ int StepperMotor::alignSensor() {
   SIMPLEFOC_DEBUG("MOT: Align sensor.");
 
   // if unknown natural direction
-  if(!_isset(sensor_direction)){
+  if(sensor_direction == Direction::UNKNOWN){
     // check if sensor needs zero search
     if(sensor->needsSearch()) exit_flag = absoluteZeroSearch();
     // stop init if not found index
@@ -177,10 +177,13 @@ int StepperMotor::alignSensor() {
     float moved =  fabs(mid_angle - end_angle);
     if( fabs(moved*pole_pairs - _2PI) > 0.5f ) { // 0.5f is arbitrary number it can be lower or higher!
       SIMPLEFOC_DEBUG("MOT: PP check: fail - estimated pp: ", _2PI/moved);
-    } else 
+    } else {
       SIMPLEFOC_DEBUG("MOT: PP check: OK!");
+    }
 
-  }else SIMPLEFOC_DEBUG("MOT: Skip dir calib.");
+  } else { 
+    SIMPLEFOC_DEBUG("MOT: Skip dir calib.");
+  }
 
   // zero electric angle not known
   if(!_isset(zero_electric_angle)){
@@ -200,7 +203,7 @@ int StepperMotor::alignSensor() {
     // stop everything
     setPhaseVoltage(0, 0, 0);
     _delay(200);
-  }else SIMPLEFOC_DEBUG("MOT: Skip offset calib.");
+  } else { SIMPLEFOC_DEBUG("MOT: Skip offset calib."); }
   return exit_flag;
 }
 
@@ -229,7 +232,7 @@ int StepperMotor::absoluteZeroSearch() {
   // check if the zero found
   if(monitor_port){
     if(sensor->needsSearch()) SIMPLEFOC_DEBUG("MOT: Error: Not found!");
-    else SIMPLEFOC_DEBUG("MOT: Success!");
+    else { SIMPLEFOC_DEBUG("MOT: Success!"); }
   }
   return !sensor->needsSearch();
 }
@@ -307,7 +310,8 @@ void StepperMotor::move(float new_target) {
       // angle set point
       shaft_angle_sp = target;
       // calculate velocity set point
-      shaft_velocity_sp = P_angle( shaft_angle_sp - shaft_angle );
+      shaft_velocity_sp = feed_forward_velocity + P_angle( shaft_angle_sp - shaft_angle );
+      shaft_velocity_sp = _constrain(shaft_velocity_sp, -velocity_limit, velocity_limit);
       // calculate the torque command
       current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
       // if torque controlled through voltage
@@ -357,12 +361,9 @@ void StepperMotor::move(float new_target) {
 void StepperMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
   // Sinusoidal PWM modulation
   // Inverse Park transformation
+  float _sa, _ca;
+  _sincos(angle_el, &_sa, &_ca);
 
-  // angle normalization in between 0 and 2pi
-  // only necessary if using _sin and _cos - approximation functions
-  angle_el = _normalizeAngle(angle_el);
-  float _ca = _cos(angle_el);
-  float _sa = _sin(angle_el);
   // Inverse park transform
   Ualpha =  _ca * Ud - _sa * Uq;  // -sin(angle) * Uq;
   Ubeta =  _sa * Ud + _ca * Uq;    //  cos(angle) * Uq;

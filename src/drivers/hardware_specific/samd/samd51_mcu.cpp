@@ -6,6 +6,11 @@
 #if defined(_SAMD51_)||defined(_SAME51_)
 
 
+#pragma message("")
+#pragma message("SimpleFOC: compiling for SAMD51/SAME51")
+#pragma message("")
+
+
 
 // expected frequency on DPLL, since we don't configure it ourselves. Typically this is the CPU frequency.
 // for custom boards or overclockers you can override it using this define.

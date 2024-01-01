@@ -1,7 +1,8 @@
 # SimpleFOClibrary - **Simple** Field Oriented Control (FOC) **library** <br> 
 ### A Cross-Platform FOC implementation for BLDC and Stepper motors<br> based on the Arduino IDE and PlatformIO 
 
-![Library Compile](https://github.com/simplefoc/Arduino-FOC/workflows/Library%20Compile/badge.svg)
+![Library Compile](https://github.com/simplefoc/Arduino-FOC/workflows/Library%20Compile/badge.svg) [![PlatformIO - Teensy build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml) 
+
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/simplefoc/arduino-foc)
 ![GitHub Release Date](https://img.shields.io/github/release-date/simplefoc/arduino-foc?color=blue)
 ![GitHub commits since tagged version](https://img.shields.io/github/commits-since/simplefoc/arduino-foc/latest/dev)
@@ -24,34 +25,20 @@ Therefore this is an attempt to:
    - *Medium-power* BLDC driver (<30Amps): [Arduino <span class="simple">Simple<b>FOC</b>PowerShield</span> ](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
-> NEW RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.0
-> - Arduino Mega 6pwm more timers supported 
-> - Arduino boards - frequency change support either 32kHz or 4kHz
-> - Arduino Uno - synched timers in 3pwm and 6pwm mode [#71](https://github.com/simplefoc/Arduino-FOC/issues/71)
-> - Teensy 3.x initial support for 6pwm
-> - Teensy 4.x initial support for 6pwm
-> - Example for v3.1 SimpleFOCShield 
-> - RP2040 compatibility for earlehillpower core [#234](https://github.com/simplefoc/Arduino-FOC/pull/234) [#236](https://github.com/simplefoc/Arduino-FOC/pull/236)
-> - More flexible monitoring API 
->   - start, end and separator characters
->   - decimal places (settable through commander)
-> - Added machine readable verbose mode in `Commander` [#233](https://github.com/simplefoc/Arduino-FOC/pull/233)
-> - *Simple**FOC**WebController* - Web based user interface for SimpleFOC by [@geekuillaume](https://github.com/geekuillaume) - [webcontroller.simplefoc.com](webcontroller.simplefoc.com)
-> - bugfix - `MagneticSensorPWM` multiple occasions - [#258](https://github.com/simplefoc/Arduino-FOC/pull/258)
-> - bugfix - current sense align - added offset exchange when exchanging pins
-> - bugfix - trapezoid 150 fixed
-> - bugfix - 4pwm on ESP8266 [#224](https://github.com/simplefoc/Arduino-FOC/pull/224)
-> - Additional `InlineCurrentSense` and `LowsideCurrentSense` constructor using milliVolts per Amp [#253](https://github.com/simplefoc/Arduino-FOC/pull/253)
-> - STM32L4xx current sense support by [@Triple6](https://github.com/Triple6) (discord) [#257](https://github.com/simplefoc/Arduino-FOC/pull/257)
-> - phase disable in 6pwm mode 
->   - stm32 - software and hardware 6pwm
->   - atmega328 
->   - atmega2560
-> - Lag compensation using motor inductance [#246](https://github.com/simplefoc/Arduino-FOC/issues/246)
->   - current control through voltage torque mode enhancement
->   - extended `BLDCMotor` and `StepperMotor` constructors to receive the inductance paramerer
->   - can also be set using `motor.phase_inductance` or through `Commander`
-## Arduino *SimpleFOClibrary* v2.3
+> NEW RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.2
+> - Improved [space vector modulation code](https://github.com/simplefoc/Arduino-FOC/pull/309) thanks to [@Candas1](https://github.com/Candas1)
+> - Bugfix for stepper motor initialization
+> - Bugfix for current sensing when only 2 phase currents available - please re-check your current sense PID tuning
+> - Bugfix for teensy3.2 - [#321](https://github.com/simplefoc/Arduino-FOC/pull/321)
+> - Added teensy3/4 compile to the github CI using platformio
+> - Fix compile issues with recent versions of ESP32 framework
+> - Add ADC calibration on STM32 MCUs
+> - Bugfix for crash when using ADC2 on ESP32s - [thanks to @mcells](https://github.com/simplefoc/Arduino-FOC/pull/346)
+> - Bugfix for renesas PWM on UNO R4 WiFi - [thanks to @facchinm](https://github.com/simplefoc/Arduino-FOC/pull/322)
+> - And more bugfixes - see the complete list of 2.3.2 [fixes and PRs](https://github.com/simplefoc/Arduino-FOC/milestone/9?closed=1)
+
+
+## Arduino *SimpleFOClibrary* v2.3.2
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">
@@ -78,7 +65,7 @@ This video demonstrates the *Simple**FOC**library* basic usage, electronic conne
 - **Cross-platform**:
    - Seamless code transfer from one microcontroller family to another 
    - Supports multiple [MCU architectures](https://docs.simplefoc.com/microcontrollers):
-      - Arduino: UNO, MEGA, DUE, Leonardo ....
+      - Arduino: UNO R4, UNO, MEGA, DUE, Leonardo, Nano, Nano33 ....
       - STM32
       - ESP32
       - Teensy
@@ -132,7 +119,9 @@ Please do not hesitate to leave an issue if you have problems/advices/suggestion
 
 Pull requests are welcome, but let's first discuss them in [community forum](https://community.simplefoc.com)!
 
-If you'd like to contribute to this porject but you are not very familiar with github, don't worry, let us know either by posting at the community forum , by posting a github issue or at our discord server.
+If you'd like to contribute to this project but you are not very familiar with github, don't worry, let us know either by posting at the community forum , by posting a github issue or at our discord server.
+
+If you are familiar, we accept pull requests to the dev branch!
 
 ## Arduino code example
 This is a simple Arduino code example implementing the velocity control program of a BLDC motor with encoder. 

@@ -3,14 +3,17 @@
 // if defined 
 // - Teensy 3.0 MK20DX128
 // - Teensy 3.1/3.2 MK20DX256
-// - Teensy 3.5 MK20DX128
 // - Teensy LC MKL26Z64
 // - Teensy 3.5 MK64FX512
 // - Teensy 3.6 MK66FX1M0
 #if defined(__arm__) && defined(CORE_TEENSY) &&  (defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MKL26Z64__) || defined(__MK64FX512__) || defined(__MK66FX1M0__))
 
 
-// pin definition from https://github.com/PaulStoffregen/cores/blob/286511f3ec849a6c9e0ec8b73ad6a2fada52e44c/teensy3/pins_teensy.c
+#pragma message("")
+#pragma message("SimpleFOC: compiling for Teensy 3.x")
+#pragma message("")
+
+// pin definition from https://github.com/PaulStoffregen/cores/blob/286511f3ec849a6c9e0ec8b73ad6a2fada52e44c/teensy3/pins_teensy.c#L627
 #if defined(__MK20DX128__)
 #define FTM0_CH0_PIN 22
 #define FTM0_CH1_PIN 23
@@ -112,7 +115,7 @@ int _findTimer( const int Ah, const int Al,  const int Bh, const int Bl, const i
       }
   }
 
-  #ifdef FTM3_SC // if the board has FTM3 timer
+#ifdef FTM3_CH0_PIN // if the board has FTM3 timer
     if((Ah == FTM3_CH0_PIN && Al == FTM3_CH1_PIN) || 
       (Ah == FTM3_CH2_PIN && Al == FTM3_CH3_PIN) ||
       (Ah == FTM3_CH4_PIN && Al == FTM3_CH5_PIN) ){
@@ -130,7 +133,7 @@ int _findTimer( const int Ah, const int Al,  const int Bh, const int Bl, const i
           }
         }
     }
-  #endif
+#endif
   
 #ifdef SIMPLEFOC_TEENSY_DEBUG
   SIMPLEFOC_DEBUG("TEENSY-DRV: ERR: Pins not on timers FTM0 or FTM3!");
@@ -206,7 +209,8 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 6PWM setting
 // - hardware specific
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
+void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params){
+  _UNUSED(phase_state);
   // transform duty cycle from [0,1] to [0,255]
   // phase A
   analogWrite(((GenericDriverParams*)params)->pins[0], 255.0f*dc_a);

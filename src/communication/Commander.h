@@ -91,7 +91,7 @@ class Commander
      * @param onCommand  - function pointer void function(char*)
      * @param label      - string label to be displayed when scan command sent
      */
-    void add(char id , CommandCallback onCommand, char* label = nullptr);
+    void add(char id , CommandCallback onCommand, const char* label = nullptr);
 
     // printing variables
     VerboseMode verbose = VerboseMode::user_friendly; //!< flag signaling that the commands should output user understanable text
@@ -240,6 +240,7 @@ class Commander
      */
     void motion(FOCMotor* motor, char* user_cmd, char* separator = (char *)" ");
 
+    bool isSentinel(char ch);
   private:
     // Subscribed command callback variables
     CommandCallback call_list[20];//!< array of command callback pointers - 20 is an arbitrary number
@@ -294,7 +295,6 @@ class Commander
 
 
     void printError();
-    bool isSentinel(char ch);
 };
 
 

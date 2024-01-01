@@ -49,7 +49,7 @@ class BLDCMotor: public FOCMotor
      * Function initializing FOC algorithm
      * and aligning sensor's and motors' zero position 
      */  
-    int initFOC( float zero_electric_offset = NOT_SET , Direction sensor_direction = Direction::CW) override;
+    int initFOC() override;
     /**
      * Function running FOC algorithm in real-time
      * it calculates the gets motor angle and sets the appropriate voltages 

@@ -6,6 +6,8 @@
 
 void Sensor::update() {
     float val = getSensorAngle();
+    if (val<0) // sensor angles are strictly non-negative. Negative values are used to signal errors.
+        return; // TODO signal error, e.g. via a flag and counter
     angle_prev_ts = _micros();
     float d_angle = val - angle_prev;
     // if overflow happened track it as full rotation
@@ -18,7 +20,12 @@ void Sensor::update() {
 float Sensor::getVelocity() {
     // calculate sample time
     float Ts = (angle_prev_ts - vel_angle_prev_ts)*1e-6;
-    // TODO handle overflow - we do need to reset vel_angle_prev_ts
+    if (Ts < 0.0f) {    // handle micros() overflow - we need to reset vel_angle_prev_ts
+        vel_angle_prev = angle_prev;
+        vel_full_rotations = full_rotations;
+        vel_angle_prev_ts = angle_prev_ts;
+        return velocity;
+    }
     if (Ts < min_elapsed_time) return velocity; // don't update velocity if deltaT is too small
 
     velocity = ( (float)(full_rotations - vel_full_rotations)*_2PI + (angle_prev - vel_angle_prev) ) / Ts;

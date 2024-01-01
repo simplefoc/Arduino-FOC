@@ -29,6 +29,7 @@
 
 // Motor instance
 BLDCMotor motor = BLDCMotor(11);
+
 BLDCDriver6PWM driver = BLDCDriver6PWM(INH_A, INL_A, INH_B, INL_B, INH_C, INL_C, EN_GATE);
 
 // encoder instance

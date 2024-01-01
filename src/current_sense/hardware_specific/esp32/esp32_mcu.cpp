@@ -2,7 +2,7 @@
 #include "../../../drivers/hardware_api.h"
 #include "../../../drivers/hardware_specific/esp32/esp32_driver_mcpwm.h"
 
-#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) 
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC)
 
 #include "esp32_adc_driver.h"
 
@@ -121,6 +121,8 @@ void _driverSyncLowSide(void* driver_params, void* cs_params){
     mcpwm_isr_register(mcpwm_unit, mcpwm1_isr_handler, NULL, ESP_INTR_FLAG_IRAM, NULL);  //Set ISR Handler
 }
 
+static void IRAM_ATTR mcpwm0_isr_handler(void*) __attribute__ ((unused));
+
 // Read currents when interrupt is triggered
 static void IRAM_ATTR mcpwm0_isr_handler(void*){
   // // high side
@@ -139,6 +141,7 @@ static void IRAM_ATTR mcpwm0_isr_handler(void*){
   // MCPWM0.int_clr.timer0_tez_int_clr = mcpwm_intr_status_0;
 }
 
+static void IRAM_ATTR mcpwm1_isr_handler(void*) __attribute__ ((unused));
 
 // Read currents when interrupt is triggered
 static void IRAM_ATTR mcpwm1_isr_handler(void*){

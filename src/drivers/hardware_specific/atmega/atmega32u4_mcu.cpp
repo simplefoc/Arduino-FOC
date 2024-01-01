@@ -3,6 +3,10 @@
 
 #if defined(__AVR_ATmega32U4__)
 
+#pragma message("")
+#pragma message("SimpleFOC: compiling for Arduino/ATmega32U4")
+#pragma message("")
+
 // set pwm frequency to 32KHz
 void _pinHighFrequency(const int pin){
   //  High PWM frequency

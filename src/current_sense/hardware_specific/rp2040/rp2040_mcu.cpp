@@ -10,6 +10,7 @@
 #include "hardware/dma.h"
 #include "hardware/irq.h"
 #include "hardware/pwm.h"
+#include "hardware/adc.h"
 
 
 /* Singleton instance of the ADC engine */
@@ -24,6 +25,7 @@ float _readADCVoltageInline(const int pinA, const void* cs_params) {
     // return readings from the same ADC conversion run. The ADC on RP2040 is anyway in round robin mode :-(
     // like this we either have to block interrupts, or of course have the chance of reading across
     // new ADC conversions, which probably won't improve the accuracy.
+    _UNUSED(cs_params);
 
     if (pinA>=26 && pinA<=29 && engine.channelsEnabled[pinA-26]) {
         return engine.lastResults.raw[pinA-26]*engine.adc_conv;
@@ -35,6 +37,8 @@ float _readADCVoltageInline(const int pinA, const void* cs_params) {
 
 
 void* _configureADCInline(const void *driver_params, const int pinA, const int pinB, const int pinC) {
+    _UNUSED(driver_params);
+
     if( _isset(pinA) )
         engine.addPin(pinA);
     if( _isset(pinB) )
@@ -163,7 +167,6 @@ bool RP2040ADCEngine::init() {
      false,             // We won't see the ERR bit because of 8 bit reads; disable.
      true               // Shift each sample to 8 bits when pushing to FIFO
     );
-    samples_per_second = 20000;
     if (samples_per_second<1 || samples_per_second>=500000) {
         samples_per_second = 0;
         adc_set_clkdiv(0);
@@ -241,6 +244,7 @@ void RP2040ADCEngine::start() {
 
 void RP2040ADCEngine::stop() {
     adc_run(false);
+    irq_set_enabled(DMA_IRQ_0, false);
     dma_channel_abort(readDMAChannel);
     // if (triggerPWMSlice>=0)
     //     dma_channel_abort(triggerDMAChannel);
