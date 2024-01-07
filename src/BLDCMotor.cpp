@@ -111,6 +111,8 @@ void BLDCMotor::init() {
 // disable motor driver
 void BLDCMotor::disable()
 {
+  // disable the current sense
+  if(current_sense) current_sense->disable();
   // set zero to PWM
   driver->setPwm(0, 0, 0);
   // disable the driver
@@ -125,6 +127,13 @@ void BLDCMotor::enable()
   driver->enable();
   // set zero to PWM
   driver->setPwm(0, 0, 0);
+  // enable the current sense
+  if(current_sense) current_sense->enable();
+  // reset the pids
+  PID_velocity.reset();
+  P_angle.reset();
+  PID_current_q.reset();
+  PID_current_d.reset();
   // motor status update
   enabled = 1;
 }

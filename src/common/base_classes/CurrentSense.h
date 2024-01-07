@@ -87,7 +87,17 @@ class CurrentSense{
      */
     DQCurrent_s getDQCurrents(ABCurrent_s current,float angle_el);
 
+    /**
+     * enable the current sense. default implementation does nothing, but you can
+     * override it to do something useful.
+     */
+    virtual void enable();
 
+    /**
+     * disable the current sense. default implementation does nothing, but you can
+     * override it to do something useful.
+     */
+    virtual void disable();
 };
 
 #endif
