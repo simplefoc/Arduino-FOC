@@ -100,3 +100,12 @@ DQCurrent_s CurrentSense::getDQCurrents(ABCurrent_s current, float angle_el){
 void CurrentSense::linkDriver(BLDCDriver* _driver) {
   driver = _driver;
 }
+
+
+void CurrentSense::enable(){
+    // nothing is done here, but you can override this function
+};
+
+void CurrentSense::disable(){
+    // nothing is done here, but you can override this function
+};
