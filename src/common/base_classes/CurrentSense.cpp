@@ -102,10 +102,10 @@ void CurrentSense::linkDriver(BLDCDriver* _driver) {
 }
 
 
-void enable(){
+void CurrentSense::enable(){
     // nothing is done here, but you can override this function
 };
 
-void disable(){
+void CurrentSense::disable(){
     // nothing is done here, but you can override this function
 };
