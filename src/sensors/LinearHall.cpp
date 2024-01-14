@@ -3,8 +3,8 @@
 // This function can be overridden with custom ADC code on platforms with poor analogRead performance.
 __attribute__((weak)) void ReadLinearHalls(int hallA, int hallB, int *a, int *b)
 {
-	*a = analogRead(hallA);
-	*b = analogRead(hallB);
+  *a = analogRead(hallA);
+  *b = analogRead(hallB);
 }
 
 LinearHall::LinearHall(int _hallA, int _hallB, int _pp){
@@ -71,6 +71,7 @@ void LinearHall::init(FOCMotor *motor) {
     return;
   }
 
+  // See comment in other version of init for why these are commented out
   //pinMode(pinA, INPUT);
   //pinMode(pinB, INPUT);
 

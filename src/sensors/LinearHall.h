@@ -3,7 +3,7 @@
 
 #include <SimpleFOC.h>
 
-class FOCMotor;
+// This function can be overridden with custom ADC code on platforms with poor analogRead performance.
 void ReadLinearHalls(int hallA, int hallB, int *a, int *b);
 
 /**
@@ -21,7 +21,7 @@ class LinearHall: public Sensor{
     LinearHall(int hallA, int hallB, int pp);
 
     void init(int centerA, int centerB); // Initialize without moving motor
-    void init(FOCMotor *motor); // Move motor to find center values
+    void init(class FOCMotor *motor); // Move motor to find center values
 
     // Get current shaft angle from the sensor hardware, and
     // return it as a float in radians, in the range 0 to 2PI.
