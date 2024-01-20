@@ -259,7 +259,8 @@ int BLDCMotor::alignSensor() {
       sensor_direction = Direction::CW;
     }
     // check pole pair number
-    if( fabs(moved*pole_pairs - _2PI) > 0.5f ) { // 0.5f is arbitrary number it can be lower or higher!
+    pp_check_result = !(fabs(moved*pole_pairs - _2PI) > 0.5f); // 0.5f is arbitrary number it can be lower or higher!
+    if( pp_check_result==false ) {
       SIMPLEFOC_DEBUG("MOT: PP check: fail - estimated pp: ", _2PI/moved);
     } else {
       SIMPLEFOC_DEBUG("MOT: PP check: OK!");
