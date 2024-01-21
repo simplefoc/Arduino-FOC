@@ -151,7 +151,6 @@ int  BLDCMotor::initFOC() {
   // alignment necessary for encoders!
   // sensor and motor alignment - can be skipped
   // by setting motor.sensor_direction and motor.zero_electric_angle
-  _delay(500);
   if(sensor){
     exit_flag *= alignSensor();
     // added the shaft_angle update
@@ -165,7 +164,6 @@ int  BLDCMotor::initFOC() {
   // aligning the current sensor - can be skipped
   // checks if driver phases are the same as current sense phases
   // and checks the direction of measuremnt.
-  _delay(500);
   if(exit_flag){
     if(current_sense){ 
       if (!current_sense->initialized) {
