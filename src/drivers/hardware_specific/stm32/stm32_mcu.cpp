@@ -4,6 +4,7 @@
 
 #if defined(_STM32_DEF_)
 
+#define SIMPLEFOC_STM32_DEBUG
 #pragma message("")
 #pragma message("SimpleFOC: compiling for STM32")
 #pragma message("")
@@ -204,25 +205,43 @@ void _stopTimers(HardwareTimer **timers_to_stop, int timer_num)
   }
 }
 
-// align the timers to end the init
-void _startTimers(HardwareTimer **timers_to_start, int timer_num)
-{
-  // TODO - sart each timer only once
-  // sart timers
-  for (int i=0; i < timer_num; i++) {
-    if(timers_to_start[i] == NP) return;
-    timers_to_start[i]->resume();
-    #ifdef SIMPLEFOC_STM32_DEBUG
-      SIMPLEFOC_DEBUG("STM32-DRV: Starting timer ", getTimerNumber(get_timer_index(timers_to_start[i]->getHandle()->Instance)));
-    #endif
-  }
+
+// function finds the appropriate timer source trigger for the master timer index provided
+// returns -1 if no trigger source is found
+// currently supports the master timers to be from TIM1 to TIM8
+int _getTriggerSourceRegister(HardwareTimer* timer) {
+  #if defined(TIM1) && TIM_TS_ITR0
+    if (timer->getHandle()->Instance == TIM1) return LL_TIM_TS_ITR0;// return TIM_TS_ITR0;
+  #endif
+  #if defined(TIM2) && TIM_TS_ITR1
+    if (timer->getHandle()->Instance == TIM2) return LL_TIM_TS_ITR1;//return TIM_TS_ITR1;
+  #endif
+  #if defined(TIM3) && TIM_TS_ITR2
+    if (timer->getHandle()->Instance == TIM3) return LL_TIM_TS_ITR2;//return TIM_TS_ITR2;
+  #endif  
+  #if defined(TIM4) && TIM_TS_ITR3
+    if (timer->getHandle()->Instance == TIM4) return LL_TIM_TS_ITR3;//return TIM_TS_ITR3;
+  #endif 
+  #if defined(TIM5) && TIM_TS_ITR4
+    if (timer->getHandle()->Instance == TIM5) return LL_TIM_TS_ITR4;//return TIM_TS_ITR4;
+  #endif
+  #if defined(TIM6) && TIM_TS_ITR5
+    if (timer->getHandle()->Instance == TIM6) return LL_TIM_TS_ITR5;//return TIM_TS_ITR5;
+  #endif
+  #if defined(TIM7) && TIM_TS_ITR6
+    if (timer->getHandle()->Instance == TIM7) return LL_TIM_TS_ITR6;//return TIM_TS_ITR6;
+  #endif
+  #if defined(TIM8) && TIM_TS_ITR7
+    if (timer->getHandle()->Instance == TIM8) return LL_TIM_TS_ITR7;// return TIM_TS_ITR7;
+  #endif
+  return -1;
 }
 
 void _alignTimersNew() {
   int numTimers = 0;
   HardwareTimer *timers[numTimerPinsUsed];
 
-  // reset timer counters
+  // find the timers used
   for (int i=0; i<numTimerPinsUsed; i++) {
     uint32_t index = get_timer_index((TIM_TypeDef*)timerPinsUsed[i]->peripheral);
     HardwareTimer *timer = (HardwareTimer *)(HardwareTimer_Handle[index]->__this);
@@ -235,6 +254,55 @@ void _alignTimersNew() {
     }
     if (!found)
       timers[numTimers++] = timer;
+  }
+
+  // see if there is more then 1 timers used for the pwm
+  // if yes, try to align timers
+  if(numTimers > 1){
+    // find the master timer
+    uint8_t masterTimerIndex = 0;
+    int triggerEvent = -1;
+    for (int i=0; i<numTimers; i++) {
+      // check if timer can be master
+      if(IS_TIM_MASTER_INSTANCE(timers[i]->getHandle()->Instance)) {
+        // check if timer already configured in TRGO update mode (used for ADC triggering)
+        // in that case we should not change its TRGO configuration
+        if(timers[i]->getHandle()->Instance->CR2 & LL_TIM_TRGO_UPDATE) continue;
+        // check if it has the supported internal trigger
+        triggerEvent = _getTriggerSourceRegister(timers[i]); 
+        if(triggerEvent == -1) continue; // not supported keep searching
+        masterTimerIndex = i; // found the master timer
+        break;
+      }
+    }
+    
+    #ifdef SIMPLEFOC_STM32_DEBUG
+      SIMPLEFOC_DEBUG("STM32-DRV: aligning!");
+    #endif
+
+    // if no master timer found do not perform alignment
+    if (triggerEvent == -1) {
+      #ifdef SIMPLEFOC_STM32_DEBUG
+        SIMPLEFOC_DEBUG("STM32-DRV: ERR: No master timer found, cannot align timers!");
+      #endif
+    }else{
+      #ifdef SIMPLEFOC_STM32_DEBUG
+        SIMPLEFOC_DEBUG("STM32-DRV: Aligning PWM to master timer: ",  getTimerNumber(get_timer_index(timers[masterTimerIndex]->getHandle()->Instance)));
+      #endif
+      // make the master timer generate ITRGx event
+      // if it was already configured in slave mode
+      LL_TIM_SetSlaveMode(timers[masterTimerIndex]->getHandle()->Instance, LL_TIM_SLAVEMODE_DISABLED );
+      // Configure the master  timer to send a trigger signal on enable 
+      LL_TIM_SetTriggerOutput(timers[masterTimerIndex]->getHandle()->Instance, LL_TIM_TRGO_ENABLE);
+      // configure other timers to get the input trigger from the master timer
+      for (int i=0; i<numTimers; i++) {
+        if (i==masterTimerIndex)
+          continue;
+        // Configure the slave timer to be triggered by the master enable signal
+        LL_TIM_SetTriggerInput(timers[i]->getHandle()->Instance, triggerEvent);
+        LL_TIM_SetSlaveMode(timers[i]->getHandle()->Instance, LL_TIM_SLAVEMODE_TRIGGER);
+      }
+    }
   }
 
   // enable timer clock
@@ -254,6 +322,20 @@ void _alignTimersNew() {
 
 
 
+// align the timers to end the init
+void _startTimers(HardwareTimer **timers_to_start, int timer_num)
+{
+  // // TODO - start each timer only once
+  // // start timers
+  // for (int i=0; i < timer_num; i++) {
+  //   if(timers_to_start[i] == NP) return;
+  //   timers_to_start[i]->resume();
+  //   #ifdef SIMPLEFOC_STM32_DEBUG
+  //     SIMPLEFOC_DEBUG("STM32-DRV: Starting timer ", getTimerNumber(get_timer_index(timers_to_start[i]->getHandle()->Instance)));
+  //   #endif
+  // }
+  _alignTimersNew();
+}
 
 
 // configure hardware 6pwm for a complementary pair of channels
@@ -540,7 +622,7 @@ void* _configure1PWM(long pwm_frequency, const int pinA) {
     return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
 
   HardwareTimer* HT1 = _initPinPWM(pwm_frequency, pinTimers[0]);\
-  // allign the timers
+  // align the timers
   _alignTimersNew();
   
   uint32_t channel1 = STM_PIN_CHANNEL(pinTimers[0]->function);
@@ -598,6 +680,8 @@ void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 
 
 
+TIM_MasterConfigTypeDef sMasterConfig;
+TIM_SlaveConfigTypeDef sSlaveConfig;
 
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
@@ -620,7 +704,7 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
   HardwareTimer* HT1 = _initPinPWM(pwm_frequency, pinTimers[0]);
   HardwareTimer* HT2 = _initPinPWM(pwm_frequency, pinTimers[1]);
   HardwareTimer* HT3 = _initPinPWM(pwm_frequency, pinTimers[2]);
-  
+
   uint32_t channel1 = STM_PIN_CHANNEL(pinTimers[0]->function);
   uint32_t channel2 = STM_PIN_CHANNEL(pinTimers[1]->function);
   uint32_t channel3 = STM_PIN_CHANNEL(pinTimers[2]->function);
@@ -944,9 +1028,5 @@ void printTimerCombination(int numPins, PinMap* timers[], int score) {
 }
 
 #endif
-
-
-
-
 
 #endif
