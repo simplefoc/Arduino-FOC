@@ -256,6 +256,10 @@ void _alignTimersNew() {
       timers[numTimers++] = timer;
   }
 
+    #ifdef SIMPLEFOC_STM32_DEBUG
+      SIMPLEFOC_DEBUG("STM32-DRV: Syncronising timers!\nTimer no. ", numTimers);
+    #endif
+
   // see if there is more then 1 timers used for the pwm
   // if yes, try to align timers
   if(numTimers > 1){
@@ -276,9 +280,6 @@ void _alignTimersNew() {
       }
     }
     
-    #ifdef SIMPLEFOC_STM32_DEBUG
-      SIMPLEFOC_DEBUG("STM32-DRV: aligning!");
-    #endif
 
     // if no master timer found do not perform alignment
     if (triggerEvent == -1) {
