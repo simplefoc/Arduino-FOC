@@ -10,8 +10,6 @@
 #pragma message("")
 
 
-//#define SIMPLEFOC_STM32_DEBUG
-
 #ifdef SIMPLEFOC_STM32_DEBUG
 void printTimerCombination(int numPins, PinMap* timers[], int score);
 int getTimerNumber(int timerIndex);
@@ -210,28 +208,28 @@ void _stopTimers(HardwareTimer **timers_to_stop, int timer_num)
 // returns -1 if no trigger source is found
 // currently supports the master timers to be from TIM1 to TIM8
 int _getTriggerSourceRegister(HardwareTimer* timer) {
-  #if defined(TIM1) && TIM_TS_ITR0
+  #if defined(TIM1) && defined(LL_TIM_TS_ITR0)
     if (timer->getHandle()->Instance == TIM1) return LL_TIM_TS_ITR0;// return TIM_TS_ITR0;
   #endif
-  #if defined(TIM2) && TIM_TS_ITR1
+  #if defined(TIM2) &&  defined(LL_TIM_TS_ITR1)
     if (timer->getHandle()->Instance == TIM2) return LL_TIM_TS_ITR1;//return TIM_TS_ITR1;
   #endif
-  #if defined(TIM3) && TIM_TS_ITR2
+  #if defined(TIM3) &&  defined(LL_TIM_TS_ITR2)
     if (timer->getHandle()->Instance == TIM3) return LL_TIM_TS_ITR2;//return TIM_TS_ITR2;
   #endif  
-  #if defined(TIM4) && TIM_TS_ITR3
+  #if defined(TIM4) &&  defined(LL_TIM_TS_ITR3)
     if (timer->getHandle()->Instance == TIM4) return LL_TIM_TS_ITR3;//return TIM_TS_ITR3;
   #endif 
-  #if defined(TIM5) && TIM_TS_ITR4
+  #if defined(TIM5) &&  defined(LL_TIM_TS_ITR4)
     if (timer->getHandle()->Instance == TIM5) return LL_TIM_TS_ITR4;//return TIM_TS_ITR4;
   #endif
-  #if defined(TIM6) && TIM_TS_ITR5
+  #if defined(TIM6) &&  defined(LL_TIM_TS_ITR5)
     if (timer->getHandle()->Instance == TIM6) return LL_TIM_TS_ITR5;//return TIM_TS_ITR5;
   #endif
-  #if defined(TIM7) && TIM_TS_ITR6
+  #if defined(TIM7) &&  defined(LL_TIM_TS_ITR6)
     if (timer->getHandle()->Instance == TIM7) return LL_TIM_TS_ITR6;//return TIM_TS_ITR6;
   #endif
-  #if defined(TIM8) && TIM_TS_ITR7
+  #if defined(TIM8) &&  defined(LL_TIM_TS_ITR7)
     if (timer->getHandle()->Instance == TIM8) return LL_TIM_TS_ITR7;// return TIM_TS_ITR7;
   #endif
   return -1;
@@ -256,9 +254,9 @@ void _alignTimersNew() {
       timers[numTimers++] = timer;
   }
 
-    #ifdef SIMPLEFOC_STM32_DEBUG
-      SIMPLEFOC_DEBUG("STM32-DRV: Syncronising timers!\nTimer no. ", numTimers);
-    #endif
+  #ifdef SIMPLEFOC_STM32_DEBUG
+    SIMPLEFOC_DEBUG("STM32-DRV: Syncronising timers! Timer no. ", numTimers);
+  #endif
 
   // see if there is more then 1 timers used for the pwm
   // if yes, try to align timers
