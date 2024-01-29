@@ -85,9 +85,15 @@ float _readADCVoltageLowSide(const int pin, const void* cs_params){
   return 0;
 }
 
+#ifdef HFI
+__attribute__((weak)) void process_hfi(){};
+#endif
+
 #ifdef SIMPLEFOC_STM32_ADC_INTERRUPT
 extern "C" {
   void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef *AdcHandle){
+    digitalToggle(PC10);
+    digitalToggle(PC10);
     // calculate the instance
     int adc_index = _adcToIndex(AdcHandle);
 
@@ -100,6 +106,10 @@ extern "C" {
     adc_val[adc_index][0]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_1);
     adc_val[adc_index][1]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_2);
     adc_val[adc_index][2]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_3);    
+  
+    #ifdef HFI
+      process_hfi();
+    #endif
   }
 }
 #endif

@@ -96,6 +96,7 @@ void loop() {
 #ifndef SIMPLEFOC_H
 #define SIMPLEFOC_H
 
+#include "HFIBLDCMotor.h"
 #include "BLDCMotor.h"
 #include "StepperMotor.h"
 #include "sensors/Encoder.h"
