@@ -206,7 +206,7 @@ void _stopTimers(HardwareTimer **timers_to_stop, int timer_num)
 
 // function finds the appropriate timer source trigger for the master timer index provided
 // returns -1 if no trigger source is found
-// currently supports the master timers to be from TIM1 to TIM8
+// currently supports the master timers to be from TIM1 to TIM4 and TIM8
 int _getTriggerSourceRegister(HardwareTimer* timer) {
   #if defined(TIM1) && defined(LL_TIM_TS_ITR0)
     if (timer->getHandle()->Instance == TIM1) return LL_TIM_TS_ITR0;// return TIM_TS_ITR0;
@@ -223,14 +223,8 @@ int _getTriggerSourceRegister(HardwareTimer* timer) {
   #if defined(TIM5) &&  defined(LL_TIM_TS_ITR4)
     if (timer->getHandle()->Instance == TIM5) return LL_TIM_TS_ITR4;//return TIM_TS_ITR4;
   #endif
-  #if defined(TIM6) &&  defined(LL_TIM_TS_ITR5)
-    if (timer->getHandle()->Instance == TIM6) return LL_TIM_TS_ITR5;//return TIM_TS_ITR5;
-  #endif
-  #if defined(TIM7) &&  defined(LL_TIM_TS_ITR6)
-    if (timer->getHandle()->Instance == TIM7) return LL_TIM_TS_ITR6;//return TIM_TS_ITR6;
-  #endif
-  #if defined(TIM8) &&  defined(LL_TIM_TS_ITR7)
-    if (timer->getHandle()->Instance == TIM8) return LL_TIM_TS_ITR7;// return TIM_TS_ITR7;
+  #if defined(TIM8) &&  defined(LL_TIM_TS_ITR5)
+    if (timer->getHandle()->Instance == TIM8) return LL_TIM_TS_ITR5;//return TIM_TS_ITR5;
   #endif
   return -1;
 }
