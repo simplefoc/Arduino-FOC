@@ -235,7 +235,7 @@ int _getInternalSourceTrigger(HardwareTimer* master, HardwareTimer* slave) { // 
 // function finds the appropriate timer source trigger for the master/slave timer combination
 // returns -1 if no trigger source is found
 // currently supports the master timers to be from TIM1 to TIM4 and TIM8
-int _getTriggerSourceRegister(HardwareTimer* master, HardwareTimer* slave) {
+int _getInternalSourceTrigger(HardwareTimer* master, HardwareTimer* slave) {
   // put master and slave in temp variables to avoid arrows
   TIM_TypeDef *TIM_master = master->getHandle()->Instance;
   TIM_TypeDef *TIM_slave = slave->getHandle()->Instance;
@@ -298,7 +298,7 @@ int _getTriggerSourceRegister(HardwareTimer* master, HardwareTimer* slave) {
 }
 #else
 // Alignment not supported for this architecture
-int _getTriggerSourceRegister(HardwareTimer* master, HardwareTimer* slave) {
+int _getInternalSourceTrigger(HardwareTimer* master, HardwareTimer* slave) {
   return -1;
 }
 #endif
@@ -343,7 +343,7 @@ void _alignTimersNew() {
         for (int slave_i=0; slave_i<numTimers; slave_i++) {
           if (i==slave_i) continue; // skip self
           // check if it has the supported internal trigger
-          triggerEvent = _getTriggerSourceRegister(timers[i],timers[slave_i]); 
+          triggerEvent = _getInternalSourceTrigger(timers[i],timers[slave_i]); 
           if(triggerEvent == -1) break; // not supported keep searching
         }
         if(triggerEvent == -1) continue; // cannot be master, keep searching
@@ -373,7 +373,7 @@ void _alignTimersNew() {
         if (slave_index == master_index)
           continue;
         // Configure the slave timer to be triggered by the master enable signal
-        LL_TIM_SetTriggerInput(timers[slave_index]->getHandle()->Instance, _getTriggerSourceRegister(timers[master_index], timers[slave_index]));
+        LL_TIM_SetTriggerInput(timers[slave_index]->getHandle()->Instance, _getInternalSourceTrigger(timers[master_index], timers[slave_index]));
         LL_TIM_SetSlaveMode(timers[slave_index]->getHandle()->Instance, LL_TIM_SLAVEMODE_TRIGGER);
       }
     }
