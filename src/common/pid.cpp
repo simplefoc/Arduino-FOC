@@ -20,8 +20,18 @@ float PIDController::operator() (float error){
     float Ts = (timestamp_now - timestamp_prev) * 1e-6f;
     // quick fix for strange cases (micros overflow)
     if(Ts <= 0 || Ts > 0.5f) Ts = 1e-3f;
+    float output = calc_pid(error, Ts);
+    timestamp_prev = timestamp_now;
 
-    // u(s) = (P + I/s + Ds)e(s)
+    return output;
+}
+
+float PIDController::operator() (float error, float Ts) {
+
+    return calc_pid(error, Ts);
+}
+float PIDController::calc_pid (float error, float Ts) {
+        // u(s) = (P + I/s + Ds)e(s)
     // Discrete implementations
     // proportional part
     // u_p  = P *e(k)
@@ -53,7 +63,6 @@ float PIDController::operator() (float error){
     integral_prev = integral;
     output_prev = output;
     error_prev = error;
-    timestamp_prev = timestamp_now;
     return output;
 }
 

@@ -23,6 +23,7 @@ public:
     ~PIDController() = default;
 
     float operator() (float error);
+    float operator() (float error, float Ts);
     void reset();
 
     float P; //!< Proportional gain 
@@ -32,6 +33,7 @@ public:
     float limit; //!< Maximum output value
 
 protected:
+    float calc_pid (float error, float Ts);
     float error_prev; //!< last tracking error value
     float output_prev;  //!< last pid output value
     float integral_prev; //!< last integral component value

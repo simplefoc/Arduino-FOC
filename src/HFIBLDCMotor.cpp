@@ -127,8 +127,8 @@ void HFIBLDCMotor::enable()
 int  HFIBLDCMotor::initFOC() {
   int exit_flag = 1;
   
-  Ts = 1.0f/((float)driver->pwm_frequency);
-
+  Ts = 2.0f/((float)driver->pwm_frequency);
+  Ts_L_2 = 2.0f*Ts * ( 1 / Lq - 1 / Ld );
   motor_status = FOCMotorStatus::motor_calibrating;
 
   // align motor if necessary
@@ -321,6 +321,7 @@ void HFIBLDCMotor::process_hfi(){
   float _ca,_sa;
   float hfi_v_act;
   _sincos(electrical_angle, &_sa, &_ca);
+  // _sincos(1.5f, &_sa, &_ca);
 
   PhaseCurrent_s phase_current = current_sense->getPhaseCurrents();
   ABCurrent_s ABcurrent = current_sense->getABCurrents(phase_current);
@@ -334,6 +335,8 @@ void HFIBLDCMotor::process_hfi(){
   }
 
   if (hfi_high) {
+    digitalToggle(PC10);  
+    digitalToggle(PC10);
     current_high = current_meas;
   } else {
     current_low = current_meas;
@@ -345,13 +348,16 @@ void HFIBLDCMotor::process_hfi(){
   delta_current.q = current_high.q - current_low.q;
   delta_current.d = current_high.d - current_low.d;
 
-  switch (hfi_mode) {
-    case 0:
-      hfi_curangleest =  0.5f * delta_current.q / (hfi_v * Ts * ( 1 / Lq - 1 / Ld ) );
-      break;
-    case 1:
-      break;
-  }
+  // hfi_curangleest = delta_current.q / (hfi_v * Ts_L_2 );
+  // hfi_curangleest =  0.5f * delta_current.q / (hfi_v * Ts * ( 1 / Lq - 1 / Ld ) );
+  hfi_curangleest = 0.25f * _atan2( -delta_current.q  , delta_current.d - 0.5f * hfi_v * Ts * ( 1.0f / Lq + 1.0f / Ld ) ); //Complete calculation (not needed because error is always small due to feedback). 0.25 comes from 0.5 because delta signals are used and 0.5 due to 2theta (not just theta) being in the sin and cos wave.
+  // switch (hfi_mode) {
+  //   case 0:
+  //     hfi_curangleest =  0.5f * delta_current.q / (hfi_v * Ts * ( 1 / Lq - 1 / Ld ) );
+  //     break;
+  //   case 1:
+  //     break;
+  // }
 
   LOWPASS(hfi_error,-hfi_curangleest, 0.34); // 2khz at 30khz c = 1 - exp(-2000*2*pi*1/30000))
   hfi_int += Ts * hfi_error * hfi_gain2; //This the the double integrator
@@ -360,8 +366,8 @@ void HFIBLDCMotor::process_hfi(){
   current_err.q = current_setpoint.q - current_meas.q;
   current_err.d = current_setpoint.d - current_meas.d;
 
-  voltage_pid.q = PID_current_q(current_err.q);
-  voltage_pid.d = PID_current_d(current_err.d);
+  voltage_pid.q = PID_current_q(current_err.q, Ts);
+  voltage_pid.d = PID_current_d(current_err.d, Ts);
 
   LOWPASS(voltage.q,voltage_pid.q, 0.34);
   LOWPASS(voltage.d,voltage_pid.d, 0.34);
@@ -390,25 +396,13 @@ void HFIBLDCMotor::process_hfi(){
   Uc = -0.5f * Ualpha - _SQRT3_2 * Ubeta;
 
   center = driver->voltage_limit/2;
-  if (foc_modulation == FOCModulationType::SpaceVectorPWM){
-    // discussed here: https://community.simplefoc.com/t/embedded-world-2023-stm32-cordic-co-processor/3107/165?u=candas1
-    // a bit more info here: https://microchipdeveloper.com/mct5001:which-zsm-is-best
-    // Midpoint Clamp
-    float Umin = min(Ua, min(Ub, Uc));
-    float Umax = max(Ua, max(Ub, Uc));
-    center -= (Umax+Umin) / 2;
-  } 
-
-  if (!modulation_centered) {
-    float Umin = min(Ua, min(Ub, Uc));
-    Ua -= Umin;
-    Ub -= Umin;
-    Uc -= Umin;
-  }else{
-    Ua += center;
-    Ub += center;
-    Uc += center;
-  }
+  float Umin = min(Ua, min(Ub, Uc));
+  float Umax = max(Ua, max(Ub, Uc));
+  center -= (Umax+Umin) / 2;
+  
+  Ua += center;
+  Ub += center;
+  Uc += center;
   
   driver->setPwm(Ua, Ub, Uc);
 
@@ -416,10 +410,13 @@ void HFIBLDCMotor::process_hfi(){
   hfi_int = _hfinormalizeAngle(hfi_int);
   electrical_angle = hfi_out;
   // digitalToggle(PC10);
+  // __ASM("nop");
+  // __ASM("nop");
+  // __ASM("nop");
   // digitalToggle(PC10);  
   // digitalToggle(PC10);
   // digitalToggle(PC10);
-
+  // delayMicroseconds(10);
 }
 
 // Iterative function looping FOC algorithm, setting Uq on the Motor
