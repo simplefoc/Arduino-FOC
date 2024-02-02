@@ -16,10 +16,10 @@ class HFIBLDCMotor: public FOCMotor
 {
   public:
 
-    float Ld = 1900e-6f;
-    float Lq = 2800e-6f;
+    float Ld = 2200e-6f;
+    float Lq = 3100e-6f;
 
-    float hfi_gain1 = 150.0f * _2PI;
+    float hfi_gain1 = 750.0f * _2PI;
     float hfi_gain2 = 5.0f * _2PI;
 
     bool hfi_firstcycle = true;
@@ -31,8 +31,9 @@ class HFIBLDCMotor: public FOCMotor
     float hfi_error = 0;
     float hfi_int;
     float hfi_out;
-    float Ts = 2.0f/30000.0f;
-    float Ts_L_2 = 2.0f*Ts * ( 1 / Lq - 1 / Ld );
+    float Ts = 1.0f/60000.0f;
+    float Ts_L = Ts * ( 1 / Lq - 1 / Ld );
+    float current_bandwidth = 100;
 
     DQCurrent_s current_meas;
     DQCurrent_s current_high;
