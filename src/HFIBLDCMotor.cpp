@@ -64,6 +64,17 @@ void HFIBLDCMotor::init() {
     // current control loop controls voltage
     PID_current_q.limit = voltage_limit;
     PID_current_d.limit = voltage_limit;
+
+    // PID_current_d.P = Ld*current_bandwidth*_2PI;
+    // PID_current_d.I = phase_resistance/(Ld);
+    PID_current_q.D = 0;
+    PID_current_d.output_ramp = 0;
+
+    // PID_current_q.P = Lq*current_bandwidth*_2PI;
+    // PID_current_q.I = phase_resistance/(Lq);
+    PID_current_q.D = 0;
+    PID_current_q.output_ramp = 0;
+
   }
   if(_isset(phase_resistance) || torque_controller != TorqueControlType::voltage){
     // velocity control loop controls current
@@ -127,8 +138,8 @@ void HFIBLDCMotor::enable()
 int  HFIBLDCMotor::initFOC() {
   int exit_flag = 1;
   
-  Ts = 2.0f/((float)driver->pwm_frequency);
-  Ts_L_2 = 2.0f*Ts * ( 1 / Lq - 1 / Ld );
+  Ts = 1.0f/((float)driver->pwm_frequency);
+  Ts_L = Ts * ( 1 / Lq - 1 / Ld );
   motor_status = FOCMotorStatus::motor_calibrating;
 
   // align motor if necessary
@@ -329,18 +340,17 @@ void HFIBLDCMotor::process_hfi(){
   current_meas.q = ABcurrent.beta * _ca - ABcurrent.alpha * _sa;
 
   hfi_v_act = hfi_v;
+  
   if (hfi_firstcycle) {
-    hfi_v_act /= 2;
+    hfi_v_act /= 2.0f;
     hfi_firstcycle=false;
   }
 
   if (hfi_high) {
-    digitalToggle(PC10);  
-    digitalToggle(PC10);
     current_high = current_meas;
   } else {
     current_low = current_meas;
-    hfi_v_act = -1*hfi_v;
+    hfi_v_act = -1.0f*hfi_v;
   }
 
   hfi_high = !hfi_high;
@@ -348,9 +358,9 @@ void HFIBLDCMotor::process_hfi(){
   delta_current.q = current_high.q - current_low.q;
   delta_current.d = current_high.d - current_low.d;
 
-  // hfi_curangleest = delta_current.q / (hfi_v * Ts_L_2 );
-  // hfi_curangleest =  0.5f * delta_current.q / (hfi_v * Ts * ( 1 / Lq - 1 / Ld ) );
-  hfi_curangleest = 0.25f * _atan2( -delta_current.q  , delta_current.d - 0.5f * hfi_v * Ts * ( 1.0f / Lq + 1.0f / Ld ) ); //Complete calculation (not needed because error is always small due to feedback). 0.25 comes from 0.5 because delta signals are used and 0.5 due to 2theta (not just theta) being in the sin and cos wave.
+  // hfi_curangleest = delta_current.q / (hfi_v * Ts_L );
+  hfi_curangleest =  0.5f * delta_current.q / (hfi_v * Ts * ( 1.0f / Lq - 1.0f / Ld ) );
+  // hfi_curangleest = 0.25f * _atan2( -delta_current.q  , delta_current.d - 0.5f * hfi_v * Ts * ( 1.0f / Lq + 1.0f / Ld ) ); //Complete calculation (not needed because error is always small due to feedback). 0.25 comes from 0.5 because delta signals are used and 0.5 due to 2theta (not just theta) being in the sin and cos wave.
   // switch (hfi_mode) {
   //   case 0:
   //     hfi_curangleest =  0.5f * delta_current.q / (hfi_v * Ts * ( 1 / Lq - 1 / Ld ) );
@@ -359,7 +369,8 @@ void HFIBLDCMotor::process_hfi(){
   //     break;
   // }
 
-  LOWPASS(hfi_error,-hfi_curangleest, 0.34); // 2khz at 30khz c = 1 - exp(-2000*2*pi*1/30000))
+  // LOWPASS(hfi_error,-hfi_curangleest, 0.34f); // 2khz at 30khz c = 1 - exp(-2000*2*pi*1/30000))
+  hfi_error = -hfi_curangleest;
   hfi_int += Ts * hfi_error * hfi_gain2; //This the the double integrator
   hfi_out += hfi_gain1 * Ts * hfi_error + hfi_int; //This is the integrator and the double integrator
 
@@ -369,8 +380,9 @@ void HFIBLDCMotor::process_hfi(){
   voltage_pid.q = PID_current_q(current_err.q, Ts);
   voltage_pid.d = PID_current_d(current_err.d, Ts);
 
-  LOWPASS(voltage.q,voltage_pid.q, 0.34);
-  LOWPASS(voltage.d,voltage_pid.d, 0.34);
+  LOWPASS(voltage.q,voltage_pid.q, 0.34f);
+  LOWPASS(voltage.d,voltage_pid.d, 0.34f);  
+
   voltage.d += hfi_v_act;
 
   // // PMSM decoupling control and BEMF FF
@@ -395,10 +407,10 @@ void HFIBLDCMotor::process_hfi(){
   Ub = -0.5f * Ualpha + _SQRT3_2 * Ubeta;
   Uc = -0.5f * Ualpha - _SQRT3_2 * Ubeta;
 
-  center = driver->voltage_limit/2;
+  center = driver->voltage_limit/2.0f;
   float Umin = min(Ua, min(Ub, Uc));
   float Umax = max(Ua, max(Ub, Uc));
-  center -= (Umax+Umin) / 2;
+  center -= (Umax+Umin) / 2.0f;
   
   Ua += center;
   Ub += center;
@@ -409,14 +421,11 @@ void HFIBLDCMotor::process_hfi(){
   hfi_out = _hfinormalizeAngle(hfi_out);
   hfi_int = _hfinormalizeAngle(hfi_int);
   electrical_angle = hfi_out;
+    // delayMicroseconds(10);
   // digitalToggle(PC10);
-  // __ASM("nop");
-  // __ASM("nop");
-  // __ASM("nop");
   // digitalToggle(PC10);  
   // digitalToggle(PC10);
   // digitalToggle(PC10);
-  // delayMicroseconds(10);
 }
 
 // Iterative function looping FOC algorithm, setting Uq on the Motor

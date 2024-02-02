@@ -20,7 +20,7 @@ uint32_t adc_val[3][4]={0};
 // does adc interrupt need a downsample - per adc (3)
 bool needs_downsample[3] = {1};
 // downsampling variable - per adc (3)
-uint8_t tim_downsample[3] = {0};
+uint8_t tim_downsample[3] = {1};
 
 void* _configureADCLowSide(const void* driver_params, const int pinA, const int pinB, const int pinC){
 
