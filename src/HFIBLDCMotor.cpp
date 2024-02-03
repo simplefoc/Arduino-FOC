@@ -139,7 +139,7 @@ int  HFIBLDCMotor::initFOC() {
   int exit_flag = 1;
   
   Ts = 1.0f/((float)driver->pwm_frequency);
-  Ts_L = Ts * ( 1 / Lq - 1 / Ld );
+  Ts_L = 2.0f*Ts * ( 1 / Lq - 1 / Ld );
   motor_status = FOCMotorStatus::motor_calibrating;
 
   // align motor if necessary
@@ -331,8 +331,8 @@ void HFIBLDCMotor::process_hfi(){
 
   if (!is_v0) {
     driver->setPwm(Ua, Ub, Uc);
-    digitalToggle(PC10);
-    digitalToggle(PC10);
+    // digitalToggle(PC10);
+    // digitalToggle(PC10);
     return;
   }
 
@@ -368,7 +368,7 @@ void HFIBLDCMotor::process_hfi(){
   delta_current.q = current_high.q - current_low.q;
   delta_current.d = current_high.d - current_low.d;
 
-  // hfi_curangleest = delta_current.q / (hfi_v * Ts_L );
+  // hfi_curangleest = delta_current.q / (hfi_v * Ts_L );  // this is about half a us faster than vv
   hfi_curangleest =  0.5f * delta_current.q / (hfi_v * Ts * ( 1.0f / Lq - 1.0f / Ld ) );
   // hfi_curangleest = 0.25f * _atan2( -delta_current.q  , delta_current.d - 0.5f * hfi_v * Ts * ( 1.0f / Lq + 1.0f / Ld ) ); //Complete calculation (not needed because error is always small due to feedback). 0.25 comes from 0.5 because delta signals are used and 0.5 due to 2theta (not just theta) being in the sin and cos wave.
   // switch (hfi_mode) {
