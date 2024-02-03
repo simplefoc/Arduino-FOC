@@ -90,3 +90,7 @@ void BLDCDriver3PWM::setPwm(float Ua, float Ub, float Uc) {
   // hardware specific function - depending on driver and mcu
   _writeDutyCycle3PWM(dc_a, dc_b, dc_c, params);
 }
+
+bool BLDCDriver3PWM::getPwmState() {
+  return _getPwmState(params);
+}

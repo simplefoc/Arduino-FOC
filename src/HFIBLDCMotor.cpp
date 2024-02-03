@@ -326,6 +326,16 @@ void HFIBLDCMotor::process_hfi(){
     hfi_out=0;
     return;
   }
+
+  bool is_v0 = driver->getPwmState();
+
+  if (!is_v0) {
+    driver->setPwm(Ua, Ub, Uc);
+    digitalToggle(PC10);
+    digitalToggle(PC10);
+    return;
+  }
+
   float center;
   DQVoltage_s voltage_pid;
   DQCurrent_s current_err;
@@ -416,9 +426,7 @@ void HFIBLDCMotor::process_hfi(){
   Ub += center;
   Uc += center;
   
-  delayMicroseconds(15);
-
-  driver->setPwm(Ua, Ub, Uc);
+  // delayMicroseconds(12);
 
   hfi_out = _hfinormalizeAngle(hfi_out);
   hfi_int = _hfinormalizeAngle(hfi_int);
@@ -506,11 +514,14 @@ void HFIBLDCMotor::move(float new_target) {
   //                        For this reason it is NOT precise when the angles become large.
   //                        Additionally, the way LPF works on angle is a precision issue, and the angle-LPF is a problem
   //                        when switching to a 2-component representation.
-  if( controller!=MotionControlType::angle_openloop && controller!=MotionControlType::velocity_openloop ) 
-    shaft_angle = shaftAngle(); // read value even if motor is disabled to keep the monitoring updated but not in openloop mode
-  // get angular velocity  TODO the velocity reading probably also shouldn't happen in open loop modes?
-  shaft_velocity = shaftVelocity(); // read value even if motor is disabled to keep the monitoring updated
+  if( controller!=MotionControlType::angle_openloop && controller!=MotionControlType::velocity_openloop ) ;
+  // if (!sensor) {
+      shaft_angle = shaftAngle(); // read value even if motor is disabled to keep the monitoring updated but not in openloop mode
+    // get angular velocity  TODO the velocity reading probably also shouldn't happen in open loop modes?
+    shaft_velocity = shaftVelocity(); // read value even if motor is disabled to keep the monitoring updated
+  // } else {
 
+  // }
   // if disabled do nothing
   if(!enabled) return;
   // set internal target variable

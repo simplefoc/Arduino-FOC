@@ -41,6 +41,8 @@ typedef struct GenericDriverParams {
   float dead_zone;
 } GenericDriverParams;
 
+/**  Get the PWM state for use in interrupt */
+bool _getPwmState(void* params);
 
 /** 
  * Configuring PWM frequency, resolution and alignment

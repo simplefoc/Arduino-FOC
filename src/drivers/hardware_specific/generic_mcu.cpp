@@ -6,6 +6,18 @@
   __attribute__((weak)) void analogWrite(uint8_t pin, int value){ };
 #endif
 
+// function getting the current state of the PWM pulse
+// - returns either 0 or 7
+// - 0 - v0 pulse period, all PWM low
+// - 7 - v7 pulse period, all PWM high
+// - this is an approximation where the intent is to find the state
+// - at the last timer update, so we know what the coming state is
+// in generic case dont do anything, return 0
+__attribute__((weak)) bool _getPwmState(void* params) {
+  _UNUSED(params);
+  return 0;
+}
+
 // function setting the high pwm frequency to the supplied pin
 // - Stepper motor - 1PWM setting
 // - hardware speciffic

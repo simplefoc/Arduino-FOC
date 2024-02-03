@@ -26,7 +26,15 @@ PinMap* timerPinsUsed[SIMPLEFOC_STM32_MAX_PINTIMERSUSED];
 
 
 
+bool _getPwmState(void* params) {
+  // assume timers are synchronized and that there's at least one timer
+  HardwareTimer* pHT = ((STM32DriverParams*)params)->timers[0];
+  TIM_HandleTypeDef* htim = pHT->getHandle();
+  
+  bool dir = __HAL_TIM_IS_TIM_COUNTING_DOWN(htim);
 
+  return dir;
+}
 
 
 // setting pwm to hardware pin - instead analogWrite()

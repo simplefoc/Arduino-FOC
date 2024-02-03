@@ -51,6 +51,9 @@ class BLDCDriver{
          * @param sa - phase C state : active / disabled ( high impedance )
         */
         virtual void setPhaseState(PhaseState sa, PhaseState sb, PhaseState sc) = 0;
+
+        /**  Get the PWM state for use in interrupt */
+  	    virtual bool getPwmState() = 0;
 };
 
 #endif
