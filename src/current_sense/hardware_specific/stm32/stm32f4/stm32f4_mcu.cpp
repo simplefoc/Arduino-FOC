@@ -100,10 +100,10 @@ extern "C" {
     int adc_index = _adcToIndex(AdcHandle);
 
     // if the timer han't repetition counter - downsample two times
-    if( needs_downsample[adc_index] && tim_downsample[adc_index]++ > 0) {
-      tim_downsample[adc_index] = 0;
-      return;
-    }
+    // if( needs_downsample[adc_index] && tim_downsample[adc_index]++ > 0) {
+    //   tim_downsample[adc_index] = 0;
+    //   return;
+    // }
     // digitalToggle(PC10);
     // digitalToggle(PC10);
     adc_val[adc_index][0]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_1);

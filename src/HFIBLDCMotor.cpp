@@ -374,8 +374,8 @@ void HFIBLDCMotor::process_hfi(){
   hfi_int += Ts * hfi_error * hfi_gain2; //This the the double integrator
   hfi_out += hfi_gain1 * Ts * hfi_error + hfi_int; //This is the integrator and the double integrator
 
-  current_err.q = current_setpoint.d - current_meas.q;
-  current_err.d = current_setpoint.q - current_meas.d;
+  current_err.q = current_setpoint.q - current_meas.q;
+  current_err.d = current_setpoint.d - current_meas.d;
 
   voltage_pid.q = PID_current_q(current_err.q, Ts);
   voltage_pid.d = PID_current_d(current_err.d, Ts);
@@ -416,12 +416,13 @@ void HFIBLDCMotor::process_hfi(){
   Ub += center;
   Uc += center;
   
+  delayMicroseconds(15);
+
   driver->setPwm(Ua, Ub, Uc);
 
   hfi_out = _hfinormalizeAngle(hfi_out);
   hfi_int = _hfinormalizeAngle(hfi_int);
   electrical_angle = hfi_out;
-    // delayMicroseconds(10);
   // digitalToggle(PC10);
   // digitalToggle(PC10);  
   // digitalToggle(PC10);
