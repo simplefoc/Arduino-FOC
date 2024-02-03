@@ -177,18 +177,15 @@ void setup_pwm_pair (IMXRT_FLEXPWM_t * flexpwm, int submodule, const long freque
                                  FLEXPWM_SMCTRL2_FRCEN | FLEXPWM_SMCTRL2_INIT_SEL(0) | FLEXPWM_SMCTRL2_FORCE_SEL(6);
   flexpwm->SM[submodule].CTRL  = FLEXPWM_SMCTRL_FULL | FLEXPWM_SMCTRL_HALF | FLEXPWM_SMCTRL_PRSC(prescale) ;
   // https://github.com/PaulStoffregen/cores/blob/70ba01accd728abe75ebfc8dcd8b3d3a8f3e3f25/teensy4/imxrt.h#L4948
-  flexpwm->SM[submodule].OCTRL = 0;//channel_to_invert==2 ? 0 : FLEXPWM_SMOCTRL_POLA | FLEXPWM_SMOCTRL_POLB ;
+  flexpwm->SM[submodule].OCTRL = 0; //FLEXPWM_SMOCTRL_POLA | FLEXPWM_SMOCTRL_POLB;//channel_to_invert==2 ? 0 : FLEXPWM_SMOCTRL_POLA | FLEXPWM_SMOCTRL_POLB ;
   flexpwm->SM[submodule].DTCNT0 = dead_time ;  // should try this out (deadtime control)
   flexpwm->SM[submodule].DTCNT1 = dead_time ;  // should try this out (deadtime control)
-  // flexpwm->SM[submodule].TCTRL = FLEXPWM_SMTCTRL_OUT_TRIG_EN (0b000010)  ; // sync trig out on VAL1 match.
   flexpwm->SM[submodule].INIT = -half_cycle;      // count from -HALFCYCLE to +HALFCYCLE
-  flexpwm->SM[submodule].VAL0 = 0 ;
+  flexpwm->SM[submodule].VAL0 = 0;
   flexpwm->SM[submodule].VAL1 = half_cycle ;
   flexpwm->SM[submodule].VAL2 = -mid_pwm  ;
   flexpwm->SM[submodule].VAL3 = +mid_pwm  ;
-  // flexpwm->SM[submodule].VAL4 = -mid_pwm ;
-  // flexpwm->SM[submodule].VAL5 = +mid_pwm  ;
-  
+
   flexpwm->MCTRL |= FLEXPWM_MCTRL_LDOK (submodule_mask) ;  // loading reenabled
   flexpwm->MCTRL |= FLEXPWM_MCTRL_RUN (submodule_mask) ;   // start it running
 }
@@ -207,14 +204,11 @@ void startup_pwm_pair (IMXRT_FLEXPWM_t * flexpwm, int submodule)
 
 // PWM setting on the high and low pair of the PWM channels
 void write_pwm_pair(IMXRT_FLEXPWM_t * flexpwm, int submodule, float duty){
-  
   int mid_pwm = int((half_cycle)/2.0f);
   int count_pwm = int(mid_pwm*(duty*2-1)) + mid_pwm;
 
   flexpwm->SM[submodule].VAL2 =  count_pwm; // A on
   flexpwm->SM[submodule].VAL3 =  -count_pwm  ; // A off
-  // flexpwm->SM[submodule].VAL4 = - count_pwm  ; // B off  (assuming B inverted)
-  // flexpwm->SM[submodule].VAL5 = +  count_pwm ; // B on
   flexpwm->MCTRL |= FLEXPWM_MCTRL_LDOK (1<<submodule) ;  // signal new values
 }
 
@@ -262,7 +256,7 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 
 
   Teensy4DriverParams* params = new Teensy4DriverParams {
-    .flextimers = { flexpwmA,flexpwmB, flexpwmC},
+    .flextimers = { flexpwmA, flexpwmB, flexpwmC},
     .submodules = { submoduleA, submoduleB, submoduleC},
     .pwm_frequency = pwm_frequency,
     .dead_zone = dead_zone
