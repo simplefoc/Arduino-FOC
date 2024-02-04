@@ -138,7 +138,11 @@ void HFIBLDCMotor::enable()
 int  HFIBLDCMotor::initFOC() {
   int exit_flag = 1;
   
-  Ts = 1.0f/((float)driver->pwm_frequency);
+  #ifdef HFI_2XPWM
+    Ts = 1.0f/(2.0f*(float)driver->pwm_frequency);
+  #else
+    Ts = 1.0f/((float)driver->pwm_frequency);
+  #endif
   Ts_L = 2.0f*Ts * ( 1 / Lq - 1 / Ld );
   motor_status = FOCMotorStatus::motor_calibrating;
 
@@ -328,6 +332,7 @@ void HFIBLDCMotor::process_hfi(){
     return;
   }
 
+  #ifndef HFI_2XPWM
   bool is_v0 = driver->getPwmState();
 
   if (!is_v0) {
@@ -336,6 +341,7 @@ void HFIBLDCMotor::process_hfi(){
     // digitalToggle(PC10);
     return;
   }
+  #endif
 
   float center;
   DQVoltage_s voltage_pid;
@@ -418,7 +424,12 @@ void HFIBLDCMotor::process_hfi(){
   Ua += center;
   Ub += center;
   Uc += center;
-  
+
+  #ifdef HFI_2XPWM
+    // for hfi at 2x pwm
+    driver->setPwm(Ua, Ub, Uc);
+  #endif
+
   while (hfi_out < 0) { hfi_out += _2PI;}
 	while (hfi_out >=  _2PI) { hfi_out -= _2PI;}
   hfi_int = _hfinormalizeAngle(hfi_int);
