@@ -320,10 +320,11 @@ void HFIBLDCMotor::process_hfi(){
   // digitalToggle(PC10);
 
   // if hfi off, handle in normal way
-  if (hfi_on == false) {
+  if (hfi_on == false || enabled==0) {
     hfi_firstcycle=true;
     hfi_int=0;
     hfi_out=0;
+    hfi_full_turns=0;
     return;
   }
 
@@ -370,16 +371,7 @@ void HFIBLDCMotor::process_hfi(){
 
   // hfi_curangleest = delta_current.q / (hfi_v * Ts_L );  // this is about half a us faster than vv
   hfi_curangleest =  0.5f * delta_current.q / (hfi_v * Ts * ( 1.0f / Lq - 1.0f / Ld ) );
-  // hfi_curangleest = 0.25f * _atan2( -delta_current.q  , delta_current.d - 0.5f * hfi_v * Ts * ( 1.0f / Lq + 1.0f / Ld ) ); //Complete calculation (not needed because error is always small due to feedback). 0.25 comes from 0.5 because delta signals are used and 0.5 due to 2theta (not just theta) being in the sin and cos wave.
-  // switch (hfi_mode) {
-  //   case 0:
-  //     hfi_curangleest =  0.5f * delta_current.q / (hfi_v * Ts * ( 1 / Lq - 1 / Ld ) );
-  //     break;
-  //   case 1:
-  //     break;
-  // }
 
-  // LOWPASS(hfi_error,-hfi_curangleest, 0.34f); // 2khz at 30khz c = 1 - exp(-2000*2*pi*1/30000))
   hfi_error = -hfi_curangleest;
   hfi_int += Ts * hfi_error * hfi_gain2; //This the the double integrator
   hfi_out += hfi_gain1 * Ts * hfi_error + hfi_int; //This is the integrator and the double integrator
@@ -390,8 +382,9 @@ void HFIBLDCMotor::process_hfi(){
   voltage_pid.q = PID_current_q(current_err.q, Ts);
   voltage_pid.d = PID_current_d(current_err.d, Ts);
 
+  // lowpass does a += on the first arg
   LOWPASS(voltage.q,voltage_pid.q, 0.34f);
-  LOWPASS(voltage.d,voltage_pid.d, 0.34f);  
+  LOWPASS(voltage.d,voltage_pid.d, 0.34f);
 
   voltage.d += hfi_v_act;
 
@@ -426,10 +419,13 @@ void HFIBLDCMotor::process_hfi(){
   Ub += center;
   Uc += center;
   
-  // delayMicroseconds(12);
-
-  hfi_out = _hfinormalizeAngle(hfi_out);
+  while (hfi_out < 0) { hfi_out += _2PI;}
+	while (hfi_out >=  _2PI) { hfi_out -= _2PI;}
   hfi_int = _hfinormalizeAngle(hfi_int);
+
+  float d_angle = hfi_out - electrical_angle;
+  if(abs(d_angle) > (0.8f*_2PI) ) hfi_full_turns += ( d_angle > 0.0f ) ? -1.0f : 1.0f; 
+
   electrical_angle = hfi_out;
   // digitalToggle(PC10);
   // digitalToggle(PC10);  
@@ -515,13 +511,18 @@ void HFIBLDCMotor::move(float new_target) {
   //                        Additionally, the way LPF works on angle is a precision issue, and the angle-LPF is a problem
   //                        when switching to a 2-component representation.
   if( controller!=MotionControlType::angle_openloop && controller!=MotionControlType::velocity_openloop ) ;
-  // if (!sensor) {
+  if (hfi_on==true) {
+    noInterrupts();
+    float tmp_electrical_angle = electrical_angle;
+    interrupts();
+    shaft_angle = (hfi_full_turns *_2PI + tmp_electrical_angle)/pole_pairs;
+  } else {
+    if (!sensor){
       shaft_angle = shaftAngle(); // read value even if motor is disabled to keep the monitoring updated but not in openloop mode
-    // get angular velocity  TODO the velocity reading probably also shouldn't happen in open loop modes?
-    shaft_velocity = shaftVelocity(); // read value even if motor is disabled to keep the monitoring updated
-  // } else {
-
-  // }
+      // get angular velocity  TODO the velocity reading probably also shouldn't happen in open loop modes?
+      shaft_velocity = shaftVelocity(); // read value even if motor is disabled to keep the monitoring updated
+    }
+  }
   // if disabled do nothing
   if(!enabled) return;
   // set internal target variable
@@ -531,7 +532,8 @@ void HFIBLDCMotor::move(float new_target) {
   if (_isset(KV_rating)) voltage_bemf = shaft_velocity/(KV_rating*_SQRT3)/_RPM_TO_RADS;
   // estimate the motor current if phase reistance available and current_sense not available
   if(!current_sense && _isset(phase_resistance)) current.q = (voltage.q - voltage_bemf)/phase_resistance;
-
+  
+  float temp_q_setpoint;
   // upgrade the current based voltage limit
   switch (controller) {
     case MotionControlType::torque:
@@ -555,11 +557,11 @@ void HFIBLDCMotor::move(float new_target) {
       // angle set point
       shaft_angle_sp = target;
       // calculate velocity set point
-      shaft_velocity_sp = feed_forward_velocity + P_angle( shaft_angle_sp - shaft_angle );
-      shaft_velocity_sp = _constrain(shaft_velocity_sp,-velocity_limit, velocity_limit);
+      temp_q_setpoint = feed_forward_velocity + P_angle( shaft_angle_sp - shaft_angle );
+      temp_q_setpoint = _constrain(temp_q_setpoint,-current_limit, current_limit);
       // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
       noInterrupts();
-      current_setpoint.q = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
+      current_setpoint.q = temp_q_setpoint;
       interrupts();
       // if torque controlled through voltage
       if(torque_controller == TorqueControlType::voltage){
@@ -575,8 +577,10 @@ void HFIBLDCMotor::move(float new_target) {
       // velocity set point - sensor precision: this calculation is numerically precise.
       shaft_velocity_sp = target;
       // calculate the torque command
+      temp_q_setpoint = PID_velocity(shaft_velocity_sp - shaft_velocity); // if current/foc_current torque control
+      temp_q_setpoint = _constrain(temp_q_setpoint,-current_limit, current_limit);
       noInterrupts();
-      current_setpoint.q = PID_velocity(shaft_velocity_sp - shaft_velocity); // if current/foc_current torque control
+      current_setpoint.q = temp_q_setpoint;
       interrupts();
       // if torque controlled through voltage control
       if(torque_controller == TorqueControlType::voltage){
