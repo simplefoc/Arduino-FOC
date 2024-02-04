@@ -35,7 +35,7 @@ class HFIBLDCMotor: public FOCMotor
 
     float Ts = 1.0f/60000.0f;
     float Ts_L = Ts * ( 1 / Lq - 1 / Ld );
-    float current_bandwidth = 100;
+    float current_bandwidth = 1000;
 
     DQCurrent_s current_meas;
     DQCurrent_s current_high;

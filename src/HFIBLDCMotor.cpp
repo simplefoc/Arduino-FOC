@@ -65,13 +65,13 @@ void HFIBLDCMotor::init() {
     PID_current_q.limit = voltage_limit;
     PID_current_d.limit = voltage_limit;
 
-    // PID_current_d.P = Ld*current_bandwidth*_2PI;
-    // PID_current_d.I = phase_resistance/(Ld);
+    PID_current_d.P = Ld*current_bandwidth*_2PI;
+    PID_current_d.I = PID_current_d.P*phase_resistance/(Ld);
     PID_current_q.D = 0;
     PID_current_d.output_ramp = 0;
 
-    // PID_current_q.P = Lq*current_bandwidth*_2PI;
-    // PID_current_q.I = phase_resistance/(Lq);
+    PID_current_q.P = Lq*current_bandwidth*_2PI;
+    PID_current_q.I = PID_current_q.P*phase_resistance/(Lq);
     PID_current_q.D = 0;
     PID_current_q.output_ramp = 0;
 
