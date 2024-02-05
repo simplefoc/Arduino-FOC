@@ -4,12 +4,11 @@
 
 #if defined(_STM32_DEF_)
 
+#define SIMPLEFOC_STM32_DEBUG
 #pragma message("")
 #pragma message("SimpleFOC: compiling for STM32")
 #pragma message("")
 
-
-//#define SIMPLEFOC_STM32_DEBUG
 
 #ifdef SIMPLEFOC_STM32_DEBUG
 void printTimerCombination(int numPins, PinMap* timers[], int score);
@@ -204,25 +203,112 @@ void _stopTimers(HardwareTimer **timers_to_stop, int timer_num)
   }
 }
 
-// align the timers to end the init
-void _startTimers(HardwareTimer **timers_to_start, int timer_num)
-{
-  // TODO - sart each timer only once
-  // sart timers
-  for (int i=0; i < timer_num; i++) {
-    if(timers_to_start[i] == NP) return;
-    timers_to_start[i]->resume();
-    #ifdef SIMPLEFOC_STM32_DEBUG
-      SIMPLEFOC_DEBUG("STM32-DRV: Starting timer ", getTimerNumber(get_timer_index(timers_to_start[i]->getHandle()->Instance)));
-    #endif
-  }
+
+#if defined(STM32G4xx)
+// function finds the appropriate timer source trigger for the master/slave timer combination
+// returns -1 if no trigger source is found
+// currently supports the master timers to be from TIM1 to TIM4 and TIM8
+int _getInternalSourceTrigger(HardwareTimer* master, HardwareTimer* slave) { // put master and slave in temp variables to avoid arrows
+  TIM_TypeDef *TIM_master = master->getHandle()->Instance;
+  #if defined(TIM1) && defined(LL_TIM_TS_ITR0)
+    if (TIM_master == TIM1) return LL_TIM_TS_ITR0;// return TIM_TS_ITR0;
+  #endif
+  #if defined(TIM2) &&  defined(LL_TIM_TS_ITR1)
+    else if (TIM_master == TIM2) return LL_TIM_TS_ITR1;//return TIM_TS_ITR1;
+  #endif
+  #if defined(TIM3) &&  defined(LL_TIM_TS_ITR2)
+    else if (TIM_master == TIM3) return LL_TIM_TS_ITR2;//return TIM_TS_ITR2;
+  #endif  
+  #if defined(TIM4) &&  defined(LL_TIM_TS_ITR3)
+    else if (TIM_master == TIM4) return LL_TIM_TS_ITR3;//return TIM_TS_ITR3;
+  #endif 
+  #if defined(TIM5) &&  defined(LL_TIM_TS_ITR4)
+    else if (TIM_master == TIM5) return LL_TIM_TS_ITR4;//return TIM_TS_ITR4;
+  #endif
+  #if defined(TIM8) &&  defined(LL_TIM_TS_ITR5)
+    else if (TIM_master == TIM8) return LL_TIM_TS_ITR5;//return TIM_TS_ITR5;
+  #endif
+  return -1;
 }
+#elif defined(STM32F4xx) || defined(STM32F1xx) || defined(STM32L4xx)
+
+// function finds the appropriate timer source trigger for the master/slave timer combination
+// returns -1 if no trigger source is found
+// currently supports the master timers to be from TIM1 to TIM4 and TIM8
+int _getInternalSourceTrigger(HardwareTimer* master, HardwareTimer* slave) {
+  // put master and slave in temp variables to avoid arrows
+  TIM_TypeDef *TIM_master = master->getHandle()->Instance;
+  TIM_TypeDef *TIM_slave = slave->getHandle()->Instance;
+  #if defined(TIM1) && defined(LL_TIM_TS_ITR0)
+    if (TIM_master == TIM1){
+      if(TIM_slave == TIM2 || TIM_slave == TIM3 || TIM_slave == TIM4) return LL_TIM_TS_ITR0;
+      #if defined(TIM8)
+      else if(TIM_slave == TIM8) return LL_TIM_TS_ITR0;
+      #endif
+    }
+  #endif
+  #if defined(TIM2) &&  defined(LL_TIM_TS_ITR1)
+    else if (TIM_master == TIM2){
+      if(TIM_slave == TIM1 || TIM_slave == TIM3 || TIM_slave == TIM4) return LL_TIM_TS_ITR1;
+      #if defined(TIM8)
+      else if(TIM_slave == TIM8) return LL_TIM_TS_ITR1;
+      #endif
+      #if defined(TIM5)
+      else if(TIM_slave == TIM5) return LL_TIM_TS_ITR0;
+      #endif
+    }
+  #endif
+  #if defined(TIM3) &&  defined(LL_TIM_TS_ITR2)
+    else if (TIM_master == TIM3){
+      if(TIM_slave== TIM1 || TIM_slave == TIM2 || TIM_slave == TIM4) return LL_TIM_TS_ITR2;
+      #if defined(TIM5)
+      else if(TIM_slave == TIM5) return LL_TIM_TS_ITR1;
+      #endif
+    }
+  #endif  
+  #if defined(TIM4) &&  defined(LL_TIM_TS_ITR3)
+    else if (TIM_master == TIM4){
+      if(TIM_slave == TIM1 || TIM_slave == TIM2 || TIM_slave == TIM3) return LL_TIM_TS_ITR3;
+      #if defined(TIM8)
+      else if(TIM_slave == TIM8) return LL_TIM_TS_ITR2;
+      #endif
+      #if defined(TIM5)
+      else if(TIM_slave == TIM5) return LL_TIM_TS_ITR1;
+      #endif
+    }
+  #endif 
+  #if defined(TIM5) 
+    else if (TIM_master == TIM5){
+      #if !defined(STM32L4xx) // only difference between F4,F1 and L4
+      if(TIM_slave == TIM1) return LL_TIM_TS_ITR0;
+      else if(TIM_slave == TIM3) return LL_TIM_TS_ITR2;
+      #endif
+      #if defined(TIM8)
+      if(TIM_slave == TIM8) return LL_TIM_TS_ITR3;
+      #endif
+    }
+  #endif
+  #if defined(TIM8)
+    else if (TIM_master == TIM8){
+      if(TIM_slave==TIM2) return LL_TIM_TS_ITR1;
+      else if(TIM_slave ==TIM4 || TIM_slave ==TIM5) return LL_TIM_TS_ITR3;
+    }
+  #endif
+  return -1; // combination not supported
+}
+#else
+// Alignment not supported for this architecture
+int _getInternalSourceTrigger(HardwareTimer* master, HardwareTimer* slave) {
+  return -1;
+}
+#endif
+
 
 void _alignTimersNew() {
   int numTimers = 0;
   HardwareTimer *timers[numTimerPinsUsed];
 
-  // reset timer counters
+  // find the timers used
   for (int i=0; i<numTimerPinsUsed; i++) {
     uint32_t index = get_timer_index((TIM_TypeDef*)timerPinsUsed[i]->peripheral);
     HardwareTimer *timer = (HardwareTimer *)(HardwareTimer_Handle[index]->__this);
@@ -235,6 +321,62 @@ void _alignTimersNew() {
     }
     if (!found)
       timers[numTimers++] = timer;
+  }
+
+  #ifdef SIMPLEFOC_STM32_DEBUG
+    SIMPLEFOC_DEBUG("STM32-DRV: Syncronising timers! Timer no. ", numTimers);
+  #endif
+
+  // see if there is more then 1 timers used for the pwm
+  // if yes, try to align timers
+  if(numTimers > 1){
+    // find the master timer
+    int16_t master_index = -1;
+    int triggerEvent = -1;
+    for (int i=0; i<numTimers; i++) {
+      // check if timer can be master
+      if(IS_TIM_MASTER_INSTANCE(timers[i]->getHandle()->Instance)) {
+        // check if timer already configured in TRGO update mode (used for ADC triggering)
+        // in that case we should not change its TRGO configuration
+        if(timers[i]->getHandle()->Instance->CR2 & LL_TIM_TRGO_UPDATE) continue;
+        // check if the timer has the supported internal trigger for other timers
+        for (int slave_i=0; slave_i<numTimers; slave_i++) {
+          if (i==slave_i) continue; // skip self
+          // check if it has the supported internal trigger
+          triggerEvent = _getInternalSourceTrigger(timers[i],timers[slave_i]); 
+          if(triggerEvent == -1) break; // not supported keep searching
+        }
+        if(triggerEvent == -1) continue; // cannot be master, keep searching
+        // otherwise the master has been found, remember the index
+        master_index = i; // found the master timer
+        break;
+      }
+    }
+    
+
+    // if no master timer found do not perform alignment
+    if (master_index == -1) {
+      #ifdef SIMPLEFOC_STM32_DEBUG
+        SIMPLEFOC_DEBUG("STM32-DRV: ERR: No master timer found, cannot align timers!");
+      #endif
+    }else{
+      #ifdef SIMPLEFOC_STM32_DEBUG
+        SIMPLEFOC_DEBUG("STM32-DRV: Aligning PWM to master timer: ",  getTimerNumber(get_timer_index(timers[master_index]->getHandle()->Instance)));
+      #endif
+      // make the master timer generate ITRGx event
+      // if it was already configured in slave mode
+      LL_TIM_SetSlaveMode(timers[master_index]->getHandle()->Instance, LL_TIM_SLAVEMODE_DISABLED );
+      // Configure the master  timer to send a trigger signal on enable 
+      LL_TIM_SetTriggerOutput(timers[master_index]->getHandle()->Instance, LL_TIM_TRGO_ENABLE);
+      // configure other timers to get the input trigger from the master timer
+      for (int slave_index=0; slave_index < numTimers; slave_index++) {
+        if (slave_index == master_index)
+          continue;
+        // Configure the slave timer to be triggered by the master enable signal
+        LL_TIM_SetTriggerInput(timers[slave_index]->getHandle()->Instance, _getInternalSourceTrigger(timers[master_index], timers[slave_index]));
+        LL_TIM_SetSlaveMode(timers[slave_index]->getHandle()->Instance, LL_TIM_SLAVEMODE_TRIGGER);
+      }
+    }
   }
 
   // enable timer clock
@@ -254,6 +396,20 @@ void _alignTimersNew() {
 
 
 
+// align the timers to end the init
+void _startTimers(HardwareTimer **timers_to_start, int timer_num)
+{
+  // // TODO - start each timer only once
+  // // start timers
+  // for (int i=0; i < timer_num; i++) {
+  //   if(timers_to_start[i] == NP) return;
+  //   timers_to_start[i]->resume();
+  //   #ifdef SIMPLEFOC_STM32_DEBUG
+  //     SIMPLEFOC_DEBUG("STM32-DRV: Starting timer ", getTimerNumber(get_timer_index(timers_to_start[i]->getHandle()->Instance)));
+  //   #endif
+  // }
+  _alignTimersNew();
+}
 
 
 // configure hardware 6pwm for a complementary pair of channels
@@ -540,7 +696,7 @@ void* _configure1PWM(long pwm_frequency, const int pinA) {
     return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
 
   HardwareTimer* HT1 = _initPinPWM(pwm_frequency, pinTimers[0]);\
-  // allign the timers
+  // align the timers
   _alignTimersNew();
   
   uint32_t channel1 = STM_PIN_CHANNEL(pinTimers[0]->function);
@@ -598,6 +754,8 @@ void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 
 
 
+TIM_MasterConfigTypeDef sMasterConfig;
+TIM_SlaveConfigTypeDef sSlaveConfig;
 
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
@@ -620,7 +778,7 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
   HardwareTimer* HT1 = _initPinPWM(pwm_frequency, pinTimers[0]);
   HardwareTimer* HT2 = _initPinPWM(pwm_frequency, pinTimers[1]);
   HardwareTimer* HT3 = _initPinPWM(pwm_frequency, pinTimers[2]);
-  
+
   uint32_t channel1 = STM_PIN_CHANNEL(pinTimers[0]->function);
   uint32_t channel2 = STM_PIN_CHANNEL(pinTimers[1]->function);
   uint32_t channel3 = STM_PIN_CHANNEL(pinTimers[2]->function);
@@ -944,9 +1102,5 @@ void printTimerCombination(int numPins, PinMap* timers[], int score) {
 }
 
 #endif
-
-
-
-
 
 #endif
