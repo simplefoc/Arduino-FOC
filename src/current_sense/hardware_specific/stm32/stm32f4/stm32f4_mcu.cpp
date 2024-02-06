@@ -111,7 +111,6 @@ extern "C" {
     adc_val[adc_index][2]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_3);    
 
     #ifdef HFI
-
       process_hfi();
     #endif
   }
