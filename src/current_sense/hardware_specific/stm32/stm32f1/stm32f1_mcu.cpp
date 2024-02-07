@@ -69,20 +69,20 @@ void _driverSyncLowSide(void* _driver_params, void* _cs_params){
     cs_params->timer_handle->getHandle()->Instance->CNT =  cs_params->timer_handle->getHandle()->Instance->ARR;
     // remember that this timer has repetition counter - no need to downasmple
     needs_downsample[_adcToIndex(cs_params->adc_handle)] = 0;
+  }else{
+    if(!use_adc_interrupt){
+      // If the timer has no repetition counter, it needs to use the interrupt to downsample for low side sensing
+      use_adc_interrupt = 1;
+      #ifdef SIMPLEFOC_STM32_DEBUG
+      SIMPLEFOC_DEBUG("STM32-CS: timer has no repetition counter, ADC interrupt has to be used");
+      #endif
+    }
   }
   // set the trigger output event
   LL_TIM_SetTriggerOutput(cs_params->timer_handle->getHandle()->Instance, LL_TIM_TRGO_UPDATE);
 
   // Start the adc calibration
   HAL_ADCEx_Calibration_Start(cs_params->adc_handle);
-  
-  if( !use_adc_interrupt && !IS_TIM_REPETITION_COUNTER_INSTANCE(cs_params->timer_handle->getHandle()->Instance)){
-    // If the timer has no repetition counter, it needs to use the interrupt to downsample for low side sensing
-    use_adc_interrupt = 1;
-    #ifdef SIMPLEFOC_STM32_DEBUG
-    SIMPLEFOC_DEBUG("STM32-CS: timer has no repetition counter, ADC interrupt has to be used");
-    #endif
-  }
 
   // start the adc 
   if(use_adc_interrupt){
