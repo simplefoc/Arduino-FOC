@@ -382,7 +382,7 @@ void _alignTimersNew() {
   // enable timer clock
   for (int i=0; i<numTimers; i++) {
     timers[i]->pause();
-    timers[i]->refresh();
+    //timers[i]->refresh();
     #ifdef SIMPLEFOC_STM32_DEBUG
       SIMPLEFOC_DEBUG("STM32-DRV: Restarting timer ", getTimerNumber(get_timer_index(timers[i]->getHandle()->Instance)));
     #endif
