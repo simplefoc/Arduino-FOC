@@ -138,6 +138,10 @@ void* _configureADCLowSide(const void* driver_params, const int pinA,const int p
   return params;
 }
 
+#ifdef HFI
+__attribute__((weak)) void process_hfi(){};
+#endif
+
 extern "C" {
 void DMA1_Channel1_IRQHandler(void) {
   HAL_DMA_IRQHandler(&hdma_adc1);
@@ -146,6 +150,16 @@ void DMA1_Channel1_IRQHandler(void) {
 void DMA1_Channel2_IRQHandler(void) {
    HAL_DMA_IRQHandler(&hdma_adc2);
 }
+
+#ifdef SIMPLEFOC_STM32_ADC_INTERRUPT
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
+  #ifdef HFI
+  // if (hadc == &hadc2) {
+    process_hfi();
+  // }
+  #endif
+}
+#endif // SIMPLEFOC_STM32_ADC_INTERRUPT
 }
 
 void _driverSyncLowSide(void* _driver_params, void* _cs_params){
@@ -160,6 +174,9 @@ void _driverSyncLowSide(void* _driver_params, void* _cs_params){
   if( IS_TIM_REPETITION_COUNTER_INSTANCE(cs_params->timer_handle->getHandle()->Instance) ){
     // adjust the initial timer state such that the trigger for DMA transfer aligns with the pwm peaks instead of throughs.
     // only necessary for the timers that have repetition counters
+    #ifdef HFI
+    cs_params->timer_handle->getHandle()->Instance->RCR = 0;
+    #endif
     cs_params->timer_handle->getHandle()->Instance->CR1 |= TIM_CR1_DIR;
     cs_params->timer_handle->getHandle()->Instance->CNT =  cs_params->timer_handle->getHandle()->Instance->ARR;
   }

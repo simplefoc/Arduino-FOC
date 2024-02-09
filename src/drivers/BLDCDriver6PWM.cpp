@@ -101,3 +101,7 @@ void BLDCDriver6PWM::setPhaseState(PhaseState sa, PhaseState sb, PhaseState sc) 
   phase_state[1] = sb;
   phase_state[2] = sc;
 }
+
+bool BLDCDriver6PWM::getPwmState() {
+  return _getPwmState(params);
+}
