@@ -4,7 +4,7 @@
  * Using serial terminal user can send motor commands and configure the motor and FOC in real-time:
  * - configure PID controller constants
  * - change motion control loops
- * - monitor motor variabels
+ * - monitor motor variables
  * - set target values
  * - check all the configuration values
  *
@@ -51,7 +51,7 @@ void setup() {
   // set control loop type to be used
   motor.controller = MotionControlType::torque;
 
-  // contoller configuration based on the control type
+  // controller configuration based on the control type
   motor.PID_velocity.P = 0.2f;
   motor.PID_velocity.I = 20;
   motor.PID_velocity.D = 0;
@@ -94,9 +94,9 @@ void loop() {
   // iterative setting FOC phase voltage
   motor.loopFOC();
 
-  // iterative function setting the outter loop target
+  // iterative function setting the outer loop target
   // velocity, position or voltage
-  // if tatget not set in parameter uses motor.target variable
+  // if target not set in parameter uses motor.target variable
   motor.move();
 
   // user communication

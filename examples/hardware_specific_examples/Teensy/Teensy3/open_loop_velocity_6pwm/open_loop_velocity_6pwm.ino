@@ -32,9 +32,9 @@ void setup() {
   // limiting motor movements
   // limit the voltage to be set to the motor
   // start very low for high resistance motors
-  // currnet = resistance*voltage, so try to be well under 1Amp
+  // current = resistance*voltage, so try to be well under 1Amp
   motor.voltage_limit = 3;   // [V]
- 
+
   // open loop control config
   motor.controller = MotionControlType::velocity_openloop;
 
@@ -57,7 +57,7 @@ void setup() {
 void loop() {
 
   // open loop velocity movement
-  // using motor.voltage_limit 
+  // using motor.voltage_limit
   motor.move();
 
   // user communication

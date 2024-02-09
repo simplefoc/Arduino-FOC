@@ -6,7 +6,7 @@
 
 /**
  * Magnetic sensor reading analog voltage on pin which does not have hardware interrupt support. Such as A0.
- * 
+ *
  * MagneticSensorPWM(uint8_t MagneticSensorPWM, int _min, int _max)
  * - pinPWM         - the pin that is reading the pwm from magnetic sensor
  * - min_raw_count  - the smallest expected reading.  Whilst you might expect it to be 0 it is often ~5.  Getting this wrong results in a small click once per revolution
@@ -34,7 +34,7 @@ void setup() {
 void loop() {
   // iterative function updating the sensor internal variables
   // it is usually called in motor.loopFOC()
-  // this function reads the sensor hardware and 
+  // this function reads the sensor hardware and
   // has to be called before getAngle nad getVelocity
   sensor.update();
   // display the angle and the angular velocity to the terminal

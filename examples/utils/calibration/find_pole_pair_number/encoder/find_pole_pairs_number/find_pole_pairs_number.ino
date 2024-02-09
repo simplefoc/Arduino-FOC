@@ -26,7 +26,7 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 
 //  Encoder(int encA, int encB , int cpr, int index)
 Encoder encoder = Encoder(2, 3, 2048);
-// interrupt routine intialisation
+// interrupt routine initialisation
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 
@@ -64,7 +64,7 @@ void setup() {
   motor.move(0);
   _delay(1000);
   // read the encoder angle
-  encoder.update(); 
+  encoder.update();
   float angle_begin = encoder.getAngle();
   _delay(50);
 
@@ -77,7 +77,7 @@ void setup() {
   }
   _delay(1000);
   // read the encoder value for 180
-  encoder.update(); 
+  encoder.update();
   float angle_end = encoder.getAngle();
   _delay(50);
   // turn off the motor

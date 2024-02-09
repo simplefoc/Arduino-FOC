@@ -39,7 +39,7 @@ void setup() {
   // start very low for high resistance motors
   // current = voltage / resistance, so try to be well under 1Amp
   motor.voltage_limit = 3;   // [V]
- 
+
   // open loop control config
   motor.controller = MotionControlType::velocity_openloop;
 

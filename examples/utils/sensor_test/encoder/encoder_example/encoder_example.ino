@@ -1,15 +1,18 @@
 /**
- *  Encoder example code 
- * 
+ *  Encoder example code
+ *
  * This is a code intended to test the encoder connections and to demonstrate the encoder setup.
- * 
+ *
  */
 
 #include <SimpleFOC.h>
 
-
+// Encoder sensor instance
+// Encoder(int encA, int encB, int cpr, int index)
+//  - encA, encB        - encoder A and B pins
+//  - cpr               - counts per rotation number (cpm=ppm*4)
 Encoder encoder = Encoder(2, 3, 8192);
-// interrupt routine intialisation
+// interrupt routine initialisation
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 
@@ -22,7 +25,7 @@ void setup() {
 
   // check if you need internal pullups
   encoder.pullup = Pullup::USE_EXTERN;
-  
+
   // initialise encoder hardware
   encoder.init();
   // hardware interrupt enable

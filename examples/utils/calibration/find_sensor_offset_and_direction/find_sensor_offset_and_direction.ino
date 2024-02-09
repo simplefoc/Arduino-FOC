@@ -1,15 +1,15 @@
 /**
- * Simple example intended to help users find the zero offset and natural direction of the sensor. 
- * 
- * These values can further be used to avoid motor and sensor alignment procedure. 
+ * Simple example intended to help users find the zero offset and natural direction of the sensor.
+ *
+ * These values can further be used to avoid motor and sensor alignment procedure.
  * To use these values add them to the code:");
  *    motor.sensor_direction=Direction::CW; // or Direction::CCW
  *    motor.zero_electric_angle=1.2345;     // use the real value!
- * 
- * This will only work for abosolute value sensors - magnetic sensors. 
- * Bypassing the alignment procedure is not possible for the encoders and for the current implementation of the Hall sensors. 
+ *
+ * This will only work for absolute value sensors - magnetic sensors.
+ * Bypassing the alignment procedure is not possible for the encoders and for the current implementation of the Hall sensors.
  * library version 1.4.2.
- * 
+ *
  */
 #include <SimpleFOC.h>
 
@@ -39,9 +39,9 @@ void setup() {
   // link the motor to the sensor
   motor.linkSensor(&sensor);
 
-  // aligning voltage 
+  // aligning voltage
   motor.voltage_sensor_align = 7;
-  
+
   // set motion control loop to be used
   motor.controller = MotionControlType::torque;
 
@@ -53,7 +53,7 @@ void setup() {
   // align sensor and start FOC
   motor.initFOC();
 
-  
+
   Serial.begin(115200);
   Serial.println("Sensor zero offset is:");
   Serial.println(motor.zero_electric_angle, 4);
@@ -69,12 +69,12 @@ void setup() {
   Serial.println(";");
 
   _delay(1000);
-  Serial.println("If motor is not moving the alignment procedure was not successfull!!");
+  Serial.println("If motor is not moving the alignment procedure was not successful!!");
 }
 
 
 void loop() {
-    
+
   // main FOC algorithm function
   motor.loopFOC();
 

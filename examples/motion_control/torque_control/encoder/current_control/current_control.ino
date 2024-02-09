@@ -55,14 +55,14 @@ void setup() {
   // set motion control loop to be used
   motor.controller = MotionControlType::torque;
 
-  // foc currnet control parameters (Arduino UNO/Mega)
+  // foc current control parameters (Arduino UNO/Mega)
   motor.PID_current_q.P = 5;
   motor.PID_current_q.I= 300;
   motor.PID_current_d.P= 5;
   motor.PID_current_d.I = 300;
   motor.LPF_current_q.Tf = 0.01f;
   motor.LPF_current_d.Tf = 0.01f;
-  // foc currnet control parameters (stm/esp/due/teensy)
+  // foc current control parameters (stm/esp/due/teensy)
   // motor.PID_current_q.P = 5;
   // motor.PID_current_q.I= 1000;
   // motor.PID_current_d.P= 5;

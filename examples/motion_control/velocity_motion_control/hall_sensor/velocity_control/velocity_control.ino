@@ -31,12 +31,12 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 // hall sensor instance
 HallSensor sensor = HallSensor(2, 3, 4, 11);
 
-// Interrupt routine intialisation
+// Interrupt routine initialisation
 // channel A and B callbacks
 void doA(){sensor.handleA();}
 void doB(){sensor.handleB();}
 void doC(){sensor.handleC();}
-// If no available hadware interrupt pins use the software interrupt
+// If no available hardware interrupt pins use the software interrupt
 PciListenerImp listenerIndex(sensor.pinC, doC);
 
 // velocity set point variable
@@ -68,7 +68,7 @@ void setup() {
   // set motion control loop to be used
   motor.controller = MotionControlType::velocity;
 
-  // contoller configuration
+  // controller configuration
   // default parameters in defaults.h
 
   // velocity PI controller parameters

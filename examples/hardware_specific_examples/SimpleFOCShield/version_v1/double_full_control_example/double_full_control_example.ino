@@ -55,13 +55,13 @@ void setup() {
   motor1.controller = MotionControlType::torque;
   motor2.controller = MotionControlType::torque;
 
-  // contoller configuration based on the controll type
+  // controller configuration based on the control type
   motor1.PID_velocity.P = 0.05f;
   motor1.PID_velocity.I = 1;
   motor1.PID_velocity.D = 0;
   // default voltage_power_supply
   motor1.voltage_limit = 12;
-  // contoller configuration based on the controll type
+  // controller configuration based on the control type
   motor2.PID_velocity.P = 0.05f;
   motor2.PID_velocity.I = 1;
   motor2.PID_velocity.D = 0;
@@ -109,7 +109,7 @@ void loop() {
   motor1.loopFOC();
   motor2.loopFOC();
 
-  // iterative function setting the outter loop target
+  // iterative function setting the outer loop target
   motor1.move();
   motor2.move();
 

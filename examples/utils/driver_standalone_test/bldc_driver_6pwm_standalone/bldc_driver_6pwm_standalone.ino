@@ -14,7 +14,7 @@ void setup() {
   driver.voltage_power_supply = 12;
   // Max DC voltage allowed - default voltage_power_supply
   driver.voltage_limit = 12;
-  // daad_zone [0,1] - default 0.02f - 2%
+  // dead_zone [0,1] - default 0.02f - 2%
   driver.dead_zone = 0.05f;
 
   // driver init

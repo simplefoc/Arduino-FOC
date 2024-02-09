@@ -1,4 +1,4 @@
-/** 
+/**
  * B-G431B-ESC1 position motion control example with encoder
  *
  */
@@ -13,7 +13,7 @@ LowsideCurrentSense currentSense = LowsideCurrentSense(0.003f, -64.0f/7.0f, A_OP
 // encoder instance
 Encoder encoder = Encoder(A_HALL2, A_HALL3, 2048, A_HALL1);
 
-// Interrupt routine intialisation
+// Interrupt routine initialisation
 // channel A and B callbacks
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
@@ -24,14 +24,14 @@ Commander command = Commander(Serial);
 void doTarget(char* cmd) { command.motion(&motor, cmd); }
 
 void setup() {
-  
+
   // initialize encoder sensor hardware
   encoder.init();
-  encoder.enableInterrupts(doA, doB); 
+  encoder.enableInterrupts(doA, doB);
 
   // link the motor to the sensor
   motor.linkSensor(&encoder);
-  
+
   // driver config
   // power supply voltage [V]
   driver.voltage_power_supply = 12;
@@ -55,7 +55,7 @@ void setup() {
   // set motion control loop to be used
   motor.controller = MotionControlType::velocity;
 
-  // contoller configuration 
+  // controller configuration
   // default parameters in defaults.h
 
   // velocity PI controller parameters
@@ -66,7 +66,7 @@ void setup() {
   // jerk control using voltage voltage ramp
   // default value is 300 volts per sec  ~ 0.3V per millisecond
   motor.PID_velocity.output_ramp = 1000;
- 
+
   // velocity low pass filtering time constant
   motor.LPF_velocity.Tf = 0.01;
 
@@ -76,11 +76,11 @@ void setup() {
   motor.velocity_limit = 4;
 
 
-  // use monitoring with serial 
+  // use monitoring with serial
   Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
-  
+
   // initialize motor
   motor.init();
   // align encoder and start FOC
@@ -104,7 +104,7 @@ void loop() {
   // function intended to be used with serial plotter to monitor motor variables
   // significantly slowing the execution down!!!!
   // motor.monitor();
-  
+
   // user communication
   command.run();
 }

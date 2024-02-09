@@ -8,12 +8,12 @@
 Commander command = Commander();
 
 // led control function
-void doLed(char* cmd){ 
-    if(atoi(cmd)) digitalWrite(LED_BUILTIN, HIGH); 
-    else digitalWrite(LED_BUILTIN, LOW); 
+void doLed(char* cmd){
+    if(atoi(cmd)) digitalWrite(LED_BUILTIN, HIGH);
+    else digitalWrite(LED_BUILTIN, LOW);
 };
-// get analog input 
-void doAnalog(char* cmd){ 
+// get analog input
+void doAnalog(char* cmd){
     if (cmd[0] == '0') Serial.println(analogRead(A0));
     else if (cmd[0] == '1') Serial.println(analogRead(A1));
 };
@@ -38,14 +38,14 @@ void setup() {
 
 void loop() {
     // user communication
-    command.run("?"); 
+    command.run("?");
     _delay(2000);
-    command.run("L0"); 
+    command.run("L0");
     _delay(1000);
-    command.run("A0"); 
+    command.run("A0");
     _delay(1000);
-    command.run("A1"); 
+    command.run("A1");
     _delay(1000);
-    command.run("L1"); 
+    command.run("L1");
     _delay(1000);
 }

@@ -1,11 +1,11 @@
 /**
  * Find KV rating for motor with magnetic sensors
  *
- * Motor KV rating is defiend as the increase of the motor velocity expressed in rotations per minute [rpm] per each 1 Volt int voltage control mode.
- * 
- * This example will set your motor in the torque control mode using voltage and set 1 volt to the motor. By reading the velocity it will calculat the motors KV rating.
- * - To make this esimation more credible you can try increasing the target voltage (or decrease in some cases) 
- * - The KV rating should be realatively static number - it should not change considerably with the increase in the voltage
+ * Motor KV rating is defined as the increase of the motor velocity expressed in rotations per minute [rpm] per each 1 Volt int voltage control mode.
+ *
+ * This example will set your motor in the torque control mode using voltage and set 1 volt to the motor. By reading the velocity it will calculate the motors KV rating.
+ * - To make this estimation more credible you can try increasing the target voltage (or decrease in some cases)
+ * - The KV rating should be relatively static number - it should not change considerably with the increase in the voltage
  */
 #include <SimpleFOC.h>
 
@@ -29,14 +29,14 @@ float target_voltage = 1;
 // instantiate the commander
 Commander command = Commander(Serial);
 void doTarget(char* cmd) { command.scalar(&target_voltage, cmd); }
-void calcKV(char* cmd) { 
+void calcKV(char* cmd) {
   // calculate the KV
   Serial.println(motor.shaft_velocity/motor.target*30.0f/_PI);
 
 }
 
-void setup() { 
-  
+void setup() {
+
   // initialize encoder sensor hardware
   sensor.init();
   // link the motor to the sensor
@@ -56,7 +56,7 @@ void setup() {
   // set motion control loop to be used
   motor.controller = MotionControlType::torque;
 
-  // use monitoring with serial 
+  // use monitoring with serial
   Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
@@ -71,7 +71,7 @@ void setup() {
   command.add('K', calcKV, "calculate KV rating");
 
   Serial.println(F("Motor ready."));
-  Serial.println(F("Set the target voltage : - commnad T"));
+  Serial.println(F("Set the target voltage : - command T"));
   Serial.println(F("Calculate the motor KV : - command K"));
   _delay(1000);
 }
@@ -82,7 +82,7 @@ void loop() {
   // main FOC algorithm function
   // the faster you run this function the better
   // Arduino UNO loop  ~1kHz
-  // Bluepill loop ~10kHz 
+  // Bluepill loop ~10kHz
   motor.loopFOC();
 
   // Motion control function

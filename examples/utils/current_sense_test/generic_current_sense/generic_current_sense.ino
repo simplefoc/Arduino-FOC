@@ -15,7 +15,7 @@ PhaseCurrent_s readCurrentSense(){
   return(c);
 }
 
-// user defined function for intialising the current sense
+// user defined function for initialising the current sense
 // it is optional and if provided it will be called in current_sense.init()
 void initCurrentSense(){
   pinMode(A0,INPUT);
@@ -31,15 +31,15 @@ GenericCurrentSense current_sense = GenericCurrentSense(readCurrentSense, initCu
 
 
 void setup() {
-  // if callbacks are not provided in the constructor 
-  // they can be assigned directly: 
+  // if callbacks are not provided in the constructor
+  // they can be assigned directly:
   //current_sense.readCallback = readCurrentSense;
   //current_sense.initCallback = initCurrentSense;
-  
+
   // initialise the current sensing
   current_sense.init();
 
-  
+
   Serial.begin(115200);
   Serial.println("Current sense ready.");
 }

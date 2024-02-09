@@ -45,7 +45,7 @@ void setup() {
   // set motion control loop to be used
   motor.controller = MotionControlType::angle;
 
-  // contoller configuration
+  // controller configuration
   // default parameters in defaults.h
   // velocity PI controller parameters
   motor.PID_velocity.P = 0.2f;
@@ -80,7 +80,7 @@ void setup() {
   // enable interrupts
   step_dir.enableInterrupt(onStep);
   // attach the variable to be updated on each step (optional)
-  // the same can be done asynchronously by caling motor.move(step_dir.getValue());
+  // the same can be done asynchronously by calling motor.move(step_dir.getValue());
   step_dir.attach(&motor.target);
 
   Serial.println(F("Motor ready."));

@@ -5,7 +5,7 @@ OSC - opensoundcontrol.org is a simple message exchange protocol. Widely used in
 
 As a protocol it is simple, making implementation quite easy, and while binary, simple enough to be fairly "human readable", which aids in debugging and reduces errors.
 
-The main advantage of using it is that there is a bunch of ready made software, and also libraries to use in your own programs, neaning you don't have to re-invent these things from scratch.
+The main advantage of using it is that there is a bunch of ready made software, and also libraries to use in your own programs, meaning you don't have to re-invent these things from scratch.
 
 ## TouchOSC
 
@@ -19,10 +19,8 @@ Here a screenshot of what it looks like in purr-Data:
 
 ![Screenshot from pD](osc_fullcontrol_screenshot.png?raw=true "pD controlling 2 BLDC motors")
 
-
 ## Links to software used in examples
 
 - OSC - opensoundcontrol.org
-- pD - https://puredata.info
-- TouchOSC - https://hexler.net/products/touchosc
-
+- pD - <https://puredata.info>
+- TouchOSC - <https://hexler.net/products/touchosc>

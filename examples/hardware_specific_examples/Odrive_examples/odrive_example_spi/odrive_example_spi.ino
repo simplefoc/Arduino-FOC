@@ -1,10 +1,10 @@
 /*
     Odrive robotics' hardware is one of the best  BLDC motor foc supporting hardware out there.
 
-    This is an example code that can be directly uploaded to the Odrive using the SWD programmer. 
-    This code uses an magnetic spi sensor AS5047 and a BLDC motor with 11 pole pairs connected to the M0 interface of the Odrive. 
+    This is an example code that can be directly uploaded to the Odrive using the SWD programmer.
+    This code uses an magnetic spi sensor AS5047 and a BLDC motor with 11 pole pairs connected to the M0 interface of the Odrive.
 
-    This is a short template code and the idea is that you are able to adapt to your needs not to be a complete solution. :D 
+    This is a short template code and the idea is that you are able to adapt to your needs not to be a complete solution. :D
 */
 #include <SimpleFOC.h>
 
@@ -15,7 +15,7 @@
 #define M0_INL_A PB13
 #define M0_INL_B PB14
 #define M0_INL_C PB15
-// M0 currnets
+// M0 currents
 #define M0_IB PC0
 #define M0_IC PC1
 // Odrive M0 encoder pinout
@@ -31,7 +31,7 @@
 #define M1_INL_A PA7
 #define M1_INL_B PB0
 #define M1_INL_C PB1
-// M0 currnets
+// M0 currents
 #define M1_IB PC2
 #define M1_IC PC3
 // Odrive M1 encoder pinout
@@ -63,7 +63,7 @@ LowsideCurrentSense current_sense = LowsideCurrentSense(0.0005f, 10.0f, _NC, M0_
 
 // MagneticSensorSPI(int cs, float _cpr, int _angle_register)
 // config           - SPI config
-//  cs              - SPI chip select pin 
+//  cs              - SPI chip select pin
 MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, M0_ENC_A);
 SPIClass SPI_3(SPI3_MOSO, SPI3_MISO, SPI3_SCL);
 
@@ -84,16 +84,16 @@ void setup(){
   sensor.init(&SPI_3);
   // link the motor to the sensor
   motor.linkSensor(&sensor);
-  
-  // control loop type and torque mode 
+
+  // control loop type and torque mode
   motor.torque_controller = TorqueControlType::voltage;
   motor.controller = MotionControlType::torque;
 
-  // max voltage  allowed for motion control 
+  // max voltage  allowed for motion control
   motor.voltage_limit = 8.0;
   // alignment voltage limit
   motor.voltage_sensor_align = 0.5;
-  
+
 
   Serial.begin(115200);
   // comment out if not needed
@@ -110,12 +110,12 @@ void setup(){
   // link the driver
   current_sense.linkDriver(&driver);
   // init the current sense
-  current_sense.init();  
+  current_sense.init();
   current_sense.skip_align = true;
   motor.linkCurrentSense(&current_sense);
-  
-  // init FOC  
-  motor.initFOC();  
+
+  // init FOC
+  motor.initFOC();
   delay(1000);
 }
 
@@ -125,7 +125,7 @@ void loop(){
   motor.loopFOC();
   // motion control
   motor.move();
-  // monitoring 
+  // monitoring
   motor.monitor();
   // user communication
   command.run();

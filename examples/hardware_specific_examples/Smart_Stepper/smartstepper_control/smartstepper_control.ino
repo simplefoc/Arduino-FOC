@@ -1,5 +1,5 @@
 /**
- * Smart Stepper support with SimpleFOClibrary
+ * Smart Stepper support with SimpleFOCLibrary
  */
 #include <SimpleFOC.h>
 
@@ -31,7 +31,7 @@ void setup() {
   // set motion control loop to be used
   motor.controller = MotionControlType::torque;
 
-  // use monitoring with SerialUSB 
+  // use monitoring with SerialUSB
   SerialUSB.begin(115200);
   // comment out if not needed
   motor.useMonitoring(SerialUSB);
@@ -55,7 +55,7 @@ void loop() {
 
   // Motion control function
   motor.move();
-  
+
   // user communication
   command.run();
 }

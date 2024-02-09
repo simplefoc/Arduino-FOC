@@ -2,15 +2,15 @@
 
 /**
  * An example to find out the raw max and min count to be provided to the constructor
- * Spin your motor/sensor/magnet to see what is the maximum output of the sensor and what is the minimum value 
- * And replace values 14 and 1020 with new values. Once when you replace them make sure there is no jump in the angle reading sensor.getAngle(). 
- * If there is a jump that means you can still find better values. 
+ * Spin your motor/sensor/magnet to see what is the maximum output of the sensor and what is the minimum value
+ * And replace values 14 and 1020 with new values. Once when you replace them make sure there is no jump in the angle reading sensor.getAngle().
+ * If there is a jump that means you can still find better values.
  */
 
 /**
  * Magnetic sensor reading analog voltage on pin A1.  This voltage is proportional to rotation position.
- * Tested on AS5600 magnetic sensor running in 'analog mode'.  Note AS5600 works better in 'i2C mode' (less noise) but only supports one sensor per i2c bus. 
- * 
+ * Tested on AS5600 magnetic sensor running in 'analog mode'.  Note AS5600 works better in 'i2C mode' (less noise) but only supports one sensor per i2c bus.
+ *
  * MagneticSensorAnalog(uint8_t _pinAnalog, int _min, int _max)
  * - pinAnalog      - the pin that is reading the pwm from magnetic sensor
  * - min_raw_count  - the smallest expected reading.  Whilst you might expect it to be 0 it is often ~15.  Getting this wrong results in a small click once per revolution
@@ -30,12 +30,12 @@ void setup() {
 }
 
 int max_count = 0;
-int min_count = 100000; 
+int min_count = 100000;
 
 void loop() {
   // iterative function updating the sensor internal variables
   // it is usually called in motor.loopFOC()
-  // this function reads the sensor hardware and 
+  // this function reads the sensor hardware and
   // has to be called before getAngle nad getVelocity
   sensor.update();
 
