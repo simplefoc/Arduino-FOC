@@ -86,11 +86,14 @@ void BLDCMotor::init() {
   if(_isset(phase_resistance) || torque_controller != TorqueControlType::voltage){
     // velocity control loop controls current
     PID_velocity.limit = current_limit;
+    P_angle.limit = current_limit; // for MotionControlType::angle_nocascade
   }else{
     // velocity control loop controls the voltage
     PID_velocity.limit = voltage_limit;
+    P_angle.limit = voltage_limit; // for MotionControlType::angle_nocascade
   }
-  P_angle.limit = velocity_limit;
+  if (controller!=MotionControlType::angle_nocascade) // if not MotionControlType::angle_nocascade angle PID output is limited by velocity limit
+    P_angle.limit = velocity_limit;
 
   // if using open loop control, set a CW as the default direction if not already set
   if ((controller==MotionControlType::angle_openloop
@@ -423,16 +426,23 @@ void BLDCMotor::move(float new_target) {
       }
       break;
     case MotionControlType::angle:
+    case MotionControlType::angle_nocascade:
       // TODO sensor precision: this calculation is not numerically precise. The target value cannot express precise positions when
       //                        the angles are large. This results in not being able to command small changes at high position values.
       //                        to solve this, the delta-angle has to be calculated in a numerically precise way.
       // angle set point
       shaft_angle_sp = target;
-      // calculate velocity set point
-      shaft_velocity_sp = feed_forward_velocity + P_angle( shaft_angle_sp - shaft_angle );
-      shaft_velocity_sp = _constrain(shaft_velocity_sp,-velocity_limit, velocity_limit);
-      // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
-      current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
+      if (controller == MotionControlType::angle) {
+        // calculate velocity set point
+        shaft_velocity_sp = feed_forward_velocity + P_angle( shaft_angle_sp - shaft_angle );
+        shaft_velocity_sp = _constrain(shaft_velocity_sp,-velocity_limit, velocity_limit);
+        // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
+        current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
+      }
+      else {
+        // no velocity control
+        current_sp = P_angle( shaft_angle_sp - shaft_angle );
+      }
       // if torque controlled through voltage
       if(torque_controller == TorqueControlType::voltage){
         // use voltage if phase-resistance not provided

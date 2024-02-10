@@ -51,10 +51,13 @@ void StepperMotor::init() {
   if(_isset(phase_resistance)){
     // velocity control loop controls current
     PID_velocity.limit = current_limit;
+    P_angle.limit = current_limit; // for MotionControlType::angle_nocascade
   }else{
     PID_velocity.limit = voltage_limit;
+    P_angle.limit = voltage_limit; // for MotionControlType::angle_nocascade
   }
-  P_angle.limit = velocity_limit;
+  if (controller!=MotionControlType::angle_nocascade) // if not MotionControlType::angle_nocascade angle PID output is limited by velocity limit
+    P_angle.limit = velocity_limit;
 
   // if using open loop control, set a CW as the default direction if not already set
   if ((controller==MotionControlType::angle_openloop
@@ -308,13 +311,20 @@ void StepperMotor::move(float new_target) {
       else voltage.d = _constrain( -target*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit);
       break;
     case MotionControlType::angle:
+    case MotionControlType::angle_nocascade:
       // angle set point
       shaft_angle_sp = target;
-      // calculate velocity set point
-      shaft_velocity_sp = feed_forward_velocity + P_angle( shaft_angle_sp - shaft_angle );
-      shaft_velocity_sp = _constrain(shaft_velocity_sp, -velocity_limit, velocity_limit);
-      // calculate the torque command
-      current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
+      if (controller == MotionControlType::angle) {
+        // calculate velocity set point
+        shaft_velocity_sp = feed_forward_velocity + P_angle( shaft_angle_sp - shaft_angle );
+        shaft_velocity_sp = _constrain(shaft_velocity_sp, -velocity_limit, velocity_limit);
+        // calculate the torque command
+        current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
+      }
+      else {
+        // no velocity control
+        current_sp = P_angle( shaft_angle_sp - shaft_angle );
+      }
       // if torque controlled through voltage
       // use voltage if phase-resistance not provided
       if(!_isset(phase_resistance))  voltage.q = current_sp;
