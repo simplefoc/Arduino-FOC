@@ -78,7 +78,9 @@ float _readADCVoltageLowSide(const int pin, const void* cs_params){
       #ifdef SIMPLEFOC_STM32_ADC_INTERRUPT
         return adc_val[_adcToIndex(((Stm32CurrentSenseParams*)cs_params)->adc_handle)][i] * ((Stm32CurrentSenseParams*)cs_params)->adc_voltage_conv;
       #else
-        return HAL_ADCEx_InjectedGetValue(((Stm32CurrentSenseParams*)cs_params)->adc_handle,i+1) * ((Stm32CurrentSenseParams*)cs_params)->adc_voltage_conv;
+        // an optimized way to go from i to the channel i=0 -> channel 1, i=1 -> channel 2, i=2 -> channel 3
+        uint32_t channel = (i == 0) ? ADC_INJECTED_RANK_1 : (i == 1) ? ADC_INJECTED_RANK_2 : ADC_INJECTED_RANK_3;
+        return HAL_ADCEx_InjectedGetValue(((Stm32CurrentSenseParams*)cs_params)->adc_handle, channel) * ((Stm32CurrentSenseParams*)cs_params)->adc_voltage_conv;
       #endif
     }
   } 
