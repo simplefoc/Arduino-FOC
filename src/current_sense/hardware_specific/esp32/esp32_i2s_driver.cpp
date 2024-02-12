@@ -14,6 +14,7 @@
 
 #include "soc/syscon_periph.h"
 #include <soc/syscon_struct.h>
+#include <soc/syscon_reg.h>
 
 #include "soc/timer_group_struct.h"
 #include "soc/timer_group_reg.h"
