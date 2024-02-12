@@ -33,6 +33,14 @@
 
 #define I2S_USE_INTERRUPT false
 
+typedef struct ESP32MCPWMCurrentSenseParams {
+  int pins[3];
+  float adc_voltage_conv;
+  mcpwm_unit_t mcpwm_unit;
+  int buffer_index;
+} ESP32MCPWMCurrentSenseParams;
+
+
 /**
  *  I2S reading implementation by @mcells.
  */
