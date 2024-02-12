@@ -54,7 +54,7 @@ unsigned long IRAM_ATTR fifotime = 0;
 
 // This function reads data from the I2S FIFO and processes it to obtain average readings for each channel.
 // The ADC counts get saved in uint32_t i2s_adc_buffer[].
-static void IRAM_ATTR readFiFo()
+void IRAM_ATTR readFiFo()
 {
     // uint32_t readings[ADC1_CHANNEL_MAX][ADC1_CHANNEL_MAX*BUF_LEN];
     uint32_t avgreadings[ADC1_CHANNEL_MAX] = {0};
