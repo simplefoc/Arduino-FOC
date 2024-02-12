@@ -296,7 +296,8 @@ void* IRAM_ATTR _configureI2S(const bool lowside, const void* driver_params, con
   periph_module_reset(PERIPH_I2S0_MODULE);
   periph_module_enable(PERIPH_I2S0_MODULE);
 
-  ESP_ERROR_CHECK(i2s_set_adc_mode(ADC_UNIT_1, (adc1_channel_t) some_channel));
+  // ESP_ERROR_CHECK(i2s_set_adc_mode(ADC_UNIT_1, (adc1_channel_t) some_channel));
+  ESP_ERROR_CHECK(i2s_set_adc_mode(ADC_UNIT_1, ADC1_CHANNEL_0));
 
   // Taken from https://github.com/pycom/esp-idf-2.0/blob/master/components/bootloader_support/src/bootloader_random.c
   // The set values are good I guess?
