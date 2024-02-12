@@ -5,6 +5,7 @@
 #if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC)
 
 #include "esp32_adc_driver.h"
+#include "esp32_i2s_driver.h"
 
 #include "driver/mcpwm.h"
 #include "soc/mcpwm_reg.h"
@@ -15,7 +16,7 @@
 
 #define _ADC_VOLTAGE 3.3f
 #define _ADC_RESOLUTION 4095.0f
-
+#define _I2S_ADC true
 
 typedef struct ESP32MCPWMCurrentSenseParams {
   int pins[3];
@@ -29,13 +30,21 @@ typedef struct ESP32MCPWMCurrentSenseParams {
  *  Inline adc reading implementation 
 */
 // function reading an ADC value and returning the read voltage
-float _readADCVoltageInline(const int pinA, const void* cs_params){
+float _readADCVoltageInline(const int pinA, const void *cs_params)
+{
+#if _I2S_ADC == true
+  return _readADCVoltageI2S(pinA, cs_params);
+#else
   uint32_t raw_adc = adcRead(pinA);
-  return raw_adc * ((ESP32MCPWMCurrentSenseParams*)cs_params)->adc_voltage_conv;
+  return raw_adc * ((ESP32MCPWMCurrentSenseParams *)cs_params)->adc_voltage_conv;
+#endif
 }
 
 // function reading an ADC value and returning the read voltage
 void* _configureADCInline(const void* driver_params, const int pinA, const int pinB, const int pinC){
+#if _I2S_ADC == true
+  return _configureI2S(false, driver_params, pinA, pinB, pinC);
+#else
   _UNUSED(driver_params);
 
   if( _isset(pinA) ) pinMode(pinA, INPUT);
@@ -46,8 +55,8 @@ void* _configureADCInline(const void* driver_params, const int pinA, const int p
     .pins = { pinA, pinB, pinC },
     .adc_voltage_conv = (_ADC_VOLTAGE)/(_ADC_RESOLUTION)
   };
-
   return params;
+#endif
 }
 
 
@@ -68,6 +77,9 @@ int adc_read_index[2]={0};
 
 // function reading an ADC value and returning the read voltage
 float _readADCVoltageLowSide(const int pin, const void* cs_params){
+#if _I2S_ADC == true
+  return _readADCVoltageI2S(pin, cs_params);
+#else
   mcpwm_unit_t unit = ((ESP32MCPWMCurrentSenseParams*)cs_params)->mcpwm_unit;
   int buffer_index = ((ESP32MCPWMCurrentSenseParams*)cs_params)->buffer_index;
   float adc_voltage_conv = ((ESP32MCPWMCurrentSenseParams*)cs_params)->adc_voltage_conv;
@@ -78,11 +90,14 @@ float _readADCVoltageLowSide(const int pin, const void* cs_params){
   }
   // not found
   return  0;
+#endif
 }
 
 // function configuring low-side current sensing 
 void* _configureADCLowSide(const void* driver_params, const int pinA,const int pinB,const int pinC){
-  
+#if _I2S_ADC == true
+  return _configureI2S(true, driver_params, pinA, pinB, pinC);
+#else
   mcpwm_unit_t unit = ((ESP32MCPWMDriverParams*)driver_params)->mcpwm_unit;
   int index_start = adc_pin_count[unit];
   if( _isset(pinA) ) adc_pins[unit][adc_pin_count[unit]++] = pinA;
@@ -101,6 +116,7 @@ void* _configureADCLowSide(const void* driver_params, const int pinA,const int p
   };
 
   return params;
+#endif
 }
 
 
@@ -131,9 +147,13 @@ static void IRAM_ATTR mcpwm0_isr_handler(void*){
   // low side
   uint32_t mcpwm_intr_status = MCPWM0.int_st.timer0_tep_int_st;
   if(mcpwm_intr_status){
+#if _I2S_ADC == true
+      readFiFo();
+#else
     adc_buffer[0][adc_read_index[0]] = adcRead(adc_pins[0][adc_read_index[0]]);
     adc_read_index[0]++;
     if(adc_read_index[0] == adc_pin_count[0]) adc_read_index[0] = 0;
+#endif
   }
   // low side
   MCPWM0.int_clr.timer0_tep_int_clr = mcpwm_intr_status;
@@ -151,9 +171,13 @@ static void IRAM_ATTR mcpwm1_isr_handler(void*){
   // low side
   uint32_t mcpwm_intr_status = MCPWM1.int_st.timer0_tep_int_st;
   if(mcpwm_intr_status){
+#if _I2S_ADC == true
+    readFiFo();
+#else
     adc_buffer[1][adc_read_index[1]] = adcRead(adc_pins[1][adc_read_index[1]]);
     adc_read_index[1]++;
     if(adc_read_index[1] == adc_pin_count[1]) adc_read_index[1] = 0;
+#endif
   }
   // low side
   MCPWM1.int_clr.timer0_tep_int_clr = mcpwm_intr_status;

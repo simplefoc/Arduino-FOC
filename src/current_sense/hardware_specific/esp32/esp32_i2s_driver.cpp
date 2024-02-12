@@ -34,11 +34,11 @@
  *  I2S reading implementation by @mcells.
  */
 
-uint32_t IRAM_ATTR adc_buffer[ADC1_CHANNEL_MAX] = {0};
+uint32_t IRAM_ATTR i2s_adc_buffer[ADC1_CHANNEL_MAX] = {0};
 int globalActiveChannels = 0;
 int channels[ADC1_CHANNEL_MAX] = {0};
 bool running = false;
-
+bool sampleOnCommand = true;
 #if DEBUG_ADC
 uint32_t IRAM_ATTR readscnt = 0;
 uint32_t IRAM_ATTR intcnt = 0;
@@ -51,7 +51,7 @@ unsigned long IRAM_ATTR fifotime = 0;
 #endif
 
 // This function reads data from the I2S FIFO and processes it to obtain average readings for each channel.
-// The ADC counts get saved in uint32_t adc_buffer[].
+// The ADC counts get saved in uint32_t i2s_adc_buffer[].
 static void IRAM_ATTR readFiFo()
 {
     // uint32_t readings[ADC1_CHANNEL_MAX][ADC1_CHANNEL_MAX*BUF_LEN];
@@ -134,22 +134,22 @@ static void IRAM_ATTR readFiFo()
   {
       if (counts[j] != 0)
       {
-          adc_buffer[j] = avgreadings[j] / counts[j];
+          i2s_adc_buffer[j] = avgreadings[j] / counts[j];
 
           // int32_t leastdiff = 4095;
           // uint32_t idx = 0;
           // for (size_t k = 0; k < counts[j]; k++)
           // {
-          //   int32_t diff = abs(int(adc_buffer[j]) - int(readings[j][k]));
+          //   int32_t diff = abs(int(i2s_adc_buffer[j]) - int(readings[j][k]));
           //   if (leastdiff > diff && diff != 0)
           //   {
           //     leastdiff = diff;
           //     idx = k;
           //   }
           // }
-          // adc_buffer[j] = readings[j][idx];
+          // i2s_adc_buffer[j] = readings[j][idx];
 
-          // Serial.printf(">Channel%d:%d\n", j, adc_buffer[j]);
+          // Serial.printf(">Channel%d:%d\n", j, i2s_adc_buffer[j]);
       }
   }
 }
@@ -180,7 +180,10 @@ static void IRAM_ATTR i2s_isr(void *arg)
 void IRAM_ATTR _startADC3PinConversionLowSide()
 {
 #if I2S_USE_INTERRUPT != true
-    readFiFo();
+    if (sampleOnCommand)
+    {
+        readFiFo();
+    }
 #endif
 
 #if DEBUG_ADC
@@ -233,7 +236,7 @@ void IRAM_ATTR _startADC3PinConversionLowSide()
 
         for (size_t i = 0; i < ADC1_CHANNEL_MAX; i++)
         {
-            Serial.printf(">Channel%d:%d\n", i, adc_buffer[i]);
+            Serial.printf(">Channel%d:%d\n", i, i2s_adc_buffer[i]);
         }
     }
 #endif
@@ -244,16 +247,18 @@ float IRAM_ATTR _readADCVoltageI2S(const int pin, const void *cs_params)
 {
     float adc_voltage_conv = ((ESP32MCPWMCurrentSenseParams *)cs_params)->adc_voltage_conv;
 
-    return adc_buffer[digitalPinToAnalogChannel(pin)] * adc_voltage_conv;
+    return i2s_adc_buffer[digitalPinToAnalogChannel(pin)] * adc_voltage_conv;
 }
 
 // Sets up the I2S peripheral and ADC. Can be run multiple times to configure multiple motors.
-void* IRAM_ATTR _configureI2S(const void* driver_params, const int pinA, const int pinB, const int pinC){
+void* IRAM_ATTR _configureI2S(const bool lowside, const void* driver_params, const int pinA, const int pinB, const int pinC){
+  sampleOnCommand = !lowside;
+
   mcpwm_unit_t unit = ((ESP32MCPWMDriverParams*)driver_params)->mcpwm_unit;
 
-  if( _isset(pinA) ) channels[digitalPinToAnalogChannel(pinA)] = 1; pinMode(pinA, GPIO_MODE_DISABLE );
-  if( _isset(pinB) ) channels[digitalPinToAnalogChannel(pinB)] = 1; pinMode(pinB, GPIO_MODE_DISABLE );
-  if( _isset(pinC) ) channels[digitalPinToAnalogChannel(pinC)] = 1; pinMode(pinC, GPIO_MODE_DISABLE );
+  if( _isset(pinA) ) channels[digitalPinToAnalogChannel(pinA)] = 1; pinMode(pinA, INPUT);
+  if( _isset(pinB) ) channels[digitalPinToAnalogChannel(pinB)] = 1; pinMode(pinB, INPUT);
+  if( _isset(pinC) ) channels[digitalPinToAnalogChannel(pinC)] = 1; pinMode(pinC, INPUT);
 
   int activeChannels = 0;
   u_int some_channel = 0;
@@ -267,9 +272,10 @@ void* IRAM_ATTR _configureI2S(const void* driver_params, const int pinA, const i
   }
   globalActiveChannels = activeChannels;
 
-  ESP32MCPWMCurrentSenseParams *params = new ESP32MCPWMCurrentSenseParams{
-      .pins = {pinA, pinB, pinC},
-      .adc_voltage_conv = (_ADC_VOLTAGE) / (_ADC_RESOLUTION),
+  ESP32MCPWMCurrentSenseParams* params = new ESP32MCPWMCurrentSenseParams {
+    .pins = { pinA, pinB, pinC },
+    .adc_voltage_conv = (_ADC_VOLTAGE)/(_ADC_RESOLUTION),
+    .mcpwm_unit = unit
   };
 
   periph_module_reset(PERIPH_I2S0_MODULE);
