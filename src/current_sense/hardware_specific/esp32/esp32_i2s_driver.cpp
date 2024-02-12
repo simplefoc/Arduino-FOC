@@ -242,6 +242,10 @@ void IRAM_ATTR _startADC3PinConversionLowSide()
 #endif
 }
 
+void IRAM_ATTR _startADC3PinConversionInline(){
+    _startADC3PinConversionLowSide();
+}
+
 // Takes the buffered adc counts and returns the coresponding float voltage for a pin.
 float IRAM_ATTR _readADCVoltageI2S(const int pin, const void *cs_params)
 {
