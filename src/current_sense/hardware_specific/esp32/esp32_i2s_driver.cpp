@@ -156,7 +156,7 @@ void IRAM_ATTR readFiFo()
   }
 }
 
-
+#if I2S_USE_INTERRUPT == true
 static void IRAM_ATTR i2s_isr(void *arg)
 {
 #if DEBUG_ADC
@@ -175,7 +175,7 @@ static void IRAM_ATTR i2s_isr(void *arg)
     fifotime = micros() - fifostart;
 #endif
 }
-
+#endif
 // Contrary to its name (so it can be called by the library), this function reads the already converted values from fifo
 // and prints optional debug information.
 // When using interrupt driven sampling, it only prints debug information.
