@@ -99,6 +99,44 @@ extern "C" {
     // calculate the instance
     int adc_index = _adcToIndex(AdcHandle);
 
+    // hfi handles this for us
+    // #if !defined(HFI) && !defined(HFI_2XPWM)
+    uint32_t adc_cr2 = AdcHandle->Instance->CR2;
+    
+    TIM_TypeDef* timer;
+    switch (adc_cr2 & ADC_CR2_JEXTSEL) {
+      case ADC_EXTERNALTRIGINJECCONV_T1_TRGO:
+        timer = TIM1;
+        break;
+      #ifdef TIM2  // does this ifdef get us anything? Seems all timers are defined in the framework for the specific chip
+      case ADC_EXTERNALTRIGINJECCONV_T2_TRGO:
+        timer = TIM2;
+        break;
+      #endif
+      #ifdef TIM4
+      case ADC_EXTERNALTRIGINJECCONV_T4_TRGO:
+        timer = TIM4;
+        break;
+      #endif
+      #ifdef TIM5
+      case ADC_EXTERNALTRIGINJECCONV_T5_TRGO:
+        timer = TIM5;
+        break;
+      #endif
+    }
+
+    bool dir = (timer->CR1 & TIM_CR1_DIR) == TIM_CR1_DIR;
+    if(dir) {
+      digitalToggle(PC10);
+      digitalToggle(PC10);
+      // return;
+    } else {
+      // digitalToggle(PC10);
+      // digitalToggle(PC10);
+      // digitalToggle(PC10);
+      // digitalToggle(PC10);
+    }
+    // #endif
     // if the timer han't repetition counter - downsample two times
     // if( needs_downsample[adc_index] && tim_downsample[adc_index]++ > 0) {
     //   tim_downsample[adc_index] = 0;
