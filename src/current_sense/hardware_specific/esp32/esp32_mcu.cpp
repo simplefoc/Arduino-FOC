@@ -132,9 +132,9 @@ void _driverSyncLowSide(void* driver_params, void* cs_params){
 
   // register interrupts (mcpwm number, interrupt handler, handler argument = NULL, interrupt signal/flag, return handler = NULL)
   if(mcpwm_unit == MCPWM_UNIT_0)
-    mcpwm_isr_register(mcpwm_unit, mcpwm0_isr_handler, NULL, ESP_INTR_FLAG_IRAM, NULL);  //Set ISR Handler
+    mcpwm_isr_register(mcpwm_unit, mcpwm0_isr_handler, NULL, ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_LEVEL1, NULL);  //Set ISR Handler
   else
-    mcpwm_isr_register(mcpwm_unit, mcpwm1_isr_handler, NULL, ESP_INTR_FLAG_IRAM, NULL);  //Set ISR Handler
+    mcpwm_isr_register(mcpwm_unit, mcpwm1_isr_handler, NULL, ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_LEVEL1, NULL);  //Set ISR Handler
 }
 
 static void IRAM_ATTR mcpwm0_isr_handler(void*) __attribute__ ((unused));
@@ -143,18 +143,19 @@ static void IRAM_ATTR mcpwm0_isr_handler(void*) __attribute__ ((unused));
 static void IRAM_ATTR mcpwm0_isr_handler(void*){
   // // high side
   // uint32_t mcpwm_intr_status = MCPWM0.int_st.timer0_tez_int_st;
-  
+
   // low side
   uint32_t mcpwm_intr_status = MCPWM0.int_st.timer0_tep_int_st;
   if(mcpwm_intr_status){
 #if _I2S_ADC == true
+      delayMicroseconds(2);
       readFiFo();
 #else
-    adc_buffer[0][adc_read_index[0]] = adcRead(adc_pins[0][adc_read_index[0]]);
-    adc_read_index[0]++;
-    if(adc_read_index[0] == adc_pin_count[0]) adc_read_index[0] = 0;
+      adc_buffer[0][adc_read_index[0]] = adcRead(adc_pins[0][adc_read_index[0]]);
+      adc_read_index[0]++;
+      if(adc_read_index[0] == adc_pin_count[0]) adc_read_index[0] = 0;
 #endif
-  }
+      }
   // low side
   MCPWM0.int_clr.timer0_tep_int_clr = mcpwm_intr_status;
   // high side
@@ -167,11 +168,12 @@ static void IRAM_ATTR mcpwm1_isr_handler(void*) __attribute__ ((unused));
 static void IRAM_ATTR mcpwm1_isr_handler(void*){
   // // high side
   // uint32_t mcpwm_intr_status = MCPWM1.int_st.timer0_tez_int_st;
-  
+
   // low side
   uint32_t mcpwm_intr_status = MCPWM1.int_st.timer0_tep_int_st;
   if(mcpwm_intr_status){
 #if _I2S_ADC == true
+    delayMicroseconds(2);
     readFiFo();
 #else
     adc_buffer[1][adc_read_index[1]] = adcRead(adc_pins[1][adc_read_index[1]]);

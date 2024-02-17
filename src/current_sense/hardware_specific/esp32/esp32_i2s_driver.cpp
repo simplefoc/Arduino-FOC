@@ -14,7 +14,7 @@
 
 #include "soc/syscon_periph.h"
 #include <soc/syscon_struct.h>
-#include <soc/syscon_reg.h>
+// #include <soc/syscon_reg.h>
 
 #include "soc/timer_group_struct.h"
 #include "soc/timer_group_reg.h"
@@ -27,11 +27,12 @@
 #include <driver/rtc_io.h>
 
 
-#define BUF_LEN 5
+#define BUF_LEN 1
 #define _ADC_VOLTAGE 3.3f
 #define _ADC_RESOLUTION 4095.0f
 
 #define I2S_USE_INTERRUPT false
+#define DEBUG_ADC false
 
 typedef struct ESP32MCPWMCurrentSenseParams {
   int pins[3];
@@ -50,7 +51,7 @@ int globalActiveChannels = 0;
 int channels[ADC1_CHANNEL_MAX] = {0};
 bool running = false;
 bool sampleOnCommand = true;
-#if DEBUG_ADC
+#if DEBUG_ADC == true
 uint32_t IRAM_ATTR readscnt = 0;
 uint32_t IRAM_ATTR intcnt = 0;
 uint32_t IRAM_ATTR skipped = 0;
@@ -90,7 +91,7 @@ void IRAM_ATTR readFiFo()
         uint32_t highVal = rd >> 16;
         uint32_t lowVal = rd & 0xFFFF;
 
-#if DEBUG_ADC
+#if DEBUG_ADC == true
     if (rd == lastrd || highVal == lastl || lowVal == lasth)
     { //
         internalequal++;
@@ -137,7 +138,7 @@ void IRAM_ATTR readFiFo()
     avgreadings[chan] += adc_value;
     counts[chan]++;
   }
-#if DEBUG_ADC
+#if DEBUG_ADC == true
   equal = internalequal;
   intcnt += 1; // I2S0.fifo_conf.rx_data_num;
 #endif
@@ -168,7 +169,7 @@ void IRAM_ATTR readFiFo()
 #if I2S_USE_INTERRUPT == true
 static void IRAM_ATTR i2s_isr(void *arg)
 {
-#if DEBUG_ADC
+#if DEBUG_ADC == true
     unsigned long fifostart = micros();
 #endif
 
@@ -180,11 +181,12 @@ static void IRAM_ATTR i2s_isr(void *arg)
     SET_PERI_REG_MASK(I2S_INT_CLR_REG(0), GET_PERI_REG_MASK(I2S_INT_ST_REG(0), 0xffff));
     // I2S0.int_clr.val = I2S0.int_st.val;    // Clear all interrupt flags.
 
-#if DEBUG_ADC
+#if DEBUG_ADC == true
     fifotime = micros() - fifostart;
 #endif
 }
 #endif
+
 // Contrary to its name (so it can be called by the library), this function reads the already converted values from fifo
 // and prints optional debug information.
 // When using interrupt driven sampling, it only prints debug information.
@@ -197,7 +199,7 @@ void IRAM_ATTR _startADC3PinConversionLowSide()
     }
 #endif
 
-#if DEBUG_ADC
+#if DEBUG_ADC == true
     skipped++;
     if (skipped >= 1000)
     {
@@ -271,9 +273,9 @@ void* IRAM_ATTR _configureI2S(const bool lowside, const void* driver_params, con
 
   mcpwm_unit_t unit = ((ESP32MCPWMDriverParams*)driver_params)->mcpwm_unit;
 
-  if( _isset(pinA) ) channels[digitalPinToAnalogChannel(pinA)] = 1; pinMode(pinA, INPUT);
-  if( _isset(pinB) ) channels[digitalPinToAnalogChannel(pinB)] = 1; pinMode(pinB, INPUT);
-  if( _isset(pinC) ) channels[digitalPinToAnalogChannel(pinC)] = 1; pinMode(pinC, INPUT);
+  if( _isset(pinA) ) channels[digitalPinToAnalogChannel(pinA)] = 1; // pinMode(pinA, GPIO_MODE_DISABLE);
+  if( _isset(pinB) ) channels[digitalPinToAnalogChannel(pinB)] = 1; // pinMode(pinB, GPIO_MODE_DISABLE);
+  if( _isset(pinC) ) channels[digitalPinToAnalogChannel(pinC)] = 1; // pinMode(pinC, GPIO_MODE_DISABLE);
 
   int activeChannels = 0;
   u_int some_channel = 0;
@@ -310,6 +312,7 @@ void* IRAM_ATTR _configureI2S(const bool lowside, const void* driver_params, con
   CLEAR_PERI_REG_MASK(SENS_SAR_READ_CTRL2_REG, SENS_SAR2_DIG_FORCE);
   SET_PERI_REG_MASK(SYSCON_SARADC_CTRL_REG, SYSCON_SARADC_SAR2_MUX);
   SET_PERI_REG_BITS(SYSCON_SARADC_CTRL_REG, SYSCON_SARADC_SAR_CLK_DIV, 4, SYSCON_SARADC_SAR_CLK_DIV_S);
+  SET_PERI_REG_BITS(SYSCON_SARADC_CTRL_REG, SYSCON_SARADC_SAMPLE_CYCLE, 16, SYSCON_SARADC_SAMPLE_CYCLE_S);
 
   SET_PERI_REG_BITS(SYSCON_SARADC_FSM_REG, SYSCON_SARADC_RSTB_WAIT, 8, SYSCON_SARADC_RSTB_WAIT_S);
   SET_PERI_REG_BITS(SYSCON_SARADC_FSM_REG, SYSCON_SARADC_START_WAIT, 10, SYSCON_SARADC_START_WAIT_S);
@@ -328,7 +331,7 @@ void* IRAM_ATTR _configureI2S(const bool lowside, const void* driver_params, con
 
   I2S0.conf_chan.rx_chan_mod = 2;
 
-  I2S0.fifo_conf.rx_data_num = max(8, min(63, (globalActiveChannels * BUF_LEN) / 2));
+  I2S0.fifo_conf.rx_data_num = max(2, min(63, (globalActiveChannels * BUF_LEN) / 2));
   I2S0.fifo_conf.dscr_en = 0; // disable dma transfer.
 
   I2S0.int_ena.val = 0;
