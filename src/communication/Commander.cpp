@@ -377,7 +377,7 @@ void Commander::motion(FOCMotor* motor, char* user_cmd, char* separator){
           break;
         default:
           // change control type
-          if(!GET && value >= 0 && (int)value < 5) // if set command
+          if(!GET && value >= 0 && (int)value <= 5) // if set command
             motor->controller = (MotionControlType)value;
           switch(motor->controller){
             case MotionControlType::torque:
@@ -394,6 +394,9 @@ void Commander::motion(FOCMotor* motor, char* user_cmd, char* separator){
               break;
             case MotionControlType::angle_openloop:
               println(F("angle open"));
+              break;
+            case MotionControlType::angle_nocascade:
+              println(F("angle nocascade"));
               break;
           }
             break;
