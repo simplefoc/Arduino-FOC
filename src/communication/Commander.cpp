@@ -505,6 +505,7 @@ void Commander::target(FOCMotor* motor,  char* user_cmd, char* separator){
   float pos, vel, torque;
   char* next_value;
   switch(motor->controller){
+    case MotionControlType::angle_nocascade:
     case MotionControlType::torque: // setting torque target
       torque = atof(strtok (user_cmd, separator));
       motor->target = torque;
