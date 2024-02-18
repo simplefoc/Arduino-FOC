@@ -67,7 +67,7 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   hadc.Init.DiscontinuousConvMode = DISABLE;
   hadc.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc.Init.NbrOfConversion = 0;
+  hadc.Init.NbrOfConversion = 1;
   HAL_ADC_Init(&hadc);
   /**Configure for the selected ADC regular channel to be converted. 
   */
