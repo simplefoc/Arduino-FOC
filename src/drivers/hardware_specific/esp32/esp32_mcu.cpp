@@ -132,7 +132,7 @@ void _configureTimerFrequency(long pwm_frequency, mcpwm_dev_t* mcpwm_num,  mcpwm
     .timer_val = 0,
     .count_direction = MCPWM_TIMER_DIRECTION_UP
   };
-  mcpwm_sync_configure(mcpwm_unit, MCPWM_TIMER_0, &sync_conf);
+  mcpwm_sync_configure(mcpwm_unit, MCPWM_TIMER_0, &sync_conf_0);
   mcpwm_sync_configure(mcpwm_unit, MCPWM_TIMER_1, &sync_conf);
   mcpwm_sync_configure(mcpwm_unit, MCPWM_TIMER_2, &sync_conf);
 
