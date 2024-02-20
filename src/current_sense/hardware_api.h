@@ -34,7 +34,7 @@ float _readADCVoltageInline(const int pinA, const void* cs_params);
  * @param pinC - adc pin C
  */
 void* _configureADCInline(const void *driver_params, const int pinA,const int pinB,const int pinC = NOT_SET);
-
+void _startADC3PinConversionInline();
 /**
  *  function reading an ADC value and returning the read voltage
  *
