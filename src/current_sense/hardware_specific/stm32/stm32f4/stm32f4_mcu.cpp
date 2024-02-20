@@ -100,7 +100,7 @@ extern "C" {
     int adc_index = _adcToIndex(AdcHandle);
 
     // hfi handles this for us
-    // #if !defined(HFI) && !defined(HFI_2XPWM)
+    #if !defined(HFI) && !defined(HFI_2XPWM)
     uint32_t adc_cr2 = AdcHandle->Instance->CR2;
     
     TIM_TypeDef* timer;
@@ -136,7 +136,7 @@ extern "C" {
       // digitalToggle(PC10);
       // digitalToggle(PC10);
     }
-    // #endif
+    #endif
     // if the timer han't repetition counter - downsample two times
     // if( needs_downsample[adc_index] && tim_downsample[adc_index]++ > 0) {
     //   tim_downsample[adc_index] = 0;

@@ -32,6 +32,7 @@ class HFIBLDCMotor: public FOCMotor
     float hfi_int;
     float hfi_out;
     float hfi_full_turns=0;
+    float error_saturation_limit = 0.30f;
 
     float Ts = 1.0f/60000.0f;
     float Ts_L = Ts * ( 1 / Lq - 1 / Ld );

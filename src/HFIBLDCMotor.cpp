@@ -377,7 +377,8 @@ void HFIBLDCMotor::process_hfi(){
 
   // hfi_curangleest = delta_current.q / (hfi_v * Ts_L );  // this is about half a us faster than vv
   hfi_curangleest =  0.5f * delta_current.q / (hfi_v * Ts * ( 1.0f / Lq - 1.0f / Ld ) );
-
+  if (hfi_curangleest > error_saturation_limit) hfi_curangleest = error_saturation_limit;
+  if (hfi_curangleest < -error_saturation_limit) hfi_curangleest = -error_saturation_limit;
   hfi_error = -hfi_curangleest;
   hfi_int += Ts * hfi_error * hfi_gain2; //This the the double integrator
   hfi_out += hfi_gain1 * Ts * hfi_error + hfi_int; //This is the integrator and the double integrator
