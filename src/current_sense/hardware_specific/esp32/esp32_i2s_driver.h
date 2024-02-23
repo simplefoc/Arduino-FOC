@@ -9,6 +9,8 @@
 // The ADC counts get saved in uint32_t i2s_adc_buffer[].
 void readFiFo();
 
+void printdbg();
+
 // Contrary to its name (so it can be called by the library), this function reads the already converted values from fifo
 // and prints optional debug information.
 // When using interrupt driven sampling, it only prints debug information.

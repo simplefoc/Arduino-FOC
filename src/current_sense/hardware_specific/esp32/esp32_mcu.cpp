@@ -17,6 +17,7 @@
 #define _ADC_VOLTAGE 3.3f
 #define _ADC_RESOLUTION 4095.0f
 #define _I2S_ADC true
+#define SAMPLE_BOTH false
 
 typedef struct ESP32MCPWMCurrentSenseParams {
   int pins[3];
@@ -76,7 +77,7 @@ uint32_t adc_buffer[2][6]={0};
 int adc_read_index[2]={0};
 
 // function reading an ADC value and returning the read voltage
-float _readADCVoltageLowSide(const int pin, const void* cs_params){
+float IRAM_ATTR _readADCVoltageLowSide(const int pin, const void* cs_params){
 #if _I2S_ADC == true
   return _readADCVoltageI2S(pin, cs_params);
 #else
@@ -124,12 +125,16 @@ void _driverSyncLowSide(void* driver_params, void* cs_params){
 
   mcpwm_dev_t* mcpwm_dev = ((ESP32MCPWMDriverParams*)driver_params)->mcpwm_dev;
   mcpwm_unit_t mcpwm_unit = ((ESP32MCPWMDriverParams*)driver_params)->mcpwm_unit;
-
-  // low-side register enable interrupt
-  mcpwm_dev->int_ena.timer0_tep_int_ena = true;//A PWM timer 0 TEP event will trigger this interrupt
-  // high side registers enable interrupt 
-  //mcpwm_dev->int_ena.timer0_tep_int_ena = true;//A PWM timer 0 TEZ event will trigger this interrupt 
-
+  #if SAMPLE_BOTH == true
+    // low-side & high side register enable interrupt
+    mcpwm_dev->int_ena.timer0_tep_int_ena = true;//A PWM timer 0 TEP event will trigger this interrupt
+    mcpwm_dev->int_ena.timer0_tez_int_ena = true;//A PWM timer 0 TEZ event will trigger this interrupt 
+  #else
+    // low-side register enable interrupt
+    mcpwm_dev->int_ena.timer0_tep_int_ena = true;//A PWM timer 0 TEP event will trigger this interrupt
+    // high side registers enable interrupt 
+    // mcpwm_dev->int_ena.timer0_tep_int_ena = true;//A PWM timer 0 TEZ event will trigger this interrupt 
+  #endif
   // register interrupts (mcpwm number, interrupt handler, handler argument = NULL, interrupt signal/flag, return handler = NULL)
   if(mcpwm_unit == MCPWM_UNIT_0)
     mcpwm_isr_register(mcpwm_unit, mcpwm0_isr_handler, NULL, ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_LEVEL1, NULL);  //Set ISR Handler
@@ -141,50 +146,55 @@ static void IRAM_ATTR mcpwm0_isr_handler(void*) __attribute__ ((unused));
 
 // Read currents when interrupt is triggered
 static void IRAM_ATTR mcpwm0_isr_handler(void*){
-  // // high side
-  // uint32_t mcpwm_intr_status = MCPWM0.int_st.timer0_tez_int_st;
+  // high side
+  uint32_t mcpwm_intr_status_high = MCPWM0.int_st.timer0_tez_int_st;
 
   // low side
-  uint32_t mcpwm_intr_status = MCPWM0.int_st.timer0_tep_int_st;
-  if(mcpwm_intr_status){
-#if _I2S_ADC == true
-      delayMicroseconds(2);
+  uint32_t mcpwm_intr_status_low = MCPWM0.int_st.timer0_tep_int_st;
+
+  bool runadc = mcpwm_intr_status_high || mcpwm_intr_status_low;
+
+  if(runadc){
+    #if _I2S_ADC == true
       readFiFo();
-#else
+    #else
       adc_buffer[0][adc_read_index[0]] = adcRead(adc_pins[0][adc_read_index[0]]);
       adc_read_index[0]++;
       if(adc_read_index[0] == adc_pin_count[0]) adc_read_index[0] = 0;
-#endif
-      }
+    #endif
+  }
+
   // low side
-  MCPWM0.int_clr.timer0_tep_int_clr = mcpwm_intr_status;
+  MCPWM0.int_clr.timer0_tep_int_clr = mcpwm_intr_status_low;
   // high side
-  // MCPWM0.int_clr.timer0_tez_int_clr = mcpwm_intr_status_0;
+  MCPWM0.int_clr.timer0_tez_int_clr = mcpwm_intr_status_high;
 }
 
 static void IRAM_ATTR mcpwm1_isr_handler(void*) __attribute__ ((unused));
 
 // Read currents when interrupt is triggered
 static void IRAM_ATTR mcpwm1_isr_handler(void*){
-  // // high side
-  // uint32_t mcpwm_intr_status = MCPWM1.int_st.timer0_tez_int_st;
+  // high side
+  uint32_t mcpwm_intr_status_high = MCPWM1.int_st.timer0_tez_int_st;
 
   // low side
-  uint32_t mcpwm_intr_status = MCPWM1.int_st.timer0_tep_int_st;
-  if(mcpwm_intr_status){
-#if _I2S_ADC == true
-    delayMicroseconds(2);
-    readFiFo();
-#else
-    adc_buffer[1][adc_read_index[1]] = adcRead(adc_pins[1][adc_read_index[1]]);
-    adc_read_index[1]++;
-    if(adc_read_index[1] == adc_pin_count[1]) adc_read_index[1] = 0;
-#endif
+  uint32_t mcpwm_intr_status_low = MCPWM1.int_st.timer0_tep_int_st;
+
+  bool runadc = mcpwm_intr_status_high || mcpwm_intr_status_low;
+
+  if(runadc){
+    #if _I2S_ADC == true
+      readFiFo();
+    #else
+      adc_buffer[1][adc_read_index[1]] = adcRead(adc_pins[1][adc_read_index[1]]);
+      adc_read_index[1]++;
+      if(adc_read_index[1] == adc_pin_count[1]) adc_read_index[1] = 0;
+    #endif
   }
   // low side
-  MCPWM1.int_clr.timer0_tep_int_clr = mcpwm_intr_status;
+  MCPWM1.int_clr.timer0_tep_int_clr = mcpwm_intr_status_low;
   // high side
-  // MCPWM1.int_clr.timer0_tez_int_clr = mcpwm_intr_status_0;
+  MCPWM1.int_clr.timer0_tez_int_clr = mcpwm_intr_status_high;
 }
 
 
