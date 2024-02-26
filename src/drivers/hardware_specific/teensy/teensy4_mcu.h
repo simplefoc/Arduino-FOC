@@ -7,6 +7,7 @@
 
 // teensy 4 driver configuration parameters  
 typedef struct Teensy4DriverParams {
+  int pins[6] = {(int)NOT_SET};
   IMXRT_FLEXPWM_t* flextimers[3] = {NULL};
   int submodules[3];
   long pwm_frequency;
@@ -104,6 +105,16 @@ const struct pwm_pin_info_struct pwm_pin_info[] = {
   {2, M(4, 0), 0, 1},  // QuadTimer4_0  45  // B0_09
 #endif
 };
+
+
+// find the trigger TRG0 for the given timer and submodule
+int flexpwm_submodule_to_trig(IMXRT_FLEXPWM_t* flexpwm, int submodule);
+// find the external trigger for the given timer and submodule
+int flexpwm_submodule_to_ext_sync(IMXRT_FLEXPWM_t* flexpwm, int submodule);
+// function to connecting the triggers
+void xbar_connect(unsigned int input, unsigned int output);
+// function to initialize the xbar
+void xbar_init();
 
 #endif
 

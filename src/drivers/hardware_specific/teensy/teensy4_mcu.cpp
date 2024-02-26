@@ -13,9 +13,134 @@
 #pragma message("")
 
 
-// half_cycle of the PWM variable
-int half_cycle = 0;
 
+// function finding the TRIG event given the flexpwm timer and the submodule
+// returning -1 if the submodule is not valid or no trigger is available
+// allowing flexpwm1-4 and submodule 0-3
+//
+// the flags are defined in the imxrt.h file
+// https://github.com/PaulStoffregen/cores/blob/dd6aa8419ee173a0a6593eab669fbff54ed85f48/teensy4/imxrt.h#L9662-L9693
+int flexpwm_submodule_to_trig(IMXRT_FLEXPWM_t* flexpwm, int submodule){
+  if(submodule <0 && submodule > 3) return -1;
+  if(flexpwm == &IMXRT_FLEXPWM1){
+      return XBARA1_IN_FLEXPWM1_PWM1_OUT_TRIG0 + submodule; 
+  }else if(flexpwm == &IMXRT_FLEXPWM2){
+      return XBARA1_IN_FLEXPWM2_PWM1_OUT_TRIG0 + submodule;
+  }else if(flexpwm == &IMXRT_FLEXPWM3){
+      return XBARA1_IN_FLEXPWM3_PWM1_OUT_TRIG0 + submodule;
+  }else if(flexpwm == &IMXRT_FLEXPWM4){
+      return XBARA1_IN_FLEXPWM4_PWM1_OUT_TRIG0 + submodule;
+  }
+  return -1;
+}
+
+// function finding the EXT_SYNC event given the flexpwm timer and the submodule
+// returning -1 if the submodule is not valid or no trigger is available
+// allowing flexpwm1-4 and submodule 0-3
+//
+// the flags are defined in the imxrt.h file
+// https://github.com/PaulStoffregen/cores/blob/dd6aa8419ee173a0a6593eab669fbff54ed85f48/teensy4/imxrt.h#L9757
+int flexpwm_submodule_to_ext_sync(IMXRT_FLEXPWM_t* flexpwm, int submodule){
+  if(submodule <0 && submodule > 3) return -1;
+  if(flexpwm == &IMXRT_FLEXPWM1){
+      return XBARA1_OUT_FLEXPWM1_PWM0_EXT_SYNC + submodule; 
+  }else if(flexpwm == &IMXRT_FLEXPWM2){
+      return XBARA1_OUT_FLEXPWM2_PWM0_EXT_SYNC + submodule;
+  }else if(flexpwm == &IMXRT_FLEXPWM3){
+      return XBARA1_OUT_FLEXPWM3_EXT_SYNC0 + submodule; // TODO verify why they are not called PWM0_EXT_SYNC but EXT_SYNC0
+  }else if(flexpwm == &IMXRT_FLEXPWM4){
+      return XBARA1_OUT_FLEXPWM4_EXT_SYNC0 + submodule; // TODO verify why they are not called PWM0_EXT_SYNC but EXT_SYNC0
+  }
+  return -1;
+}
+
+// The i.MXRT1062 uses one config register per two XBAR outputs, so a helper
+// function to make code more readable. 
+void xbar_connect(unsigned int input, unsigned int output)
+{
+  if (input >= 88) return;
+  if (output >= 132) return;
+  volatile uint16_t *xbar = &XBARA1_SEL0 + (output / 2);
+  uint16_t val = *xbar;
+  if (!(output & 1)) {
+    val = (val & 0xFF00) | input;
+  } else {
+    val = (val & 0x00FF) | (input << 8);
+  }
+  *xbar = val;
+}
+
+void xbar_init() {
+  CCM_CCGR2 |= CCM_CCGR2_XBAR1(CCM_CCGR_ON);   //turn clock on for xbara1
+}
+
+// function which finds the flexpwm instance for a pin
+// if it does not belong to the flexpwm timer it returns a nullpointer
+IMXRT_FLEXPWM_t* get_flexpwm(uint8_t pin){
+ 
+  const struct pwm_pin_info_struct *info;
+  if (pin >= CORE_NUM_DIGITAL) {
+#ifdef SIMPLEFOC_TEENSY_DEBUG
+    char s[60];
+    sprintf (s, "TEENSY-DRV: ERR: Pin: %d not Flextimer pin!", pin);
+    SIMPLEFOC_DEBUG(s);
+#endif
+    return nullptr;
+  }
+  info = pwm_pin_info + pin;
+  // FlexPWM pin
+  IMXRT_FLEXPWM_t *flexpwm;
+  switch ((info->module >> 4) & 3) {
+    case 0: flexpwm = &IMXRT_FLEXPWM1; break;
+    case 1: flexpwm = &IMXRT_FLEXPWM2; break;
+    case 2: flexpwm = &IMXRT_FLEXPWM3; break;
+    default: flexpwm = &IMXRT_FLEXPWM4;
+  }
+  if(flexpwm != nullptr){
+#ifdef SIMPLEFOC_TEENSY_DEBUG
+    char s[60];
+    sprintf (s, "TEENSY-DRV: Pin: %d on Flextimer %d.", pin, ((info->module >> 4) & 3) + 1);
+    SIMPLEFOC_DEBUG(s);
+#endif
+    return flexpwm;
+  } 
+  return nullptr;
+}
+
+
+// function which finds the timer submodule for a pin
+// if it does not belong to the submodule it returns a -1
+int get_submodule(uint8_t pin){
+ 
+  const struct pwm_pin_info_struct *info;
+  if (pin >= CORE_NUM_DIGITAL){
+#ifdef SIMPLEFOC_TEENSY_DEBUG
+    char s[60];
+    sprintf (s, "TEENSY-DRV: ERR: Pin: %d not Flextimer pin!", pin);
+    SIMPLEFOC_DEBUG(s);
+#endif
+    return -1;
+  } 
+  
+  info = pwm_pin_info + pin;
+  int sm1 = info->module&0x3;
+
+  if (sm1 >= 0 && sm1 < 4) {
+#ifdef SIMPLEFOC_TEENSY_DEBUG
+    char s[60];
+    sprintf (s, "TEENSY-DRV: Pin %d on submodule %d.", pin, sm1);
+    SIMPLEFOC_DEBUG(s);
+#endif
+    return sm1;
+  }  else  {
+#ifdef SIMPLEFOC_TEENSY_DEBUG
+    char s[50];
+    sprintf (s, "TEENSY-DRV: ERR: Pin: %d not in submodule!", pin);
+    SIMPLEFOC_DEBUG(s);
+#endif
+    return -1; 
+  }
+}
 
 // function which finds the flexpwm instance for a pair of pins
 // if they do not belong to the same timer it returns a nullpointer
@@ -145,7 +270,7 @@ return ch2;
 // can configure sync, prescale and B inversion.
 // sets the desired frequency of the PWM 
 // sets the center-aligned pwm
-void setup_pwm_pair (IMXRT_FLEXPWM_t * flexpwm, int submodule, const long frequency, float dead_zone )
+void setup_pwm_pair (IMXRT_FLEXPWM_t * flexpwm, int submodule, bool ext_sync,  const long frequency, float dead_zone )
 {
   int submodule_mask = 1 << submodule ;
   flexpwm->MCTRL &= ~ FLEXPWM_MCTRL_RUN (submodule_mask) ;  // stop it if its already running
@@ -167,17 +292,21 @@ void setup_pwm_pair (IMXRT_FLEXPWM_t * flexpwm, int submodule, const long freque
 	}
 
   // the halfcycle of the PWM
-  half_cycle = int(newdiv/2.0f);
+  int half_cycle = int(newdiv/2.0f);
   int dead_time = int(dead_zone*half_cycle); //default dead-time - 2% 
   int mid_pwm = int((half_cycle)/2.0f);
+
+  // if the timer should be externally synced with the master timer
+  int sel = ext_sync ? 3 : 0;
 
   // setup the timer
   // https://github.com/PaulStoffregen/cores/blob/master/teensy4/imxrt.h
   flexpwm->SM[submodule].CTRL2 =  FLEXPWM_SMCTRL2_WAITEN | FLEXPWM_SMCTRL2_DBGEN |
-                                 FLEXPWM_SMCTRL2_FRCEN | FLEXPWM_SMCTRL2_INIT_SEL(0) | FLEXPWM_SMCTRL2_FORCE_SEL(6);
+                                 FLEXPWM_SMCTRL2_FRCEN | FLEXPWM_SMCTRL2_INIT_SEL(sel) | FLEXPWM_SMCTRL2_FORCE_SEL(6);
   flexpwm->SM[submodule].CTRL  = FLEXPWM_SMCTRL_FULL | FLEXPWM_SMCTRL_HALF | FLEXPWM_SMCTRL_PRSC(prescale) ;
   // https://github.com/PaulStoffregen/cores/blob/70ba01accd728abe75ebfc8dcd8b3d3a8f3e3f25/teensy4/imxrt.h#L4948
   flexpwm->SM[submodule].OCTRL = 0; //FLEXPWM_SMOCTRL_POLA | FLEXPWM_SMOCTRL_POLB;//channel_to_invert==2 ? 0 : FLEXPWM_SMOCTRL_POLA | FLEXPWM_SMOCTRL_POLB ;
+  if (!ext_sync) flexpwm->SM[submodule].TCTRL = FLEXPWM_SMTCTRL_OUT_TRIG_EN (0b000010)  ; // sync trig out on VAL1 match if master timer
   flexpwm->SM[submodule].DTCNT0 = dead_time ;  // should try this out (deadtime control)
   flexpwm->SM[submodule].DTCNT1 = dead_time ;  // should try this out (deadtime control)
   flexpwm->SM[submodule].INIT = -half_cycle;      // count from -HALFCYCLE to +HALFCYCLE
@@ -204,16 +333,14 @@ void startup_pwm_pair (IMXRT_FLEXPWM_t * flexpwm, int submodule)
 
 // PWM setting on the high and low pair of the PWM channels
 void write_pwm_pair(IMXRT_FLEXPWM_t * flexpwm, int submodule, float duty){
+  int half_cycle = int(flexpwm->SM[submodule].VAL1);
   int mid_pwm = int((half_cycle)/2.0f);
   int count_pwm = int(mid_pwm*(duty*2-1)) + mid_pwm;
 
-  flexpwm->SM[submodule].VAL2 =  count_pwm; // A on
-  flexpwm->SM[submodule].VAL3 =  -count_pwm  ; // A off
+  flexpwm->SM[submodule].VAL2 =  -count_pwm; // A on
+  flexpwm->SM[submodule].VAL3 =  count_pwm  ; // A off
   flexpwm->MCTRL |= FLEXPWM_MCTRL_LDOK (1<<submodule) ;  // signal new values
 }
-
-
-
 
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 6PWM setting
@@ -256,22 +383,32 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 
 
   Teensy4DriverParams* params = new Teensy4DriverParams {
+    .pins = { pinA_h, pinA_l, pinB_h, pinB_l, pinC_h, pinC_l },
     .flextimers = { flexpwmA, flexpwmB, flexpwmC},
     .submodules = { submoduleA, submoduleB, submoduleC},
     .pwm_frequency = pwm_frequency,
     .dead_zone = dead_zone
   };
+  
 
   // Configure FlexPWM units, each driving A/B pair, B inverted.
   // full speed about 80kHz, prescale 2 (div by 4) gives 20kHz
-  setup_pwm_pair (flexpwmA, submoduleA, pwm_frequency, dead_zone) ;  // this is the master, internally synced
-  setup_pwm_pair (flexpwmB, submoduleB, pwm_frequency, dead_zone) ;   // others externally synced
-  setup_pwm_pair (flexpwmC, submoduleC, pwm_frequency, dead_zone) ;
+  setup_pwm_pair (flexpwmA, submoduleA, true, pwm_frequency, dead_zone) ;  // this is the master, internally synced
+  setup_pwm_pair (flexpwmB, submoduleB, true, pwm_frequency, dead_zone) ;   // others externally synced
+  setup_pwm_pair (flexpwmC, submoduleC, false, pwm_frequency, dead_zone) ;
   delayMicroseconds (100) ;
+
+  // turn on XBAR1 clock for all but stop mode
+  xbar_init() ;
+
+  // // Connect trigger to synchronize all timers 
+  xbar_connect (flexpwm_submodule_to_trig(flexpwmC, submoduleC), flexpwm_submodule_to_ext_sync(flexpwmA, submoduleA)) ;
+  xbar_connect (flexpwm_submodule_to_trig(flexpwmC, submoduleC), flexpwm_submodule_to_ext_sync(flexpwmB, submoduleB)) ;
 
   startup_pwm_pair (flexpwmA, submoduleA) ;
   startup_pwm_pair (flexpwmB, submoduleB) ;
   startup_pwm_pair (flexpwmC, submoduleC) ;
+
 
   delayMicroseconds(50) ;
   // config the pins 2/3/6/9/8/7 as their FLEXPWM alternates.
@@ -296,5 +433,6 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_
   write_pwm_pair (((Teensy4DriverParams*)params)->flextimers[1], ((Teensy4DriverParams*)params)->submodules[1], dc_b);
   write_pwm_pair (((Teensy4DriverParams*)params)->flextimers[2], ((Teensy4DriverParams*)params)->submodules[2], dc_c);
 }
+
 
 #endif
