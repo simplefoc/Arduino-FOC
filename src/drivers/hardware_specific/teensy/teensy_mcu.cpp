@@ -61,6 +61,7 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
   if(p != SIMPLEFOC_DRIVER_INIT_FAILED){
     return p; // if center aligned pwm is available return the params
   }else{ // if center aligned pwm is not available use fast pwm
+    SIMPLEFOC_DEBUG("TEENSY-DRV: Configuring 3PWM with fast pwm. Please consider using center aligned pwm for better performance!");
     _setHighFrequency(pwm_frequency, pinA);
     _setHighFrequency(pwm_frequency, pinB);
     _setHighFrequency(pwm_frequency, pinC);

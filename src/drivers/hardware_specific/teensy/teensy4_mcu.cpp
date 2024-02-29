@@ -87,7 +87,8 @@ void xbar_init() {
 IMXRT_FLEXPWM_t* get_flexpwm(uint8_t pin){
  
   const struct pwm_pin_info_struct *info;
-  if (pin >= CORE_NUM_DIGITAL) {
+  info = pwm_pin_info + pin;
+  if (pin >= CORE_NUM_DIGITAL || info->type == 2) {
 #ifdef SIMPLEFOC_TEENSY_DEBUG
     char s[60];
     sprintf (s, "TEENSY-DRV: ERR: Pin: %d not Flextimer pin!", pin);
@@ -95,7 +96,6 @@ IMXRT_FLEXPWM_t* get_flexpwm(uint8_t pin){
 #endif
     return nullptr;
   }
-  info = pwm_pin_info + pin;
   // FlexPWM pin
   IMXRT_FLEXPWM_t *flexpwm;
   switch ((info->module >> 4) & 3) {
@@ -236,17 +236,16 @@ int get_submodule(uint8_t pin, uint8_t pin1){
 // 1 - A
 // 2 - B
 int get_channel(uint8_t pin){
- 
   const struct pwm_pin_info_struct *info;
-  if (pin >= CORE_NUM_DIGITAL){
+  info = pwm_pin_info + pin;
+  if (pin >= CORE_NUM_DIGITAL || info->type == 2){
 #ifdef SIMPLEFOC_TEENSY_DEBUG
-    char s[60];
+    char s[90];
     sprintf (s, "TEENSY-DRV: ERR: Pin: %d not Flextimer pin!", pin);
     SIMPLEFOC_DEBUG(s);
 #endif
     return -1;
   }
-  info = pwm_pin_info + pin;
 #ifdef SIMPLEFOC_TEENSY_DEBUG
     char s[60];
     sprintf (s, "TEENSY-DRV: Pin: %d on channel %s.", pin, info->channel==0 ? "X" : info->channel==1 ? "A" : "B");
@@ -598,7 +597,7 @@ void write_pwm_on_pin(IMXRT_FLEXPWM_t *p, unsigned int submodule, uint8_t channe
   // we can configure the center-aligned pwm
   if((flexpwmA != nullptr) && (flexpwmB != nullptr) && (flexpwmC != nullptr) && (channelA > 0) && (channelB > 0) && (channelC > 0) ){
     #ifdef SIMPLEFOC_TEENSY_DEBUG
-      SIMPLEFOC_DEBUG("TEENSY-DRV: All pins on Flexpwm A or B submodules - Configuring center-aligned pwm!");
+      SIMPLEFOC_DEBUG("TEENSY-DRV: All pins on Flexpwm A or B channels - Configuring center-aligned pwm!");
     #endif
 
     // Configure FlexPWM units
@@ -645,7 +644,7 @@ void write_pwm_on_pin(IMXRT_FLEXPWM_t *p, unsigned int submodule, uint8_t channe
     return params;
   }else{
     #ifdef SIMPLEFOC_TEENSY_DEBUG
-      SIMPLEFOC_DEBUG("TEENSY-DRV: Not all pins on Flexpwm A and B submodules - cannot configure center-aligned pwm!");
+      SIMPLEFOC_DEBUG("TEENSY-DRV: Not all pins on Flexpwm A and B channels - cannot configure center-aligned pwm!");
     #endif
     return SIMPLEFOC_DRIVER_INIT_FAILED;
   }  
