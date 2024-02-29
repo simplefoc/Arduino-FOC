@@ -2,6 +2,7 @@
 #include "../../../drivers/hardware_specific/teensy/teensy4_mcu.h"
 // #include "../../../common/lowpass_filter.h"
 #include "../../../common/foc_utils.h"
+#include "../../../communication/SimpleFOCDebug.h"
 
 // if defined 
 // - Teensy 4.0 
@@ -158,7 +159,13 @@ float _readADCVoltageLowSide(const int pinA, const void* cs_params){
 // Configure low side for generic mcu
 // cannot do much but 
 void* _configureADCLowSide(const void* driver_params, const int pinA,const int pinB,const int pinC){
-  _UNUSED(driver_params);
+  Teensy4DriverParams* par = (Teensy4DriverParams*) ((TeensyDriverParams*)driver_params)->additional_params;
+  if(par == nullptr){
+    SIMPLEFOC_DEBUG("TEENSY-CS: Low side current sense failed, driver not supported!");
+    return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
+  }
+
+  SIMPLEFOC_DEBUG("TEENSY-CS: Configuring low side current sense!");
 
 #ifdef TEENSY4_ADC_INTERRUPT_DEBUG
   pinMode(30,OUTPUT);
@@ -191,9 +198,14 @@ void* _configureADCLowSide(const void* driver_params, const int pinA,const int p
 
 // sync driver and the adc
 void _driverSyncLowSide(void* driver_params, void* cs_params){
-    Teensy4DriverParams* par = (Teensy4DriverParams*) driver_params;
+    Teensy4DriverParams* par = (Teensy4DriverParams*) ((TeensyDriverParams*)driver_params)->additional_params;
     IMXRT_FLEXPWM_t* flexpwm = par->flextimers[0];
     int submodule = par->submodules[0];
+
+    SIMPLEFOC_DEBUG("TEENSY-CS: Syncing low side current sense!");
+    char buff[50];
+    sprintf(buff, "TEENSY-CS: Syncing to FlexPWM: %d, Submodule: %d", flexpwm_to_index(flexpwm), submodule);
+    SIMPLEFOC_DEBUG(buff);
 
     // find the xbar trigger for the flexpwm
     int xbar_trig_pwm = flexpwm_submodule_to_trig(flexpwm, submodule);
