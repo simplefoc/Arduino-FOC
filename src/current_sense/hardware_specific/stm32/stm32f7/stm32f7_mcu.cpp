@@ -51,8 +51,11 @@ void _driverSyncLowSide(void* _driver_params, void* _cs_params){
     //   - for DMA transfer aligns with the pwm peaks instead of throughs.
     //   - for interrupt based ADC transfer 
     //   - only necessary for the timers that have repetition counters
+    #ifdef HFI
+    cs_params->timer_handle->getHandle()->Instance->RCR=0;
+    #endif
     cs_params->timer_handle->getHandle()->Instance->CR1 |= TIM_CR1_DIR;
-    cs_params->timer_handle->getHandle()->Instance->CNT =  cs_params->timer_handle->getHandle()->Instance->ARR;
+    cs_params->timer_handle->getHandle()->Instance->CNT = cs_params->timer_handle->getHandle()->Instance->ARR;
     // remember that this timer has repetition counter - no need to downasmple
     needs_downsample[_adcToIndex(cs_params->adc_handle)] = 0;
   }

@@ -47,10 +47,10 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
     SIMPLEFOC_DEBUG("STM32-CS: Using ADC: ", _adcToIndex(&hadc)+1);
 #endif
 
-  hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc.Init.Resolution = ADC_RESOLUTION_12B;
   hadc.Init.ScanConvMode = ENABLE;
-  hadc.Init.ContinuousConvMode = ENABLE;
+  hadc.Init.ContinuousConvMode = DISABLE;
   hadc.Init.DiscontinuousConvMode = DISABLE;
   hadc.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc.Init.ExternalTrigConv = ADC_SOFTWARE_START; // for now
@@ -69,15 +69,21 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
     */
   sConfigInjected.InjectedNbrOfConversion = _isset(cs_params->pins[2]) ? 3 : 2;
   sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_3CYCLES;
-  sConfigInjected.ExternalTrigInjecConvEdge = ADC_EXTERNALTRIGINJECCONVEDGE_RISING;  
+  sConfigInjected.ExternalTrigInjecConvEdge = ADC_EXTERNALTRIGINJECCONVEDGE_RISINGFALLING;  
   sConfigInjected.AutoInjectedConv = DISABLE;
   sConfigInjected.InjectedDiscontinuousConvMode = DISABLE;
   sConfigInjected.InjectedOffset = 0;
 
   // automating TRGO flag finding - hardware specific
   uint8_t tim_num = 0;
-  while(driver_params->timers[tim_num] != NP && tim_num < 6){
-    uint32_t trigger_flag = _timerToInjectedTRGO(driver_params->timers[tim_num++]);
+  for (size_t i=0; i<6; i++) {
+    HardwareTimer *timer_to_check = driver_params->timers[tim_num++];
+    TIM_TypeDef *instance_to_check = timer_to_check->getHandle()->Instance;
+
+    // bool TRGO_already_configured = instance_to_check->CR2 & LL_TIM_TRGO_UPDATE;
+    // if(TRGO_already_configured) continue;
+
+    uint32_t trigger_flag = _timerToInjectedTRGO(timer_to_check);
     if(trigger_flag == _TRGO_NOT_AVAILABLE) continue; // timer does not have valid trgo for injected channels
 
     // if the code comes here, it has found the timer available
@@ -85,7 +91,12 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
     sConfigInjected.ExternalTrigInjecConv = trigger_flag;
     
     // this will be the timer with which the ADC will sync
-    cs_params->timer_handle = driver_params->timers[tim_num-1];
+    cs_params->timer_handle = timer_to_check;
+    if (!IS_TIM_REPETITION_COUNTER_INSTANCE(instance_to_check)) {
+      // workaround for errata 2.2.1 in ES0290 Rev 7
+      // https://www.st.com/resource/en/errata_sheet/es0290-stm32f74xxx-and-stm32f75xxx-device-limitations-stmicroelectronics.pdf
+      __HAL_RCC_DAC_CLK_ENABLE();
+    } 
     // done
     break;
   }
