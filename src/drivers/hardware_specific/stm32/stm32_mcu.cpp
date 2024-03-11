@@ -26,7 +26,15 @@ PinMap* timerPinsUsed[SIMPLEFOC_STM32_MAX_PINTIMERSUSED];
 
 
 
+bool _getPwmState(void* params) {
+  // assume timers are synchronized and that there's at least one timer
+  HardwareTimer* pHT = ((STM32DriverParams*)params)->timers[0];
+  TIM_HandleTypeDef* htim = pHT->getHandle();
+  
+  bool dir = __HAL_TIM_IS_TIM_COUNTING_DOWN(htim);
 
+  return dir;
+}
 
 
 // setting pwm to hardware pin - instead analogWrite()
@@ -230,7 +238,7 @@ int _getInternalSourceTrigger(HardwareTimer* master, HardwareTimer* slave) { // 
   #endif
   return -1;
 }
-#elif defined(STM32F4xx) || defined(STM32F1xx) || defined(STM32L4xx)
+#elif defined(STM32F4xx) || defined(STM32F1xx) || defined(STM32L4xx) || defined(STM32F7xx)
 
 // function finds the appropriate timer source trigger for the master/slave timer combination
 // returns -1 if no trigger source is found
@@ -303,6 +311,30 @@ int _getInternalSourceTrigger(HardwareTimer* master, HardwareTimer* slave) {
 }
 #endif
 
+void syncTimerFrequency(long pwm_frequency, HardwareTimer *timers[], uint8_t num_timers) {
+  uint32_t max_frequency = 0;
+  uint32_t min_frequency = UINT32_MAX;
+  for (size_t i=0; i<num_timers; i++) {
+    uint32_t freq = timers[i]->getTimerClkFreq();
+    if (freq > max_frequency) {
+      max_frequency = freq;
+    } else if (freq < min_frequency) {
+      min_frequency = freq; 
+    }
+  }
+  if (max_frequency==min_frequency) return;
+  uint32_t overflow_value = min_frequency/pwm_frequency;
+  for (size_t i=0; i<num_timers; i++) {
+    uint32_t prescale_factor = timers[i]->getTimerClkFreq()/min_frequency;
+    #ifdef SIMPLEFOC_DEBUG
+      SIMPLEFOC_DEBUG("STM32-DRV: Setting prescale to ", (float)prescale_factor);
+      SIMPLEFOC_DEBUG("STM32-DRV: Setting Overflow to ", (float)overflow_value);
+    #endif
+    timers[i]->setPrescaleFactor(prescale_factor);
+    timers[i]->setOverflow(overflow_value,TICK_FORMAT);
+    timers[i]->refresh();
+  }
+}
 
 void _alignTimersNew() {
   int numTimers = 0;
@@ -382,7 +414,7 @@ void _alignTimersNew() {
   // enable timer clock
   for (int i=0; i<numTimers; i++) {
     timers[i]->pause();
-    //timers[i]->refresh();
+    timers[i]->refresh();
     #ifdef SIMPLEFOC_STM32_DEBUG
       SIMPLEFOC_DEBUG("STM32-DRV: Restarting timer ", getTimerNumber(get_timer_index(timers[i]->getHandle()->Instance)));
     #endif
@@ -735,6 +767,8 @@ void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 
   HardwareTimer* HT1 = _initPinPWM(pwm_frequency, pinTimers[0]);
   HardwareTimer* HT2 = _initPinPWM(pwm_frequency, pinTimers[1]);
+  HardwareTimer *timers[2] = {HT1, HT2};
+  syncTimerFrequency(pwm_frequency, timers, 2); 
   // allign the timers
   _alignPWMTimers(HT1, HT2, HT2);
   
@@ -779,6 +813,9 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
   HardwareTimer* HT2 = _initPinPWM(pwm_frequency, pinTimers[1]);
   HardwareTimer* HT3 = _initPinPWM(pwm_frequency, pinTimers[2]);
 
+  HardwareTimer *timers[3] = {HT1, HT2, HT3};
+  syncTimerFrequency(pwm_frequency, timers, 3); 
+
   uint32_t channel1 = STM_PIN_CHANNEL(pinTimers[0]->function);
   uint32_t channel2 = STM_PIN_CHANNEL(pinTimers[1]->function);
   uint32_t channel3 = STM_PIN_CHANNEL(pinTimers[2]->function);
@@ -821,6 +858,8 @@ void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const in
   HardwareTimer* HT2 = _initPinPWM(pwm_frequency, pinTimers[1]);
   HardwareTimer* HT3 = _initPinPWM(pwm_frequency, pinTimers[2]);
   HardwareTimer* HT4 = _initPinPWM(pwm_frequency, pinTimers[3]);
+  HardwareTimer *timers[4] = {HT1, HT2, HT3, HT4};
+  syncTimerFrequency(pwm_frequency, timers, 4); 
   // allign the timers
   _alignPWMTimers(HT1, HT2, HT3, HT4);
 
@@ -918,6 +957,8 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
     HardwareTimer* HT4 = _initPinPWMLow(pwm_frequency, pinTimers[3]);
     HardwareTimer* HT5 = _initPinPWMHigh(pwm_frequency, pinTimers[4]);
     HardwareTimer* HT6 = _initPinPWMLow(pwm_frequency, pinTimers[5]);
+    HardwareTimer *timers[6] = {HT1, HT2, HT3, HT4, HT5, HT6};
+    syncTimerFrequency(pwm_frequency, timers, 6); 
     uint32_t channel1 = STM_PIN_CHANNEL(pinTimers[0]->function);
     uint32_t channel2 = STM_PIN_CHANNEL(pinTimers[1]->function);
     uint32_t channel3 = STM_PIN_CHANNEL(pinTimers[2]->function);
