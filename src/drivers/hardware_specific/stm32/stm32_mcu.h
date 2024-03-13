@@ -28,5 +28,8 @@ typedef struct STM32DriverParams {
 void _stopTimers(HardwareTimer **timers_to_stop, int timer_num=6);
 void _startTimers(HardwareTimer **timers_to_start, int timer_num=6);
 
+// timer query functions
+bool _getPwmState(void* params);
+
 #endif
 #endif
