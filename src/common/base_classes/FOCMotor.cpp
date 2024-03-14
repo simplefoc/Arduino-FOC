@@ -32,6 +32,10 @@ FOCMotor::FOCMotor()
 
   // voltage bemf 
   voltage_bemf = 0;
+
+  // Initialize phase voltages U alpha and U beta used for inverse Park and Clarke transform
+  Ualpha = 0;
+  Ubeta = 0;
   
   //monitor_port 
   monitor_port = nullptr;

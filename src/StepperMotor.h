@@ -73,8 +73,6 @@ class StepperMotor: public FOCMotor
      */
     void move(float target = NOT_SET) override;
     
-    float	Ualpha,Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
-
   /**
     * Method using FOC to set Uq to the motor at the optimal angle
     * Heart of the FOC algorithm
