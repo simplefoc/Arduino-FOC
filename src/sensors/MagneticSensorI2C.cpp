@@ -58,6 +58,10 @@ MagneticSensorI2C::MagneticSensorI2C(MagneticSensorI2CConfig_s config){
   wire = &Wire;
 }
 
+MagneticSensorI2C MagneticSensorI2C::AS5600() {
+  return {AS5600_I2C};
+}
+
 void MagneticSensorI2C::init(TwoWire* _wire){
 
   wire = _wire;
