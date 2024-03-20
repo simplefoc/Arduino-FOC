@@ -1,10 +1,10 @@
 /**
- * 
+ *
  * Torque control example using voltage control loop.
- * 
- * Most of the low-end BLDC driver boards doesn't have current measurement therefore SimpleFOC offers 
- * you a way to control motor torque by setting the voltage to the motor instead of the current. 
- * 
+ *
+ * Most of the low-end BLDC driver boards doesn't have current measurement therefore SimpleFOC offers
+ * you a way to control motor torque by setting the voltage to the motor instead of the current.
+ *
  * This makes the BLDC motor effectively a DC motor, and you can use it in a same way.
  */
 #include <SimpleFOC.h>
@@ -20,7 +20,7 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 // hall sensor instance
 HallSensor sensor = HallSensor(2, 3, 4, 11);
 
-// Interrupt routine intialisation
+// Interrupt routine initialisation
 // channel A and B callbacks
 void doA(){sensor.handleA();}
 void doB(){sensor.handleB();}
@@ -33,11 +33,11 @@ float target_voltage = 2;
 Commander command = Commander(Serial);
 void doTarget(char* cmd) { command.scalar(&target_voltage, cmd); }
 
-void setup() { 
-  
+void setup() {
+
   // initialize encoder sensor hardware
   sensor.init();
-  sensor.enableInterrupts(doA, doB, doC); 
+  sensor.enableInterrupts(doA, doB, doC);
   // link the motor to the sensor
   motor.linkSensor(&sensor);
 
@@ -50,14 +50,14 @@ void setup() {
 
   // aligning voltage
   motor.voltage_sensor_align = 3;
-  
+
   // choose FOC modulation (optional)
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
 
   // set motion control loop to be used
   motor.controller = MotionControlType::torque;
 
-  // use monitoring with serial 
+  // use monitoring with serial
   Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
@@ -81,7 +81,7 @@ void loop() {
   // main FOC algorithm function
   // the faster you run this function the better
   // Arduino UNO loop  ~1kHz
-  // Bluepill loop ~10kHz 
+  // Bluepill loop ~10kHz
   motor.loopFOC();
 
   // Motion control function

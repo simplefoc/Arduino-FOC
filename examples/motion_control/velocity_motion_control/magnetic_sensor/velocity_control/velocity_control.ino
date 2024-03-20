@@ -48,7 +48,7 @@ void setup() {
   // set motion control loop to be used
   motor.controller = MotionControlType::velocity;
 
-  // contoller configuration
+  // controller configuration
   // default parameters in defaults.h
 
   // velocity PI controller parameters

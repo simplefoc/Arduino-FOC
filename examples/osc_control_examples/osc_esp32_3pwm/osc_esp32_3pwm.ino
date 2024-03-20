@@ -3,7 +3,7 @@
  *
  * Simple example to show how you can control SimpleFOC via OSC.
  *
- * It's a nice way to work, easier than changing speeds via Seerial text input. It could also be the basis for
+ * It's a nice way to work, easier than changing speeds via Serial text input. It could also be the basis for
  * a functional UI, for example in a lab, art-gallery or similar situation.
  *
  * For this example we used an ESP32 to run the code, a AS5048B I2C absolute encoder

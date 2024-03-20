@@ -12,7 +12,7 @@ StepperDriver2PWM driver = StepperDriver2PWM(3, in1, 10 , in2, 11, 12);
 // StepperDriver2PWM driver = StepperDriver2PWM(3, 4, 5, 6, 11, 12);
 
 void setup() {
-  
+
   // pwm frequency to be used [Hz]
   // for atmega328 fixed to 32kHz
   // esp32/stm32/teensy configurable
@@ -21,7 +21,7 @@ void setup() {
   driver.voltage_power_supply = 12;
   // Max DC voltage allowed - default voltage_power_supply
   driver.voltage_limit = 12;
-  
+
   // driver init
   driver.init();
 

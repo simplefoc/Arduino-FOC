@@ -12,7 +12,7 @@
  * > Since Arduino UNO doesn't have enough interrupt pins we have to use software interrupt library PciManager.
  *
  * > If running this code with Nucleo or Bluepill or any other board which has more than 2 interrupt pins
- * > you can supply doIndex directly to the sensr.enableInterrupts(doA,doB,doC) and avoid using PciManger
+ * > you can supply doIndex directly to the sensor.enableInterrupts(doA,doB,doC) and avoid using PciManger
  *
  *
  */
@@ -31,12 +31,12 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 // hall sensor instance
 HallSensor sensor = HallSensor(2, 3, 4, 11);
 
-// Interrupt routine intialisation
+// Interrupt routine initialisation
 // channel A and B callbacks
 void doA(){sensor.handleA();}
 void doB(){sensor.handleB();}
 void doC(){sensor.handleC();}
-// If no available hadware interrupt pins use the software interrupt
+// If no available hardware interrupt pins use the software interrupt
 PciListenerImp listenC(sensor.pinC, doC);
 
 // angle set point variable
@@ -71,7 +71,7 @@ void setup() {
   // set motion control loop to be used
   motor.controller = MotionControlType::angle;
 
-  // contoller configuration
+  // controller configuration
   // default parameters in defaults.h
 
   // velocity PI controller parameters

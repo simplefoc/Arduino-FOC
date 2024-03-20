@@ -40,7 +40,7 @@ void setup() {
   // set control loop type to be used
   motor.controller = MotionControlType::torque;
 
-  // contoller configuration based on the controll type
+  // controller configuration based on the control type
   motor.PID_velocity.P = 0.05f;
   motor.PID_velocity.I = 1;
   motor.PID_velocity.D = 0;
@@ -60,7 +60,7 @@ void setup() {
   Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
-  motor.monitor_downsample = 0; // disable intially
+  motor.monitor_downsample = 0; // disable initially
   motor.monitor_variables = _MON_TARGET | _MON_VEL | _MON_ANGLE; // monitor target velocity and angle
 
   // current sense init and linking
@@ -78,7 +78,7 @@ void setup() {
   // subscribe motor to the commander
   command.add('T', doMotion, "motion control");
   // command.add('M', doMotor, "motor");
-  
+
   // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)
   Serial.println("Motor ready.");
 
@@ -90,7 +90,7 @@ void loop() {
   // iterative setting FOC phase voltage
   motor.loopFOC();
 
-  // iterative function setting the outter loop target
+  // iterative function setting the outer loop target
   motor.move();
 
   // motor monitoring

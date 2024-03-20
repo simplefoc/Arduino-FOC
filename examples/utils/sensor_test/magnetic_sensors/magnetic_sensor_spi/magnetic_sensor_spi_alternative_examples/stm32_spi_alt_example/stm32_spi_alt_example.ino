@@ -2,7 +2,7 @@
 
 // MagneticSensorSPI(int cs, float _cpr, int _angle_register)
 // config           - SPI config
-//  cs              - SPI chip select pin 
+//  cs              - SPI chip select pin
 MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, PA15);
 
 // these are valid pins (mosi, miso, sclk) for 2nd SPI bus on storm32 board (stm32f107rc)
@@ -22,7 +22,7 @@ void setup() {
 void loop() {
   // iterative function updating the sensor internal variables
   // it is usually called in motor.loopFOC()
-  // this function reads the sensor hardware and 
+  // this function reads the sensor hardware and
   // has to be called before getAngle nad getVelocity
   sensor.update();
   // display the angle and the angular velocity to the terminal

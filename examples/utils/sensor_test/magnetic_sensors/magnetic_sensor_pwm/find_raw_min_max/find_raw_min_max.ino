@@ -3,9 +3,9 @@
 
 /**
  * An example to find out the raw max and min count to be provided to the constructor
- * SPin your motor/sensor/magnet to see what is the maximum output of the sensor and what is the minimum value 
- * And replace values 4 and 904 with new values. Once when you replace them make sure there is no jump in the angle reading sensor.getAngle(). 
- * If there is a jump that means you can still find better values. 
+ * SPin your motor/sensor/magnet to see what is the maximum output of the sensor and what is the minimum value
+ * And replace values 4 and 904 with new values. Once when you replace them make sure there is no jump in the angle reading sensor.getAngle().
+ * If there is a jump that means you can still find better values.
  */
 MagneticSensorPWM sensor = MagneticSensorPWM(2, 4, 904);
 void doPWM(){sensor.handlePWM();}
@@ -29,7 +29,7 @@ int min_pulse = 10000;
 void loop() {
   // iterative function updating the sensor internal variables
   // it is usually called in motor.loopFOC()
-  // this function reads the sensor hardware and 
+  // this function reads the sensor hardware and
   // has to be called before getAngle nad getVelocity
   sensor.update();
 

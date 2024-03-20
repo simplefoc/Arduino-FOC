@@ -2,7 +2,7 @@
 
 
 /*
-  Encoder(int encA, int encB , int cpr, int index)
+  Encoder(int encA, int encB, int cpr, int index)
   - encA, encB    - encoder A and B pins
   - cpr           - counts per rotation number (cpm=ppm*4)
   - index pin     - (optional input)

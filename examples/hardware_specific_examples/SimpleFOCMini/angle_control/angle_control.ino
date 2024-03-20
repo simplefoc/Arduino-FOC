@@ -1,21 +1,21 @@
 /**
  *
  * SimpleFOCMini motor control example
- * 
- * For Arduino UNO, the most convenient way to use the board is to stack it to the pins: 
+ *
+ * For Arduino UNO, the most convenient way to use the board is to stack it to the pins:
  * - 12 - GND
  * - 11 - IN1
  * - 10 - IN2
  * -  9 - IN3
  * -  8 - EN
- * 
- * For other boards with UNO headers but more PWM channles such as esp32, nucleo-64, samd51 metro etc, the best way to most convenient pinout is:
+ *
+ * For other boards with UNO headers but more PWM channels such as esp32, nucleo-64, samd51 metro etc, the best way to most convenient pinout is:
  * - GND - GND
  * -  13 - IN1
  * -  12 - IN2
  * -  11 - IN3
- * -   9 - EN 
- * 
+ * -   9 - EN
+ *
  * For the boards without arduino uno headers, the choice of pinout is a lot less constrained.
  *
  */
@@ -28,7 +28,7 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(11, 10, 9, 8);
 
 // encoder instance
 Encoder encoder = Encoder(2, 3, 500);
-// Interrupt routine intialisation
+// Interrupt routine initialisation
 // channel A and B callbacks
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
@@ -39,7 +39,7 @@ void doMotor(char* cmd) { command.motor(&motor, cmd); }
 
 void setup() {
   // if SimpleFOCMini is stacked in arduino headers
-  // on pins 12,11,10,9,8 
+  // on pins 12,11,10,9,8
   // pin 12 is used as ground
   pinMode(12,OUTPUT);
   pinMode(12,LOW);
@@ -63,7 +63,7 @@ void setup() {
   // set motion control loop to be used
   motor.controller = MotionControlType::angle;
 
-  // contoller configuration
+  // controller configuration
   // default parameters in defaults.h
 
   // velocity PI controller parameters

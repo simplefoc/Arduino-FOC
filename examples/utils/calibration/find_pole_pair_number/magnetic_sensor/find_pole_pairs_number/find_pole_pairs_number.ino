@@ -77,7 +77,7 @@ void setup() {
   }
   _delay(1000);
   // read the sensor value for 180
-  sensor.update(); 
+  sensor.update();
   float angle_end = sensor.getAngle();
   _delay(50);
   // turn off the motor

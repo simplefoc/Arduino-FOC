@@ -19,7 +19,7 @@ void setup() {
   // initialise magnetic sensor hardware
   pinMode(LINEAR_HALL_CHANNEL_A, INPUT);
   pinMode(LINEAR_HALL_CHANNEL_B, INPUT);
-  
+
   minA = analogRead(LINEAR_HALL_CHANNEL_A);
   maxA = minA;
   centerA = (minA + maxA) / 2;

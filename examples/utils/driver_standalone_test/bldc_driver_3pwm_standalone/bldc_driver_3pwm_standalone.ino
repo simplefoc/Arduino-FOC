@@ -6,7 +6,7 @@
 BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 
 void setup() {
-  
+
   // pwm frequency to be used [Hz]
   // for atmega328 fixed to 32kHz
   // esp32/stm32/teensy configurable

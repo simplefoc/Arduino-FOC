@@ -24,7 +24,7 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 10, 11);
 // encoder instance
 Encoder encoder = Encoder(A0, A1, 2048);
 
-// Interrupt routine intialisation
+// Interrupt routine initialisation
 // channel A and B callbacks
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
@@ -65,7 +65,7 @@ void setup() {
   // set motion control loop to be used
   motor.controller = MotionControlType::angle;
 
-  // contoller configuration
+  // controller configuration
   // default parameters in defaults.h
 
   // velocity PI controller parameters

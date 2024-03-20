@@ -4,7 +4,7 @@
  * Using serial terminal user can send motor commands and configure the motor and FOC in real-time:
  * - configure PID controller constants
  * - change motion control loops
- * - monitor motor variabels
+ * - monitor motor variables
  * - set target values
  * - check all the configuration values
  *
@@ -39,7 +39,7 @@ LowsideCurrentSense cs = LowsideCurrentSense(0.005f, 12.22f, IOUTA, IOUTB, IOUTC
 // encoder instance
 Encoder encoder = Encoder(PB14, PB15, 2048);
 
-// Interrupt routine intialisation
+// Interrupt routine initialisation
 // channel A and B callbacks
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
@@ -84,35 +84,35 @@ void setup() {
 
   // align voltage
   motor.voltage_sensor_align = 0.5;
-  
-  // control loop type and torque mode 
+
+  // control loop type and torque mode
   motor.torque_controller = TorqueControlType::voltage;
   motor.controller = MotionControlType::torque;
   motor.motion_downsample = 0.0;
-  
+
   // velocity loop PID
   motor.PID_velocity.P = 0.2;
   motor.PID_velocity.I = 5.0;
-  // Low pass filtering time constant 
+  // Low pass filtering time constant
   motor.LPF_velocity.Tf = 0.02;
   // angle loop PID
   motor.P_angle.P = 20.0;
-  // Low pass filtering time constant 
+  // Low pass filtering time constant
   motor.LPF_angle.Tf = 0.0;
-  // current q loop PID 
+  // current q loop PID
   motor.PID_current_q.P = 3.0;
   motor.PID_current_q.I = 100.0;
-  // Low pass filtering time constant 
+  // Low pass filtering time constant
   motor.LPF_current_q.Tf = 0.02;
   // current d loop PID
   motor.PID_current_d.P = 3.0;
   motor.PID_current_d.I = 100.0;
-  // Low pass filtering time constant 
+  // Low pass filtering time constant
   motor.LPF_current_d.Tf = 0.02;
 
-  // Limits 
+  // Limits
   motor.velocity_limit = 100.0; // 100 rad/s velocity limit
-  motor.voltage_limit = 12.0;   // 12 Volt limit 
+  motor.voltage_limit = 12.0;   // 12 Volt limit
   motor.current_limit = 2.0;    // 2 Amp current limit
 
 
@@ -133,7 +133,7 @@ void setup() {
   cs.gain_b *=-1;
   cs.gain_c *=-1;
   motor.linkCurrentSense(&cs);
-  
+
   // align encoder and start FOC
   motor.initFOC();
 
@@ -156,7 +156,7 @@ void loop() {
   // iterative setting FOC phase voltage
   motor.loopFOC();
 
-  // iterative function setting the outter loop target
+  // iterative function setting the outer loop target
   motor.move();
 
   // monitoring the state variables

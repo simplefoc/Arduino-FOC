@@ -8,11 +8,11 @@
 
 // MagneticSensorSPI(int cs, float _cpr, int _angle_register)
 // config           - SPI config
-//  cs              - SPI chip select pin 
+//  cs              - SPI chip select pin
 MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, HSPI_SS);
 
 // for esp 32, it has 2 spi interfaces VSPI (default) and HPSI as the second one
-// to enable it instatiate the object
+// to enable it instantiate the object
 SPIClass SPI_2(HSPI);
 
 void setup() {
@@ -20,7 +20,7 @@ void setup() {
   Serial.begin(115200);
 
   // start the newly defined spi communication
-  SPI_2.begin(HSPI_SCLK, HSPI_MISO, HSPI_MOSI, HSPI_SS); //SCLK, MISO, MOSI, SS 
+  SPI_2.begin(HSPI_SCLK, HSPI_MISO, HSPI_MOSI, HSPI_SS); //SCLK, MISO, MOSI, SS
   // initialise magnetic sensor hardware
   sensor.init(&SPI_2);
 
@@ -31,7 +31,7 @@ void setup() {
 void loop() {
   // iterative function updating the sensor internal variables
   // it is usually called in motor.loopFOC()
-  // this function reads the sensor hardware and 
+  // this function reads the sensor hardware and
   // has to be called before getAngle nad getVelocity
   sensor.update();
   // display the angle and the angular velocity to the terminal

@@ -11,7 +11,7 @@ MagneticSensorI2C sensor = MagneticSensorI2C(0x36, 12, 0X0C, 4);
 /**
  * This measures how closely sensor and electrical angle agree and how much your motor is affected by 'cogging'.
  * It can be used to investigate how much non linearity there is between what we set (electrical angle) and what we read (sensor angle)
- * This non linearity could be down to magnet placement, coil winding differences or simply that the magnetic field when travelling through a pole pair is not linear
+ * This non linearity could be down to magnet placement, coil winding differences or simply that the magnetic field when traveling through a pole pair is not linear
  * An alignment error of ~10 degrees and cogging of ~4 degrees is normal for small gimbal.
  * The following article is an interesting read
  * https://hackaday.com/2016/02/23/anti-cogging-algorithm-brings-out-the-best-in-your-hobby-brushless-motors/

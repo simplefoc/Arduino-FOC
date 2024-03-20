@@ -37,9 +37,9 @@ void setup() {
   // limiting motor movements
   // limit the voltage to be set to the motor
   // start very low for high resistance motors
-  // currnet = resistance*voltage, so try to be well under 1Amp
+  // current = resistance*voltage, so try to be well under 1Amp
   motor.voltage_limit = 3;   // [V]
-  // limit/set the velocity of the transition in between 
+  // limit/set the velocity of the transition in between
   // target angles
   motor.velocity_limit = 5; // [rad/s] cca 50rpm
   // open loop control config
@@ -64,7 +64,7 @@ void loop() {
   // using motor.voltage_limit and motor.velocity_limit
   // angles can be positive or negative, negative angles correspond to opposite motor direction
   motor.move(target_position);
-  
+
   // user communication
   command.run();
 }

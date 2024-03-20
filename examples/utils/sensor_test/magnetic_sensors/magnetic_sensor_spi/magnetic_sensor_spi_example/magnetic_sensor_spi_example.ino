@@ -2,10 +2,10 @@
 
 // MagneticSensorSPI(MagneticSensorSPIConfig_s config, int cs)
 //  config  - SPI config
-//  cs      - SPI chip select pin 
+//  cs      - SPI chip select pin
 // magnetic sensor instance - SPI
 MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, 10);
-// alternative constructor (chipselsect, bit_resolution, angle_read_register, )
+// alternative constructor (chip_select, bit_resolution, angle_read_register, )
 // MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
 
 void setup() {
@@ -22,7 +22,7 @@ void setup() {
 void loop() {
   // iterative function updating the sensor internal variables
   // it is usually called in motor.loopFOC()
-  // this function reads the sensor hardware and 
+  // this function reads the sensor hardware and
   // has to be called before getAngle nad getVelocity
   sensor.update();
   // display the angle and the angular velocity to the terminal
