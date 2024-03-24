@@ -66,12 +66,12 @@ void HFIBLDCMotor::init() {
     PID_current_d.limit = voltage_limit;
 
     PID_current_d.P = Ld*current_bandwidth*_2PI;
-    PID_current_d.I = PID_current_d.P*(phase_resistance/2)/(Ld);
+    PID_current_d.I = PID_current_d.P*phase_resistance/Ld;
     PID_current_q.D = 0;
     PID_current_d.output_ramp = 0;
 
     PID_current_q.P = Lq*current_bandwidth*_2PI;
-    PID_current_q.I = PID_current_q.P*(phase_resistance/2)/(Lq);
+    PID_current_q.I = PID_current_q.P*phase_resistance/Lq;
     PID_current_q.D = 0;
     PID_current_q.output_ramp = 0;
 
@@ -388,7 +388,7 @@ void HFIBLDCMotor::process_hfi(){
 
   voltage_pid.q = PID_current_q(current_err.q, Ts);
   voltage_pid.d = PID_current_d(current_err.d, Ts);
-
+  
   // lowpass does a += on the first arg
   LOWPASS(voltage.q,voltage_pid.q, 0.34f);
   LOWPASS(voltage.d,voltage_pid.d, 0.34f);
@@ -439,7 +439,7 @@ void HFIBLDCMotor::process_hfi(){
   if(abs(d_angle) > (0.8f*_2PI) ) hfi_full_turns += ( d_angle > 0.0f ) ? -1.0f : 1.0f; 
 
   electrical_angle = hfi_out;
-  // digitalToggle(PC10);
+// digitalToggle(PC10);
   // digitalToggle(PC10);  
   // digitalToggle(PC10);
   // digitalToggle(PC10);
@@ -589,7 +589,7 @@ void HFIBLDCMotor::move(float new_target) {
       // velocity set point - sensor precision: this calculation is numerically precise.
       shaft_velocity_sp = target;
       // calculate the torque command
-      temp_q_setpoint = PID_velocity(shaft_velocity_sp - shaft_velocity); // if current/foc_current torque control
+      temp_q_setpoint = PID_velocity(shaft_velocity_sp - hfi_int); // if current/foc_current torque control
       temp_q_setpoint = _constrain(temp_q_setpoint,-current_limit, current_limit);
       noInterrupts();
       current_setpoint.q = temp_q_setpoint;

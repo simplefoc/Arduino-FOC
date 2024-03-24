@@ -22,6 +22,8 @@ static OPAMP_HandleTypeDef hopamp3;
 static DMA_HandleTypeDef hdma_adc1;
 static DMA_HandleTypeDef hdma_adc2;
 
+volatile uint16_t currentsense_buffer[3] = {0,0,0};
+
 volatile uint16_t adcBuffer1[ADC_BUF_LEN_1] = {0}; // Buffer for store the results of the ADC conversion
 volatile uint16_t adcBuffer2[ADC_BUF_LEN_2] = {0}; // Buffer for store the results of the ADC conversion
 
@@ -30,12 +32,12 @@ volatile uint16_t adcBuffer2[ADC_BUF_LEN_2] = {0}; // Buffer for store the resul
 float _readADCVoltageInline(const int pin, const void* cs_params){
   uint32_t raw_adc = 0;
   if(pin == PA2)  // = ADC1_IN3 = phase U (OP1_OUT) on B-G431B-ESC1
-    raw_adc = adcBuffer1[1];
+    raw_adc = currentsense_buffer[0]; // adcBuffer1[1];
   else if(pin == PA6) // = ADC2_IN3 = phase V (OP2_OUT) on B-G431B-ESC1
-    raw_adc = adcBuffer2[0];
+    raw_adc = currentsense_buffer[1]; // adcBuffer2[0];
 #ifdef PB1
   else if(pin == PB1) // = ADC1_IN12 = phase W (OP3_OUT) on B-G431B-ESC1
-    raw_adc = adcBuffer1[0];
+    raw_adc = currentsense_buffer[2]; // adcBuffer1[0];
 #endif
 
   else if (pin == A_POTENTIOMETER)
@@ -115,6 +117,10 @@ void* _configureADCLowSide(const void* driver_params, const int pinA,const int p
 
   MX_DMA1_Init(&hadc1, &hdma_adc1, DMA1_Channel1, DMA_REQUEST_ADC1);
   MX_DMA1_Init(&hadc2, &hdma_adc2, DMA1_Channel2, DMA_REQUEST_ADC2);
+  
+  HAL_OPAMP_Start(&hopamp1);
+  HAL_OPAMP_Start(&hopamp2);
+  HAL_OPAMP_Start(&hopamp3); 
 
   if (HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adcBuffer1, ADC_BUF_LEN_1) != HAL_OK)
   {
@@ -125,9 +131,7 @@ void* _configureADCLowSide(const void* driver_params, const int pinA,const int p
     SIMPLEFOC_DEBUG("DMA read init failed");
   }
 
-  HAL_OPAMP_Start(&hopamp1);
-  HAL_OPAMP_Start(&hopamp2);
-  HAL_OPAMP_Start(&hopamp3); 
+
   
   Stm32CurrentSenseParams* params = new Stm32CurrentSenseParams {
     .pins = { pinA, pinB, pinC },
@@ -152,11 +156,19 @@ void DMA1_Channel2_IRQHandler(void) {
 }
 
 #ifdef SIMPLEFOC_STM32_ADC_INTERRUPT
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* AdcHandle) {
   #ifdef HFI
-  // if (hadc == &hadc2) {
+    if (AdcHandle == &hadc1){
+      bool dir = (TIM1->CR1 & TIM_CR1_DIR) == TIM_CR1_DIR;
+      if(dir) {
+        currentsense_buffer[0] = adcBuffer1[1];
+        currentsense_buffer[1] = adcBuffer2[0];
+        currentsense_buffer[2] = adcBuffer1[0];
+      }
+    } else {return;}
+
     process_hfi();
-  // }
+
   #endif
 }
 #endif // SIMPLEFOC_STM32_ADC_INTERRUPT
