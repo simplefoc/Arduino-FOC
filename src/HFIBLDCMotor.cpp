@@ -586,24 +586,25 @@ void HFIBLDCMotor::move(float new_target) {
       }
       break;
     case MotionControlType::velocity:
-      // velocity set point - sensor precision: this calculation is numerically precise.
-      shaft_velocity_sp = target;
-      // calculate the torque command
-      temp_q_setpoint = PID_velocity(shaft_velocity_sp - hfi_int); // if current/foc_current torque control
-      temp_q_setpoint = _constrain(temp_q_setpoint,-current_limit, current_limit);
-      noInterrupts();
-      current_setpoint.q = temp_q_setpoint;
-      interrupts();
-      // if torque controlled through voltage control
-      if(torque_controller == TorqueControlType::voltage){
-        // use voltage if phase-resistance not provided
-        if(!_isset(phase_resistance))  voltage.q = current_setpoint.q;
-        else  voltage.q = _constrain( current_setpoint.q*phase_resistance + voltage_bemf , -voltage_limit, voltage_limit);
-        // set d-component (lag compensation if known inductance)
-        if(!_isset(phase_inductance)) voltage.d = 0;
-        else voltage.d = _constrain( -current_setpoint.q*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit);
-      }
       break;
+      // // velocity set point - sensor precision: this calculation is numerically precise.
+      // shaft_velocity_sp = target;
+      // // calculate the torque command
+      // temp_q_setpoint = PID_velocity(shaft_velocity_sp - hfi_int); // if current/foc_current torque control
+      // temp_q_setpoint = _constrain(temp_q_setpoint,-current_limit, current_limit);
+      // noInterrupts();
+      // current_setpoint.q = temp_q_setpoint;
+      // interrupts();
+      // // if torque controlled through voltage control
+      // if(torque_controller == TorqueControlType::voltage){
+      //   // use voltage if phase-resistance not provided
+      //   if(!_isset(phase_resistance))  voltage.q = current_setpoint.q;
+      //   else  voltage.q = _constrain( current_setpoint.q*phase_resistance + voltage_bemf , -voltage_limit, voltage_limit);
+      //   // set d-component (lag compensation if known inductance)
+      //   if(!_isset(phase_inductance)) voltage.d = 0;
+      //   else voltage.d = _constrain( -current_setpoint.q*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit);
+      // }
+      // break;
     case MotionControlType::velocity_openloop:
       // velocity control in open loop - sensor precision: this calculation is numerically precise.
       shaft_velocity_sp = target;
