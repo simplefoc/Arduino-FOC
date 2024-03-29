@@ -67,6 +67,8 @@ unsigned long IRAM_ATTR fifotime = 0;
 // The ADC counts get saved in uint32_t i2s_adc_buffer[].
 void IRAM_ATTR readFiFo()
 {
+    CLEAR_PERI_REG_MASK(I2S_CONF_REG(0), I2S_RX_START); // Stop aquisition to buffer
+
     // uint32_t readings[ADC1_CHANNEL_MAX][ADC1_CHANNEL_MAX*BUF_LEN];
     uint32_t avgreadings[ADC1_CHANNEL_MAX] = {0};
     uint32_t counts[ADC1_CHANNEL_MAX] = {0};
@@ -173,6 +175,8 @@ void IRAM_ATTR readFiFo()
           // Serial.printf(">Channel%d:%d\n", j, i2s_adc_buffer[j]);
       }
   }*/
+
+  SET_PERI_REG_MASK(I2S_CONF_REG(0), I2S_RX_START); // Restart aquisition to buffer
 }
 
 #if I2S_USE_INTERRUPT == true
