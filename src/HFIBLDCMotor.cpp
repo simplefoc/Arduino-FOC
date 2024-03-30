@@ -575,6 +575,7 @@ void HFIBLDCMotor::move(float new_target) {
       // calculate velocity set point
       temp_q_setpoint = feed_forward_velocity + P_angle( shaft_angle_sp - shaft_angle );
       temp_q_setpoint = _constrain(temp_q_setpoint,-current_limit, current_limit);
+      temp_q_setpoint = LPF_angle(temp_q_setpoint);
       // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
       noInterrupts();
       current_setpoint.q = temp_q_setpoint;
@@ -595,6 +596,7 @@ void HFIBLDCMotor::move(float new_target) {
       // calculate the torque command
       temp_q_setpoint = PID_velocity(shaft_velocity_sp - hfi_velocity); // if current/foc_current torque control
       temp_q_setpoint = _constrain(temp_q_setpoint,-current_limit, current_limit);
+      temp_q_setpoint = LPF_velocity(temp_q_setpoint);
       noInterrupts();
       current_setpoint.q = temp_q_setpoint;
       interrupts();
