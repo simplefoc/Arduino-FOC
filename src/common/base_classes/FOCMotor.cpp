@@ -32,6 +32,10 @@ FOCMotor::FOCMotor()
 
   // voltage bemf 
   voltage_bemf = 0;
+
+  // Initialize phase voltages U alpha and U beta used for inverse Park and Clarke transform
+  Ualpha = 0;
+  Ubeta = 0;
   
   //monitor_port 
   monitor_port = nullptr;
@@ -91,7 +95,7 @@ void FOCMotor::useMonitoring(Print &print){
 // utility function intended to be used with serial plotter to monitor motor variables
 // significantly slowing the execution down!!!!
 void FOCMotor::monitor() {
-  if( !monitor_downsample || monitor_cnt++ < monitor_downsample ) return;
+  if( !monitor_downsample || monitor_cnt++ < (monitor_downsample-1) ) return;
   monitor_cnt = 0;
   if(!monitor_port) return;
   bool printed = 0;

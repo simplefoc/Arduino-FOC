@@ -135,10 +135,6 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
     }
   }
   
-  // enable interrupt
-  HAL_NVIC_SetPriority(ADC_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(ADC_IRQn);
-  
   cs_params->adc_handle = &hadc;
   return 0;
 }

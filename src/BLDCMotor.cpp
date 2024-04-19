@@ -46,7 +46,7 @@ BLDCMotor::BLDCMotor(int pp, float _R, float _KV, float _inductance)
   // 1/sqrt(2) - rms value
   KV_rating = NOT_SET;
   if (_isset(_KV))
-    KV_rating = _KV*_SQRT2;
+    KV_rating = _KV;
   // save phase inductance
   phase_inductance = _inductance;
 
@@ -111,6 +111,8 @@ void BLDCMotor::init() {
 // disable motor driver
 void BLDCMotor::disable()
 {
+  // disable the current sense
+  if(current_sense) current_sense->disable();
   // set zero to PWM
   driver->setPwm(0, 0, 0);
   // disable the driver
@@ -125,6 +127,13 @@ void BLDCMotor::enable()
   driver->enable();
   // set zero to PWM
   driver->setPwm(0, 0, 0);
+  // enable the current sense
+  if(current_sense) current_sense->enable();
+  // reset the pids
+  PID_velocity.reset();
+  P_angle.reset();
+  PID_current_q.reset();
+  PID_current_d.reset();
   // motor status update
   enabled = 1;
 }
@@ -142,32 +151,36 @@ int  BLDCMotor::initFOC() {
   // alignment necessary for encoders!
   // sensor and motor alignment - can be skipped
   // by setting motor.sensor_direction and motor.zero_electric_angle
-  _delay(500);
   if(sensor){
     exit_flag *= alignSensor();
     // added the shaft_angle update
     sensor->update();
     shaft_angle = shaftAngle();
-  }else {
-    exit_flag = 0; // no FOC without sensor
-    SIMPLEFOC_DEBUG("MOT: No sensor.");
-  }
 
-  // aligning the current sensor - can be skipped
-  // checks if driver phases are the same as current sense phases
-  // and checks the direction of measuremnt.
-  _delay(500);
-  if(exit_flag){
-    if(current_sense){ 
-      if (!current_sense->initialized) {
-        motor_status = FOCMotorStatus::motor_calib_failed;
-        SIMPLEFOC_DEBUG("MOT: Init FOC error, current sense not initialized");
-        exit_flag = 0;
-      }else{
-        exit_flag *= alignCurrentSense();
+    // aligning the current sensor - can be skipped
+    // checks if driver phases are the same as current sense phases
+    // and checks the direction of measuremnt.
+    if(exit_flag){
+      if(current_sense){ 
+        if (!current_sense->initialized) {
+          motor_status = FOCMotorStatus::motor_calib_failed;
+          SIMPLEFOC_DEBUG("MOT: Init FOC error, current sense not initialized");
+          exit_flag = 0;
+        }else{
+          exit_flag *= alignCurrentSense();
+        }
       }
+      else { SIMPLEFOC_DEBUG("MOT: No current sense."); }
     }
-    else { SIMPLEFOC_DEBUG("MOT: No current sense."); }
+
+  } else {
+    SIMPLEFOC_DEBUG("MOT: No sensor.");
+    if ((controller == MotionControlType::angle_openloop || controller == MotionControlType::velocity_openloop)){
+      exit_flag = 1;    
+      SIMPLEFOC_DEBUG("MOT: Openloop only!");
+    }else{
+      exit_flag = 0; // no FOC without sensor
+    }
   }
 
   if(exit_flag){
@@ -212,6 +225,10 @@ int BLDCMotor::alignSensor() {
   // stop init if not found index
   if(!exit_flag) return exit_flag;
 
+  // v2.3.3 fix for R_AVR_7_PCREL against symbol" bug for AVR boards
+  // TODO figure out why this works
+  float voltage_align = voltage_sensor_align;
+
   // if unknown natural direction
   if(sensor_direction==Direction::UNKNOWN){
 
@@ -219,7 +236,7 @@ int BLDCMotor::alignSensor() {
     // move one electrical revolution forward
     for (int i = 0; i <=500; i++ ) {
       float angle = _3PI_2 + _2PI * i / 500.0f;
-      setPhaseVoltage(voltage_sensor_align, 0,  angle);
+      setPhaseVoltage(voltage_align, 0,  angle);
 	    sensor->update();
       _delay(2);
     }
@@ -229,13 +246,13 @@ int BLDCMotor::alignSensor() {
     // move one electrical revolution backwards
     for (int i = 500; i >=0; i-- ) {
       float angle = _3PI_2 + _2PI * i / 500.0f ;
-      setPhaseVoltage(voltage_sensor_align, 0,  angle);
+      setPhaseVoltage(voltage_align, 0,  angle);
 	    sensor->update();
       _delay(2);
     }
     sensor->update();
     float end_angle = sensor->getAngle();
-    setPhaseVoltage(0, 0, 0);
+    // setPhaseVoltage(0, 0, 0);
     _delay(200);
     // determine the direction the sensor moved
     float moved =  fabs(mid_angle - end_angle);
@@ -250,7 +267,8 @@ int BLDCMotor::alignSensor() {
       sensor_direction = Direction::CW;
     }
     // check pole pair number
-    if( fabs(moved*pole_pairs - _2PI) > 0.5f ) { // 0.5f is arbitrary number it can be lower or higher!
+    pp_check_result = !(fabs(moved*pole_pairs - _2PI) > 0.5f); // 0.5f is arbitrary number it can be lower or higher!
+    if( pp_check_result==false ) {
       SIMPLEFOC_DEBUG("MOT: PP check: fail - estimated pp: ", _2PI/moved);
     } else {
       SIMPLEFOC_DEBUG("MOT: PP check: OK!");
@@ -262,7 +280,7 @@ int BLDCMotor::alignSensor() {
   if(!_isset(zero_electric_angle)){
     // align the electrical phases of the motor and sensor
     // set angle -90(270 = 3PI/2) degrees
-    setPhaseVoltage(voltage_sensor_align, 0,  _3PI_2);
+    setPhaseVoltage(voltage_align, 0,  _3PI_2);
     _delay(700);
     // read the sensor
     sensor->update();
@@ -396,7 +414,7 @@ void BLDCMotor::move(float new_target) {
   if(_isset(new_target)) target = new_target;
   
   // calculate the back-emf voltage if KV_rating available U_bemf = vel*(1/KV)
-  if (_isset(KV_rating)) voltage_bemf = shaft_velocity/KV_rating/_RPM_TO_RADS;
+  if (_isset(KV_rating)) voltage_bemf = shaft_velocity/(KV_rating*_SQRT3)/_RPM_TO_RADS;
   // estimate the motor current if phase reistance available and current_sense not available
   if(!current_sense && _isset(phase_resistance)) current.q = (voltage.q - voltage_bemf)/phase_resistance;
 

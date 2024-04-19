@@ -161,6 +161,8 @@ class FOCMotor
     DQVoltage_s voltage;//!< current d and q voltage set to the motor
     DQCurrent_s current;//!< current d and q current measured
     float voltage_bemf; //!< estimated backemf voltage (if provided KV constant)
+    float	Ualpha, Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
+
 
     // motor configuration parameters
     float voltage_sensor_align;//!< sensor and motor align voltage parameter
@@ -206,6 +208,7 @@ class FOCMotor
     float sensor_offset; //!< user defined sensor zero offset
     float zero_electric_angle = NOT_SET;//!< absolute zero electric angle - if available
     Direction sensor_direction = Direction::UNKNOWN; //!< default is CW. if sensor_direction == Direction::CCW then direction will be flipped compared to CW. Set to UNKNOWN to set by calibration
+    bool pp_check_result = false; //!< the result of the PP check, if run during loopFOC
 
     /**
      * Function providing BLDCMotor class with the 

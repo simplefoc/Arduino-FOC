@@ -100,7 +100,7 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   hadc.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc.Init.ExternalTrigConv = ADC_SOFTWARE_START; // for now
   hadc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc.Init.NbrOfConversion = 2;
+  hadc.Init.NbrOfConversion = 1;
   hadc.Init.DMAContinuousRequests = DISABLE;
   hadc.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc.Init.Overrun = ADC_OVR_DATA_PRESERVED;
@@ -179,42 +179,6 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
       return -1;
     }
   }
-  
-
- 
-  if(hadc.Instance == ADC1) {
-    // enable interrupt
-    HAL_NVIC_SetPriority(ADC1_2_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(ADC1_2_IRQn);
-  }
-#ifdef ADC2
-  else if (hadc.Instance == ADC2) {
-    // enable interrupt
-    HAL_NVIC_SetPriority(ADC1_2_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(ADC1_2_IRQn);
-  }
-#endif
-#ifdef ADC3
-  else if (hadc.Instance == ADC3) {
-    // enable interrupt
-    HAL_NVIC_SetPriority(ADC3_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(ADC3_IRQn);
-  } 
-#endif
-#ifdef ADC4
-  else if (hadc.Instance == ADC4) {
-    // enable interrupt
-    HAL_NVIC_SetPriority(ADC4_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(ADC4_IRQn);
-  } 
-#endif
-#ifdef ADC5
-  else if (hadc.Instance == ADC5) {
-    // enable interrupt
-    HAL_NVIC_SetPriority(ADC5_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(ADC5_IRQn);
-  } 
-#endif
   
   cs_params->adc_handle = &hadc;
   return 0;
