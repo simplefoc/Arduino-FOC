@@ -12,9 +12,9 @@
 // #define TEENSY4_ADC_INTERRUPT_DEBUG
 
 
-// #define _BANDWIDTH_CS 10000.0f // [Hz] bandwidth for the current sense
 volatile uint32_t val0, val1, val2;
 
+// #define _BANDWIDTH_CS 10000.0f // [Hz] bandwidth for the current sense
 // LowPassFilter lp1 = LowPassFilter(1.0/_BANDWIDTH_CS);
 // LowPassFilter lp2 = LowPassFilter(1.0/_BANDWIDTH_CS);
 // LowPassFilter lp3 = LowPassFilter(1.0/_BANDWIDTH_CS);
