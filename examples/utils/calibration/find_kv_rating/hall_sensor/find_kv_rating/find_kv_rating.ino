@@ -33,7 +33,7 @@ Commander command = Commander(Serial);
 void doTarget(char* cmd) { command.scalar(&target_voltage, cmd); }
 void calcKV(char* cmd) { 
   // calculate the KV
-  Serial.println(motor.shaft_velocity/motor.target*30.0f/_PI);
+  Serial.println(motor.shaft_velocity/motor.target/_SQRT3*30.0f/_PI);
 
 }
 
