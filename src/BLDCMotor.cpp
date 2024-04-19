@@ -156,25 +156,31 @@ int  BLDCMotor::initFOC() {
     // added the shaft_angle update
     sensor->update();
     shaft_angle = shaftAngle();
-  }else {
-    exit_flag = 0; // no FOC without sensor
-    SIMPLEFOC_DEBUG("MOT: No sensor.");
-  }
 
-  // aligning the current sensor - can be skipped
-  // checks if driver phases are the same as current sense phases
-  // and checks the direction of measuremnt.
-  if(exit_flag){
-    if(current_sense){ 
-      if (!current_sense->initialized) {
-        motor_status = FOCMotorStatus::motor_calib_failed;
-        SIMPLEFOC_DEBUG("MOT: Init FOC error, current sense not initialized");
-        exit_flag = 0;
-      }else{
-        exit_flag *= alignCurrentSense();
+    // aligning the current sensor - can be skipped
+    // checks if driver phases are the same as current sense phases
+    // and checks the direction of measuremnt.
+    if(exit_flag){
+      if(current_sense){ 
+        if (!current_sense->initialized) {
+          motor_status = FOCMotorStatus::motor_calib_failed;
+          SIMPLEFOC_DEBUG("MOT: Init FOC error, current sense not initialized");
+          exit_flag = 0;
+        }else{
+          exit_flag *= alignCurrentSense();
+        }
       }
+      else { SIMPLEFOC_DEBUG("MOT: No current sense."); }
     }
-    else { SIMPLEFOC_DEBUG("MOT: No current sense."); }
+
+  } else {
+    SIMPLEFOC_DEBUG("MOT: No sensor.");
+    if ((controller == MotionControlType::angle_openloop || controller == MotionControlType::velocity_openloop)){
+      exit_flag = 1;    
+      SIMPLEFOC_DEBUG("MOT: Openloop only!");
+    }else{
+      exit_flag = 0; // no FOC without sensor
+    }
   }
 
   if(exit_flag){
@@ -219,6 +225,10 @@ int BLDCMotor::alignSensor() {
   // stop init if not found index
   if(!exit_flag) return exit_flag;
 
+  // v2.3.3 fix for R_AVR_7_PCREL against symbol" bug for AVR boards
+  // TODO figure out why this works
+  float voltage_align = voltage_sensor_align;
+
   // if unknown natural direction
   if(sensor_direction==Direction::UNKNOWN){
 
@@ -226,7 +236,7 @@ int BLDCMotor::alignSensor() {
     // move one electrical revolution forward
     for (int i = 0; i <=500; i++ ) {
       float angle = _3PI_2 + _2PI * i / 500.0f;
-      setPhaseVoltage(voltage_sensor_align, 0,  angle);
+      setPhaseVoltage(voltage_align, 0,  angle);
 	    sensor->update();
       _delay(2);
     }
@@ -236,13 +246,13 @@ int BLDCMotor::alignSensor() {
     // move one electrical revolution backwards
     for (int i = 500; i >=0; i-- ) {
       float angle = _3PI_2 + _2PI * i / 500.0f ;
-      setPhaseVoltage(voltage_sensor_align, 0,  angle);
+      setPhaseVoltage(voltage_align, 0,  angle);
 	    sensor->update();
       _delay(2);
     }
     sensor->update();
     float end_angle = sensor->getAngle();
-    setPhaseVoltage(0, 0, 0);
+    // setPhaseVoltage(0, 0, 0);
     _delay(200);
     // determine the direction the sensor moved
     float moved =  fabs(mid_angle - end_angle);
@@ -270,7 +280,7 @@ int BLDCMotor::alignSensor() {
   if(!_isset(zero_electric_angle)){
     // align the electrical phases of the motor and sensor
     // set angle -90(270 = 3PI/2) degrees
-    setPhaseVoltage(voltage_sensor_align, 0,  _3PI_2);
+    setPhaseVoltage(voltage_align, 0,  _3PI_2);
     _delay(700);
     // read the sensor
     sensor->update();

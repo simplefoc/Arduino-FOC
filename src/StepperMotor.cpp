@@ -114,7 +114,15 @@ int  StepperMotor::initFOC() {
     // added the shaft_angle update
     sensor->update();
     shaft_angle = sensor->getAngle();
-  } else { SIMPLEFOC_DEBUG("MOT: No sensor."); }
+  } else {
+    SIMPLEFOC_DEBUG("MOT: No sensor.");
+    if ((controller == MotionControlType::angle_openloop || controller == MotionControlType::velocity_openloop)){
+      exit_flag = 1;    
+      SIMPLEFOC_DEBUG("MOT: Openloop only!");
+    }else{
+      exit_flag = 0; // no FOC without sensor
+    }
+  }
 
   if(exit_flag){
     SIMPLEFOC_DEBUG("MOT: Ready.");
@@ -133,6 +141,10 @@ int StepperMotor::alignSensor() {
   int exit_flag = 1; //success
   SIMPLEFOC_DEBUG("MOT: Align sensor.");
 
+  // v2.3.3 fix for R_AVR_7_PCREL against symbol" bug for AVR boards
+  // TODO figure out why this works
+  float voltage_align = voltage_sensor_align;
+
   // if unknown natural direction
   if(sensor_direction == Direction::UNKNOWN){
     // check if sensor needs zero search
@@ -144,7 +156,7 @@ int StepperMotor::alignSensor() {
     // move one electrical revolution forward
     for (int i = 0; i <=500; i++ ) {
       float angle = _3PI_2 + _2PI * i / 500.0f;
-      setPhaseVoltage(voltage_sensor_align, 0,  angle);
+      setPhaseVoltage(voltage_align, 0,  angle);
 	    sensor->update();
       _delay(2);
     }
@@ -154,7 +166,7 @@ int StepperMotor::alignSensor() {
     // move one electrical revolution backwards
     for (int i = 500; i >=0; i-- ) {
       float angle = _3PI_2 + _2PI * i / 500.0f ;
-      setPhaseVoltage(voltage_sensor_align, 0,  angle);
+      setPhaseVoltage(voltage_align, 0,  angle);
 	    sensor->update();
       _delay(2);
     }
@@ -190,7 +202,7 @@ int StepperMotor::alignSensor() {
   if(!_isset(zero_electric_angle)){
     // align the electrical phases of the motor and sensor
     // set angle -90(270 = 3PI/2) degrees
-    setPhaseVoltage(voltage_sensor_align, 0,  _3PI_2);
+    setPhaseVoltage(voltage_align, 0,  _3PI_2);
     _delay(700);
     // read the sensor
     sensor->update();
