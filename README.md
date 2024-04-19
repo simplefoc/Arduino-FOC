@@ -26,10 +26,14 @@ Therefore this is an attempt to:
    - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
 
 > NEW RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.3
-> - And more bugfixes - see the complete list of 2.3.3 [fixes and PRs](https://github.com/simplefoc/Arduino-FOC/milestone/10?closed=1)
+> - Teensy4 
+>   - support for low-side current sensing
+>   - support for center aligned 6pwm and 3pwm
+> - stm32 
+> - See the complete list of bugfixes and new features of v2.3.3 [fixes and PRs](https://github.com/simplefoc/Arduino-FOC/milestone/10?closed=1)
 
 
-## Arduino *SimpleFOClibrary* v2.3.2
+## Arduino *SimpleFOClibrary* v2.3.3
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">
