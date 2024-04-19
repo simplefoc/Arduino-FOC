@@ -27,10 +27,15 @@ Therefore this is an attempt to:
 
 > NEW RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.3
 > - Teensy4 
->   - support for low-side current sensing
->   - support for center aligned 6pwm and 3pwm
+>   - support for low-side current sensing [#392](https://github.com/simplefoc/Arduino-FOC/pull/392)
+>   - support for center aligned 6pwm and 3pwm (optional) [#392](https://github.com/simplefoc/Arduino-FOC/pull/392)
 > - stm32 
-> - See the complete list of bugfixes and new features of v2.3.3 [fixes and PRs](https://github.com/simplefoc/Arduino-FOC/milestone/10?closed=1)
+>   - support for center aligned pwm (even across multiple timers and motors/drivers) [#374](https://github.com/simplefoc/Arduino-FOC/pull/374), [#388](https://github.com/simplefoc/Arduino-FOC/pull/388)
+>   - support for DMA based low-side current sensing: [#383](https://github.com/simplefoc/Arduino-FOC/pull/383),[#378](https://github.com/simplefoc/Arduino-FOC/pull/378),
+> - KV rating calculation fix [#347](https://github.com/simplefoc/Arduino-FOC/pull/347)
+> - Much more performant Space Vector PWM calculation  [#340](https://github.com/simplefoc/Arduino-FOC/pull/340)
+> - And much more:
+>   - See the complete list of bugfixes and new features of v2.3.3 [fixes and PRs](https://github.com/simplefoc/Arduino-FOC/milestone/10?closed=1)
 
 
 ## Arduino *SimpleFOClibrary* v2.3.3
