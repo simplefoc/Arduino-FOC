@@ -569,7 +569,7 @@ void write_pwm_on_pin(IMXRT_FLEXPWM_t *p, unsigned int submodule, uint8_t channe
 	p->MCTRL |= FLEXPWM_MCTRL_LDOK(mask);
 }
 
-#ifnef TEENSY4_FORCE_CENTER_ALIGNED_3PWM
+#ifdef TEENSY4_FORCE_CENTER_ALIGNED_3PWM
 
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
