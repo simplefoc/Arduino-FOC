@@ -10,7 +10,7 @@
 #pragma message("SimpleFOC: compiling for Teensy 4.x")
 #pragma message("")
 
-// #define AVOID_TEENSY4_CENTER_ALIGNED_3PWM
+// #define TEENSY4_FORCE_CENTER_ALIGNED_3PWM
 
 
 // function finding the TRIG event given the flexpwm timer and the submodule
@@ -83,7 +83,7 @@ void xbar_init() {
 }
 
 // function which finds the flexpwm instance for a pin
-// if it does not belong to the flexpwm timer it returns a nullpointer
+// if it does not belong to the flexpwm timer it returns a null-pointer
 IMXRT_FLEXPWM_t* get_flexpwm(uint8_t pin){
  
   const struct pwm_pin_info_struct *info;
@@ -569,7 +569,7 @@ void write_pwm_on_pin(IMXRT_FLEXPWM_t *p, unsigned int submodule, uint8_t channe
 	p->MCTRL |= FLEXPWM_MCTRL_LDOK(mask);
 }
 
-#ifndef AVOID_TEENSY4_CENTER_ALIGNED_3PWM
+#ifnef TEENSY4_FORCE_CENTER_ALIGNED_3PWM
 
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
