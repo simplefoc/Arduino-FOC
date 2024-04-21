@@ -27,7 +27,7 @@ jobs:
           - esp32:esp32:esp32s3                      # esp32s3
           - STMicroelectronics:stm32:GenF1:pnum=BLUEPILL_F103C8   # stm32 bluepill
           - STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE # stm32 nucleo 
-          - STMicroelectronics:stm32:GenF7:pnum=GENERIC_F746ZGTX  # stm32 nucleo f746zg
+          - STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F746ZG # stm32 nucleo f746zg
           - STMicroelectronics:stm32:GenF4:pnum=GENERIC_F405RGTX  # stm32f405 - odrive
           - STMicroelectronics:stm32:GenL4:pnum=GENERIC_L475RGTX  # stm32l475
           - STMicroelectronics:stm32:Disco:pnum=B_G431B_ESC1      # B-G431-ESC1
@@ -93,7 +93,7 @@ jobs:
             platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
             sketch-names: single_full_control_example.ino, stm32_spi_alt_example.ino, double_full_control_example.ino, stm32_current_control_low_side.ino
             
-          - arduino-boards-fqbn: STMicroelectronics:stm32:GenF7:pnum=GENERIC_F746ZGTX # nucleo f7 one full example
+          - arduino-boards-fqbn: STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F746ZG # nucleo f7 one full example
             platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
             sketch-names: single_full_control_example.ino, stm32_spi_alt_example.ino, double_full_control_example.ino, stm32_current_control_low_side.ino
             
