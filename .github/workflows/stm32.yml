@@ -1,4 +1,4 @@
-name: STM32 build
+name: STM32
 on: [push, pull_request]
 jobs:
   lint:

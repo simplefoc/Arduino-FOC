@@ -1,4 +1,4 @@
-name: SAMD build
+name: SAMD
 on: [push, pull_request]
 jobs:
   lint:

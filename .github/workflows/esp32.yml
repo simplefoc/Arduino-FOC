@@ -1,4 +1,4 @@
-name: ESP32 build
+name: ESP32
 on: [push, pull_request]
 jobs:
   lint:

@@ -1,4 +1,4 @@
-name: AVR build
+name: AVR
 on: [push, pull_request]
 jobs:
   lint:

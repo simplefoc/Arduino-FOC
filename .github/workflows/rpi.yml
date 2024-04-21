@@ -1,4 +1,4 @@
-name: RP2040 build
+name: RP2040
 on: [push, pull_request]
 jobs:
   lint:

@@ -1,4 +1,4 @@
-name: Teensy build
+name: Teensy
 
 on: [push]
 
