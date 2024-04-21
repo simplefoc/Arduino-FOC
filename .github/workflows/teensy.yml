@@ -1,4 +1,4 @@
-name: PlatformIO - Teensy build
+name: Teensy build
 
 on: [push]
 

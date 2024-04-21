@@ -1,7 +1,12 @@
 # SimpleFOClibrary - **Simple** Field Oriented Control (FOC) **library** <br> 
 ### A Cross-Platform FOC implementation for BLDC and Stepper motors<br> based on the Arduino IDE and PlatformIO 
 
-![Library Compile](https://github.com/simplefoc/Arduino-FOC/workflows/Library%20Compile/badge.svg) [![PlatformIO - Teensy build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml) 
+![AVR](https://github.com/simplefoc/Arduino-FOC/workflows/AVR%20build/badge.svg) 
+![ESP32](https://github.com/simplefoc/Arduino-FOC/workflows/ESP32%20build/badge.svg) 
+![STM32](https://github.com/simplefoc/Arduino-FOC/workflows/STM32%20build/badge.svg) 
+![RP2040](https://github.com/simplefoc/Arduino-FOC/workflows/RP2040%20build/badge.svg) 
+![SAMD](https://github.com/simplefoc/Arduino-FOC/workflows/SAMD%20build/badge.svg) 
+[![Teensy build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml) 
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/simplefoc/arduino-foc)
 ![GitHub Release Date](https://img.shields.io/github/release-date/simplefoc/arduino-foc?color=blue)
