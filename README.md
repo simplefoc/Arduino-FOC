@@ -1,7 +1,12 @@
 # SimpleFOClibrary - **Simple** Field Oriented Control (FOC) **library** <br> 
 ### A Cross-Platform FOC implementation for BLDC and Stepper motors<br> based on the Arduino IDE and PlatformIO 
 
-![Library Compile](https://github.com/simplefoc/Arduino-FOC/workflows/Library%20Compile/badge.svg) [![PlatformIO - Teensy build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml) 
+[![AVR build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/arduino.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/arduino.yml)
+[![STM32 build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/stm32.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/stm32.yml)
+[![ESP32 build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/esp32.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/esp32.yml)
+[![RP2040 build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/rpi.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/rpi.yml)
+[![SAMD build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/samd.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/samd.yml)
+[![Teensy build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml) 
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/simplefoc/arduino-foc)
 ![GitHub Release Date](https://img.shields.io/github/release-date/simplefoc/arduino-foc?color=blue)
