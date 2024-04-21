@@ -71,8 +71,6 @@ void setup() {
   // Better option would be to use voltage divisor to set exact value
   pinMode(OC_ADJ,OUTPUT);
   digitalWrite(OC_ADJ,HIGH);
-  pinMode(OC_GAIN,OUTPUT);
-  digitalWrite(OC_GAIN,LOW);
 
 
   // driver config
