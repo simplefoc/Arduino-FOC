@@ -19,11 +19,9 @@ Additionally, most of the efforts at this moment are still channeled towards the
 Therefore this is an attempt to: 
 - 🎯 Demystify FOC algorithm and make a robust but simple Arduino library: [Arduino *SimpleFOClibrary*](https://docs.simplefoc.com/arduino_simplefoc_library_showcase)
   - <i>Support as many <b>motor + sensor + driver + mcu</b> combinations out there</i>
-- 🎯 Develop a modular FOC supporting BLDC driver boards:
-   - ***NEW*** 📢: *Minimalistic* BLDC driver (<3Amps) :   [<span class="simple">Simple<b>FOC</b>Mini</span> ](https://github.com/simplefoc/SimpleFOCMini).
-   - *Low-power* gimbal driver (<5Amps) :  [*Arduino Simple**FOC**Shield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
-   - *Medium-power* BLDC driver (<30Amps): [Arduino <span class="simple">Simple<b>FOC</b>PowerShield</span> ](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
-   - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
+- 🎯 Develop modular and easy to use FOC supporting BLDC driver boards
+   - For official driver boards see [<span class="simple">Simple<span class="foc">FOC</span>Boards</span>](boards)
+   - Many many more boards developed by the community members, see [<span class="simple">Simple<span class="foc">FOC</span>Community</span>](https://community.simplefoc.com/)
 
 > NEW RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.3
 > - Teensy4 
@@ -31,7 +29,8 @@ Therefore this is an attempt to:
 >   - support for center aligned 6pwm and 3pwm (optional) [#392](https://github.com/simplefoc/Arduino-FOC/pull/392)
 > - stm32 
 >   - support for center aligned pwm (even across multiple timers and motors/drivers) [#374](https://github.com/simplefoc/Arduino-FOC/pull/374), [#388](https://github.com/simplefoc/Arduino-FOC/pull/388)
->   - support for DMA based low-side current sensing: [#383](https://github.com/simplefoc/Arduino-FOC/pull/383),[#378](https://github.com/simplefoc/Arduino-FOC/pull/378),
+>   - support for DMA based low-side current sensing: [#383](https://github.com/simplefoc/Arduino-FOC/pull/383),[#378](https://github.com/simplefoc/Arduino-FOC/pull/378)
+>   - support for f7 architecture [#388](https://github.com/simplefoc/Arduino-FOC/pull/388),[#394](https://github.com/simplefoc/Arduino-FOC/pull/394)
 > - KV rating calculation fix [#347](https://github.com/simplefoc/Arduino-FOC/pull/347)
 > - Much more performant Space Vector PWM calculation  [#340](https://github.com/simplefoc/Arduino-FOC/pull/340)
 > - And much more:
