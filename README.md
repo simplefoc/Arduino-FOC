@@ -28,18 +28,8 @@ Therefore this is an attempt to:
    - For official driver boards see [<span class="simple">Simple<span class="foc">FOC</span>Boards</span>](https://docs.simplefoc.com/boards)
    - Many many more boards developed by the community members, see [<span class="simple">Simple<span class="foc">FOC</span>Community</span>](https://community.simplefoc.com/)
 
-> NEW RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.3
-> - Teensy4 
->   - support for low-side current sensing [#392](https://github.com/simplefoc/Arduino-FOC/pull/392)
->   - support for center aligned 6pwm and 3pwm (optional) [#392](https://github.com/simplefoc/Arduino-FOC/pull/392)
-> - stm32 
->   - support for center aligned pwm (even across multiple timers and motors/drivers) [#374](https://github.com/simplefoc/Arduino-FOC/pull/374), [#388](https://github.com/simplefoc/Arduino-FOC/pull/388)
->   - support for DMA based low-side current sensing: [#383](https://github.com/simplefoc/Arduino-FOC/pull/383),[#378](https://github.com/simplefoc/Arduino-FOC/pull/378)
->   - support for f7 architecture [#388](https://github.com/simplefoc/Arduino-FOC/pull/388),[#394](https://github.com/simplefoc/Arduino-FOC/pull/394)
-> - KV rating calculation fix [#347](https://github.com/simplefoc/Arduino-FOC/pull/347)
-> - Much more performant Space Vector PWM calculation  [#340](https://github.com/simplefoc/Arduino-FOC/pull/340)
-> - And much more:
->   - See the complete list of bugfixes and new features of v2.3.3 [fixes and PRs](https://github.com/simplefoc/Arduino-FOC/milestone/10?closed=1)
+> NEXT RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.4
+> - Current sensing support for Stepper motors (lowside and inline)
 
 
 ## Arduino *SimpleFOClibrary* v2.3.3
