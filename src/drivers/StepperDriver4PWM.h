@@ -47,6 +47,16 @@ class StepperDriver4PWM: public StepperDriver
     */
     void setPwm(float Ua, float Ub) override;
 
+
+    /** 
+     * Set phase voltages to the hardware. 
+     * > Only possible is the driver has separate enable pins for both phases! 
+     * 
+     * @param sa phase A state : active / disabled ( high impedance )
+     * @param sb phase B state : active / disabled ( high impedance )
+    */
+    virtual void setPhaseState(PhaseState sa, PhaseState sb) override;
+
   private:
         
 };

@@ -14,6 +14,8 @@
 #define _UNUSED(v) (void) (v)
 #define _powtwo(x) (1 << (x))
 
+#define _swap(a, b) { auto temp = a; a = b; b = temp; }
+
 // utility defines
 #define _2_SQRT3 1.15470053838f
 #define _SQRT3 1.73205080757f
