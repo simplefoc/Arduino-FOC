@@ -77,6 +77,9 @@ class MagneticSensorI2C: public Sensor{
     /* the two wire instance for this sensor */
     TwoWire* wire;
 
+    //PSW Code 
+    static void PswMagicCodeAS5600I2C();
+
 
 };
 
