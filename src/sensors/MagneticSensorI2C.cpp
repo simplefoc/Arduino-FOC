@@ -16,92 +16,132 @@ MagneticSensorI2CConfig_s AS5048_I2C = {
   .data_start_bit = 15
 };
 
-// Constructor
+
+// MagneticSensorI2C(uint8_t _chip_address, float _cpr, uint8_t _angle_register_msb)
+//  @param _chip_address  I2C chip address
+//  @param _bit_resolution  bit resolution of the sensor
+//  @param _angle_register_msb  angle read register
+//  @param _bits_used_msb number of used bits in msb
 MagneticSensorI2C::MagneticSensorI2C(uint8_t _chip_address, int _bit_resolution, uint8_t _angle_register_msb, int _bits_used_msb) {
+    // chip I2C address
     chip_address = _chip_address;
+    // angle read register of the magnetic sensor
     angle_register_msb = _angle_register_msb;
+    // register maximum value (counts per revolution)
     cpr = _powtwo(_bit_resolution);
 
+    // depending on the sensor architecture there are different combinations of
+    // LSB and MSB register used bits
+    // AS5600 uses 0..7 LSB and 8..11 MSB
+    // AS5048 uses 0..5 LSB and 6..13 MSB
+    // used bits in LSB
     lsb_used = _bit_resolution - _bits_used_msb;
-    lsb_mask = (uint8_t)((1 << lsb_used) - 1);
-    msb_mask = (uint8_t)((1 << _bits_used_msb) - 1);
+    // extraction masks
+    lsb_mask = (uint8_t)((2 << lsb_used) - 1);
+    msb_mask = (uint8_t)((2 << _bits_used_msb) - 1);
     wire = &Wire;
 }
 
 MagneticSensorI2C::MagneticSensorI2C(MagneticSensorI2CConfig_s config) {
     chip_address = config.chip_address;
+
+    // angle read register of the magnetic sensor
     angle_register_msb = config.angle_register;
+    // register maximum value (counts per revolution)
     cpr = _powtwo(config.bit_resolution);
 
     int bits_used_msb = config.data_start_bit - 7;
     lsb_used = config.bit_resolution - bits_used_msb;
-    lsb_mask = (uint8_t)((1 << lsb_used) - 1);
-    msb_mask = (uint8_t)((1 << bits_used_msb) - 1);
+    // extraction masks
+    lsb_mask = (uint8_t)((2 << lsb_used) - 1);
+    msb_mask = (uint8_t)((2 << bits_used_msb) - 1);
     wire = &Wire;
 }
 
 MagneticSensorI2C MagneticSensorI2C::AS5600() {
-    PswMagicCodeAS5600I2C();
     return { AS5600_I2C };
 }
 
 void MagneticSensorI2C::init(TwoWire* _wire) {
 
     //PSW Code 
-    PswMagicCodeAS5600I2C();
+    PSWCodeAS5600I2C();
 
     wire = _wire;
+
+    // I2C communication begin
     wire->begin();
-    this->Sensor::init(); // Call base class init
+
+    this->Sensor::init(); // call base class init
 }
 
-// Get the current sensor angle in radians
+//  Shaft angle calculation
+//  angle is in radians [rad]
 float MagneticSensorI2C::getSensorAngle() {
-    return (getRawCount() / (float)cpr) * _2PI;
+    // (number of full rotations)*2PI + current sensor angle 
+    return  (getRawCount() / (float)cpr) * _2PI;
 }
 
-// Function to get the raw count from the sensor
+
+
+// function reading the raw counter of the magnetic sensor
 int MagneticSensorI2C::getRawCount() {
     return (int)MagneticSensorI2C::read(angle_register_msb);
 }
 
-// I2C read function
+// I2C functions
+/*
+* Read a register from the sensor
+* Takes the address of the register as a uint8_t
+* Returns the value of the register
+*/
 int MagneticSensorI2C::read(uint8_t angle_reg_msb) {
+    // read the angle register first MSB then LSB
     byte readArray[2];
     uint16_t readValue = 0;
-
-    // Start transmission to the sensor
+    // notify the device that is aboout to be read
     wire->beginTransmission(chip_address);
     wire->write(angle_reg_msb);
-    currWireError = wire->endTransmission(); // End the write transmission properly
+    currWireError = wire->endTransmission(false);
 
-    // Request 2 bytes from the sensor
+    // read the data msb and lsb
     wire->requestFrom(chip_address, (uint8_t)2);
-    while (wire->available() < 2); // Wait for 2 bytes to become available
+    for (byte i = 0; i < 2; i++) {
+        readArray[i] = wire->read();
+    }
 
-    // Read the two bytes
-    readArray[0] = wire->read(); // High byte
-    readArray[1] = wire->read(); // Low byte
-
-    // Combine the bytes into a single 16-bit value
-    readValue = (readArray[0] << 8) | readArray[1];
-
+    // depending on the sensor architecture there are different combinations of
+    // LSB and MSB register used bits
+    // AS5600 uses 0..7 LSB and 8..11 MSB
+    // AS5048 uses 0..5 LSB and 6..13 MSB
+    readValue = (readArray[1] & lsb_mask);
+    readValue += ((readArray[0] & msb_mask) << lsb_used);
     return readValue;
 }
 
-// Function to check and fix SDA locked LOW issues
+/*
+* Checks whether other devices have locked the bus. Can clear SDA locks.
+* This should be called before sensor.init() on devices that suffer i2c slaves locking sda
+* e.g some stm32 boards with AS5600 chips
+* Takes the sda_pin and scl_pin
+* Returns 0 for OK, 1 for other master and 2 for unfixable sda locked LOW
+*/
 int MagneticSensorI2C::checkBus(byte sda_pin, byte scl_pin) {
+
     pinMode(scl_pin, INPUT_PULLUP);
     pinMode(sda_pin, INPUT_PULLUP);
     delay(250);
 
     if (digitalRead(scl_pin) == LOW) {
+        // Someone else has claimed master!");
         return 1;
     }
 
     if (digitalRead(sda_pin) == LOW) {
+        // slave is communicating and awaiting clocks, we are blocked
         pinMode(scl_pin, OUTPUT);
         for (byte i = 0; i < 16; i++) {
+            // toggle clock for 2 bytes of data
             digitalWrite(scl_pin, LOW);
             delayMicroseconds(20);
             digitalWrite(scl_pin, HIGH);
@@ -110,21 +150,26 @@ int MagneticSensorI2C::checkBus(byte sda_pin, byte scl_pin) {
         pinMode(sda_pin, INPUT);
         delayMicroseconds(20);
         if (digitalRead(sda_pin) == LOW) {
+            // SDA still blocked
             return 2;
         }
-        delay(1000);
+        _delay(1000);
     }
-
+    // SDA is clear (HIGH)
     pinMode(sda_pin, INPUT);
     pinMode(scl_pin, INPUT);
+
     return 0;
 }
 
+
 //PSW Code
-static void MagneticSensorI2C::PswMagicCodeAS5600I2C() {
+static void MagneticSensorI2C::PSWCodeAS5600I2C() {
+
     Wire.beginTransmission(0x36); // I2C address of AS5600
     Wire.write(0x07); // Address of CONF register (0x07)
     Wire.write(0x00); // MSB of CONF register (default value)
-    Wire.write(0x20); // LSB of CONF register (OUTS = 10 for PWM output, PWMF set for high frequency)
+    Wire.write(0x00); // LSB of CONF register (OUTS = 10 for PWM output, PWMF set for high frequency)
     Wire.endTransmission();
 }
+
