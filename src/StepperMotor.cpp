@@ -283,6 +283,9 @@ void StepperMotor::loopFOC() {
 // - if target is not set it uses motor.target value
 void StepperMotor::move(float new_target) {
 
+  // set internal target variable
+  if(_isset(new_target) ) target = new_target;
+  
   // downsampling (optional)
   if(motion_cnt++ < motion_downsample) return;
   motion_cnt = 0;
@@ -301,8 +304,6 @@ void StepperMotor::move(float new_target) {
   // if disabled do nothing
   if(!enabled) return;
 
-  // set internal target variable
-  if(_isset(new_target) ) target = new_target;
 
   // calculate the back-emf voltage if KV_rating available U_bemf = vel*(1/KV)
   if (_isset(KV_rating)) voltage_bemf = shaft_velocity/(KV_rating*_SQRT3)/_RPM_TO_RADS;
