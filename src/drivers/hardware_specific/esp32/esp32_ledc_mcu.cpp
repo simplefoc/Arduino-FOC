@@ -293,8 +293,8 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
 
 
 // TODO - implement 6PWM
-void _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
-  SIMPLEFOC_DEBUG("EP32-DRV: 6PWM will be implemented soon for LEDC driver!");
+void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
+  SIMPLEFOC_DEBUG("EP32-DRV:  6PWM not supported!");
   return SIMPLEFOC_DRIVER_INIT_FAILED;
 }
 void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params) {
