@@ -40,7 +40,7 @@ typedef struct {
   int pinA;
   mcpwm_dev_t* mcpwm_num;
   mcpwm_unit_t mcpwm_unit;
-  mcpwm_operator_t mcpwm_operator;
+  mcpwm_operator_t  mcpwm_operator;
   mcpwm_io_signals_t mcpwm_a;
   mcpwm_io_signals_t mcpwm_b;
   mcpwm_io_signals_t mcpwm_c;
@@ -50,8 +50,8 @@ typedef struct {
   int pin1A;
   mcpwm_dev_t* mcpwm_num;
   mcpwm_unit_t mcpwm_unit;
-  mcpwm_operator_t mcpwm_operator1;
-  mcpwm_operator_t mcpwm_operator2;
+  mcpwm_operator_t  mcpwm_operator1;
+  mcpwm_operator_t  mcpwm_operator2;
   mcpwm_io_signals_t mcpwm_1a;
   mcpwm_io_signals_t mcpwm_1b;
   mcpwm_io_signals_t mcpwm_2a;
@@ -62,7 +62,7 @@ typedef struct {
   int pin1pwm;
   mcpwm_dev_t* mcpwm_num;
   mcpwm_unit_t mcpwm_unit;
-  mcpwm_operator_t mcpwm_operator;
+  mcpwm_operator_t  mcpwm_operator;
   mcpwm_io_signals_t mcpwm_a;
   mcpwm_io_signals_t mcpwm_b;
 } stepper_2pwm_motor_slots_t;
@@ -71,8 +71,8 @@ typedef struct {
   int pinAH;
   mcpwm_dev_t* mcpwm_num;
   mcpwm_unit_t mcpwm_unit;
-  mcpwm_operator_t mcpwm_operator1;
-  mcpwm_operator_t mcpwm_operator2;
+  mcpwm_operator_t  mcpwm_operator1;
+  mcpwm_operator_t  mcpwm_operator2;
   mcpwm_io_signals_t mcpwm_ah;
   mcpwm_io_signals_t mcpwm_bh;
   mcpwm_io_signals_t mcpwm_ch;
@@ -86,8 +86,8 @@ typedef struct ESP32MCPWMDriverParams {
   long pwm_frequency;
   mcpwm_dev_t* mcpwm_dev;
   mcpwm_unit_t mcpwm_unit;
-  mcpwm_operator_t mcpwm_operator1;
-  mcpwm_operator_t mcpwm_operator2;
+  mcpwm_operator_t  mcpwm_operator1;
+  mcpwm_operator_t  mcpwm_operator2;
   float deadtime;
 } ESP32MCPWMDriverParams;
 
