@@ -2,7 +2,7 @@
 #include "../../../drivers/hardware_api.h"
 #include "../../../drivers/hardware_specific/esp32/esp32_driver_mcpwm.h"
 
-#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC)
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC) 
 
 #include "esp32_adc_driver.h"
 

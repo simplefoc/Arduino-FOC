@@ -27,6 +27,7 @@
 
 
 
+#define SIMPLEFOC_ESP32_USELEDC
 
 // flag returned if driver init fails
 #define SIMPLEFOC_DRIVER_INIT_FAILED ((void*)-1)
