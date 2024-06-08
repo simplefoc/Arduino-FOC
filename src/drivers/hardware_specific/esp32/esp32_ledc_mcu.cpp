@@ -75,11 +75,12 @@ bool _ledcAttachChannelAdvanced(uint8_t pin, int _channel, int _group, uint32_t 
   ledc_timer.freq_hz = freq;
   ledc_timer.clk_cfg = LEDC_AUTO_CLK;
   if (ledc_timer_config(&ledc_timer) != ESP_OK) {
+    SIMPLEFOC_DEBUG("EP32-DRV: ERROR - Failed to configure the timer:", LEDC_TIMER_0);
     return false;
   }
 
   // if active high is false invert
-  int pin_high_level = SIMPLEFOC_PWM_ACTIVE_HIGH ? 1 : 0;
+  int pin_high_level = SIMPLEFOC_PWM_ACTIVE_HIGH ? 0 : 1;
   if (inverted) pin_high_level = !pin_high_level;
 
   uint32_t duty = ledc_get_duty(group, channel);
@@ -91,12 +92,21 @@ bool _ledcAttachChannelAdvanced(uint8_t pin, int _channel, int _group, uint32_t 
   ledc_channel.gpio_num = pin;
   ledc_channel.duty = duty;
   ledc_channel.hpoint = 0;
-  ledc_channel.flags.output_invert = pin_high_level;
+  ledc_channel.flags.output_invert = pin_high_level; // 0 is active high, 1 is active low
   if (ledc_channel_config(&ledc_channel)!= ESP_OK) {
+    SIMPLEFOC_DEBUG("EP32-DRV: ERROR - Failed to attach channel:", _channel);
     return false;
   }
 
   return true;
+}
+
+
+// returns the number of available channels in the group
+int _availableGroupChannels(int group){
+  if(group == 0) return LEDC_CHANNELS_GROUP0 - group_channels_used[0];
+  else if(group == 1) return LEDC_CHANNELS_GROUP1 - group_channels_used[1];
+  return 0;
 }
 
 // returns the number of the group that has enough channels available
@@ -105,14 +115,8 @@ bool _ledcAttachChannelAdvanced(uint8_t pin, int _channel, int _group, uint32_t 
 // NOT IMPLEMENTED BUT COULD BE USEFUL
 // returns 2 if no group has enough channels but combined they do 
 int _findGroupWithChannelsAvailable(int no_channels){
-  if (group_channels_used[0] + no_channels < LEDC_CHANNELS_GROUP0){
-    return 0;
-  }else if (group_channels_used[1] + no_channels < LEDC_CHANNELS_GROUP1){
-    return 1;
-  }
-  // else if (group_channels_used[0] + group_channels_used[1] + no_channels < LEDC_CHANNELS){
-  //   return 2;
-  // }
+  if(no_channels <= _availableGroupChannels(0)) return 0;
+  if(no_channels <= _availableGroupChannels(1)) return 1;
   return -1;
 }
 
@@ -132,11 +136,12 @@ void* _configure1PWM(long pwm_frequency, const int pinA) {
 
   // configure the channel
   group_channels_used[group] += 1;
-  if(!_ledcAttachChannelAdvanced(pinA, group_channels_used[group], group, pwm_frequency, _PWM_RES_BIT, false)) {
-    SIMPLEFOC_DEBUG("EP32-DRV: ERROR - Failed to attach channel:", group_channels_used[group]);
+  if(!_ledcAttachChannelAdvanced(pinA, group_channels_used[group], group, pwm_frequency, _PWM_RES_BIT, false)){
+    SIMPLEFOC_DEBUG("EP32-DRV: ERROR - Failed to configure pin:",  pinA);
     return SIMPLEFOC_DRIVER_INIT_FAILED;
   }
-    
+  
+  
   ESP32LEDCDriverParams* params = new ESP32LEDCDriverParams {
     .channels = {  static_cast<ledc_channel_t>(group_channels_used[group]) },
     .groups = { (ledc_mode_t)group },
@@ -177,9 +182,10 @@ void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
   for(int i = 0; i < 2; i++){
     group_channels_used[group]++;
     if(!_ledcAttachChannelAdvanced(pins[i], group_channels_used[group], group, pwm_frequency, _PWM_RES_BIT, false)){
-      SIMPLEFOC_DEBUG("EP32-DRV: ERROR - Failed to attach channel:", group_channels_used[group]);
+      SIMPLEFOC_DEBUG("EP32-DRV: ERROR - Failed to configure pin:",  pins[i]);
       return SIMPLEFOC_DRIVER_INIT_FAILED;
     }
+    
     params->channels[i] = static_cast<ledc_channel_t>(group_channels_used[group]);
     params->groups[i] = (ledc_mode_t)group;
   }
@@ -213,9 +219,10 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
   for(int i = 0; i < 3; i++){
     group_channels_used[group]++;
     if(!_ledcAttachChannelAdvanced(pins[i], group_channels_used[group], group, pwm_frequency, _PWM_RES_BIT, false)){
-      SIMPLEFOC_DEBUG("EP32-DRV: ERROR - Failed to attach channel:", group_channels_used[group]);
+      SIMPLEFOC_DEBUG("EP32-DRV: ERROR - Failed to configure pin:",  pins[i]);
       return SIMPLEFOC_DRIVER_INIT_FAILED;
     }
+    
     params->channels[i] = static_cast<ledc_channel_t>(group_channels_used[group]);
     params->groups[i] = (ledc_mode_t)group;
   }
@@ -229,31 +236,49 @@ void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const in
   if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
 
-  SIMPLEFOC_DEBUG("EP32-DRV: Configuring 4PWM");
-  // check if enough channels available
-  int group = _findGroupWithChannelsAvailable(4);
-  if (group < 0){
-    SIMPLEFOC_DEBUG("EP32-DRV: ERROR - Not enough channels available!");
-    return SIMPLEFOC_DRIVER_INIT_FAILED;
-  }
-  SIMPLEFOC_DEBUG("EP32-DRV: 4PWM setup in group: ", (group));
+
   ESP32LEDCDriverParams* params = new ESP32LEDCDriverParams {
     .channels = {  static_cast<ledc_channel_t>(0)},
     .groups = { (ledc_mode_t)0 },
     .pwm_frequency = pwm_frequency
   };
 
-  int pins[4] = {pinA, pinB, pinC, pinD};
-  for(int i = 0; i < 4; i++){
-    group_channels_used[group]++;
-    if(!_ledcAttachChannelAdvanced(pins[i], group_channels_used[group], group, pwm_frequency, _PWM_RES_BIT, false)){
-      SIMPLEFOC_DEBUG("EP32-DRV: ERROR - Failed to attach channel:", group_channels_used[group]);
+  SIMPLEFOC_DEBUG("EP32-DRV: Configuring 4PWM");
+  // check if enough channels available
+  int group = _findGroupWithChannelsAvailable(4);
+  if (group < 0){
+    // not enough channels available on any individual group
+    // check if their combined number is enough (two channels per group)
+    if(_availableGroupChannels(0) >=2 && _availableGroupChannels(1) >=2){
+      group = 2;
+      SIMPLEFOC_DEBUG("EP32-DRV: WARNING: Not enough available ledc channels for 4pwm in a single group! Using two groups!");
+      SIMPLEFOC_DEBUG("EP32-DRV: 4PWM setup in groups: 0 and 1!");
+      params->groups[2] = (ledc_mode_t)1;
+      params->groups[3] = (ledc_mode_t)1;
+    }else{
+      SIMPLEFOC_DEBUG("EP32-DRV: ERROR - Not enough available ledc channels for 4pwm!");
       return SIMPLEFOC_DRIVER_INIT_FAILED;
     }
-    params->channels[i] = static_cast<ledc_channel_t>(group_channels_used[group]);
-    params->groups[i] = (ledc_mode_t)group;
+  }else{
+    SIMPLEFOC_DEBUG("EP32-DRV: 4PWM setup in group: ", (group));
+    params->groups[0] = (ledc_mode_t)group;
+    params->groups[1] = (ledc_mode_t)group;
+    params->groups[2] = (ledc_mode_t)group;
+    params->groups[3] = (ledc_mode_t)group;
   }
-  SIMPLEFOC_DEBUG("EP32-DRV: 4PWM setup successful in group: ", (group));
+
+
+
+  int pins[4] = {pinA, pinB, pinC, pinD};
+  for(int i = 0; i < 4; i++){
+    group_channels_used[params->groups[i]]++;
+    if(!_ledcAttachChannelAdvanced(pins[i], group_channels_used[params->groups[i]], params->groups[i], pwm_frequency, _PWM_RES_BIT, false)){
+      SIMPLEFOC_DEBUG("EP32-DRV: ERROR - Failed to configure pin:",  pins[i]);
+      return SIMPLEFOC_DRIVER_INIT_FAILED;
+    }
+    params->channels[i] = static_cast<ledc_channel_t>(group_channels_used[params->groups[i]]);
+  }
+  SIMPLEFOC_DEBUG("EP32-DRV: 4PWM setup successful!");
   return params;
 }
 
@@ -292,13 +317,81 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
 }
 
 
-// TODO - implement 6PWM
 void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
-  SIMPLEFOC_DEBUG("EP32-DRV:  6PWM not supported!");
-  return SIMPLEFOC_DRIVER_INIT_FAILED;
+  if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
+  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
+
+  SIMPLEFOC_DEBUG("EP32-DRV: Configuring 6PWM");
+  SIMPLEFOC_DEBUG("EP32-DRV: WARNING - 6PWM on LEDC is poorly supported and not tested, consider using MCPWM driver instead!");
+  // check if enough channels available
+  int group = _findGroupWithChannelsAvailable(6);
+  if (group < 0){
+    SIMPLEFOC_DEBUG("EP32-DRV: ERROR - Not enough channels available!");
+    return SIMPLEFOC_DRIVER_INIT_FAILED;
+  }
+  SIMPLEFOC_DEBUG("EP32-DRV: 6PWM setup in group: ", (group));
+  ESP32LEDCDriverParams* params = new ESP32LEDCDriverParams {
+    .channels = {  static_cast<ledc_channel_t>(0)},
+    .groups = { (ledc_mode_t)group },
+    .pwm_frequency = pwm_frequency,
+    .dead_zone = dead_zone
+  };
+
+  int high_side_invert = SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH ? false : true;
+  int low_side_invert = SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH ? true : false;
+
+  int pin_pairs[6][2] = {
+    {pinA_h, pinA_l},
+    {pinB_h, pinB_l},
+    {pinC_h, pinC_l}
+  };
+
+  for(int i = 0; i < 3; i++){
+    group_channels_used[group]++;
+    if(!_ledcAttachChannelAdvanced(pin_pairs[i][0], group_channels_used[group], group, pwm_frequency, _PWM_RES_BIT, high_side_invert)){
+      SIMPLEFOC_DEBUG("EP32-DRV: ERROR - Failed to configure pin:",  pin_pairs[i][0]);
+      return SIMPLEFOC_DRIVER_INIT_FAILED;
+    }
+    
+    params->channels[2*i] = static_cast<ledc_channel_t>(group_channels_used[group]);
+    params->groups[2*i] = (ledc_mode_t)group;
+
+    group_channels_used[group]++;
+    if(!_ledcAttachChannelAdvanced(pin_pairs[i][1], group_channels_used[group], group, pwm_frequency, _PWM_RES_BIT, low_side_invert)){
+      SIMPLEFOC_DEBUG("EP32-DRV: ERROR - Failed to configure pin:",  pin_pairs[i][0]);
+      return SIMPLEFOC_DRIVER_INIT_FAILED;
+    }
+    
+    params->channels[2*i+1] = static_cast<ledc_channel_t>(group_channels_used[group]);
+    params->groups[2*i+1] = (ledc_mode_t)group;
+  }
+  
+  SIMPLEFOC_DEBUG("EP32-DRV: 6PWM setup successful in group: ", (group));
+  return params;
 }
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params) {
-  SIMPLEFOC_DEBUG("EP32-DRV: 6PWM not supported");
+
+void _setPwmPairDutyCycle( void* params, int ind_h, int ind_l, float val, float dead_time, PhaseState ps){
+  float pwm_h = _constrain(val - dead_time/2.0, 0, 1.0);
+  float pwm_l = _constrain(val + dead_time/2.0, 0, 1.0);
+
+  // determine the phase state and set the pwm accordingly
+  // deactivate phases if needed
+  if((ps == PhaseState::PHASE_OFF) || (ps == PhaseState::PHASE_LO)){
+    _writeDutyCycle(0, params, ind_h);
+  }else{
+    _writeDutyCycle(pwm_h, params, ind_h);
+  }
+  if((ps == PhaseState::PHASE_OFF) || (ps == PhaseState::PHASE_HI)){
+    _writeDutyCycle(0, params, ind_l);
+  }else{
+    _writeDutyCycle(pwm_l, params, ind_l);
+  }
+}
+
+void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c,  PhaseState *phase_state, void* params){
+  _setPwmPairDutyCycle(params, 0, 1, dc_a, ((ESP32LEDCDriverParams*)params)->dead_zone, phase_state[0]);
+  _setPwmPairDutyCycle(params, 2, 3, dc_b, ((ESP32LEDCDriverParams*)params)->dead_zone, phase_state[1]);
+  _setPwmPairDutyCycle(params, 4, 5, dc_c, ((ESP32LEDCDriverParams*)params)->dead_zone, phase_state[2]);
 }
 
 #endif
