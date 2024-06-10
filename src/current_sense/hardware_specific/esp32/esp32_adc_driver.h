@@ -5,7 +5,7 @@
 
 #include "Arduino.h"
 
-#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED)  && !defined(SIMPLEFOC_ESP32_USELEDC)
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED)  && !defined(SIMPLEFOC_ESP32_USELEDC) && 0
 /*
  * Get ADC value for pin
  * */
