@@ -7,6 +7,13 @@
 #pragma message("")
 
 #include "driver/ledc.h"
+#include "esp_idf_version.h"
+
+ 
+// version check - this ledc driver is specific for ESP-IDF 5.x and arduino-esp32 3.x
+#if ESP_IDF_VERSION_MAJOR < 5 
+#error SimpleFOC: ESP-IDF version 4 or lower detected. Please update to ESP-IDF 5.x and Arduino-esp32 3.0 (or higher)
+#endif
 
 #define _PWM_FREQUENCY 25000 // 25khz
 #define _PWM_FREQUENCY_MAX 38000 // 38khz max to be able to have 10 bit pwm resolution
