@@ -123,3 +123,9 @@ __attribute__((weak)) void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc
   _UNUSED(phase_state);
   _UNUSED(params);
 }
+
+// function enabling the power stage
+// - hardware specific
+__attribute__((weak)) void* _enablePWM(void* params){
+  return params;
+}

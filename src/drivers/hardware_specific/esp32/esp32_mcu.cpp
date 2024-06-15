@@ -218,4 +218,17 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_
   _setDutyCycle(((ESP32MCPWMDriverParams*)params)->comparator[5], period,  (phase_state[2] == PHASE_ON || phase_state[2] == PHASE_LO) ? dc_c+dead_zone : 1.0f);
 #endif
 }
+
+void* _enablePWM(void* params){
+  SIMPLEFOC_ESP32_DEBUG("Enabling timers.");
+  ESP32MCPWMDriverParams*  p = (ESP32MCPWMDriverParams*)params;
+  for (int i=0; i<2; i++){
+    if (p->timers[i] == nullptr) continue; // if only one timer
+    if(!_enableTimer(p->timers[i])){
+      return SIMPLEFOC_DRIVER_INIT_FAILED;
+    }
+  }
+  return params;
+}
+
 #endif

@@ -143,5 +143,13 @@ void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int
  */
 void _setDutyCycle(mcpwm_cmpr_handle_t cmpr, uint32_t mcpwm_period, float duty_cycle);
 
+/** 
+ * Function checking if timer is enabled
+ * @param timer - mcpwm timer handle
+ * 
+ * @returns true if timer is enabled, false otherwise
+ */
+bool _enableTimer(mcpwm_timer_handle_t timer);
+
 #endif
 #endif

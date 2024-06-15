@@ -320,10 +320,6 @@ void* _configure6PWMPinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no,
     _configureCenterAlign(params->generator[2*i+1],params->comparator[2*i+1], SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH); 
   }
 #endif
-  SIMPLEFOC_ESP32_DEBUG("Enabling the timer: "+String(timer_no));
-  // Enable and start timer
-  CHECK_ERR(mcpwm_timer_enable(params->timers[0]), "Failed to enable timer!");
-  CHECK_ERR(mcpwm_timer_start_stop(params->timers[0], MCPWM_TIMER_START_NO_STOP), "Failed to start the timer!");
 
   _delay(1);
   SIMPLEFOC_ESP32_DEBUG("MCPWM configured!");
@@ -424,12 +420,6 @@ void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int
     _configureCenterAlign(params->generator[i],params->comparator[i], !SIMPLEFOC_PWM_ACTIVE_HIGH);
   }
 
-  SIMPLEFOC_ESP32_DEBUG("Enabling the timer: "+String(timer_no));
-  // Enable and start timer if not shared
-  if (!shared_timer) CHECK_ERR(mcpwm_timer_enable(params->timers[0]), "Failed to enable timer!");
-  // start the timer
-  CHECK_ERR(mcpwm_timer_start_stop(params->timers[0], MCPWM_TIMER_START_NO_STOP), "Failed to start the timer!");
-
   _delay(1);
   SIMPLEFOC_ESP32_DEBUG("MCPWM configured!");
   // save the configuration variables for later
@@ -439,9 +429,19 @@ void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int
 }
 
 // function setting the duty cycle to the MCPWM pin
-void _setDutyCycle(mcpwm_cmpr_handle_t cmpr, uint32_t mcpwm_period, float duty_cycle){
-    float duty = constrain(duty_cycle, 0.0, 1.0);
-    mcpwm_comparator_set_compare_value(cmpr, (uint32_t)(mcpwm_period*duty));
+bool _enableTimer(mcpwm_timer_handle_t timer){
+  int ret = mcpwm_timer_enable(timer); // enable the timer
+  if (ret ==  ESP_ERR_INVALID_STATE){ // if already enabled
+    SIMPLEFOC_ESP32_DEBUG("Timer already enabled: "+String(i));
+  }else if(ret != ESP_OK){
+    SIMPLEFOC_ESP32_DEBUG("Failed to enable timer!"); // if failed
+    return false;
+  }
+  if(mcpwm_timer_start_stop(timer, MCPWM_TIMER_START_NO_STOP)!=ESP_OK){
+    SIMPLEFOC_ESP32_DEBUG("Failed to start the timer!");
+    return false;
+  }
 }
+
 
 #endif

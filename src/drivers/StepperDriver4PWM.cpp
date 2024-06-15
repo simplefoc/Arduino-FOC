@@ -20,6 +20,8 @@ StepperDriver4PWM::StepperDriver4PWM(int ph1A,int ph1B,int ph2A,int ph2B,int en1
 
 // enable motor driver
 void  StepperDriver4PWM::enable(){
+    // enable hardware if available
+    _enablePWM(params);
     // enable_pin the driver - if enable_pin pin available
     if ( _isset(enable_pin1) ) digitalWrite(enable_pin1, HIGH);
     if ( _isset(enable_pin2) ) digitalWrite(enable_pin2, HIGH);

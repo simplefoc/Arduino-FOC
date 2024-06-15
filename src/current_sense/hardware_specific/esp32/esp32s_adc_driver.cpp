@@ -1,6 +1,6 @@
 #include "esp32_adc_driver.h"
 
-#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3))  && !defined(SIMPLEFOC_ESP32_USELEDC) && 0
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3))  && !defined(SIMPLEFOC_ESP32_USELEDC) 
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
