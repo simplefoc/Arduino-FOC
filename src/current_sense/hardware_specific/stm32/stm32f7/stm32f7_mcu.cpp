@@ -39,7 +39,7 @@ void* _driverSyncLowSide(void* _driver_params, void* _cs_params){
   Stm32CurrentSenseParams* cs_params = (Stm32CurrentSenseParams*)_cs_params;
  
   // if compatible timer has not been found
-  if (cs_params->timer_handle == NULL) return;
+  if (cs_params->timer_handle == NULL) return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
   
   // stop all the timers for the driver
   _stopTimers(driver_params->timers, 6);
