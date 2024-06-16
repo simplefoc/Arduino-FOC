@@ -13,6 +13,8 @@
 #define MCPWM_PRIVATE_H
 
 
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC)
+
 #include "freertos/FreeRTOS.h"
 #include "esp_intr_alloc.h"
 #include "esp_heap_caps.h"
@@ -73,6 +75,8 @@ struct mcpwm_timer_t {
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif
 
 #endif /* MCPWM_PRIVATE_H */
