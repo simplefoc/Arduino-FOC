@@ -4,11 +4,19 @@
 
 #if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC) 
 
+#include "esp32_adc_driver.h"
+
 #include "driver/mcpwm_prelude.h"
 #include "soc/mcpwm_reg.h"
 #include "soc/mcpwm_struct.h"
 #include <soc/sens_reg.h>
 #include <soc/sens_struct.h>
+#include "esp_idf_version.h"  
+
+// version check - this mcpwm driver is specific for ESP-IDF 5.x and arduino-esp32 3.x
+#if ESP_IDF_VERSION_MAJOR < 5 
+#error SimpleFOC: ESP-IDF version 4 or lower detected. Please update to ESP-IDF 5.x and Arduino-esp32 3.0 (or higher)
+#endif
 
 #define _ADC_VOLTAGE 3.3f
 #define _ADC_RESOLUTION 4095.0f
