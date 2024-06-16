@@ -43,8 +43,6 @@ StepperDriver2PWM::StepperDriver2PWM(int _pwm1, int _dir1, int _pwm2, int _dir2,
 
 // enable motor driver
 void  StepperDriver2PWM::enable(){
-    // enable hardware if available
-    _enablePWM(params);
     // enable_pin the driver - if enable_pin pin available
     if ( _isset(enable_pin1) ) digitalWrite(enable_pin1, HIGH);
     if ( _isset(enable_pin2) ) digitalWrite(enable_pin2, HIGH);

@@ -24,8 +24,6 @@ BLDCDriver6PWM::BLDCDriver6PWM(int phA_h,int phA_l,int phB_h,int phB_l,int phC_h
 
 // enable motor driver
 void  BLDCDriver6PWM::enable(){
-    // enable hardware if available
-    _enablePWM(params);
     // enable_pin the driver - if enable_pin pin available
     if ( _isset(enable_pin) ) digitalWrite(enable_pin, enable_active_high);
     // set phase state enabled

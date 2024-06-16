@@ -2,34 +2,26 @@
 #include "../../../drivers/hardware_api.h"
 #include "../../../drivers/hardware_specific/esp32/esp32_driver_mcpwm.h"
 
-#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC) 
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC) && 0
 
 #include "esp32_adc_driver.h"
 
-#include "driver/mcpwm_prelude.h"
+#include "driver/mcpwm.h"
 #include "soc/mcpwm_reg.h"
 #include "soc/mcpwm_struct.h"
+
 #include <soc/sens_reg.h>
 #include <soc/sens_struct.h>
-#include "esp_idf_version.h"  
-
-// version check - this mcpwm driver is specific for ESP-IDF 5.x and arduino-esp32 3.x
-#if ESP_IDF_VERSION_MAJOR < 5 
-#error SimpleFOC: ESP-IDF version 4 or lower detected. Please update to ESP-IDF 5.x and Arduino-esp32 3.0 (or higher)
-#endif
 
 #define _ADC_VOLTAGE 3.3f
 #define _ADC_RESOLUTION 4095.0f
 
-// set the pin 19 in high during the adc interrupt
-// #define SIMPLEFOC_ESP32_INTERRUPT_DEBUG
 
 typedef struct ESP32MCPWMCurrentSenseParams {
   int pins[3];
   float adc_voltage_conv;
-  int adc_buffer[3] = {};
-  int buffer_index = 0;
-  int no_adc_channels = 0;
+  mcpwm_unit_t mcpwm_unit;
+  int buffer_index;
 } ESP32MCPWMCurrentSenseParams;
 
 
@@ -44,8 +36,8 @@ float _readADCVoltageInline(const int pinA, const void* cs_params){
 
 // function reading an ADC value and returning the read voltage
 void* _configureADCInline(const void* driver_params, const int pinA, const int pinB, const int pinC){
+  _UNUSED(driver_params);
 
-  SIMPLEFOC_DEBUG("ESP32-CS: Configuring ADC inline");
   if( _isset(pinA) ) pinMode(pinA, INPUT);
   if( _isset(pinB) ) pinMode(pinB, INPUT);
   if( _isset(pinC) ) pinMode(pinC, INPUT);
@@ -59,15 +51,30 @@ void* _configureADCInline(const void* driver_params, const int pinA, const int p
 }
 
 
+
+/**
+ *  Low side adc reading implementation 
+*/
+
+static void IRAM_ATTR mcpwm0_isr_handler(void*);
+static void IRAM_ATTR mcpwm1_isr_handler(void*);
+byte currentState = 1;
+// two mcpwm units 
+// - max 2 motors per mcpwm unit (6 adc channels)
+int adc_pins[2][6]={0};
+int adc_pin_count[2]={0};
+uint32_t adc_buffer[2][6]={0};
+int adc_read_index[2]={0};
+
 // function reading an ADC value and returning the read voltage
 float _readADCVoltageLowSide(const int pin, const void* cs_params){
-  ESP32MCPWMCurrentSenseParams* p = (ESP32MCPWMCurrentSenseParams*)cs_params;
-  int no_channel = 0;
-  for(int i=0; i < 3; i++){
-    if(!_isset(p->pins[i])) continue;
-    if(pin == p->pins[i]) // found in the buffer
-      return p->adc_buffer[no_channel] * p->adc_voltage_conv;
-    else no_channel++;
+  mcpwm_unit_t unit = ((ESP32MCPWMCurrentSenseParams*)cs_params)->mcpwm_unit;
+  int buffer_index = ((ESP32MCPWMCurrentSenseParams*)cs_params)->buffer_index;
+  float adc_voltage_conv = ((ESP32MCPWMCurrentSenseParams*)cs_params)->adc_voltage_conv;
+
+  for(int i=0; i < adc_pin_count[unit]; i++){
+    if( pin == ((ESP32MCPWMCurrentSenseParams*)cs_params)->pins[i]) // found in the buffer
+      return adc_buffer[unit][buffer_index + i] * adc_voltage_conv;
   }
   // not found
   return  0;
@@ -76,68 +83,83 @@ float _readADCVoltageLowSide(const int pin, const void* cs_params){
 // function configuring low-side current sensing 
 void* _configureADCLowSide(const void* driver_params, const int pinA,const int pinB,const int pinC){
   
-  SIMPLEFOC_DEBUG("ESP32-CS: Configuring ADC low-side");
-  // check if driver timer is already running 
-  // fail if it is
-  // the easiest way that I've found to check if timer is running
-  // is to start it and stop it 
-  ESP32MCPWMDriverParams *p = (ESP32MCPWMDriverParams*)driver_params;
-  if(mcpwm_timer_start_stop(p->timers[0], MCPWM_TIMER_START_NO_STOP) != ESP_ERR_INVALID_STATE){
-    // if we get the invalid state error it means that the timer is not enabled
-    // that means that we can configure it for low-side current sensing
-    SIMPLEFOC_DEBUG("ESP32-CS: ERR - The timer is already enabled. Cannot be configured for low-side current sensing.");
-    return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
-  }
+  mcpwm_unit_t unit = ((ESP32MCPWMDriverParams*)driver_params)->mcpwm_unit;
+  int index_start = adc_pin_count[unit];
+  if( _isset(pinA) ) adc_pins[unit][adc_pin_count[unit]++] = pinA;
+  if( _isset(pinB) ) adc_pins[unit][adc_pin_count[unit]++] = pinB;
+  if( _isset(pinC) ) adc_pins[unit][adc_pin_count[unit]++] = pinC;
 
+  if( _isset(pinA) ) pinMode(pinA, INPUT);
+  if( _isset(pinB) ) pinMode(pinB, INPUT);
+  if( _isset(pinC) ) pinMode(pinC, INPUT);
 
-  ESP32MCPWMCurrentSenseParams* params = new ESP32MCPWMCurrentSenseParams{};
-  int no_adc_channels = 0;
-  if( _isset(pinA) ){
-    pinMode(pinA, INPUT);
-    params->pins[no_adc_channels++] = pinA;
-  }
-  if( _isset(pinB) ){
-    pinMode(pinB, INPUT);
-    params->pins[no_adc_channels++] = pinB;
-  }
-  if( _isset(pinC) ){
-    pinMode(pinC, INPUT);
-    params->pins[no_adc_channels++] = pinC;
-  }
+  ESP32MCPWMCurrentSenseParams* params = new ESP32MCPWMCurrentSenseParams {
+    .pins = { pinA, pinB, pinC },
+    .adc_voltage_conv = (_ADC_VOLTAGE)/(_ADC_RESOLUTION),
+    .mcpwm_unit = unit,
+    .buffer_index = index_start
+  };
 
-  params->adc_voltage_conv = (_ADC_VOLTAGE)/(_ADC_RESOLUTION);
-  params->no_adc_channels = no_adc_channels;
   return params;
 }
 
 
 void _driverSyncLowSide(void* driver_params, void* cs_params){
-#ifdef  SIMPLEFOC_ESP32_INTERRUPT_DEBUG
-  pinMode(19, OUTPUT);
-#endif
-  ESP32MCPWMDriverParams *p = (ESP32MCPWMDriverParams*)driver_params;
-  
-  mcpwm_timer_event_callbacks_t cbs_timer = {
-    .on_full = [](mcpwm_timer_handle_t tim, const mcpwm_timer_event_data_t* edata, void* user_data){ 
-      ESP32MCPWMCurrentSenseParams *p = (ESP32MCPWMCurrentSenseParams*)user_data;
-      #ifdef  SIMPLEFOC_ESP32_INTERRUPT_DEBUG
-      digitalWrite(19, HIGH);
-      #endif
-      // increment buffer index
-      p->buffer_index = (p->buffer_index + 1) % p->no_adc_channels;
-      // sample the phase currents one at a time
-      p->adc_buffer[p->buffer_index] = adcRead(p->pins[p->buffer_index]);
-      #ifdef  SIMPLEFOC_ESP32_INTERRUPT_DEBUG
-      digitalWrite(19, LOW);
-      #endif
-      return true; 
-    }
-  };
-  if(mcpwm_timer_register_event_callbacks(p->timers[0], &cbs_timer, cs_params) != ESP_OK){
-    SIMPLEFOC_DEBUG("ESP32-CS: ERR - Failed to sync ADC and driver");
-  } 
+
+  mcpwm_dev_t* mcpwm_dev = ((ESP32MCPWMDriverParams*)driver_params)->mcpwm_dev;
+  mcpwm_unit_t mcpwm_unit = ((ESP32MCPWMDriverParams*)driver_params)->mcpwm_unit;
+
+  // low-side register enable interrupt
+  mcpwm_dev->int_ena.timer0_tep_int_ena = true;//A PWM timer 0 TEP event will trigger this interrupt
+  // high side registers enable interrupt 
+  //mcpwm_dev->int_ena.timer0_tep_int_ena = true;//A PWM timer 0 TEZ event will trigger this interrupt 
+
+  // register interrupts (mcpwm number, interrupt handler, handler argument = NULL, interrupt signal/flag, return handler = NULL)
+  if(mcpwm_unit == MCPWM_UNIT_0)
+    mcpwm_isr_register(mcpwm_unit, mcpwm0_isr_handler, NULL, ESP_INTR_FLAG_IRAM, NULL);  //Set ISR Handler
+  else
+    mcpwm_isr_register(mcpwm_unit, mcpwm1_isr_handler, NULL, ESP_INTR_FLAG_IRAM, NULL);  //Set ISR Handler
 }
 
+static void IRAM_ATTR mcpwm0_isr_handler(void*) __attribute__ ((unused));
+
+// Read currents when interrupt is triggered
+static void IRAM_ATTR mcpwm0_isr_handler(void*){
+  // // high side
+  // uint32_t mcpwm_intr_status = MCPWM0.int_st.timer0_tez_int_st;
+  
+  // low side
+  uint32_t mcpwm_intr_status = MCPWM0.int_st.timer0_tep_int_st;
+  if(mcpwm_intr_status){
+    adc_buffer[0][adc_read_index[0]] = adcRead(adc_pins[0][adc_read_index[0]]);
+    adc_read_index[0]++;
+    if(adc_read_index[0] == adc_pin_count[0]) adc_read_index[0] = 0;
+  }
+  // low side
+  MCPWM0.int_clr.timer0_tep_int_clr = mcpwm_intr_status;
+  // high side
+  // MCPWM0.int_clr.timer0_tez_int_clr = mcpwm_intr_status_0;
+}
+
+static void IRAM_ATTR mcpwm1_isr_handler(void*) __attribute__ ((unused));
+
+// Read currents when interrupt is triggered
+static void IRAM_ATTR mcpwm1_isr_handler(void*){
+  // // high side
+  // uint32_t mcpwm_intr_status = MCPWM1.int_st.timer0_tez_int_st;
+  
+  // low side
+  uint32_t mcpwm_intr_status = MCPWM1.int_st.timer0_tep_int_st;
+  if(mcpwm_intr_status){
+    adc_buffer[1][adc_read_index[1]] = adcRead(adc_pins[1][adc_read_index[1]]);
+    adc_read_index[1]++;
+    if(adc_read_index[1] == adc_pin_count[1]) adc_read_index[1] = 0;
+  }
+  // low side
+  MCPWM1.int_clr.timer0_tep_int_clr = mcpwm_intr_status;
+  // high side
+  // MCPWM1.int_clr.timer0_tez_int_clr = mcpwm_intr_status_0;
+}
 
 
 #endif

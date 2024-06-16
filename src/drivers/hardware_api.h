@@ -27,7 +27,6 @@
 
 // flag returned if driver init fails
 #define SIMPLEFOC_DRIVER_INIT_FAILED ((void*)-1)
-#define SIMPLEFOC_DRIVER_INIT_SUCCESS ((void*)1)
 
 // generic implementation of the hardware specific structure
 // containing all the necessary driver parameters
@@ -173,16 +172,6 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
  * 
  */ 
 void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params);
-
-/**
- * Function enabling the PWM outputs
- * - hardware specific
- * 
- * @param params  the driver parameters
- * 
- * @return the pointer to the driver parameters if successful, -1 if failed
- */
-void* _enablePWM(void* params);
 
 
 #endif
