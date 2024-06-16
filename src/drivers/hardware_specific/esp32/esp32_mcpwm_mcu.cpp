@@ -15,10 +15,10 @@ void* _configure1PWM(long pwm_frequency, const int pinA) {
 
   int group, timer;
   if(!_findBestGroup(1, pwm_frequency, &group, &timer)) {
-   SIMPLEFOC_ESP32_DEBUG("Not enough pins available for 1PWM!");
+   SIMPLEFOC_ESP32_DRV_DEBUG("Not enough pins available for 1PWM!");
     return SIMPLEFOC_DRIVER_INIT_FAILED;
   }
- SIMPLEFOC_ESP32_DEBUG("Configuring 1PWM in group: "+String(group)+" on timer: "+String(timer));
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 1PWM in group: "+String(group)+" on timer: "+String(timer));
   // configure the timer
   int pins[1] = {pinA};
   return _configurePinsMCPWM(pwm_frequency, group, timer, 1, pins);
@@ -35,17 +35,17 @@ void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
   int group, timer;
   int ret = _findBestGroup(2, pwm_frequency, &group, &timer);
   if(!ret) {
-   SIMPLEFOC_ESP32_DEBUG("Not enough pins available for 2PWM!");
+    SIMPLEFOC_ESP32_DRV_DEBUG("Not enough pins available for 2PWM!");
     return SIMPLEFOC_DRIVER_INIT_FAILED;
   }
   if(ret == 1){
     // configure the 2pwm on only one group
-   SIMPLEFOC_ESP32_DEBUG("Configuring 2PWM in group: "+String(group)+" on timer: "+String(timer));
+    SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 2PWM in group: "+String(group)+" on timer: "+String(timer));
     // configure the timer
     int pins[2] = {pinA,  pinB};
     return _configurePinsMCPWM(pwm_frequency, group, timer, 2, pins);
   }else{
-   SIMPLEFOC_ESP32_DEBUG("Configuring 2PWM as two 1PWM drivers");
+    SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 2PWM as two 1PWM drivers");
     ESP32MCPWMDriverParams* params[2];
 
     // the code is a bit huge for what it does
@@ -53,10 +53,10 @@ void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
     int pins[2][1] = {{pinA},  {pinB}};
     for(int i =0; i<2; i++){
       int timer = _findLastTimer(i); //find last created timer in group i
-     SIMPLEFOC_ESP32_DEBUG("Configuring 1PWM in group: "+String(i)+" on timer: "+String(timer));
+      SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 1PWM in group: "+String(i)+" on timer: "+String(timer));
       void* p = _configurePinsMCPWM(pwm_frequency, i, timer, 1, pins[i]);
       if(p == SIMPLEFOC_DRIVER_INIT_FAILED){
-         SIMPLEFOC_ESP32_DEBUG("Error configuring  1PWM");
+         SIMPLEFOC_ESP32_DRV_DEBUG("Error configuring  1PWM");
           return SIMPLEFOC_DRIVER_INIT_FAILED;
       }else{
         params[i] = (ESP32MCPWMDriverParams*)p;
@@ -87,10 +87,10 @@ void* _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const i
 
   int group, timer;
   if(!_findBestGroup(3, pwm_frequency, &group, &timer)) {
-   SIMPLEFOC_ESP32_DEBUG("Not enough pins available for 3PWM!");
+    SIMPLEFOC_ESP32_DRV_DEBUG("Not enough pins available for 3PWM!");
     return SIMPLEFOC_DRIVER_INIT_FAILED;
   }
- SIMPLEFOC_ESP32_DEBUG("Configuring 3PWM in group: "+String(group)+" on timer: "+String(timer));
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 3PWM in group: "+String(group)+" on timer: "+String(timer));
   // configure the timer
   int pins[3] = {pinA,  pinB, pinC};
   return _configurePinsMCPWM(pwm_frequency, group, timer, 3, pins);
@@ -108,16 +108,16 @@ void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const in
   int group, timer;
   int ret = _findBestGroup(4, pwm_frequency, &group, &timer);
   if(!ret) {
-   SIMPLEFOC_ESP32_DEBUG("Not enough pins available for 4PWM!");
+    SIMPLEFOC_ESP32_DRV_DEBUG("Not enough pins available for 4PWM!");
     return SIMPLEFOC_DRIVER_INIT_FAILED;
   }
   if(ret == 1){
-   SIMPLEFOC_ESP32_DEBUG("Configuring 4PWM in group: "+String(group)+" on timer: "+String(timer));
+    SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 4PWM in group: "+String(group)+" on timer: "+String(timer));
     // configure the timer
     int pins[4] = {pinA,  pinB, pinC, pinD};
     return _configurePinsMCPWM(pwm_frequency, group, timer, 4, pins);
   }else{
-   SIMPLEFOC_ESP32_DEBUG("Configuring 4PWM as two 2PWM drivers");
+    SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 4PWM as two 2PWM drivers");
     ESP32MCPWMDriverParams* params[2];
 
     // the code is a bit huge for what it does
@@ -125,10 +125,10 @@ void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const in
     int pins[2][2] = {{pinA,  pinB},{pinC, pinD}};
     for(int i =0; i<2; i++){
       int timer = _findNextTimer(i); //find next available timer in group i
-     SIMPLEFOC_ESP32_DEBUG("Configuring 2PWM in group: "+String(i)+" on timer: "+String(timer));
+      SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 2PWM in group: "+String(i)+" on timer: "+String(timer));
       void* p = _configurePinsMCPWM(pwm_frequency, i, timer, 2, pins[i]);
       if(p == SIMPLEFOC_DRIVER_INIT_FAILED){
-        SIMPLEFOC_ESP32_DEBUG("Error configuring  2PWM");
+        SIMPLEFOC_ESP32_DRV_DEBUG("Error configuring  2PWM");
          return SIMPLEFOC_DRIVER_INIT_FAILED;
       }else{
         params[i] = (ESP32MCPWMDriverParams*)p;
@@ -157,10 +157,10 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 
   int group, timer;
   if(!_findBestGroup(6, pwm_frequency, &group, &timer)) {
-   SIMPLEFOC_ESP32_DEBUG("Not enough pins available for 6PWM!");
+    SIMPLEFOC_ESP32_DRV_DEBUG("Not enough pins available for 6PWM!");
     return SIMPLEFOC_DRIVER_INIT_FAILED;
   }
- SIMPLEFOC_ESP32_DEBUG("Configuring 6PWM in group: "+String(group)+" on timer: "+String(timer));
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 6PWM in group: "+String(group)+" on timer: "+String(timer));
   // configure the timer
   int pins[6] = {pinA_h,pinA_l,  pinB_h, pinB_l, pinC_h, pinC_l};
   return _configure6PWMPinsMCPWM(pwm_frequency, group, timer, dead_zone, pins);
@@ -207,6 +207,11 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_
   _setDutyCycle(((ESP32MCPWMDriverParams*)params)->comparator[0], ((ESP32MCPWMDriverParams*)params)->mcpwm_period, dc_a);
   _setDutyCycle(((ESP32MCPWMDriverParams*)params)->comparator[1], ((ESP32MCPWMDriverParams*)params)->mcpwm_period, dc_b);
   _setDutyCycle(((ESP32MCPWMDriverParams*)params)->comparator[2], ((ESP32MCPWMDriverParams*)params)->mcpwm_period, dc_c);
+
+  // set the phase state
+  _forcePhaseState(((ESP32MCPWMDriverParams*)params)->generator[0], ((ESP32MCPWMDriverParams*)params)->generator[1], phase_state[0]);
+  _forcePhaseState(((ESP32MCPWMDriverParams*)params)->generator[2], ((ESP32MCPWMDriverParams*)params)->generator[3], phase_state[1]);
+  _forcePhaseState(((ESP32MCPWMDriverParams*)params)->generator[4], ((ESP32MCPWMDriverParams*)params)->generator[5], phase_state[2]);
 #else
   uint32_t period = ((ESP32MCPWMDriverParams*)params)->mcpwm_period;
   float dead_zone = (float)((ESP32MCPWMDriverParams*)params)->dead_zone /2.0f;

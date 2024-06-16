@@ -245,7 +245,7 @@ void* _configure6PWMPinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no,
   params->mcpwm_period = pwm_periods[mcpwm_group][timer_no];
 
   uint8_t no_operators = 3; // use 3 comparators one per pair of pwms
-  SIMPLEFOC_ESP32_DEBUG("Configuring " + String(no_operators) + " operators."); 
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring " + String(no_operators) + " operators."); 
   mcpwm_operator_config_t operator_config = { .group_id = mcpwm_group };
   for (int i = 0; i < no_operators; i++) {
     CHECK_ERR(mcpwm_new_operator(&operator_config, &params->oper[i]),"Could not create operator "+String(i));
@@ -254,9 +254,9 @@ void* _configure6PWMPinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no,
 
 #if SIMPLEFOC_ESP32_HW_DEADTIME == true // hardware dead-time (hardware 6pwm)
   
-  SIMPLEFOC_ESP32_DEBUG("Configuring 6PWM with hardware dead-time");
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 6PWM with hardware dead-time");
   
-  SIMPLEFOC_ESP32_DEBUG("Configuring " + String(no_operators) + " comparators.");
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring " + String(no_operators) + " comparators.");
   // Create and configure comparators
   mcpwm_comparator_config_t comparator_config = {0};
   for (int i = 0; i < no_operators; i++) {
@@ -265,7 +265,7 @@ void* _configure6PWMPinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no,
   }
 
   int no_generators = 6; // one per pwm
-  SIMPLEFOC_ESP32_DEBUG("Configuring " + String(no_generators) + " generators.");
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring " + String(no_generators) + " generators.");
   // Create and configure generators
   mcpwm_generator_config_t generator_config = {};
   for (int i = 0; i < no_generators; i++) {
@@ -274,12 +274,12 @@ void* _configure6PWMPinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no,
     CHECK_ERR(mcpwm_new_generator(params->oper[oper_index], &generator_config, &params->generator[i]), "Could not create generator " + String(i));
   }
   
-  SIMPLEFOC_ESP32_DEBUG("Configuring Center-Aligned 6 pwm.");
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring Center-Aligned 6 pwm.");
   for (int i = 0; i < 3; i++) {
     _configureCenterAlign(params->generator[2*i],params->comparator[i]); 
   }
   // only available for 6pwm
-  SIMPLEFOC_ESP32_DEBUG("Configuring dead-time.");
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring dead-time.");
   uint32_t dead_time = (int)pwm_periods[mcpwm_group][timer_no] * dead_zone;
   mcpwm_dead_time_config_t dt_config_high;
   dt_config_high.posedge_delay_ticks = dead_time;
@@ -294,9 +294,9 @@ void* _configure6PWMPinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no,
       CHECK_ERR(mcpwm_generator_set_dead_time(params->generator[2*i], params->generator[2*i+1], &dt_config_low),"Could not set dead time for generator: " + String(i+1));
   }
 #else // software dead-time (software 6pwm)
-  SIMPLEFOC_ESP32_DEBUG("Configuring 6PWM with software dead-time");
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 6PWM with software dead-time");
   int no_pins = 6;
-  SIMPLEFOC_ESP32_DEBUG("Configuring " + String(no_pins) + " comparators.");
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring " + String(no_pins) + " comparators.");
   // Create and configure comparators
   mcpwm_comparator_config_t comparator_config = {0};
   for (int i = 0; i < no_pins; i++) {
@@ -305,7 +305,7 @@ void* _configure6PWMPinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no,
     CHECK_ERR(mcpwm_comparator_set_compare_value(params->comparator[i], (0)), "Could not set duty on comparator: " + String(i));
   }
 
-  SIMPLEFOC_ESP32_DEBUG("Configuring " + String(no_pins) + " generators.");
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring " + String(no_pins) + " generators.");
   // Create and configure generators;
   mcpwm_generator_config_t generator_config = {};
   for (int i = 0; i < no_pins; i++) {
@@ -314,19 +314,19 @@ void* _configure6PWMPinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no,
     CHECK_ERR(mcpwm_new_generator(params->oper[oper_index], &generator_config, &params->generator[i]), "Could not create generator " + String(i));
   }
 
-  SIMPLEFOC_ESP32_DEBUG("Configuring center-aligned pwm.");
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring center-aligned pwm.");
   for (int i = 0; i < 3; i++) {
     _configureCenterAlign(params->generator[2*i],params->comparator[2*i], !SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH); 
     _configureCenterAlign(params->generator[2*i+1],params->comparator[2*i+1], SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH); 
   }
 #endif
-  SIMPLEFOC_ESP32_DEBUG("Enabling the timer: "+String(timer_no));
+  SIMPLEFOC_ESP32_DRV_DEBUG("Enabling timer: "+String(timer_no));
   // Enable and start timer
   CHECK_ERR(mcpwm_timer_enable(params->timers[0]), "Failed to enable timer!");
   CHECK_ERR(mcpwm_timer_start_stop(params->timers[0], MCPWM_TIMER_START_NO_STOP), "Failed to start the timer!");
 
   _delay(1);
-  SIMPLEFOC_ESP32_DEBUG("MCPWM configured!");
+  SIMPLEFOC_ESP32_DRV_DEBUG("MCPWM configured!");
   params->dead_zone = dead_zone;
   // save the configuration variables for later
   group_pins_used[mcpwm_group] = 6;
@@ -374,11 +374,11 @@ void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int
   }else{
     // we will use an already instantiated timer
     params->timers[0] = timers[mcpwm_group][timer_no];
-    SIMPLEFOC_ESP32_DEBUG("Using previously configured timer: " + String(timer_no));
+    SIMPLEFOC_ESP32_DRV_DEBUG("Using previously configured timer: " + String(timer_no));
     // but we cannot change its configuration without affecting the other drivers
     // so let's first verify that the configuration is the same
     if(_calcPWMPeriod(pwm_frequency)/2 != pwm_periods[mcpwm_group][timer_no]){
-      SIMPLEFOC_ESP32_DEBUG("ERR: Timer: "+String(timer_no)+" is confgured for freq: "+String(_calcPWMFreq(pwm_periods[mcpwm_group][timer_no]))+", not for freq:" +String(pwm_frequency));
+      SIMPLEFOC_ESP32_DRV_DEBUG("ERR: Timer: "+String(timer_no)+" is confgured for freq: "+String(_calcPWMFreq(pwm_periods[mcpwm_group][timer_no]))+", not for freq:" +String(pwm_frequency));
       return SIMPLEFOC_DRIVER_INIT_FAILED;
     }
     CHECK_ERR(mcpwm_timer_start_stop( params->timers[0], MCPWM_TIMER_STOP_EMPTY), "Failed to stop the timer!");
@@ -387,7 +387,7 @@ void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int
   }
 
   uint8_t no_operators = ceil(no_pins / 2.0);
-  SIMPLEFOC_ESP32_DEBUG("Configuring " + String(no_operators) + " operators.");
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring " + String(no_operators) + " operators.");
   mcpwm_operator_config_t operator_config = { .group_id = mcpwm_group };
   for (int i = 0; i < no_operators; i++) {
     if (shared_timer && i == 0) { // first operator already configured
@@ -400,7 +400,7 @@ void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int
   // save the last operator in this group
   last_operator[mcpwm_group] = params->oper[no_operators - 1];
 
-  SIMPLEFOC_ESP32_DEBUG("Configuring " + String(no_pins) + " comparators.");
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring " + String(no_pins) + " comparators.");
   // Create and configure comparators
   mcpwm_comparator_config_t comparator_config = {0};
   for (int i = 0; i < no_pins; i++) {
@@ -409,7 +409,7 @@ void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int
     CHECK_ERR(mcpwm_comparator_set_compare_value(params->comparator[i], (0)), "Could not set duty on comparator: " + String(i));
   }
 
-  SIMPLEFOC_ESP32_DEBUG("Configuring " + String(no_pins) + " generators.");
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring " + String(no_pins) + " generators.");
   // Create and configure generators;
   mcpwm_generator_config_t generator_config = {};
   for (int i = 0; i < no_pins; i++) {
@@ -419,19 +419,19 @@ void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int
   }
   
 
-  SIMPLEFOC_ESP32_DEBUG("Configuring center-aligned pwm.");
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring center-aligned pwm.");
   for (int i = 0; i < no_pins; i++) {
     _configureCenterAlign(params->generator[i],params->comparator[i], !SIMPLEFOC_PWM_ACTIVE_HIGH);
   }
 
-  SIMPLEFOC_ESP32_DEBUG("Enabling the timer: "+String(timer_no));
+  SIMPLEFOC_ESP32_DRV_DEBUG("Enabling timer: "+String(timer_no));
   // Enable and start timer if not shared
   if (!shared_timer) CHECK_ERR(mcpwm_timer_enable(params->timers[0]), "Failed to enable timer!");
   // start the timer
   CHECK_ERR(mcpwm_timer_start_stop(params->timers[0], MCPWM_TIMER_START_NO_STOP), "Failed to start the timer!");
 
   _delay(1);
-  SIMPLEFOC_ESP32_DEBUG("MCPWM configured!");
+  SIMPLEFOC_ESP32_DRV_DEBUG("MCPWM configured!");
   // save the configuration variables for later
   params->mcpwm_period = pwm_periods[mcpwm_group][timer_no];
   group_pins_used[mcpwm_group] += no_pins;
@@ -440,8 +440,17 @@ void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int
 
 // function setting the duty cycle to the MCPWM pin
 void _setDutyCycle(mcpwm_cmpr_handle_t cmpr, uint32_t mcpwm_period, float duty_cycle){
-    float duty = constrain(duty_cycle, 0.0, 1.0);
-    mcpwm_comparator_set_compare_value(cmpr, (uint32_t)(mcpwm_period*duty));
+  float duty = constrain(duty_cycle, 0.0, 1.0);
+  mcpwm_comparator_set_compare_value(cmpr, (uint32_t)(mcpwm_period*duty));
+}
+
+// function setting the duty cycle to the MCPWM pin
+void _forcePhaseState(mcpwm_gen_handle_t generator_high, mcpwm_gen_handle_t generator_low, PhaseState phase_state){
+  // phase state can be forced
+  //  https://docs.espressif.com/projects/esp-idf/en/v5.1.4/esp32/api-reference/peripherals/mcpwm.html#generator-force-actions 
+  // TODO verify with ACTIVE_HIGH/ACTIVE_LOW flags
+  mcpwm_generator_set_force_level(generator_high, (phase_state == PHASE_ON || phase_state == PHASE_HI) ? -1 : 0, true);
+  mcpwm_generator_set_force_level(generator_low, (phase_state == PHASE_ON || phase_state == PHASE_LO) ? -1 : 1, true);
 }
 
 #endif

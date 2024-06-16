@@ -11,7 +11,7 @@
 
  
 // version check - this ledc driver is specific for ESP-IDF 5.x and arduino-esp32 3.x
-#if ESP_IDF_VERSION_MAJOR < 5 
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
 #error SimpleFOC: ESP-IDF version 4 or lower detected. Please update to ESP-IDF 5.x and Arduino-esp32 3.0 (or higher)
 #endif
 

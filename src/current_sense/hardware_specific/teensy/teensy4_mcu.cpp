@@ -197,7 +197,7 @@ void* _configureADCLowSide(const void* driver_params, const int pinA,const int p
 }
 
 // sync driver and the adc
-void _driverSyncLowSide(void* driver_params, void* cs_params){
+void* _driverSyncLowSide(void* driver_params, void* cs_params){
     Teensy4DriverParams* par = (Teensy4DriverParams*) ((TeensyDriverParams*)driver_params)->additional_params;
     IMXRT_FLEXPWM_t* flexpwm = par->flextimers[0];
     int submodule = par->submodules[0];
@@ -238,6 +238,11 @@ void _driverSyncLowSide(void* driver_params, void* cs_params){
     IOMUXC_SW_PAD_CTL_PAD_GPIO_EMC_06 = IOMUXC_PAD_DSE(7) | IOMUXC_PAD_SPEED(3) | IOMUXC_PAD_SRE ;
 #endif
 
+  
+  // return the cs parameters 
+  // successfully initialized
+  // TODO verify if success in future
+  return cs_params;
 }
 
 

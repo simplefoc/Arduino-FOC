@@ -54,14 +54,15 @@ float _readADCVoltageLowSide(const int pinA, const void* cs_params)
 /**
  *  function syncing the Driver with the ADC  for the LowSide Sensing
  */
-void _driverSyncLowSide(void* driver_params, void* cs_params)
+void* _driverSyncLowSide(void* driver_params, void* cs_params)
 {
   _UNUSED(driver_params);
-  _UNUSED(cs_params);
 
   SIMPLEFOC_SAMD_DEBUG_SERIAL.println(F("TODO! _driverSyncLowSide() is not implemented"));
   instance.startADCScan();
   //TODO: hook with PWM interrupts
+
+  return cs_params;
 }
 
 

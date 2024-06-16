@@ -42,7 +42,7 @@ void* _configureADCLowSide(const void* driver_params, const int pinA, const int 
 }
 
 
-void _driverSyncLowSide(void* _driver_params, void* _cs_params){
+void* _driverSyncLowSide(void* _driver_params, void* _cs_params){
   STM32DriverParams* driver_params = (STM32DriverParams*)_driver_params;
   Stm32CurrentSenseParams* cs_params = (Stm32CurrentSenseParams*)_cs_params;
  
@@ -123,6 +123,11 @@ void _driverSyncLowSide(void* _driver_params, void* _cs_params){
   
   // restart all the timers of the driver
   _startTimers(driver_params->timers, 6);
+  
+  // return the cs parameters 
+  // successfully initialized
+  // TODO verify if success in future
+  return _cs_params;
 }
   
 

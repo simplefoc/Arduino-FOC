@@ -34,8 +34,8 @@ __attribute__((weak))  void* _configureADCLowSide(const void* driver_params, con
 }
 
 // sync driver and the adc
-__attribute__((weak)) void _driverSyncLowSide(void* driver_params, void* cs_params){
+__attribute__((weak)) void* _driverSyncLowSide(void* driver_params, void* cs_params){
   _UNUSED(driver_params);
-  _UNUSED(cs_params); 
+  return cs_params;
 }
 __attribute__((weak)) void _startADC3PinConversionLowSide(){ }

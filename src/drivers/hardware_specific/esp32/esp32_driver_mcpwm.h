@@ -11,7 +11,7 @@
 #include "esp_idf_version.h"  
 
 // version check - this mcpwm driver is specific for ESP-IDF 5.x and arduino-esp32 3.x
-#if ESP_IDF_VERSION_MAJOR < 5 
+#if ESP_IDF_VERSION  < ESP_IDF_VERSION_VAL(5, 0, 0) 
 #error SimpleFOC: ESP-IDF version 4 or lower detected. Please update to ESP-IDF 5.x and Arduino-esp32 3.0 (or higher)
 #endif
 
@@ -32,14 +32,17 @@ typedef struct ESP32MCPWMDriverParams {
 } ESP32MCPWMDriverParams; 
 
 
-#define SIMPLEFOC_ESP32_DEBUG(str)\
-    SimpleFOCDebug::println( "ESP32-DRV: " + String(str));\
+#define SIMPLEFOC_ESP32_DEBUG(tag, str)\
+    SimpleFOCDebug::println( "ESP32-"+String(tag)+ ": "+ String(str));
+
+#define SIMPLEFOC_ESP32_DRV_DEBUG(str)\
+   SIMPLEFOC_ESP32_DEBUG("DRV", str);\
 
 // macro for checking the error of the mcpwm functions
 // if the function returns an error the function will return SIMPLEFOC_DRIVER_INIT_FAILED
 #define CHECK_ERR(func_call, message) \
   if ((func_call) != ESP_OK) { \
-    SIMPLEFOC_ESP32_DEBUG("ERROR - " + String(message)); \
+    SIMPLEFOC_ESP32_DRV_DEBUG("ERROR - " + String(message)); \
     return SIMPLEFOC_DRIVER_INIT_FAILED; \
   }
 
@@ -142,6 +145,14 @@ void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int
  * @param duty_cycle - duty cycle of the pwm signal
  */
 void _setDutyCycle(mcpwm_cmpr_handle_t cmpr, uint32_t mcpwm_period, float duty_cycle);
+
+/**
+ * function setting the phase state 
+ * @param generator_high - mcpwm generator handle for the high side
+ * @param generator_low - mcpwm generator handle for the low side
+ * @param phase_state - phase state
+ */
+void _forcePhaseState(mcpwm_gen_handle_t generator_high, mcpwm_gen_handle_t generator_low, PhaseState phase_state);
 
 #endif
 #endif
