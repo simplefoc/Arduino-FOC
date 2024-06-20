@@ -103,7 +103,7 @@ int _findBestGroup(int no_pins, long pwm_freq, int* group, int* timer);
  * @param cmpa - mcpwm comparator handle
  * @param inverted - true if the signal is inverted, false otherwise
  */
-void _configureCenterAlign(mcpwm_gen_handle_t gena, mcpwm_cmpr_handle_t cmpa, bool inverted);
+int _configureCenterAlign(mcpwm_gen_handle_t gena, mcpwm_cmpr_handle_t cmpa, bool inverted);
 
 /**
  * function calculating the pwm period
