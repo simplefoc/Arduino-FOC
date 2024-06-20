@@ -51,6 +51,12 @@ void onMotor(char* cmd){ command.motor(&motor, cmd); }
 
 void setup() {
 
+  // use monitoring with serial 
+  Serial.begin(115200);
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&Serial);
+
   // initialize encoder sensor hardware
   encoder.init();
   encoder.enableInterrupts(doA, doB);
@@ -115,10 +121,6 @@ void setup() {
   motor.voltage_limit = 12.0;   // 12 Volt limit 
   motor.current_limit = 2.0;    // 2 Amp current limit
 
-
-  // use monitoring with serial for motor init
-  // monitoring port
-  Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
   motor.monitor_variables = _MON_CURR_Q | _MON_CURR_D; // monitor the two currents d and q
