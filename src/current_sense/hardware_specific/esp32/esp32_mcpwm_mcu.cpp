@@ -84,12 +84,12 @@ void* _configureADCInline(const void* driver_params, const int pinA, const int p
     if(_isset(params->pins[i])){
       pinMode(params->pins[i], ANALOG);
       if(!adcInit(params->pins[i])) {
-       SIMPLEFOC_ESP32_CS_DEBUG("Failed to initialise ADC pin: "+String(params->pins[i]) + String(", maybe not an ADC pin?"));
+       SIMPLEFOC_ESP32_CS_DEBUG("ERROR: Failed to initialise ADC pin: "+String(params->pins[i]) + String(", maybe not an ADC pin?"));
         return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
       }
     }
   }
-  
+
   return params;
 }
 
@@ -109,6 +109,7 @@ float _readADCVoltageLowSide(const int pin, const void* cs_params){
       return p->adc_buffer[no_channel] * p->adc_voltage_conv;
     else no_channel++;
   }
+  SIMPLEFOC_DEBUG("ERROR: ADC pin not found in the buffer!");
   // not found
   return  0;
 }
@@ -126,7 +127,7 @@ void* _configureADCLowSide(const void* driver_params, const int pinA,const int p
   // check if low side callback is already set
   // if it is, return error
   if(t->on_full != nullptr){
-    SIMPLEFOC_ESP32_CS_DEBUG("Low side callback is already set. Cannot set it again for timer: "+String(t->timer_id)+", group: "+String(t->group->group_id));
+    SIMPLEFOC_ESP32_CS_DEBUG("ERROR: Low side callback is already set. Cannot set it again for timer: "+String(t->timer_id)+", group: "+String(t->group->group_id));
     return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
   }
 
@@ -140,7 +141,7 @@ void* _configureADCLowSide(const void* driver_params, const int pinA,const int p
   for (int i = 0; i < 3; i++){
     if(_isset(adc_pins[i])){
       if(!adcInit(adc_pins[i])){
-       SIMPLEFOC_ESP32_CS_DEBUG("Failed to initialise ADC pin: "+String(adc_pins[i]) + String(", maybe not an ADC pin?"));
+       SIMPLEFOC_ESP32_CS_DEBUG("ERROR: Failed to initialise ADC pin: "+String(adc_pins[i]) + String(", maybe not an ADC pin?"));
         return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
       }
       params->pins[no_adc_channels++] = adc_pins[i];
@@ -165,7 +166,7 @@ void* _driverSyncLowSide(void* driver_params, void* cs_params){
   // check if low side callback is already set
   // if it is, return error
   if(t->on_full != nullptr){
-    SIMPLEFOC_ESP32_CS_DEBUG("Low side callback is already set. Cannot set it again for timer: "+String(t->timer_id)+", group: "+String(t->group->group_id));
+    SIMPLEFOC_ESP32_CS_DEBUG("ERROR: Low side callback is already set. Cannot set it again for timer: "+String(t->timer_id)+", group: "+String(t->group->group_id));
     return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
   }
 
