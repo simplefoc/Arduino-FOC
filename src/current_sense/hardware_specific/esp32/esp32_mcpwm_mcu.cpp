@@ -28,14 +28,6 @@
 #include "driver/gpio.h"
 
 
-// if the MCU is not ESP32S3, the ADC read time is too long to 
-// sample all three phase currents in one interrupt
-// so we will sample one phase per interrupt
-#ifdef CONFIG_IDF_TARGET_ESP32S3
-#define SIMPLEFOC_SAMPLE_ONCE_PER_INTERRUPT
-#endif
-
-
 #ifdef CONFIG_IDF_TARGET_ESP32S3
 #define DEBUGPIN 16
 #define GPIO_NUM GPIO_NUM_16
@@ -181,17 +173,12 @@ void* _driverSyncLowSide(void* driver_params, void* cs_params){
       gpio_set_level(GPIO_NUM,1); //cca 250ns for on+off
 #endif
 
-#ifdef SIMPLEFOC_SAMPLE_ONCE_PER_INTERRUPT // sample the phase currents one at a time
-      // ex. ESP32's adc read takes around 10us which is very long 
+      // sample the phase currents one at a time
+      // ESP's adc read takes around 10us which is very long 
       // increment buffer index
       p->buffer_index = (p->buffer_index + 1) % p->no_adc_channels;
       // so we are sampling one phase per call
       p->adc_buffer[p->buffer_index] = adcRead(p->pins[p->buffer_index]); 
-#else // sample all available phase currents at once
-      // ex. ESP32S3's adc read takes around 1us which is good enough
-      for(int i=0; i < p->no_adc_channels; i++)
-        p->adc_buffer[p->buffer_index] = adcRead(p->pins[p->buffer_index]); 
-#endif
 
 #ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG // debugging toggle pin to measure the time of the interrupt with oscilloscope
       gpio_set_level(GPIO_NUM,0); //cca 250ns for on+off
