@@ -27,7 +27,7 @@ volatile uint16_t adcBuffer2[ADC_BUF_LEN_2] = {0}; // Buffer for store the resul
 
 // function reading an ADC value and returning the read voltage
 // As DMA is being used just return the DMA result
-float _readADCVoltageInline(const int pin, const void* cs_params){
+float _readADCVoltageLowSide(const int pin, const void* cs_params){
   uint32_t raw_adc = 0;
   if(pin == PA2)  // = ADC1_IN3 = phase U (OP1_OUT) on B-G431B-ESC1
     raw_adc = adcBuffer1[1];
