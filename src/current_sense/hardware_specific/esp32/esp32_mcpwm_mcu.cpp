@@ -73,16 +73,23 @@ float _readADCVoltageInline(const int pinA, const void* cs_params){
 // function reading an ADC value and returning the read voltage
 void* _configureADCInline(const void* driver_params, const int pinA, const int pinB, const int pinC){
 
-
-  if( _isset(pinA) ) pinMode(pinA, INPUT);
-  if( _isset(pinB) ) pinMode(pinB, INPUT);
-  if( _isset(pinC) ) pinMode(pinC, INPUT);
-
   ESP32MCPWMCurrentSenseParams* params = new ESP32MCPWMCurrentSenseParams {
     .pins = { pinA, pinB, pinC },
     .adc_voltage_conv = (_ADC_VOLTAGE)/(_ADC_RESOLUTION)
   };
 
+  // initialize the ADC pins
+  // fail if the pin is not an ADC pin
+  for (int i = 0; i < 3; i++){
+    if(_isset(params->pins[i])){
+      pinMode(params->pins[i], ANALOG);
+      if(!adcInit(params->pins[i])) {
+       SIMPLEFOC_ESP32_CS_DEBUG("Failed to initialise ADC pin: "+String(params->pins[i]) + String(", maybe not an ADC pin?"));
+        return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
+      }
+    }
+  }
+  
   return params;
 }
 
@@ -123,19 +130,21 @@ void* _configureADCLowSide(const void* driver_params, const int pinA,const int p
     return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
   }
 
+  
   ESP32MCPWMCurrentSenseParams* params = new ESP32MCPWMCurrentSenseParams{};
   int no_adc_channels = 0;
-  if( _isset(pinA) ){
-    pinMode(pinA, INPUT);
-    params->pins[no_adc_channels++] = pinA;
-  }
-  if( _isset(pinB) ){
-    pinMode(pinB, INPUT);
-    params->pins[no_adc_channels++] = pinB;
-  }
-  if( _isset(pinC) ){
-    pinMode(pinC, INPUT);
-    params->pins[no_adc_channels++] = pinC;
+
+  // initialize the ADC pins
+  // fail if the pin is not an ADC pin
+  int adc_pins[3] = {pinA, pinB, pinC};
+  for (int i = 0; i < 3; i++){
+    if(_isset(adc_pins[i])){
+      if(!adcInit(adc_pins[i])){
+       SIMPLEFOC_ESP32_CS_DEBUG("Failed to initialise ADC pin: "+String(adc_pins[i]) + String(", maybe not an ADC pin?"));
+        return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
+      }
+      params->pins[no_adc_channels++] = adc_pins[i];
+    }
   }
   
   t->user_data = params;
