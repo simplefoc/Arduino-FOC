@@ -1,7 +1,5 @@
 #include "../../hardware_api.h"
 #include "../../../drivers/hardware_api.h"
-#include "../../../drivers/hardware_specific/esp32/esp32_driver_mcpwm.h"
-#include "../../../drivers/hardware_specific/esp32/mcpwm_private.h"
 
 #if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC)
 
@@ -12,21 +10,22 @@
 #error SimpleFOC: ESP-IDF version 4 or lower detected. Please update to ESP-IDF 5.x and Arduino-esp32 3.0 (or higher)
 #endif
 
-
-#include "esp32_adc_driver.h"
+#include "esp32_mcu.cpp"
+#include "../../../drivers/hardware_specific/esp32/esp32_driver_mcpwm.h"
+#include "../../../drivers/hardware_specific/esp32/mcpwm_private.h"
 
 #include "driver/mcpwm_prelude.h"
 #include "soc/mcpwm_reg.h"
 #include "soc/mcpwm_struct.h"
 
-#include <soc/sens_reg.h>
-#include <soc/sens_struct.h>
 
-#define SIMPLEFOC_ESP32_INTERRUPT_DEBUG
+
+// adding a debug toggle pin to measure the time of the interrupt with oscilloscope
+
+// #define SIMPLEFOC_ESP32_INTERRUPT_DEBUG
 
 #ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG
 #include "driver/gpio.h"
-
 
 #ifdef CONFIG_IDF_TARGET_ESP32S3
 #define DEBUGPIN 16
@@ -38,60 +37,6 @@
 
 #endif
 
-#define _ADC_VOLTAGE 3.3f
-#define _ADC_RESOLUTION 4095.0f
-
-
-
-#define SIMPLEFOC_ESP32_CS_DEBUG(str)\
-   SIMPLEFOC_ESP32_DEBUG("CS", str);\
-   
-#define CHECK_CS_ERR(func_call, message) \
-  if ((func_call) != ESP_OK) { \
-    SIMPLEFOC_ESP32_CS_DEBUG("ERROR - " + String(message)); \
-    return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED; \
-  }
-
-typedef struct ESP32MCPWMCurrentSenseParams {
-  int pins[3];
-  float adc_voltage_conv;
-  int adc_buffer[3] = {};
-  int buffer_index = 0;
-  int no_adc_channels = 0;
-} ESP32MCPWMCurrentSenseParams;
-
-
-/**
- *  Inline adc reading implementation 
-*/
-// function reading an ADC value and returning the read voltage
-float _readADCVoltageInline(const int pinA, const void* cs_params){
-  uint32_t raw_adc = adcRead(pinA);
-  return raw_adc * ((ESP32MCPWMCurrentSenseParams*)cs_params)->adc_voltage_conv;
-}
-
-// function reading an ADC value and returning the read voltage
-void* _configureADCInline(const void* driver_params, const int pinA, const int pinB, const int pinC){
-
-  ESP32MCPWMCurrentSenseParams* params = new ESP32MCPWMCurrentSenseParams {
-    .pins = { pinA, pinB, pinC },
-    .adc_voltage_conv = (_ADC_VOLTAGE)/(_ADC_RESOLUTION)
-  };
-
-  // initialize the ADC pins
-  // fail if the pin is not an ADC pin
-  for (int i = 0; i < 3; i++){
-    if(_isset(params->pins[i])){
-      pinMode(params->pins[i], ANALOG);
-      if(!adcInit(params->pins[i])) {
-       SIMPLEFOC_ESP32_CS_DEBUG("ERROR: Failed to initialise ADC pin: "+String(params->pins[i]) + String(", maybe not an ADC pin?"));
-        return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
-      }
-    }
-  }
-
-  return params;
-}
 
 
 /**
@@ -101,7 +46,7 @@ void* _configureADCInline(const void* driver_params, const int pinA, const int p
 
 // function reading an ADC value and returning the read voltage
 float _readADCVoltageLowSide(const int pin, const void* cs_params){
-  ESP32MCPWMCurrentSenseParams* p = (ESP32MCPWMCurrentSenseParams*)cs_params;
+  ESP32CurrentSenseParams* p = (ESP32CurrentSenseParams*)cs_params;
   int no_channel = 0;
   for(int i=0; i < 3; i++){
     if(!_isset(p->pins[i])) continue;
@@ -132,7 +77,7 @@ void* _configureADCLowSide(const void* driver_params, const int pinA,const int p
   }
 
   
-  ESP32MCPWMCurrentSenseParams* params = new ESP32MCPWMCurrentSenseParams{};
+  ESP32CurrentSenseParams* params = new ESP32CurrentSenseParams{};
   int no_adc_channels = 0;
 
   // initialize the ADC pins
@@ -178,7 +123,7 @@ void* _driverSyncLowSide(void* driver_params, void* cs_params){
   // - on_sync  - sync event (not used with simplefoc)
   auto cbs = mcpwm_timer_event_callbacks_t{
     .on_full = [](mcpwm_timer_handle_t tim, const mcpwm_timer_event_data_t* edata, void* user_data){ 
-      ESP32MCPWMCurrentSenseParams *p = (ESP32MCPWMCurrentSenseParams*)user_data;
+      ESP32CurrentSenseParams *p = (ESP32CurrentSenseParams*)user_data;
 #ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG // debugging toggle pin to measure the time of the interrupt with oscilloscope
       gpio_set_level(GPIO_NUM,1); //cca 250ns for on+off
 #endif

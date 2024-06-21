@@ -1,8 +1,10 @@
 #include "esp32_adc_driver.h"
 
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) 
+#include "esp32_mcu.h"
 
-// maybe go to the fast ADC in future even outside the MCPWM (we'd have to remove the SOC_MCPWM_SUPPORTED flag)
-#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC)
+#define SIMPLEFOC_ADC_ATTEN ADC_11db
+#define SIMPLEFOC_ADC_RES 12
 
 
 #ifdef CONFIG_IDF_TARGET_ESP32 // if esp32 variant
@@ -38,6 +40,7 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
 {
     int8_t channel = digitalPinToAnalogChannel(pin);
     if(channel < 0){
+        SIMPLEFOC_ESP32_CS_DEBUG("ERROR: Not ADC pin: "+String(pin));
         return false;//not adc pin
     }
 
@@ -76,7 +79,7 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
 
 
 // configure the ADCs in RTC mode 
-// no real gain 
+// no real gain - see if we do something with it later
 // void __configFastADCs(){
     
 //     SET_PERI_REG_MASK(SENS_SAR_READER1_CTRL_REG, SENS_SAR1_DATA_INV);
@@ -101,6 +104,7 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
 {
     int8_t channel = digitalPinToAnalogChannel(pin);
     if(channel < 0){
+        SIMPLEFOC_ESP32_CS_DEBUG("ERROR: Not ADC pin: "+String(pin));
         return false;//not adc pin
     }
 
@@ -147,6 +151,7 @@ bool IRAM_ATTR adcInit(uint8_t pin){
     
     int8_t channel = digitalPinToAnalogChannel(pin);
     if(channel < 0){
+        SIMPLEFOC_ESP32_CS_DEBUG("ERROR: Not ADC pin: "+String(pin));
         return false;//not adc pin
     }
 

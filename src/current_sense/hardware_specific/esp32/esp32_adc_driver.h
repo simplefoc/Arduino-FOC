@@ -5,10 +5,6 @@
 
 #if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED)  && !defined(SIMPLEFOC_ESP32_USELEDC) 
 
-
-#define SIMPLEFOC_ADC_ATTEN ADC_11db
-#define SIMPLEFOC_ADC_RES 12
-
 /**
  * Get ADC value for pin
  * @param pin - pin number
