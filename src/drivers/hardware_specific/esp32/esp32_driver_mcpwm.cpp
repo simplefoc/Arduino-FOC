@@ -489,7 +489,7 @@ void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int
 
 // function setting the duty cycle to the MCPWM pin
 void _setDutyCycle(mcpwm_cmpr_handle_t cmpr, uint32_t mcpwm_period, float duty_cycle){
-  float duty = constrain(duty_cycle, 0.0, 1.0);
+  float duty = _constrain(duty_cycle, 0.0, 1.0);
   mcpwm_comparator_set_compare_value(cmpr, (uint32_t)(mcpwm_period*duty));
 }
 

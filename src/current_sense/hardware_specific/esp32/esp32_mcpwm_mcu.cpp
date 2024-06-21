@@ -22,8 +22,28 @@
 #include <soc/sens_reg.h>
 #include <soc/sens_struct.h>
 
+#define SIMPLEFOC_ESP32_INTERRUPT_DEBUG
+
 #ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG
 #include "driver/gpio.h"
+
+
+// if the MCU is not ESP32S3, the ADC read time is too long to 
+// sample all three phase currents in one interrupt
+// so we will sample one phase per interrupt
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+#define SIMPLEFOC_SAMPLE_ONCE_PER_INTERRUPT
+#endif
+
+
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+#define DEBUGPIN 16
+#define GPIO_NUM GPIO_NUM_16
+#else
+#define DEBUGPIN 19
+#define GPIO_NUM GPIO_NUM_19
+#endif
+
 #endif
 
 #define _ADC_VOLTAGE 3.3f
@@ -132,9 +152,11 @@ void* _configureADCLowSide(const void* driver_params, const int pinA,const int p
   return params;
 }
 
+
+
 void* _driverSyncLowSide(void* driver_params, void* cs_params){
 #ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG
-  pinMode(19, OUTPUT);
+  pinMode(DEBUGPIN, OUTPUT);
 #endif
   ESP32MCPWMDriverParams *p = (ESP32MCPWMDriverParams*)driver_params;
   mcpwm_timer_t* t = (mcpwm_timer_t*) p->timers[0];
@@ -150,22 +172,29 @@ void* _driverSyncLowSide(void* driver_params, void* cs_params){
   // mcpwm_timer_event_callbacks_t can be used to set the callback
   // for three timer events 
   // - on_full  - low-side
-  // - on_empty - high-side
+  // - on_empty - high-side 
   // - on_sync  - sync event (not used with simplefoc)
   auto cbs = mcpwm_timer_event_callbacks_t{
     .on_full = [](mcpwm_timer_handle_t tim, const mcpwm_timer_event_data_t* edata, void* user_data){ 
       ESP32MCPWMCurrentSenseParams *p = (ESP32MCPWMCurrentSenseParams*)user_data;
-#ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG
-      gpio_set_level(GPIO_NUM_19,1); //cca 250ns for on+off
+#ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG // debugging toggle pin to measure the time of the interrupt with oscilloscope
+      gpio_set_level(GPIO_NUM,1); //cca 250ns for on+off
 #endif
+
+#ifdef SIMPLEFOC_SAMPLE_ONCE_PER_INTERRUPT // sample the phase currents one at a time
+      // ex. ESP32's adc read takes around 10us which is very long 
       // increment buffer index
       p->buffer_index = (p->buffer_index + 1) % p->no_adc_channels;
-      // sample the phase currents one at a time
-      // adc read takes around 10us which is very long
       // so we are sampling one phase per call
       p->adc_buffer[p->buffer_index] = adcRead(p->pins[p->buffer_index]); 
-#ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG
-      gpio_set_level(GPIO_NUM_19,0); //cca 250ns for on+off
+#else // sample all available phase currents at once
+      // ex. ESP32S3's adc read takes around 1us which is good enough
+      for(int i=0; i < p->no_adc_channels; i++)
+        p->adc_buffer[p->buffer_index] = adcRead(p->pins[p->buffer_index]); 
+#endif
+
+#ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG // debugging toggle pin to measure the time of the interrupt with oscilloscope
+      gpio_set_level(GPIO_NUM,0); //cca 250ns for on+off
 #endif
       return true; 
     },
