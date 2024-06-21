@@ -111,7 +111,7 @@ void __analogSetPinAttenuation(uint8_t pin, uint8_t attenuation)
         return ;
     }
     __analogInit();
-    if(channel > 7){
+    if(channel > 9){
         SET_PERI_REG_BITS(SENS_SAR_ATTEN2_REG, 3, attenuation, ((channel - 10) * 2));
     } else {
         SET_PERI_REG_BITS(SENS_SAR_ATTEN1_REG, 3, attenuation, (channel * 2));
@@ -152,9 +152,8 @@ bool IRAM_ATTR __adcStart(uint8_t pin){
     }
 
     if(channel > 9){
-        channel -= 10;
         CLEAR_PERI_REG_MASK(SENS_SAR_MEAS2_CTRL2_REG, SENS_MEAS2_START_SAR_M);
-        SET_PERI_REG_BITS(SENS_SAR_MEAS2_CTRL2_REG, SENS_SAR2_EN_PAD, (1 << channel), SENS_SAR2_EN_PAD_S);
+        SET_PERI_REG_BITS(SENS_SAR_MEAS2_CTRL2_REG, SENS_SAR2_EN_PAD, (1 << (channel - 10)), SENS_SAR2_EN_PAD_S);
         SET_PERI_REG_MASK(SENS_SAR_MEAS2_CTRL2_REG, SENS_MEAS2_START_SAR_M);
     } else {
         CLEAR_PERI_REG_MASK(SENS_SAR_MEAS1_CTRL2_REG, SENS_MEAS1_START_SAR_M);
@@ -171,7 +170,7 @@ bool IRAM_ATTR __adcBusy(uint8_t pin){
         return false;//not adc pin
     }
 
-    if(channel > 7){
+    if(channel > 9){
         return (GET_PERI_REG_MASK(SENS_SAR_MEAS2_CTRL2_REG, SENS_MEAS2_DONE_SAR) == 0);
     }
     return (GET_PERI_REG_MASK(SENS_SAR_MEAS1_CTRL2_REG, SENS_MEAS1_DONE_SAR) == 0);
@@ -185,7 +184,7 @@ uint16_t IRAM_ATTR __adcEnd(uint8_t pin)
     if(channel < 0){
         return 0;//not adc pin
     }
-    if(channel > 7){
+    if(channel > 9){
         while (GET_PERI_REG_MASK(SENS_SAR_MEAS2_CTRL2_REG, SENS_MEAS2_DONE_SAR) == 0); //wait for conversion
         value = GET_PERI_REG_BITS2(SENS_SAR_MEAS2_CTRL2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S);
     } else {
@@ -223,9 +222,8 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
     __analogInit();
 
     if(channel > 9){
-        channel -= 10;
         CLEAR_PERI_REG_MASK(SENS_SAR_MEAS2_CTRL2_REG, SENS_MEAS2_START_SAR_M);
-        SET_PERI_REG_BITS(SENS_SAR_MEAS2_CTRL2_REG, SENS_SAR2_EN_PAD, (1 << channel), SENS_SAR2_EN_PAD_S);
+        SET_PERI_REG_BITS(SENS_SAR_MEAS2_CTRL2_REG, SENS_SAR2_EN_PAD,(1 << (channel - 10)), SENS_SAR2_EN_PAD_S);
         SET_PERI_REG_MASK(SENS_SAR_MEAS2_CTRL2_REG, SENS_MEAS2_START_SAR_M);
     } else {
         CLEAR_PERI_REG_MASK(SENS_SAR_MEAS1_CTRL2_REG, SENS_MEAS1_START_SAR_M);
@@ -235,7 +233,7 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
 
     uint16_t value = 0;
 
-    if(channel > 7){
+    if(channel > 9){
         while (GET_PERI_REG_MASK(SENS_SAR_MEAS2_CTRL2_REG, SENS_MEAS2_DONE_SAR) == 0); //wait for conversion
         value = GET_PERI_REG_BITS2(SENS_SAR_MEAS2_CTRL2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S);
     } else {
