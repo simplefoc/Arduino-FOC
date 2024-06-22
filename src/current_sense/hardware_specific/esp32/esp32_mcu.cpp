@@ -1,11 +1,6 @@
-#include "../../hardware_api.h"
-#include "../../../drivers/hardware_api.h"
-
-#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32)
-
-#include "esp32_adc_driver.h"
 #include "esp32_mcu.h"
 
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32)
 
 /**
  *  Inline adc reading implementation 

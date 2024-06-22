@@ -1,8 +1,6 @@
 #ifndef SIMPLEFOC_ESP32_HAL_ADC_DRIVER_H_ 
 #define SIMPLEFOC_ESP32_HAL_ADC_DRIVER_H_
 
-#include "Arduino.h"
-
 #if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED)  && !defined(SIMPLEFOC_ESP32_USELEDC) 
 
 /**

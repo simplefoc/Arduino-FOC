@@ -1,12 +1,12 @@
 #ifndef ESP32_MCU_CURRENT_SENSING_H
 #define ESP32_MCU_CURRENT_SENSING_H
 
+#include "../../hardware_api.h"
 
 #if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) 
 
-#include "../../hardware_api.h"
-#include "../../../drivers/hardware_api.h"
 
+#include "../../../drivers/hardware_api.h"
 #include "esp32_adc_driver.h"
 
 

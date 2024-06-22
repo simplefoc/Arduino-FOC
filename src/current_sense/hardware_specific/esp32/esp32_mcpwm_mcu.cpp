@@ -1,5 +1,4 @@
-#include "../../hardware_api.h"
-#include "../../../drivers/hardware_api.h"
+#include "esp32_mcu.h"
 
 #if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC)
 
@@ -10,7 +9,6 @@
 #error SimpleFOC: ESP-IDF version 4 or lower detected. Please update to ESP-IDF 5.x and Arduino-esp32 3.0 (or higher)
 #endif
 
-#include "esp32_mcu.cpp"
 #include "../../../drivers/hardware_specific/esp32/esp32_driver_mcpwm.h"
 #include "../../../drivers/hardware_specific/esp32/mcpwm_private.h"
 

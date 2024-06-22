@@ -1,8 +1,8 @@
+
+#include "esp32_mcu.h"
 #include "esp32_adc_driver.h"
 
 #if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) 
-#include "esp32_mcu.h"
-
 #define SIMPLEFOC_ADC_ATTEN ADC_11db
 #define SIMPLEFOC_ADC_RES 12
 
@@ -137,6 +137,8 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
 }
 
 #else // if others just use analogRead
+
+#pragma message("SimpleFOC: Using analogRead for ADC reading, no fast ADC configuration available!")
 
 uint16_t IRAM_ATTR adcRead(uint8_t pin){
     return analogRead(pin);
