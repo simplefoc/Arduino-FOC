@@ -7,7 +7,7 @@
 #define SIMPLEFOC_ADC_RES 12
 
 
-#ifdef CONFIG_IDF_TARGET_ESP32 // if esp32 variant
+#if CONFIG_IDF_TARGET_ESP32 // if esp32 variant
 
 #include "soc/sens_reg.h"
 
@@ -73,7 +73,7 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
     return value;
 }
 
-#elif (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)) // if esp32 s2 or s3 variants
+#elif CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 // if esp32 s2 or s3 variants
 
 #include "soc/sens_reg.h"
 
@@ -165,7 +165,7 @@ bool IRAM_ATTR adcInit(uint8_t pin){
     analogSetPinAttenuation(pin, SIMPLEFOC_ADC_ATTEN);
     analogRead(pin);
 
-#ifdef CONFIG_IDF_TARGET_ESP32 // if esp32 variant
+#if CONFIG_IDF_TARGET_ESP32 // if esp32 variant
     __configFastADCs();
 #endif
 

@@ -1,7 +1,7 @@
 #ifndef SIMPLEFOC_ESP32_HAL_ADC_DRIVER_H_ 
 #define SIMPLEFOC_ESP32_HAL_ADC_DRIVER_H_
 
-#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED)  && !defined(SIMPLEFOC_ESP32_USELEDC) 
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32)
 
 /**
  * Get ADC value for pin
