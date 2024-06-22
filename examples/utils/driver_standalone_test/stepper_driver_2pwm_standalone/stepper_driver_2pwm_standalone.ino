@@ -13,6 +13,12 @@ StepperDriver2PWM driver = StepperDriver2PWM(3, in1, 10 , in2, 11, 12);
 
 void setup() {
   
+  // use monitoring with serial 
+  Serial.begin(115200);
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&Serial);
+  
   // pwm frequency to be used [Hz]
   // for atmega328 fixed to 32kHz
   // esp32/stm32/teensy configurable

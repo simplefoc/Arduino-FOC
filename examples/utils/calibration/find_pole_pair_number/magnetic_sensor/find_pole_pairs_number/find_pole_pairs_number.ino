@@ -33,6 +33,12 @@ MagneticSensorSPI sensor = MagneticSensorSPI(10, 14, 0x3FFF);
 
 void setup() {
 
+  // use monitoring with serial 
+  Serial.begin(115200);
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&Serial);
+
   // initialise magnetic sensor hardware
   sensor.init();
   // link the motor to the sensor
@@ -46,9 +52,6 @@ void setup() {
 
   // initialize motor hardware
   motor.init();
-
-  // monitoring port
-  Serial.begin(115200);
 
   // pole pairs calculation routine
   Serial.println("Pole pairs (PP) estimator");

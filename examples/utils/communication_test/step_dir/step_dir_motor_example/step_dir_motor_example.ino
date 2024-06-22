@@ -24,6 +24,12 @@ void onStep() { step_dir.handle(); }
 
 void setup() {
 
+  // use monitoring with serial 
+  Serial.begin(115200);
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&Serial);
+
   // initialize encoder sensor hardware
   encoder.init();
   encoder.enableInterrupts(doA, doB);
@@ -64,9 +70,7 @@ void setup() {
   motor.P_angle.P = 10;
   //  maximal velocity of the position control
   motor.velocity_limit = 100;
-
-  // use monitoring with serial
-  Serial.begin(115200);
+  
   // comment out if not needed
   motor.useMonitoring(Serial);
 

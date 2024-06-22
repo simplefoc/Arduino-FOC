@@ -42,6 +42,12 @@ void calcKV(char* cmd) {
 
 void setup() { 
   
+  // use monitoring with serial 
+  Serial.begin(115200);
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&Serial);
+
   // initialize encoder sensor hardware
   sensor.init();
   sensor.enableInterrupts(doA, doB); 
@@ -62,8 +68,6 @@ void setup() {
   // set motion control loop to be used
   motor.controller = MotionControlType::torque;
 
-  // use monitoring with serial 
-  Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
 

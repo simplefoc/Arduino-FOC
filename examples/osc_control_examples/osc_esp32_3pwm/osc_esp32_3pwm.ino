@@ -67,8 +67,12 @@ BLDCDriver3PWM driver =  BLDCDriver3PWM(25, 26, 27);
 Commander command = Commander(Serial);
 
 void setup() {
+	// use monitoring with serial 
 	Serial.begin(115200);
-
+	// enable more verbose output for debugging
+	// comment out if not needed
+	SimpleFOCDebug::enable(&Serial);
+	
 	WiFi.begin(ssid, pass);
 
     Serial.print("Connecting WiFi ");

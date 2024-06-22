@@ -6,6 +6,12 @@ BLDCDriver6PWM driver = BLDCDriver6PWM(5, 6, 9,10, 3, 11, 8);
 
 void setup() {
 
+  // use monitoring with serial 
+  Serial.begin(115200);
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&Serial);
+  
   // pwm frequency to be used [Hz]
   // for atmega328 fixed to 32kHz
   // esp32/stm32/teensy configurable
