@@ -333,7 +333,7 @@ void* _configure6PWMPinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no,
   for (int i = 0; i < no_generators; i++) {
     generator_config.gen_gpio_num = pins[i];
     int oper_index = (int)floor(i / 2);
-    CHECK_ERR(mcpwm_new_generator(params->oper[oper_index], &generator_config, &params->generator[i]), "Could not create generator " + String(i));
+    CHECK_ERR(mcpwm_new_generator(params->oper[oper_index], &generator_config, &params->generator[i]),"Could not create generator " + String(i) +String(" on pin: ")+String(pins[i]));
   }
 
   SIMPLEFOC_ESP32_DRV_DEBUG("Configuring Center-Aligned 6 pwm.");
@@ -464,7 +464,7 @@ void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int
   for (int i = 0; i < no_pins; i++) {
     generator_config.gen_gpio_num = pins[i];
     int oper_index = shared_timer ? (int)floor((i + 1) / 2) : (int)floor(i / 2);
-    CHECK_ERR(mcpwm_new_generator(params->oper[oper_index], &generator_config, &params->generator[i]), "Could not create generator " + String(i));
+    CHECK_ERR(mcpwm_new_generator(params->oper[oper_index], &generator_config, &params->generator[i]), "Could not create generator " + String(i) +String(" on pin: ")+String(pins[i]));
   }
   
 
