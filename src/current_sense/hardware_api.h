@@ -59,7 +59,10 @@ float _readADCVoltageLowSide(const int pinA, const void* cs_params);
  *  function syncing the Driver with the ADC  for the LowSide Sensing
  * @param driver_params - driver parameter structure - hardware specific
  * @param cs_params - current sense parameter structure - hardware specific
+ * 
+ * @return void* - returns the pointer to the current sense parameter structure (unchanged)
+ *        - returns SIMPLEFOC_CURRENT_SENSE_INIT_FAILED if the init fails
  */
-void _driverSyncLowSide(void* driver_params, void* cs_params);
+void* _driverSyncLowSide(void* driver_params, void* cs_params);
 
 #endif
