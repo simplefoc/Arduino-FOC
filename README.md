@@ -1,7 +1,12 @@
 # SimpleFOClibrary - **Simple** Field Oriented Control (FOC) **library** <br> 
 ### A Cross-Platform FOC implementation for BLDC and Stepper motors<br> based on the Arduino IDE and PlatformIO 
 
-![Library Compile](https://github.com/simplefoc/Arduino-FOC/workflows/Library%20Compile/badge.svg) [![PlatformIO - Teensy build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml) 
+[![AVR build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/arduino.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/arduino.yml)
+[![STM32 build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/stm32.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/stm32.yml)
+[![ESP32 build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/esp32.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/esp32.yml)
+[![RP2040 build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/rpi.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/rpi.yml)
+[![SAMD build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/samd.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/samd.yml)
+[![Teensy build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml) 
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/simplefoc/arduino-foc)
 ![GitHub Release Date](https://img.shields.io/github/release-date/simplefoc/arduino-foc?color=blue)
@@ -19,17 +24,25 @@ Additionally, most of the efforts at this moment are still channeled towards the
 Therefore this is an attempt to: 
 - 🎯 Demystify FOC algorithm and make a robust but simple Arduino library: [Arduino *SimpleFOClibrary*](https://docs.simplefoc.com/arduino_simplefoc_library_showcase)
   - <i>Support as many <b>motor + sensor + driver + mcu</b> combinations out there</i>
-- 🎯 Develop a modular FOC supporting BLDC driver boards:
-   - ***NEW*** 📢: *Minimalistic* BLDC driver (<3Amps) :   [<span class="simple">Simple<b>FOC</b>Mini</span> ](https://github.com/simplefoc/SimpleFOCMini).
-   - *Low-power* gimbal driver (<5Amps) :  [*Arduino Simple**FOC**Shield*](https://docs.simplefoc.com/arduino_simplefoc_shield_showcase).
-   - *Medium-power* BLDC driver (<30Amps): [Arduino <span class="simple">Simple<b>FOC</b>PowerShield</span> ](https://github.com/simplefoc/Arduino-SimpleFOC-PowerShield).
-   - See also [@byDagor](https://github.com/byDagor)'s *fully-integrated* ESP32 based board: [Dagor Brushless Controller](https://github.com/byDagor/Dagor-Brushless-Controller)
+- 🎯 Develop modular and easy to use FOC supporting BLDC driver boards
+   - For official driver boards see [<span class="simple">Simple<span class="foc">FOC</span>Boards</span>](https://docs.simplefoc.com/boards)
+   - Many many more boards developed by the community members, see [<span class="simple">Simple<span class="foc">FOC</span>Community</span>](https://community.simplefoc.com/)
 
 > NEW RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.3
-> - And more bugfixes - see the complete list of 2.3.3 [fixes and PRs](https://github.com/simplefoc/Arduino-FOC/milestone/10?closed=1)
+> - Teensy4 
+>   - support for low-side current sensing [#392](https://github.com/simplefoc/Arduino-FOC/pull/392)
+>   - support for center aligned 6pwm and 3pwm (optional) [#392](https://github.com/simplefoc/Arduino-FOC/pull/392)
+> - stm32 
+>   - support for center aligned pwm (even across multiple timers and motors/drivers) [#374](https://github.com/simplefoc/Arduino-FOC/pull/374), [#388](https://github.com/simplefoc/Arduino-FOC/pull/388)
+>   - support for DMA based low-side current sensing: [#383](https://github.com/simplefoc/Arduino-FOC/pull/383),[#378](https://github.com/simplefoc/Arduino-FOC/pull/378)
+>   - support for f7 architecture [#388](https://github.com/simplefoc/Arduino-FOC/pull/388),[#394](https://github.com/simplefoc/Arduino-FOC/pull/394)
+> - KV rating calculation fix [#347](https://github.com/simplefoc/Arduino-FOC/pull/347)
+> - Much more performant Space Vector PWM calculation  [#340](https://github.com/simplefoc/Arduino-FOC/pull/340)
+> - And much more:
+>   - See the complete list of bugfixes and new features of v2.3.3 [fixes and PRs](https://github.com/simplefoc/Arduino-FOC/milestone/10?closed=1)
 
 
-## Arduino *SimpleFOClibrary* v2.3.2
+## Arduino *SimpleFOClibrary* v2.3.3
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">

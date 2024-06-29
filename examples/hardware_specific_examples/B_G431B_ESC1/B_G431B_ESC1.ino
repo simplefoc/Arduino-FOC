@@ -7,6 +7,7 @@
 // Motor instance
 BLDCMotor motor = BLDCMotor(11);
 BLDCDriver6PWM driver = BLDCDriver6PWM(A_PHASE_UH, A_PHASE_UL, A_PHASE_VH, A_PHASE_VL, A_PHASE_WH, A_PHASE_WL);
+// Gain calculation shown at https://community.simplefoc.com/t/b-g431b-esc1-current-control/521/21
 LowsideCurrentSense currentSense = LowsideCurrentSense(0.003f, -64.0f/7.0f, A_OP1_OUT, A_OP2_OUT, A_OP3_OUT);
 
 
@@ -25,6 +26,12 @@ void doTarget(char* cmd) { command.motion(&motor, cmd); }
 
 void setup() {
   
+  // use monitoring with serial 
+  Serial.begin(115200);
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&Serial);
+
   // initialize encoder sensor hardware
   encoder.init();
   encoder.enableInterrupts(doA, doB); 
@@ -75,9 +82,6 @@ void setup() {
   //  maximal velocity of the position control
   motor.velocity_limit = 4;
 
-
-  // use monitoring with serial 
-  Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
   

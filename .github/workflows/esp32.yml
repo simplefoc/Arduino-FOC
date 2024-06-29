@@ -1,0 +1,55 @@
+name: ESP32
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: arduino/arduino-lint-action@v1
+        with:
+          library-manager: update
+          project-type: library
+  build:
+    name: Test compiling 
+    runs-on: ubuntu-latest
+   
+    strategy:
+      matrix:
+        arduino-boards-fqbn:
+          - esp32:esp32:esp32doit-devkit-v1          # esp32
+          - esp32:esp32:esp32s2                      # esp32s2
+          - esp32:esp32:esp32s3                      # esp32s3
+          - esp32:esp32:esp32c3                      # esp32c3
+          
+        include:
+            
+          - arduino-boards-fqbn: esp32:esp32:esp32s2 # esp32s2
+            platform-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
+            sketch-names: bldc_driver_3pwm_standalone.ino,stepper_driver_2pwm_standalone.ino,stepper_driver_4pwm_standalone.ino
+            
+          - arduino-boards-fqbn: esp32:esp32:esp32s3 # esp32s3
+            platform-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
+            sketch-names: esp32_position_control.ino, esp32_i2c_dual_bus_example.ino
+            
+          - arduino-boards-fqbn: esp32:esp32:esp32c3 # esp32c3
+            platform-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
+            sketch-names: esp32_position_control.ino, esp32_i2c_dual_bus_example.ino, stepper_driver_2pwm_standalone.ino, stepper_driver_4pwm_standalone.ino
+
+          - arduino-boards-fqbn: esp32:esp32:esp32doit-devkit-v1 # esp32 
+            platform-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
+            sketch-names: esp32_position_control.ino, esp32_i2c_dual_bus_example.ino, esp32_current_control_low_side.ino, esp32_spi_alt_example.ino
+
+      # Do not cancel all jobs / architectures if one job fails
+      fail-fast: false
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+    - name: Compile all examples
+      uses: ArminJo/arduino-test-compile@master
+      with:
+          arduino-board-fqbn: ${{ matrix.arduino-boards-fqbn }}
+          required-libraries: ${{ matrix.required-libraries }}
+          platform-url: ${{ matrix.platform-url }}
+          sketch-names: ${{ matrix.sketch-names }}
+          sketches-exclude: ${{ matrix.sketches-exclude }}
+          build-properties: ${{ toJson(matrix.build-properties) }}

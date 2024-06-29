@@ -32,6 +32,12 @@ void doB(){encoder.handleB();}
 
 void setup() {
 
+  // use monitoring with serial 
+  Serial.begin(115200);
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&Serial);
+
   // initialise encoder hardware
   encoder.init();
   // hardware interrupt enable
@@ -48,8 +54,6 @@ void setup() {
 
   // initialize motor
   motor.init();
-  // monitoring port
-  Serial.begin(115200);
 
   // pole pairs calculation routine
   Serial.println("Pole pairs (PP) estimator");

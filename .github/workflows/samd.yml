@@ -1,0 +1,44 @@
+name: SAMD
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: arduino/arduino-lint-action@v1
+        with:
+          library-manager: update
+          project-type: library
+  build:
+    name: Test compiling 
+    runs-on: ubuntu-latest
+   
+    strategy:
+      matrix:
+        arduino-boards-fqbn:
+          - arduino:samd:nano_33_iot                 # samd21
+          - adafruit:samd:adafruit_metro_m4          # samd51
+          
+        include:
+            
+          - arduino-boards-fqbn: arduino:samd:nano_33_iot  # samd21 
+            sketch-names: nano33IoT_velocity_control.ino, smartstepper_control.ino
+            
+          - arduino-boards-fqbn: adafruit:samd:adafruit_metro_m4 # samd51 - one full example
+            platform-url: https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+            sketch-names: single_full_control_example.ino
+
+      # Do not cancel all jobs / architectures if one job fails
+      fail-fast: false
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+    - name: Compile all examples
+      uses: ArminJo/arduino-test-compile@master
+      with:
+          arduino-board-fqbn: ${{ matrix.arduino-boards-fqbn }}
+          required-libraries: ${{ matrix.required-libraries }}
+          platform-url: ${{ matrix.platform-url }}
+          sketch-names: ${{ matrix.sketch-names }}
+          sketches-exclude: ${{ matrix.sketches-exclude }}
+          build-properties: ${{ toJson(matrix.build-properties) }}

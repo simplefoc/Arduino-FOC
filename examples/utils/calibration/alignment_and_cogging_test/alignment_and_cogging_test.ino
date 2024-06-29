@@ -80,8 +80,11 @@ void testAlignmentAndCogging(int direction) {
 
 void setup() {
 
+  // use monitoring with serial 
   Serial.begin(115200);
-  while (!Serial) ;
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&Serial);
 
   // driver config
   driver.voltage_power_supply = 12;

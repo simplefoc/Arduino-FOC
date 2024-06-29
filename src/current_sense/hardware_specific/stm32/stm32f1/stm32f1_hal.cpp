@@ -67,7 +67,7 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   hadc.Init.DiscontinuousConvMode = DISABLE;
   hadc.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc.Init.NbrOfConversion = 0;
+  hadc.Init.NbrOfConversion = 1;
   HAL_ADC_Init(&hadc);
   /**Configure for the selected ADC regular channel to be converted. 
   */
@@ -124,12 +124,6 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
     HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected);
   }
   
-  #ifdef SIMPLEFOC_STM32_ADC_INTERRUPT
-  // enable interrupt
-  HAL_NVIC_SetPriority(ADC1_2_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(ADC1_2_IRQn);
-  #endif
-  
   cs_params->adc_handle = &hadc;
 
   return 0;
@@ -153,14 +147,11 @@ void _adc_gpio_init(Stm32CurrentSenseParams* cs_params, const int pinA, const in
 
 }
 
-#ifdef SIMPLEFOC_STM32_ADC_INTERRUPT
 extern "C" {
   void ADC1_2_IRQHandler(void)
   {
       HAL_ADC_IRQHandler(&hadc);
   }
-  
 }
-#endif
 
 #endif

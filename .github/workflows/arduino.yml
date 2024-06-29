@@ -1,0 +1,53 @@
+name: AVR
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: arduino/arduino-lint-action@v1
+        with:
+          library-manager: update
+          project-type: library
+  build:
+    name: Test compiling 
+    runs-on: ubuntu-latest
+   
+    strategy:
+      matrix:
+        arduino-boards-fqbn:
+          - arduino:avr:uno                          # arudino uno
+          - arduino:sam:arduino_due_x                # arduino due
+          - arduino:avr:mega                         # arduino mega2650
+          - arduino:avr:leonardo                     # arduino leonardo
+          
+        include:
+          - arduino-boards-fqbn: arduino:avr:uno # arudino uno - compiling almost all examples
+            sketch-names: '**.ino'
+            required-libraries: PciManager
+            sketches-exclude: teensy4_current_control_low_side, full_control_serial, angle_control, bluepill_position_control, esp32_position_control, esp32_i2c_dual_bus_example, stm32_i2c_dual_bus_example, magnetic_sensor_spi_alt_example, osc_esp32_3pwm, osc_esp32_fullcontrol, nano33IoT_velocity_control, smartstepper_control,esp32_current_control_low_side, stm32_spi_alt_example, esp32_spi_alt_example, B_G431B_ESC1, odrive_example_spi, odrive_example_encoder, single_full_control_example, double_full_control_example, stm32_current_control_low_side, open_loop_velocity_6pwm
+
+          - arduino-boards-fqbn: arduino:sam:arduino_due_x # arduino due - one full example
+            sketch-names: single_full_control_example.ino
+            
+          - arduino-boards-fqbn: arduino:avr:leonardo # arduino leonardo - one full example
+            sketch-names: open_loop_position_example.ino
+            
+          - arduino-boards-fqbn: arduino:avr:mega # arduino mega2660 - one full example
+            sketch-names: single_full_control_example.ino
+            
+
+      # Do not cancel all jobs / architectures if one job fails
+      fail-fast: false
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+    - name: Compile all examples
+      uses: ArminJo/arduino-test-compile@master
+      with:
+          arduino-board-fqbn: ${{ matrix.arduino-boards-fqbn }}
+          required-libraries: ${{ matrix.required-libraries }}
+          platform-url: ${{ matrix.platform-url }}
+          sketch-names: ${{ matrix.sketch-names }}
+          sketches-exclude: ${{ matrix.sketches-exclude }}
+          build-properties: ${{ toJson(matrix.build-properties) }}

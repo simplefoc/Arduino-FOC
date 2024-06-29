@@ -1,4 +1,4 @@
-name: PlatformIO - Teensy build
+name: Teensy
 
 on: [push]
 
@@ -29,6 +29,11 @@ jobs:
         run: pio ci --lib="." --board=teensy41 --board=teensy40
         env:
           PLATFORMIO_CI_SRC: examples/hardware_specific_examples/Teensy/Teensy4/open_loop_velocity_6pwm/open_loop_velocity_6pwm.ino
+          
+      - name: PIO Run Teensy 4
+        run: pio ci --lib="." --board=teensy41 --board=teensy40
+        env:
+          PLATFORMIO_CI_SRC: examples/hardware_specific_examples/DRV8302_driver/teensy4_current_control_low_side/teensy4_current_control_low_side.ino
       
       - name: PIO Run Teensy 3
         run: pio ci --lib="." --board=teensy31 --board=teensy30 --board=teensy35 --board=teensy36
