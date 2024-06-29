@@ -104,7 +104,6 @@ void loop() {
 #include "sensors/MagneticSensorAnalog.h"
 #include "sensors/MagneticSensorPWM.h"
 #include "sensors/HallSensor.h"
-#include "sensors/LinearHall.h"
 #include "sensors/GenericSensor.h"
 #include "drivers/BLDCDriver3PWM.h"
 #include "drivers/BLDCDriver6PWM.h"
