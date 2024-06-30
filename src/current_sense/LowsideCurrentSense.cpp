@@ -47,7 +47,8 @@ int LowsideCurrentSense::init(){
     // if init failed return fail
     if (params == SIMPLEFOC_CURRENT_SENSE_INIT_FAILED) return 0; 
     // sync the driver
-    _driverSyncLowSide(driver->params, params);
+    void* r = _driverSyncLowSide(driver->params, params);
+    if(r == SIMPLEFOC_CURRENT_SENSE_INIT_FAILED) return 0; 
     // set the center pwm (0 voltage vector)
     if(driver_type==DriverType::BLDC)
         static_cast<BLDCDriver*>(driver)->setPwm(driver->voltage_limit/2, driver->voltage_limit/2, driver->voltage_limit/2);

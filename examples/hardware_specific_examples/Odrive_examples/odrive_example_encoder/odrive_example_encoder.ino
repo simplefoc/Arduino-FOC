@@ -70,6 +70,12 @@ void doI(){encoder.handleIndex();}
 
 void setup(){
 
+  // use monitoring with serial 
+  Serial.begin(115200);
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&Serial);
+
   // pwm frequency to be used [Hz]
   driver.pwm_frequency = 20000;
   // power supply voltage [V]
@@ -96,8 +102,6 @@ void setup(){
   // alignment voltage limit
   motor.voltage_sensor_align = 0.5;
   
-
-  Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
   motor.monitor_variables = _MON_CURR_Q | _MON_CURR_D;

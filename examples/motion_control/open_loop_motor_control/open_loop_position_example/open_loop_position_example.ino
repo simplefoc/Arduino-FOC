@@ -23,6 +23,12 @@ void doVelocity(char* cmd) { command.scalar(&motor.velocity_limit, cmd); }
 
 void setup() {
 
+  // use monitoring with serial 
+  Serial.begin(115200);
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&Serial);
+
   // driver config
   // power supply voltage [V]
   driver.voltage_power_supply = 12;
@@ -53,7 +59,6 @@ void setup() {
   command.add('L', doLimit, "voltage limit");
   command.add('V', doLimit, "movement velocity");
 
-  Serial.begin(115200);
   Serial.println("Motor ready!");
   Serial.println("Set target position [rad]");
   _delay(1000);

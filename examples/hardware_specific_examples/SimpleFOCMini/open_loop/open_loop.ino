@@ -2,21 +2,12 @@
  *
  * SimpleFOCMini motor control example
  * 
- * For Arduino UNO, the most convenient way to use the board is to stack it to the pins: 
- * - 12 - GND
+ * For Arduino UNO or the other boards with the UNO headers
+ * the most convenient way to use the board is to stack it to the pins:
+ * - 12 - ENABLE
  * - 11 - IN1
  * - 10 - IN2
  * -  9 - IN3
- * -  8 - EN
- * 
- * For other boards with UNO headers but more PWM channles such as esp32, nucleo-64, samd51 metro etc, the best way to most convenient pinout is:
- * - GND - GND
- * -  13 - IN1
- * -  12 - IN2
- * -  11 - IN3
- * -   9 - EN 
- * 
- * For the boards without arduino uno headers, the choice of pinout is a lot less constrained.
  *
  */
 #include <SimpleFOC.h>
@@ -24,14 +15,8 @@
 
 // BLDC motor & driver instance
 BLDCMotor motor = BLDCMotor(11);
-BLDCDriver3PWM driver = BLDCDriver3PWM(11, 10, 9, 8);
-
-// encoder instance
-Encoder encoder = Encoder(2, 3, 500);
-// Interrupt routine intialisation
-// channel A and B callbacks
-void doA(){encoder.handleA();}
-void doB(){encoder.handleB();}
+// BLDCDriver3PWM driver = BLDCDriver3PWM(11, 10, 9, 8); // mini v1.0
+BLDCDriver3PWM driver = BLDCDriver3PWM(9, 10, 11, 12); // mini v1.1
 
 // instantiate the commander
 Commander command = Commander(Serial);
@@ -50,12 +35,6 @@ void setup() {
   pinMode(12,OUTPUT);
   pinMode(12,LOW);
 
-  // initialize encoder sensor hardware
-  encoder.init();
-  encoder.enableInterrupts(doA, doB);
-  // link the motor to the sensor
-  motor.linkSensor(&encoder);
-
   // driver config
   // power supply voltage [V]
   driver.voltage_power_supply = 12;
@@ -67,28 +46,10 @@ void setup() {
   motor.voltage_sensor_align = 3;
 
   // set motion control loop to be used
-  motor.controller = MotionControlType::angle;
+  motor.controller = MotionControlType::velocity_openloop;
 
-  // contoller configuration
-  // default parameters in defaults.h
-
-  // velocity PI controller parameters
-  motor.PID_velocity.P = 0.2f;
-  motor.PID_velocity.I = 20;
-  motor.PID_velocity.D = 0;
   // default voltage_power_supply
-  motor.voltage_limit = 6;
-  // jerk control using voltage voltage ramp
-  // default value is 300 volts per sec  ~ 0.3V per millisecond
-  motor.PID_velocity.output_ramp = 1000;
-
-  // velocity low pass filtering time constant
-  motor.LPF_velocity.Tf = 0.01f;
-
-  // angle P controller
-  motor.P_angle.P = 20;
-  //  maximal velocity of the position control
-  motor.velocity_limit = 4;
+  motor.voltage_limit = 2; // Volts
 
   // comment out if not needed
   motor.useMonitoring(Serial);
@@ -102,7 +63,11 @@ void setup() {
   command.add('M', doMotor, "motor");
 
   Serial.println(F("Motor ready."));
-  Serial.println(F("Set the target angle using serial terminal:"));
+  Serial.println(F("Set the target velocity using serial terminal:"));
+  
+  motor.target = 1; //initial target velocity 1 rad/s
+  Serial.println("Target velocity: 1 rad/s");
+  Serial.println("Voltage limit 2V");
   _delay(1000);
 }
 

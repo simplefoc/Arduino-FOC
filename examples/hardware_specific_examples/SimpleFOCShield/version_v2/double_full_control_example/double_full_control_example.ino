@@ -39,6 +39,12 @@ void doTarget2(char* cmd){ command.scalar(&motor2.target, cmd); }
 
 void setup() {
 
+  // use monitoring with serial 
+  Serial.begin(115200);
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&Serial);
+
   // initialize encoder sensor hardware
   encoder1.init();
   encoder1.enableInterrupts(doA1, doB1);
@@ -88,9 +94,6 @@ void setup() {
   motor1.velocity_limit = 20;
   motor2.velocity_limit = 20;
 
-  // use monitoring with serial for motor init
-  // monitoring port
-  Serial.begin(115200);
   // comment out if not needed
   motor1.useMonitoring(Serial);
   motor2.useMonitoring(Serial);

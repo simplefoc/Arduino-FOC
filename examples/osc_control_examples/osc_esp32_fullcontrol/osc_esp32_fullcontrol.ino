@@ -104,7 +104,12 @@ void setup() {
 	digitalWrite(26, 0);
 	digitalWrite(27, 0);
 
+	// use monitoring with serial 
 	Serial.begin(115200);
+	// enable more verbose output for debugging
+	// comment out if not needed
+	SimpleFOCDebug::enable(&Serial);
+	
     delay(200);
 
 	WiFi.begin(ssid, pass);

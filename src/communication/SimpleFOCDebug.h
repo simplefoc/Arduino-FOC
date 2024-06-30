@@ -34,13 +34,14 @@
 
 // #define SIMPLEFOC_DISABLE_DEBUG
 
-#ifndef SIMPLEFOC_DISABLE_DEBUG
+#ifndef SIMPLEFOC_DISABLE_DEBUG 
 
 class SimpleFOCDebug {
 public:
     static void enable(Print* debugPrint = &Serial);
 
     static void println(const __FlashStringHelper* msg);
+    static void println(const StringSumHelper msg);
     static void println(const char* msg);
     static void println(const __FlashStringHelper* msg, float val);
     static void println(const char* msg, float val);
@@ -53,6 +54,7 @@ public:
 
     static void print(const char* msg);
     static void print(const __FlashStringHelper* msg);
+    static void print(const StringSumHelper msg);
     static void print(int val);
     static void print(float val);
 
