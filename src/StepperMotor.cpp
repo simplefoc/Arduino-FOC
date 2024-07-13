@@ -305,11 +305,6 @@ void StepperMotor::loopFOC() {
   // This function will not have numerical issues because it uses Sensor::getMechanicalAngle() 
   // which is in range 0-2PI
   electrical_angle = electricalAngle();
-
-  // Needs the update() to be called first
-  // This function will not have numerical issues because it uses Sensor::getMechanicalAngle() 
-  // which is in range 0-2PI
-  electrical_angle = electricalAngle();
   switch (torque_controller) {
     case TorqueControlType::voltage:
       // no need to do anything really
