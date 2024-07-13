@@ -306,6 +306,7 @@ void* _configure6PWMPinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no,
   SIMPLEFOC_ESP32_DRV_DEBUG("Configuring " + String(no_operators) + " comparators.");
   // Create and configure comparators
   mcpwm_comparator_config_t comparator_config = {0};
+  comparator_config.flags.update_cmp_on_tez = true;
   for (int i = 0; i < no_operators; i++) {
     CHECK_ERR(mcpwm_new_comparator(params->oper[i], &comparator_config, &params->comparator[i]),"Could not create comparator: " + String(i));
     CHECK_ERR(mcpwm_comparator_set_compare_value(params->comparator[i], (0)), "Could not set duty on comparator: " + String(i));
@@ -319,6 +320,7 @@ void* _configure6PWMPinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no,
   SIMPLEFOC_ESP32_DRV_DEBUG("Configuring " + String(no_pins) + " comparators.");
   // Create and configure comparators
   mcpwm_comparator_config_t comparator_config = {0};
+  comparator_config.flags.update_cmp_on_tez = true;
   for (int i = 0; i < no_pins; i++) {
     int oper_index = (int)floor(i / 2);
     CHECK_ERR(mcpwm_new_comparator(params->oper[oper_index], &comparator_config, &params->comparator[i]),"Could not create comparator: " + String(i));
@@ -452,6 +454,7 @@ void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int
   SIMPLEFOC_ESP32_DRV_DEBUG("Configuring " + String(no_pins) + " comparators.");
   // Create and configure comparators
   mcpwm_comparator_config_t comparator_config = {0};
+  comparator_config.flags.update_cmp_on_tez = true;
   for (int i = 0; i < no_pins; i++) {
     int oper_index = shared_timer ? (int)floor((i + 1) / 2) : (int)floor(i / 2);
     CHECK_ERR(mcpwm_new_comparator(params->oper[oper_index], &comparator_config, &params->comparator[i]),"Could not create comparator: " + String(i));
