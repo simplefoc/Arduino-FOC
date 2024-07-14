@@ -1012,9 +1012,7 @@ void _writeDutyCycle6PWM(float dc_a, float dc_b, float dc_c, PhaseState* phase_s
       // phase a
       _setSinglePhaseState(phase_state[0], ((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], ((STM32DriverParams*)params)->channels[1]);
       if(phase_state[0] == PhaseState::PHASE_OFF) dc_a = 0.0f;
-      digitalToggle(PC14);
       _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _PWM_RANGE*dc_a, _PWM_RESOLUTION);
-      digitalToggle(PC14);
       // phase b
       _setSinglePhaseState(phase_state[1], ((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[2], ((STM32DriverParams*)params)->channels[3]);
       if(phase_state[1] == PhaseState::PHASE_OFF) dc_b = 0.0f;
