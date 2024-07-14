@@ -196,9 +196,9 @@ int HFIBLDCMotor::alignCurrentSense() {
 
   // align current sense and the driver
   exit_flag = current_sense->driverAlign(voltage_sensor_align);
-  if(!exit_flag){
+  if(exit_flag<0){
     // error in current sense - phase either not measured or bad connection
-    SIMPLEFOC_DEBUG("MOT: Align error!");
+    SIMPLEFOC_DEBUG("MOT: Align error! ", exit_flag);
     exit_flag = 0;
   }else{
     // output the alignment status flag
@@ -320,8 +320,8 @@ int HFIBLDCMotor::absoluteZeroSearch() {
 }
 
 void HFIBLDCMotor::process_hfi(){
-  // digitalToggle(PC10);
-  // digitalToggle(PC10);
+  // digitalToggle(PC14);
+  // digitalToggle(PC14);
 
   // if hfi off, handle in normal way
   if (hfi_on == false || enabled==0) {
@@ -336,9 +336,11 @@ void HFIBLDCMotor::process_hfi(){
   bool is_v0 = driver->getPwmState();
 
   if (!is_v0) {
+    // digitalToggle(PC14);
     driver->setPwm(Ua, Ub, Uc);
-    // digitalToggle(PC10);
-    // digitalToggle(PC10);
+    // digitalToggle(PC14);
+    // digitalToggle(PC14);
+    // digitalToggle(PC14);
     return;
   }
   #endif
@@ -441,10 +443,14 @@ void HFIBLDCMotor::process_hfi(){
   if(abs(d_angle) > (0.8f*_2PI) ) hfi_full_turns += ( d_angle > 0.0f ) ? -1.0f : 1.0f; 
 
   electrical_angle = hfi_out;
-// digitalToggle(PC10);
-  // digitalToggle(PC10);  
-  // digitalToggle(PC10);
-  // digitalToggle(PC10);
+  // digitalToggle(PC14);
+  // digitalToggle(PC14);
+
+  // digitalToggle(PC14);
+  // digitalToggle(PC14);
+  
+  // digitalToggle(PC14);
+  // digitalToggle(PC14);
 }
 
 // Iterative function looping FOC algorithm, setting Uq on the Motor
