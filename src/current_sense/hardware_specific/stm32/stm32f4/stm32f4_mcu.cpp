@@ -51,6 +51,9 @@ void _driverSyncLowSide(void* _driver_params, void* _cs_params){
     //   - for DMA transfer aligns with the pwm peaks instead of throughs.
     //   - for interrupt based ADC transfer 
     //   - only necessary for the timers that have repetition counters
+    #ifdef HFI
+    cs_params->timer_handle->getHandle()->Instance->RCR = 0;
+    #endif
     cs_params->timer_handle->getHandle()->Instance->CR1 |= TIM_CR1_DIR;
     cs_params->timer_handle->getHandle()->Instance->CNT =  cs_params->timer_handle->getHandle()->Instance->ARR;
     // remember that this timer has repetition counter - no need to downasmple
@@ -100,7 +103,7 @@ extern "C" {
     int adc_index = _adcToIndex(AdcHandle);
 
     // hfi handles this for us
-    #if !defined(HFI) && !defined(HFI_2XPWM)
+    #if !defined(HFI_2XPWM)
     uint32_t adc_cr2 = AdcHandle->Instance->CR2;
     
     TIM_TypeDef* timer;
@@ -127,26 +130,17 @@ extern "C" {
 
     bool dir = (timer->CR1 & TIM_CR1_DIR) == TIM_CR1_DIR;
     if(dir) {
-      digitalToggle(PC10);
-      digitalToggle(PC10);
-      // return;
+      adc_val[adc_index][0]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_1);
+      adc_val[adc_index][1]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_2);
+      adc_val[adc_index][2]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_3);  
     } else {
-      // digitalToggle(PC10);
-      // digitalToggle(PC10);
-      // digitalToggle(PC10);
-      // digitalToggle(PC10);
+      // do nothing
     }
-    #endif
-    // if the timer han't repetition counter - downsample two times
-    // if( needs_downsample[adc_index] && tim_downsample[adc_index]++ > 0) {
-    //   tim_downsample[adc_index] = 0;
-    //   return;
-    // }
-    // digitalToggle(PC10);
-    // digitalToggle(PC10);
+    #else // HFI_2XPWM
     adc_val[adc_index][0]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_1);
     adc_val[adc_index][1]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_2);
-    adc_val[adc_index][2]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_3);    
+    adc_val[adc_index][2]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_3);  
+    #endif
 
     #ifdef HFI
       process_hfi();
