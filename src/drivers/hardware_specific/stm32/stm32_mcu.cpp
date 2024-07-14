@@ -985,16 +985,21 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 
 void _setSinglePhaseState(PhaseState state, HardwareTimer *HT, int channel1,int channel2) {
   _UNUSED(channel2);
-  switch (state) {
-    case PhaseState::PHASE_OFF:
-      // Due to a weird quirk in the arduino timer API, pauseChannel only disables the complementary channel (e.g. CC1NE).
-      // To actually make the phase floating, we must also set pwm to 0.
+  if (state == PhaseState::PHASE_OFF) {
       HT->pauseChannel(channel1);
-      break;
-    default:
+  } else {
       HT->resumeChannel(channel1);
-      break;
   }
+  // switch (state) {
+  //   case PhaseState::PHASE_OFF:
+  //     // Due to a weird quirk in the arduino timer API, pauseChannel only disables the complementary channel (e.g. CC1NE).
+  //     // To actually make the phase floating, we must also set pwm to 0.
+  //     HT->pauseChannel(channel1);
+  //     break;
+  //   default:
+  //     HT->resumeChannel(channel1);
+  //     break;
+  // }
 }
 
 
@@ -1007,7 +1012,9 @@ void _writeDutyCycle6PWM(float dc_a, float dc_b, float dc_c, PhaseState* phase_s
       // phase a
       _setSinglePhaseState(phase_state[0], ((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], ((STM32DriverParams*)params)->channels[1]);
       if(phase_state[0] == PhaseState::PHASE_OFF) dc_a = 0.0f;
+      digitalToggle(PC14);
       _setPwm(((STM32DriverParams*)params)->timers[0], ((STM32DriverParams*)params)->channels[0], _PWM_RANGE*dc_a, _PWM_RESOLUTION);
+      digitalToggle(PC14);
       // phase b
       _setSinglePhaseState(phase_state[1], ((STM32DriverParams*)params)->timers[2], ((STM32DriverParams*)params)->channels[2], ((STM32DriverParams*)params)->channels[3]);
       if(phase_state[1] == PhaseState::PHASE_OFF) dc_b = 0.0f;
