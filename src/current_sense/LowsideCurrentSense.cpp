@@ -98,7 +98,9 @@ PhaseCurrent_s LowsideCurrentSense::getPhaseCurrents(){
 int LowsideCurrentSense::driverAlign(float voltage){
         
     int exit_flag = 1;
-    if(skip_align) return exit_flag;
+    if(skip_align) { 
+        SIMPLEFOC_DEBUG("SKIP ALIGN");
+        return exit_flag;};
 
     if (!initialized) return 0;
 
@@ -144,8 +146,10 @@ int LowsideCurrentSense::driverAlign(float voltage){
             gain_a *= _sign(c.c);
             exit_flag = 2;// signal that pins have been switched
         }else{
+            SIMPLEFOC_DEBUG("ab_ratio: ", ab_ratio);
+            SIMPLEFOC_DEBUG("ac_ratio: ", ac_ratio);
             // error in current sense - phase either not measured or bad connection
-            return 0;
+            return -1;
         }
     }
 
@@ -191,7 +195,9 @@ int LowsideCurrentSense::driverAlign(float voltage){
             exit_flag = 2; // signal that pins have been switched
         }else{
             // error in current sense - phase either not measured or bad connection
-            return 0;
+            SIMPLEFOC_DEBUG("ba_ratio: ", ba_ratio);
+            SIMPLEFOC_DEBUG("bc_ratio: ", bc_ratio);
+            return -2;
         }   
     }
 
@@ -238,7 +244,9 @@ int LowsideCurrentSense::driverAlign(float voltage){
             exit_flag = 2; // signal that pins have been switched
         }else{
             // error in current sense - phase either not measured or bad connection
-            return 0;
+            SIMPLEFOC_DEBUG("ca_ratio: ", ca_ratio);
+            SIMPLEFOC_DEBUG("cb_ratio: ", cb_ratio);
+            return -3;
         }   
     }
 
