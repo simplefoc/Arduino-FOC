@@ -54,7 +54,7 @@ PhaseCurrent_s GenericCurrentSense::getPhaseCurrents(){
 // returns flag
 // 0 - fail
 // 1 - success and nothing changed
-int GenericCurrentSense::driverAlign(float voltage){
+int GenericCurrentSense::driverAlign(float voltage, bool modulation_centered){
     _UNUSED(voltage) ; // remove unused parameter warning
     int exit_flag = 1;
     if(skip_align) return exit_flag;

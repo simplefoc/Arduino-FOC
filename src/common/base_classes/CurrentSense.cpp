@@ -133,7 +133,7 @@ void CurrentSense::disable(){
 // 3 - success but gains inverted
 // 4 - success but pins reconfigured and gains inverted
 // IMPORTANT, this function can be overriden in the child class
-int CurrentSense::driverAlign(float voltage){
+int CurrentSense::driverAlign(float voltage, bool modulation_centered){
         
     int exit_flag = 1;
     if(skip_align) return exit_flag;
@@ -142,9 +142,9 @@ int CurrentSense::driverAlign(float voltage){
 
     // check if stepper or BLDC 
     if(driver_type == DriverType::Stepper)
-        return alignStepperDriver(voltage, (StepperDriver*)driver);
+        return alignStepperDriver(voltage, (StepperDriver*)driver, modulation_centered);
     else
-        return alignBLDCDriver(voltage, (BLDCDriver*)driver);
+        return alignBLDCDriver(voltage, (BLDCDriver*)driver, modulation_centered);
 }
 
 
@@ -172,22 +172,23 @@ PhaseCurrent_s CurrentSense::readAverageCurrents(int N) {
 // 2 - success but pins reconfigured
 // 3 - success but gains inverted
 // 4 - success but pins reconfigured and gains inverted
-int CurrentSense::alignBLDCDriver(float voltage, BLDCDriver* bldc_driver){
+int CurrentSense::alignBLDCDriver(float voltage, BLDCDriver* bldc_driver, bool modulation_centered){
         
     bool phases_switched = 0;
     bool phases_inverted = 0;
     
-    float center = driver->voltage_limit/2.0;
+    float zero = 0;
+    if(modulation_centered) zero = driver->voltage_limit/2.0;
 
     // set phase A active and phases B and C down
     // 300 ms of ramping
     for(int i=0; i < 100; i++){
-        bldc_driver->setPwm(voltage/100.0*((float)i) , 0, 0);
+        bldc_driver->setPwm(voltage/100.0*((float)i)+zero , zero, zero);
         _delay(3);
     }
     _delay(500);
     PhaseCurrent_s c_a = readAverageCurrents();
-    bldc_driver->setPwm(0, 0, 0);
+    bldc_driver->setPwm(zero, zero, zero);
     // check if currents are to low (lower than 100mA) 
     // TODO calculate the 100mA threshold from the ADC resolution
     // if yes throw an error and return 0
@@ -293,12 +294,12 @@ int CurrentSense::alignBLDCDriver(float voltage, BLDCDriver* bldc_driver){
     // set phase B active and phases A and C down
     // 300 ms of ramping
     for(int i=0; i < 100; i++){
-        bldc_driver->setPwm(0, voltage/100.0*((float)i), 0);
+        bldc_driver->setPwm(zero, voltage/100.0*((float)i)+zero, zero);
         _delay(3);
     }
     _delay(500);
     PhaseCurrent_s c_b = readAverageCurrents();
-    bldc_driver->setPwm(0, 0, 0);
+    bldc_driver->setPwm(zero, zero, zero);
 
     // check the phase B
     // find the highest magnitude in c_b
@@ -390,10 +391,13 @@ int CurrentSense::alignBLDCDriver(float voltage, BLDCDriver* bldc_driver){
 // 2 - success but pins reconfigured
 // 3 - success but gains inverted
 // 4 - success but pins reconfigured and gains inverted
-int CurrentSense::alignStepperDriver(float voltage, StepperDriver* stepper_driver){
+int CurrentSense::alignStepperDriver(float voltage, StepperDriver* stepper_driver, bool modulation_centered){
         
     bool phases_switched = 0;
     bool phases_inverted = 0;
+    
+    float zero = 0;
+    if(modulation_centered) zero = driver->voltage_limit/2.0;
 
     if(!_isset(pinA) || !_isset(pinB)){
         SIMPLEFOC_DEBUG("CS: Pins A & B not specified!");
@@ -403,13 +407,13 @@ int CurrentSense::alignStepperDriver(float voltage, StepperDriver* stepper_drive
     // set phase A active and phases B down
     // ramp 300ms
     for(int i=0; i < 100; i++){
-        stepper_driver->setPwm(voltage/100.0*((float)i), 0);
+        stepper_driver->setPwm(voltage/100.0*((float)i), zero);
         _delay(3);
     }
     _delay(500);
     PhaseCurrent_s c = readAverageCurrents();
     // disable the phases
-    stepper_driver->setPwm(0, 0);        
+    stepper_driver->setPwm(zero, zero);        
     if (fabs(c.a) < 0.1f && fabs(c.b) < 0.1f ){
         SIMPLEFOC_DEBUG("CS: Err too low current!");
         return 0; // measurement current too low
@@ -438,12 +442,12 @@ int CurrentSense::alignStepperDriver(float voltage, StepperDriver* stepper_drive
     // set phase B active and phases A down
     // ramp 300ms
     for(int i=0; i < 100; i++){
-        stepper_driver->setPwm(0, voltage/100.0*((float)i));
+        stepper_driver->setPwm(zero, voltage/100.0*((float)i)+zero);
         _delay(3);
     }
     _delay(500);
     c = readAverageCurrents();
-    stepper_driver->setPwm(0, 0);
+    stepper_driver->setPwm(zero, zero);
 
     // phase B should be aligned
     // 1) we just need to verify that it has been measured

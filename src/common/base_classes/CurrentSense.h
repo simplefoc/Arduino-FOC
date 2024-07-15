@@ -68,7 +68,7 @@ class CurrentSense{
      * 
      * IMPORTANT: Default implementation provided in the CurrentSense class, but can be overriden in the child classes
      */
-    virtual int driverAlign(float align_voltage);
+    virtual int driverAlign(float align_voltage, bool modulation_centered = false);
 
     /**
      *  Function rading the phase currents a, b and c
@@ -130,11 +130,11 @@ class CurrentSense{
     /**
      * Function used to align the current sense with the BLDC motor driver
     */
-    int alignBLDCDriver(float align_voltage, BLDCDriver* driver);
+    int alignBLDCDriver(float align_voltage, BLDCDriver* driver, bool modulation_centered);
     /**
      * Function used to align the current sense with the Stepper motor driver
     */
-    int alignStepperDriver(float align_voltage, StepperDriver* driver);
+    int alignStepperDriver(float align_voltage, StepperDriver* driver, bool modulation_centered);
     /**
      * Function used to read the average current values over N samples
     */
