@@ -35,7 +35,7 @@
 #define _HIGH_IMPEDANCE 0
 #define _HIGH_Z _HIGH_IMPEDANCE
 #define _ACTIVE 1
-#define _NC (NOT_SET)
+#define _NC ((int) NOT_SET)
 
 #define MIN_ANGLE_DETECT_MOVEMENT (_2PI/101.0f)
 
