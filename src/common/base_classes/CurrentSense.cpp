@@ -450,8 +450,8 @@ int CurrentSense::alignStepperDriver(float voltage, StepperDriver* stepper_drive
 
     // phase B should be aligned
     // 1) we just need to verify that it has been measured
-    if (fabs(c.a) < 0.1f && fabs(c.b) < 0.1f ){
-        SIMPLEFOC_DEBUG("CS: Err too low current!");
+    if (fabs(c.b) < 0.1f ){
+        SIMPLEFOC_DEBUG("CS: Err too low current on B!");
         return 0; // measurement current too low
     }
     // 2) check if measured current a is positive and invert if not
