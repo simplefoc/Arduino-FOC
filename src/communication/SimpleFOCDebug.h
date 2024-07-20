@@ -32,6 +32,7 @@
  * 
  **/
 
+// #define SIMPLEFOC_DISABLE_DEBUG
 
 #ifndef SIMPLEFOC_DISABLE_DEBUG 
 
@@ -64,10 +65,6 @@ protected:
 
 #define SIMPLEFOC_DEBUG(msg, ...) \
     SimpleFOCDebug::println(F(msg), ##__VA_ARGS__)
-
-
-
-
 
 #else //ifndef SIMPLEFOC_DISABLE_DEBUG
 

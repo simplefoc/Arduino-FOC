@@ -38,10 +38,9 @@ class BLDCDriver3PWM: public BLDCDriver
     int enableA_pin; //!< enable pin number
     int enableB_pin; //!< enable pin number
     int enableC_pin; //!< enable pin number
-    bool enable_active_high = true;
 
     /** 
-     * Set phase voltages to the harware 
+     * Set phase voltages to the hardware 
      * 
      * @param Ua - phase A voltage
      * @param Ub - phase B voltage
@@ -50,7 +49,8 @@ class BLDCDriver3PWM: public BLDCDriver
     void setPwm(float Ua, float Ub, float Uc) override;
 
     /** 
-     * Set phase voltages to the harware 
+     * Set phase voltages to the hardware
+     * > Only possible is the driver has separate enable pins for all phases!  
      * 
      * @param sc - phase A state : active / disabled ( high impedance )
      * @param sb - phase B state : active / disabled ( high impedance )

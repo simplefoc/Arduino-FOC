@@ -4,6 +4,7 @@
 #include "Arduino.h"
 #include "common/base_classes/FOCMotor.h"
 #include "common/base_classes/Sensor.h"
+#include "common/base_classes/FOCDriver.h"
 #include "common/base_classes/BLDCDriver.h"
 #include "common/foc_utils.h"
 #include "common/time_utils.h"
