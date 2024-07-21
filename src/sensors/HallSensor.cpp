@@ -42,22 +42,21 @@ void HallSensor::handleC() {
  * Updates the state and sector following an interrupt
  */
 void HallSensor::updateState() {
-  long new_pulse_timestamp = _micros();
-
   int8_t new_hall_state = C_active + (B_active << 1) + (A_active << 2);
 
   // glitch avoidance #1 - sometimes we get an interrupt but pins haven't changed
-  if (new_hall_state == hall_state) {
-    return;
-  }
+  if (new_hall_state == hall_state) return;
+
+  long new_pulse_timestamp = _micros();
   hall_state = new_hall_state;
 
   int8_t new_electric_sector = ELECTRIC_SECTORS[hall_state];
-  if (new_electric_sector - electric_sector > 3) {
+  int8_t electric_sector_dif = new_electric_sector - electric_sector;
+  if (electric_sector_dif > 3) {
     //underflow
     direction = Direction::CCW;
     electric_rotations += direction;
-  } else if (new_electric_sector - electric_sector < (-3)) {
+  } else if (electric_sector_dif < (-3)) {
     //overflow
     direction = Direction::CW;
     electric_rotations += direction;
@@ -96,11 +95,19 @@ void HallSensor::attachSectorCallback(void (*_onSectorChange)(int sector)) {
 // Sensor update function. Safely copy volatile interrupt variables into Sensor base class state variables.
 void HallSensor::update() {
   // Copy volatile variables in minimal-duration blocking section to ensure no interrupts are missed
-  noInterrupts();
+  if (use_interrupt){
+    noInterrupts();
+  }else{
+    A_active = digitalRead(pinA);
+    B_active = digitalRead(pinB);
+    C_active = digitalRead(pinC);
+    updateState();
+  }
+
   angle_prev_ts = pulse_timestamp;
   long last_electric_rotations = electric_rotations;
   int8_t last_electric_sector = electric_sector;
-  interrupts();
+  if (use_interrupt) interrupts();
   angle_prev = ((float)((last_electric_rotations * 6 + last_electric_sector) % cpr) / (float)cpr) * _2PI ;
   full_rotations = (int32_t)((last_electric_rotations * 6 + last_electric_sector) / cpr);
 }
@@ -150,7 +157,7 @@ void HallSensor::init(){
   }
 
     // init hall_state
-  A_active= digitalRead(pinA);
+  A_active = digitalRead(pinA);
   B_active = digitalRead(pinB);
   C_active = digitalRead(pinC);
   updateState();
@@ -169,4 +176,6 @@ void HallSensor::enableInterrupts(void (*doA)(), void(*doB)(), void(*doC)()){
   if(doA != nullptr) attachInterrupt(digitalPinToInterrupt(pinA), doA, CHANGE);
   if(doB != nullptr) attachInterrupt(digitalPinToInterrupt(pinB), doB, CHANGE);
   if(doC != nullptr) attachInterrupt(digitalPinToInterrupt(pinC), doC, CHANGE);
+
+  use_interrupt = true;
 }

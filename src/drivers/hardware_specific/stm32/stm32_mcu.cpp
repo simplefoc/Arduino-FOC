@@ -249,7 +249,15 @@ int _getInternalSourceTrigger(HardwareTimer* master, HardwareTimer* slave) {
   TIM_TypeDef *TIM_slave = slave->getHandle()->Instance;
   #if defined(TIM1) && defined(LL_TIM_TS_ITR0)
     if (TIM_master == TIM1){
-      if(TIM_slave == TIM2 || TIM_slave == TIM3 || TIM_slave == TIM4) return LL_TIM_TS_ITR0;
+      #if defined(TIM2)
+      if(TIM_slave == TIM2) return LL_TIM_TS_ITR0;
+      #endif
+      #if defined(TIM3)
+      else if(TIM_slave == TIM3) return LL_TIM_TS_ITR0;
+      #endif
+      #if defined(TIM4)
+      else if(TIM_slave == TIM4) return LL_TIM_TS_ITR0;
+      #endif
       #if defined(TIM8)
       else if(TIM_slave == TIM8) return LL_TIM_TS_ITR0;
       #endif
@@ -257,7 +265,15 @@ int _getInternalSourceTrigger(HardwareTimer* master, HardwareTimer* slave) {
   #endif
   #if defined(TIM2) &&  defined(LL_TIM_TS_ITR1)
     else if (TIM_master == TIM2){
-      if(TIM_slave == TIM1 || TIM_slave == TIM3 || TIM_slave == TIM4) return LL_TIM_TS_ITR1;
+      #if defined(TIM1)
+      if(TIM_slave == TIM1) return LL_TIM_TS_ITR1;
+      #endif
+      #if defined(TIM3)
+      else if(TIM_slave == TIM3) return LL_TIM_TS_ITR1;
+      #endif
+      #if defined(TIM4)
+      else if(TIM_slave == TIM4) return LL_TIM_TS_ITR1;
+      #endif
       #if defined(TIM8)
       else if(TIM_slave == TIM8) return LL_TIM_TS_ITR1;
       #endif
@@ -268,7 +284,15 @@ int _getInternalSourceTrigger(HardwareTimer* master, HardwareTimer* slave) {
   #endif
   #if defined(TIM3) &&  defined(LL_TIM_TS_ITR2)
     else if (TIM_master == TIM3){
-      if(TIM_slave== TIM1 || TIM_slave == TIM2 || TIM_slave == TIM4) return LL_TIM_TS_ITR2;
+      #if defined(TIM1)
+      if(TIM_slave == TIM1) return LL_TIM_TS_ITR2;
+      #endif
+      #if defined(TIM2)
+      else if(TIM_slave == TIM2) return LL_TIM_TS_ITR2;
+      #endif
+      #if defined(TIM4)
+      else if(TIM_slave == TIM4) return LL_TIM_TS_ITR2;
+      #endif
       #if defined(TIM5)
       else if(TIM_slave == TIM5) return LL_TIM_TS_ITR1;
       #endif
@@ -276,7 +300,15 @@ int _getInternalSourceTrigger(HardwareTimer* master, HardwareTimer* slave) {
   #endif  
   #if defined(TIM4) &&  defined(LL_TIM_TS_ITR3)
     else if (TIM_master == TIM4){
-      if(TIM_slave == TIM1 || TIM_slave == TIM2 || TIM_slave == TIM3) return LL_TIM_TS_ITR3;
+      #if defined(TIM1)
+      if(TIM_slave == TIM1) return LL_TIM_TS_ITR3;
+      #endif
+      #if defined(TIM2)
+      else if(TIM_slave == TIM2) return LL_TIM_TS_ITR3;
+      #endif
+      #if defined(TIM3)
+      else if(TIM_slave == TIM3) return LL_TIM_TS_ITR3;
+      #endif
       #if defined(TIM8)
       else if(TIM_slave == TIM8) return LL_TIM_TS_ITR2;
       #endif
@@ -288,8 +320,12 @@ int _getInternalSourceTrigger(HardwareTimer* master, HardwareTimer* slave) {
   #if defined(TIM5) 
     else if (TIM_master == TIM5){
       #if !defined(STM32L4xx) // only difference between F4,F1 and L4
+      #if defined(TIM1)
       if(TIM_slave == TIM1) return LL_TIM_TS_ITR0;
+      #endif
+      #if defined(TIM3)
       else if(TIM_slave == TIM3) return LL_TIM_TS_ITR2;
+      #endif
       #endif
       #if defined(TIM8)
       if(TIM_slave == TIM8) return LL_TIM_TS_ITR3;
@@ -298,8 +334,15 @@ int _getInternalSourceTrigger(HardwareTimer* master, HardwareTimer* slave) {
   #endif
   #if defined(TIM8)
     else if (TIM_master == TIM8){
+      #if defined(TIM2)
       if(TIM_slave==TIM2) return LL_TIM_TS_ITR1;
-      else if(TIM_slave ==TIM4 || TIM_slave ==TIM5) return LL_TIM_TS_ITR3;
+      #endif
+      #if defined(TIM4)
+      else if(TIM_slave == TIM4) return LL_TIM_TS_ITR3;
+      #endif
+      #if defined(TIM5)
+      else if(TIM_slave == TIM5) return LL_TIM_TS_ITR3;
+      #endif
     }
   #endif
   return -1; // combination not supported

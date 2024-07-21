@@ -29,11 +29,14 @@ void setup() {
   driver.voltage_limit = 12;
   
   // driver init
-  driver.init();
+  if (!driver.init()){
+    Serial.println("Driver init failed!");
+    return;
+  }
 
   // enable driver
   driver.enable();
-
+  Serial.println("Driver ready!");
   _delay(1000);
 }
 

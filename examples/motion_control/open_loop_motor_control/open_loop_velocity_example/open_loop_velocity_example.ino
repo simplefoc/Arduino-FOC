@@ -36,7 +36,10 @@ void setup() {
   // as a protection measure for the low-resistance motors
   // this value is fixed on startup
   driver.voltage_limit = 6;
-  driver.init();
+  if(!driver.init()){
+    Serial.println("Driver init failed!");
+    return;
+  }
   // link the motor and the driver
   motor.linkDriver(&driver);
 
@@ -50,7 +53,10 @@ void setup() {
   motor.controller = MotionControlType::velocity_openloop;
 
   // init motor hardware
-  motor.init();
+  if(!motor.init()){
+    Serial.println("Motor init failed!");
+    return;
+  }
 
   // add target command T
   command.add('T', doTarget, "target velocity");
