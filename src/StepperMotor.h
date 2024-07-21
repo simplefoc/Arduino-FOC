@@ -43,7 +43,7 @@ class StepperMotor: public FOCMotor
     StepperDriver* driver; 
 
     /**  Motor hardware init function */
-  	void init() override;
+  	int init() override;
     /** Motor disable function */
   	void disable() override;
     /** Motor enable function */

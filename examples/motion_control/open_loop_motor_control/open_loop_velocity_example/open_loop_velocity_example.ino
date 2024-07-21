@@ -53,7 +53,10 @@ void setup() {
   motor.controller = MotionControlType::velocity_openloop;
 
   // init motor hardware
-  motor.init();
+  if(!motor.init()){
+    Serial.println("Motor init failed!");
+    return;
+  }
 
   // add target command T
   command.add('T', doTarget, "target velocity");
