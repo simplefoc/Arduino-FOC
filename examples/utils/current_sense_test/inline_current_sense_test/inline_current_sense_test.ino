@@ -19,7 +19,10 @@ void setup() {
   SimpleFOCDebug::enable(&Serial);
 
   // initialise the current sensing
-  current_sense.init();
+  if(!current_sense.init()){
+    Serial.println("Current sense init failed.");
+    return;
+  }
 
   // for SimpleFOCShield v2.01/v2.0.2
   current_sense.gain_b *= -1;

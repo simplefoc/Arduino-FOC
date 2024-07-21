@@ -13,7 +13,7 @@ void doB(){encoder.handleB();}
 
 // inline current sensor instance
 // ACS712-05B has the resolution of 0.185mV per Amp
-InlineCurrentSense current_sense = InlineCurrentSense(1.0f, 0.185f, A0, A2);
+InlineCurrentSense current_sense = InlineCurrentSense(185.0f, A0, A2);
 
 // commander communication instance
 Commander command = Commander(Serial);
