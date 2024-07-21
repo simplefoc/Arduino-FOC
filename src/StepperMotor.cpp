@@ -33,7 +33,7 @@ void StepperMotor::linkDriver(StepperDriver* _driver) {
 }
 
 // init hardware pins
-void StepperMotor::init() {
+int StepperMotor::init() {
   if (!driver || !driver->initialized) {
     motor_status = FOCMotorStatus::motor_init_failed;
     SIMPLEFOC_DEBUG("MOT: Init not possible, driver not initialized");

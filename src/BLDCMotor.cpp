@@ -63,7 +63,7 @@ void BLDCMotor::linkDriver(BLDCDriver* _driver) {
 }
 
 // init hardware pins
-void BLDCMotor::init() {
+int BLDCMotor::init() {
   if (!driver || !driver->initialized) {
     motor_status = FOCMotorStatus::motor_init_failed;
     SIMPLEFOC_DEBUG("MOT: Init not possible, driver not initialized");
