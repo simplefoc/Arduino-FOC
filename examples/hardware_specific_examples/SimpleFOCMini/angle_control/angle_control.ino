@@ -38,6 +38,12 @@ Commander command = Commander(Serial);
 void doMotor(char* cmd) { command.motor(&motor, cmd); }
 
 void setup() {
+  // use monitoring with serial 
+  Serial.begin(115200);
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&Serial);
+
   // if SimpleFOCMini is stacked in arduino headers
   // on pins 12,11,10,9,8 
   // pin 12 is used as ground
@@ -84,9 +90,6 @@ void setup() {
   //  maximal velocity of the position control
   motor.velocity_limit = 4;
 
-
-  // use monitoring with serial
-  Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
 

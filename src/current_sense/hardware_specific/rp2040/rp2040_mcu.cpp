@@ -86,7 +86,7 @@ void* _configureADCInline(const void *driver_params, const int pinA, const int p
 // };
 
 
-// void _driverSyncLowSide(void* driver_params, void* cs_params) {
+// void* _driverSyncLowSide(void* driver_params, void* cs_params) {
 //     // nothing to do
 // };
 

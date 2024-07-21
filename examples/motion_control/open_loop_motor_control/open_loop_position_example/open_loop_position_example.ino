@@ -23,6 +23,12 @@ void doVelocity(char* cmd) { command.scalar(&motor.velocity_limit, cmd); }
 
 void setup() {
 
+  // use monitoring with serial 
+  Serial.begin(115200);
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&Serial);
+
   // driver config
   // power supply voltage [V]
   driver.voltage_power_supply = 12;
@@ -30,7 +36,10 @@ void setup() {
   // as a protection measure for the low-resistance motors
   // this value is fixed on startup
   driver.voltage_limit = 6;
-  driver.init();
+  if(!driver.init()){
+    Serial.println("Driver init failed!");
+    return;
+  }
   // link the motor and the driver
   motor.linkDriver(&driver);
 
@@ -46,14 +55,16 @@ void setup() {
   motor.controller = MotionControlType::angle_openloop;
 
   // init motor hardware
-  motor.init();
+  if(!motor.init()){
+    Serial.println("Motor init failed!");
+    return;
+  }
 
   // add target command T
   command.add('T', doTarget, "target angle");
   command.add('L', doLimit, "voltage limit");
   command.add('V', doLimit, "movement velocity");
 
-  Serial.begin(115200);
   Serial.println("Motor ready!");
   Serial.println("Set target position [rad]");
   _delay(1000);

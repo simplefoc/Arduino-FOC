@@ -4,6 +4,7 @@
 #include "Arduino.h"
 #include "common/base_classes/FOCMotor.h"
 #include "common/base_classes/Sensor.h"
+#include "common/base_classes/FOCDriver.h"
 #include "common/base_classes/BLDCDriver.h"
 #include "common/foc_utils.h"
 #include "common/time_utils.h"
@@ -39,7 +40,7 @@ class BLDCMotor: public FOCMotor
     BLDCDriver* driver; 
     
     /**  Motor hardware init function */
-  	void init() override;
+  	int init() override;
     /** Motor disable function */
   	void disable() override;
     /** Motor enable function */

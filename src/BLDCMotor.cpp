@@ -63,11 +63,11 @@ void BLDCMotor::linkDriver(BLDCDriver* _driver) {
 }
 
 // init hardware pins
-void BLDCMotor::init() {
+int BLDCMotor::init() {
   if (!driver || !driver->initialized) {
     motor_status = FOCMotorStatus::motor_init_failed;
     SIMPLEFOC_DEBUG("MOT: Init not possible, driver not initialized");
-    return;
+    return 0;
   }
   motor_status = FOCMotorStatus::motor_initializing;
   SIMPLEFOC_DEBUG("MOT: Init");
@@ -105,6 +105,7 @@ void BLDCMotor::init() {
   enable();
   _delay(500);
   motor_status = FOCMotorStatus::motor_uncalibrated;
+  return 1;
 }
 
 
@@ -202,7 +203,7 @@ int BLDCMotor::alignCurrentSense() {
   SIMPLEFOC_DEBUG("MOT: Align current sense.");
 
   // align current sense and the driver
-  exit_flag = current_sense->driverAlign(voltage_sensor_align);
+  exit_flag = current_sense->driverAlign(voltage_sensor_align, modulation_centered);
   if(!exit_flag){
     // error in current sense - phase either not measured or bad connection
     SIMPLEFOC_DEBUG("MOT: Align error!");
@@ -393,6 +394,9 @@ void BLDCMotor::loopFOC() {
 // - if target is not set it uses motor.target value
 void BLDCMotor::move(float new_target) {
 
+  // set internal target variable
+  if(_isset(new_target)) target = new_target;
+  
   // downsampling (optional)
   if(motion_cnt++ < motion_downsample) return;
   motion_cnt = 0;
@@ -410,8 +414,6 @@ void BLDCMotor::move(float new_target) {
 
   // if disabled do nothing
   if(!enabled) return;
-  // set internal target variable
-  if(_isset(new_target)) target = new_target;
   
   // calculate the back-emf voltage if KV_rating available U_bemf = vel*(1/KV)
   if (_isset(KV_rating)) voltage_bemf = shaft_velocity/(KV_rating*_SQRT3)/_RPM_TO_RADS;

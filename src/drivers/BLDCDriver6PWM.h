@@ -37,7 +37,6 @@ class BLDCDriver6PWM: public BLDCDriver
   	int pwmB_h,pwmB_l; //!< phase B pwm pin number
   	int pwmC_h,pwmC_l; //!< phase C pwm pin number
     int enable_pin; //!< enable pin number
-    bool enable_active_high = true;
 
     float dead_zone; //!< a percentage of dead-time(zone) (both high and low side in low) for each pwm cycle [0,1]
 

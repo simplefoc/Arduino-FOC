@@ -21,8 +21,8 @@ StepperDriver4PWM::StepperDriver4PWM(int ph1A,int ph1B,int ph2A,int ph2B,int en1
 // enable motor driver
 void  StepperDriver4PWM::enable(){
     // enable_pin the driver - if enable_pin pin available
-    if ( _isset(enable_pin1) ) digitalWrite(enable_pin1, HIGH);
-    if ( _isset(enable_pin2) ) digitalWrite(enable_pin2, HIGH);
+    if ( _isset(enable_pin1) ) digitalWrite(enable_pin1, enable_active_high);
+    if ( _isset(enable_pin2) ) digitalWrite(enable_pin2, enable_active_high);
     // set zero to PWM
     setPwm(0,0);
 }
@@ -33,8 +33,8 @@ void StepperDriver4PWM::disable()
   // set zero to PWM
   setPwm(0, 0);
   // disable the driver - if enable_pin pin available
-  if ( _isset(enable_pin1) ) digitalWrite(enable_pin1, LOW);
-  if ( _isset(enable_pin2) ) digitalWrite(enable_pin2, LOW);
+  if ( _isset(enable_pin1) ) digitalWrite(enable_pin1, !enable_active_high);
+  if ( _isset(enable_pin2) ) digitalWrite(enable_pin2, !enable_active_high);
 
 }
 
@@ -57,6 +57,15 @@ int StepperDriver4PWM::init() {
   params = _configure4PWM(pwm_frequency, pwm1A, pwm1B, pwm2A, pwm2B);
   initialized = (params!=SIMPLEFOC_DRIVER_INIT_FAILED);  
   return params!=SIMPLEFOC_DRIVER_INIT_FAILED;
+}
+
+// Set voltage to the pwm pin
+void StepperDriver4PWM::setPhaseState(PhaseState sa, PhaseState sb) {
+  // disable if needed
+  if( _isset(enable_pin1) &&  _isset(enable_pin2)){
+    digitalWrite(enable_pin1, sa == PhaseState::PHASE_ON ? enable_active_high:!enable_active_high);
+    digitalWrite(enable_pin2, sb == PhaseState::PHASE_ON ? enable_active_high:!enable_active_high);
+  }
 }
 
 

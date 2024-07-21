@@ -27,6 +27,12 @@ void doTarget(char* cmd) { command.scalar(&target_current, cmd); }
 
 void setup() {
 
+  // use monitoring with serial 
+  Serial.begin(115200);
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&Serial);
+  
   // initialize encoder sensor hardware
   encoder.init();
   encoder.enableInterrupts(doA, doB);
@@ -70,8 +76,6 @@ void setup() {
   // motor.LPF_current_q.Tf = 0.002f; // 1ms default
   // motor.LPF_current_d.Tf = 0.002f; // 1ms default
 
-  // use monitoring with serial
-  Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
 

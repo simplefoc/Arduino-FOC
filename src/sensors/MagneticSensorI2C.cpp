@@ -16,6 +16,14 @@ MagneticSensorI2CConfig_s AS5048_I2C = {
   .data_start_bit = 15
 };
 
+/** Typical configuration for the 12bit MT6701 magnetic sensor over I2C interface */
+MagneticSensorI2CConfig_s MT6701_I2C = {
+  .chip_address = 0x06, 
+  .bit_resolution = 14,
+  .angle_register = 0x03,
+  .data_start_bit = 15
+};
+
 
 // MagneticSensorI2C(uint8_t _chip_address, float _cpr, uint8_t _angle_register_msb)
 //  @param _chip_address  I2C chip address
@@ -34,6 +42,7 @@ MagneticSensorI2C::MagneticSensorI2C(uint8_t _chip_address, int _bit_resolution,
   // LSB and MSB register used bits
   // AS5600 uses 0..7 LSB and 8..11 MSB
   // AS5048 uses 0..5 LSB and 6..13 MSB
+  // MT6701 uses 0..5 LSB and 9..15 MSB
   // used bits in LSB
   lsb_used = _bit_resolution - _bits_used_msb;
   // extraction masks
@@ -111,6 +120,7 @@ int MagneticSensorI2C::read(uint8_t angle_reg_msb) {
   // LSB and MSB register used bits
   // AS5600 uses 0..7 LSB and 8..11 MSB
   // AS5048 uses 0..5 LSB and 6..13 MSB
+  // MT6701 uses 0..5 LSB and 6..13 MSB
   readValue = ( readArray[1] &  lsb_mask );
 	readValue += ( ( readArray[0] & msb_mask ) << lsb_used );
 	return readValue;

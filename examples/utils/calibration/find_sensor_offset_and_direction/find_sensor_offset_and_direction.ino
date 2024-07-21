@@ -29,6 +29,12 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 
 void setup() {
 
+  // use monitoring with serial 
+  Serial.begin(115200);
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&Serial);
+  
   // power supply voltage
   driver.voltage_power_supply = 12;
   driver.init();
@@ -54,7 +60,6 @@ void setup() {
   motor.initFOC();
 
   
-  Serial.begin(115200);
   Serial.println("Sensor zero offset is:");
   Serial.println(motor.zero_electric_angle, 4);
   Serial.println("Sensor natural direction is: ");
