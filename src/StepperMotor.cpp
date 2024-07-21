@@ -48,6 +48,21 @@ int StepperMotor::init() {
   if(voltage_sensor_align > voltage_limit) voltage_sensor_align = voltage_limit;
 
   // update the controller limits
+  if(current_sense){
+    // current control loop controls voltage
+    PID_current_q.limit = voltage_limit;
+    PID_current_d.limit = voltage_limit;
+
+    if (_isset(phase_resistance) && _isset(phase_inductance)){
+      PID_current_d.P = phase_inductance * DEF_CURR_BANDWIDTH * _2PI;
+      PID_current_d.I = PID_current_d.P * phase_resistance / phase_inductance;
+      
+      PID_current_q.P = phase_inductance * DEF_CURR_BANDWIDTH * _2PI;
+      PID_current_q.I = PID_current_q.P * phase_resistance /phase_inductance;
+    }
+  }
+
+  // update the controller limits
   if(_isset(phase_resistance)){
     // velocity control loop controls current
     PID_velocity.limit = current_limit;
