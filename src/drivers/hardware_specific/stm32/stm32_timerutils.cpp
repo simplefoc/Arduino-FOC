@@ -53,11 +53,11 @@ uint32_t stm32_setClockAndARR(TIM_HandleTypeDef* handle, uint32_t PWM_freq) {
   }
   __HAL_TIM_SET_AUTORELOAD(handle, arr_value);
   stm32_refreshTimer(handle);
-  #ifdef SIMPLEFOC_STM32_DEBUG
-    SIMPLEFOC_DEBUG("STM32-DRV: Timer clock: ", (int)stm32_getTimerClockFreq(handle));
-    SIMPLEFOC_DEBUG("STM32-DRV: Timer prescaler: ", (int)prescaler);
-    SIMPLEFOC_DEBUG("STM32-DRV: Timer ARR: ", (int)arr_value);
-  #endif
+  // #ifdef SIMPLEFOC_STM32_DEBUG
+  //   SIMPLEFOC_DEBUG("STM32-DRV: Timer clock: ", (int)stm32_getTimerClockFreq(handle));
+  //   SIMPLEFOC_DEBUG("STM32-DRV: Timer prescaler: ", (int)prescaler);
+  //   SIMPLEFOC_DEBUG("STM32-DRV: Timer ARR: ", (int)arr_value);
+  // #endif
   return arr_value;
 }
 
@@ -458,7 +458,8 @@ TIM_HandleTypeDef* stm32_alignTimers(TIM_HandleTypeDef *timers_in[], uint8_t num
         LL_TIM_SetSlaveMode(timers[slave_index]->Instance, LL_TIM_SLAVEMODE_GATED);
         #endif
       }
-      stm32_resumeTimer(timers[master_index]); // start the master to start all timers
+      for (int i=0; i<numTimers; i++) // resume the timers TODO at the moment the first PWM cycle is not well-aligned
+        stm32_resumeTimer(timers[i]);
       return timers[master_index];
     }
   }

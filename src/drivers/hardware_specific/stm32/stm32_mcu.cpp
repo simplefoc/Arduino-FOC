@@ -147,12 +147,11 @@ TIM_HandleTypeDef* stm32_initPinPWM(uint32_t PWM_freq, PinMap* timer, uint32_t m
     return NULL;
   TIM_HandleTypeDef* handle = stm32_getTimer(timer);
   uint32_t channel = STM_PIN_CHANNEL(timer->function);
-  #ifdef SIMPLEFOC_STM32_DEBUG
-    SIMPLEFOC_DEBUG("STM32-DRV: Configuring timer ", (int)stm32_getTimerNumber(handle->Instance));
-    SIMPLEFOC_DEBUG("STM32-DRV: Configuring channel ", (int)channel);
-  #endif
   if (handle==NULL) {
     handle = stm32_useTimer(timer);
+    #ifdef SIMPLEFOC_STM32_DEBUG
+    SIMPLEFOC_DEBUG("STM32-DRV: Initializing TIM", (int)stm32_getTimerNumber(handle->Instance));
+    #endif
     uint32_t arr = stm32_setClockAndARR(handle, PWM_freq);
     if (arr<SIMPLEFOC_STM32_MIN_RESOLUTION) {
       SIMPLEFOC_DEBUG("STM32-DRV: WARN timer resolution too low (<8bit): ", (int)arr+1);
@@ -162,7 +161,6 @@ TIM_HandleTypeDef* stm32_initPinPWM(uint32_t PWM_freq, PinMap* timer, uint32_t m
       SIMPLEFOC_DEBUG("STM32-DRV: Timer resolution set to: ", (int)arr+1);
       #endif
     }
-
   }
   TIM_OC_InitTypeDef channelOC;
   channelOC.OCMode = TIM_OCMODE_PWM1;
@@ -184,6 +182,11 @@ TIM_HandleTypeDef* stm32_initPinPWM(uint32_t PWM_freq, PinMap* timer, uint32_t m
   if (IS_TIM_BREAK_INSTANCE(handle->Instance)) {
     __HAL_TIM_MOE_ENABLE(handle);
   }
+  #ifdef SIMPLEFOC_STM32_DEBUG
+    SimpleFOCDebug::print("STM32-DRV: Configured TIM");
+    SimpleFOCDebug::print((int)stm32_getTimerNumber(handle->Instance));
+    SIMPLEFOC_DEBUG("_CH", (int)channel);
+  #endif
   return handle;
 }
 
