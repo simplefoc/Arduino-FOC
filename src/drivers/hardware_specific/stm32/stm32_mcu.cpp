@@ -4,7 +4,7 @@
 #include "./stm32_timerutils.h"
 #include "./stm32_searchtimers.h"
 
-#if defined(_STM32_DEF_) || defined(TARGET_PORTENTA_H7)
+#if defined(_STM32_DEF_) || defined(TARGET_STM32H7)
 
 #pragma message("")
 #pragma message("SimpleFOC: compiling for STM32")
@@ -146,11 +146,24 @@ TIM_HandleTypeDef* stm32_initPinPWM(uint32_t PWM_freq, PinMap* timer, uint32_t m
   if (timer==NULL)
     return NULL;
   TIM_HandleTypeDef* handle = stm32_getTimer(timer);
+  uint32_t channel = STM_PIN_CHANNEL(timer->function);
+  #ifdef SIMPLEFOC_STM32_DEBUG
+    SIMPLEFOC_DEBUG("STM32-DRV: Configuring timer ", (int)stm32_getTimerNumber(handle->Instance));
+    SIMPLEFOC_DEBUG("STM32-DRV: Configuring channel ", (int)channel);
+  #endif
   if (handle==NULL) {
     handle = stm32_useTimer(timer);
-    stm32_setClockAndARR(handle, PWM_freq); // TODO add checks for PWM frequency limits
+    uint32_t arr = stm32_setClockAndARR(handle, PWM_freq);
+    if (arr<SIMPLEFOC_STM32_MIN_RESOLUTION) {
+      SIMPLEFOC_DEBUG("STM32-DRV: WARN timer resolution too low (<8bit): ", (int)arr+1);
+    }
+    else {
+      #ifdef SIMPLEFOC_STM32_DEBUG
+      SIMPLEFOC_DEBUG("STM32-DRV: Timer resolution set to: ", (int)arr+1);
+      #endif
+    }
+
   }
-  uint32_t channel = STM_PIN_CHANNEL(timer->function);
   TIM_OC_InitTypeDef channelOC;
   channelOC.OCMode = TIM_OCMODE_PWM1;
   channelOC.Pulse = 0; //__HAL_TIM_GET_COMPARE(handle, channel);
@@ -171,11 +184,6 @@ TIM_HandleTypeDef* stm32_initPinPWM(uint32_t PWM_freq, PinMap* timer, uint32_t m
   if (IS_TIM_BREAK_INSTANCE(handle->Instance)) {
     __HAL_TIM_MOE_ENABLE(handle);
   }
-
-#ifdef SIMPLEFOC_STM32_DEBUG
-  SIMPLEFOC_DEBUG("STM32-DRV: Configuring timer ", (int)stm32_getTimerNumber(handle->Instance));
-  SIMPLEFOC_DEBUG("STM32-DRV: Configuring channel ", (int)channel);
-#endif
   return handle;
 }
 
@@ -342,10 +350,7 @@ void* _configure1PWM(long pwm_frequency, const int pinA) {
     return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
   }
 
-  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
-  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
-  // center-aligned frequency is uses two periods
-  pwm_frequency *=2;
+  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = SIMPLEFOC_STM32_PWM_FREQUENCY; // default frequency 25khz
 
   int pins[1] = { pinA };
   PinMap* pinTimers[1] = { NULL };
@@ -382,10 +387,7 @@ void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
     return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
   }
 
-  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
-  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
-  // center-aligned frequency is uses two periods
-  pwm_frequency *=2;
+  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = SIMPLEFOC_STM32_PWM_FREQUENCY; // default frequency 25khz
 
   int pins[2] = { pinA, pinB };
   PinMap* pinTimers[2] = { NULL, NULL };
@@ -404,7 +406,7 @@ void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
     .timers_handle = { HT1, HT2 },
     .channels = { channel1, channel2 },
     .llchannels = { stm32_getLLChannel(pinTimers[0]), stm32_getLLChannel(pinTimers[1]) },
-    .pwm_frequency = pwm_frequency,
+    .pwm_frequency = pwm_frequency, // TODO set to actual frequency
     .num_timers = stm32_countTimers(timers, 2),
     .master_timer = NULL
   };
@@ -425,10 +427,7 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
     SIMPLEFOC_DEBUG("STM32-DRV: ERR: too many drivers used");
     return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
   }
-  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
-  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
-  // center-aligned frequency is uses two periods
-  //pwm_frequency *=2;
+  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = SIMPLEFOC_STM32_PWM_FREQUENCY; // default frequency 25khz
 
   int pins[3] = { pinA, pinB, pinC };
   PinMap* pinTimers[3] = { NULL, NULL, NULL };
@@ -469,10 +468,7 @@ void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const in
     SIMPLEFOC_DEBUG("STM32-DRV: ERR: too many drivers used");
     return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
   }
-  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
-  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
-  // center-aligned frequency is uses two periods
-  pwm_frequency *=2;
+  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = SIMPLEFOC_STM32_PWM_FREQUENCY; // default frequency 25khz
 
   int pins[4] = { pinA, pinB, pinC, pinD };
   PinMap* pinTimers[4] = { NULL, NULL, NULL, NULL };
@@ -570,10 +566,7 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
     SIMPLEFOC_DEBUG("STM32-DRV: ERR: too many drivers used");
     return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
   }
-  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
-  else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to |%0kHz max
-  // center-aligned frequency is uses two periods
-  pwm_frequency *=2;
+  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = SIMPLEFOC_STM32_PWM_FREQUENCY; // default frequency 25khz
 
   // find configuration
   int pins[6] = { pinA_h, pinA_l, pinB_h, pinB_l, pinC_h, pinC_l };

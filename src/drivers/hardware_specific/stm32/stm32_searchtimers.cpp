@@ -2,7 +2,7 @@
 #include "./stm32_searchtimers.h"
 #include "./stm32_timerutils.h"
 
-#if defined(_STM32_DEF_) || defined(TARGET_PORTENTA_H7)
+#if defined(_STM32_DEF_) || defined(TARGET_STM32H7)
 
 
 

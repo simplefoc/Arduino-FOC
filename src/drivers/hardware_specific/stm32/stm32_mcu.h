@@ -2,7 +2,7 @@
 
 #include "../../hardware_api.h"
 
-#if defined(_STM32_DEF_) || defined(TARGET_PORTENTA_H7)
+#if defined(_STM32_DEF_) || defined(TARGET_STM32H7)
 
 #ifndef SIMPLEFOC_STM32_MAX_TIMERSUSED
 #define SIMPLEFOC_STM32_MAX_TIMERSUSED 6
@@ -23,12 +23,13 @@
 #endif
 
 
-
-// default pwm parameters
-#define _PWM_RESOLUTION 12 // 12bit
-#define _PWM_RANGE 4095.0f // 2^12 -1 = 4095
-#define _PWM_FREQUENCY 25000 // 25khz
-#define _PWM_FREQUENCY_MAX 50000 // 50khz
+/**
+ * No limits are placed on PWM frequency, so very fast or very slow frequencies can be set. 
+ * A warning is displayed to debug if you get less than 8bit resolution for the PWM duty cycle.
+ * If no pwm_frequency is set, the default value is 25kHz.
+ */
+#define SIMPLEFOC_STM32_PWM_FREQUENCY 25000 // 25khz
+#define SIMPLEFOC_STM32_MIN_RESOLUTION 255
 
 // 6pwm parameters
 #define _HARDWARE_6PWM 1

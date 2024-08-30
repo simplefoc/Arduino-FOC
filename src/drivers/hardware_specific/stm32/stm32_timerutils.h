@@ -3,7 +3,7 @@
 
 #include "./stm32_mcu.h"
 
-#if defined(_STM32_DEF_) || defined(TARGET_PORTENTA_H7)
+#if defined(_STM32_DEF_) || defined(TARGET_STM32H7)
 
 void stm32_pauseTimer(TIM_HandleTypeDef* handle);
 void stm32_resumeTimer(TIM_HandleTypeDef* handle);
