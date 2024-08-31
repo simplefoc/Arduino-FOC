@@ -163,7 +163,7 @@ TIM_HandleTypeDef* stm32_initPinPWM(uint32_t PWM_freq, PinMap* timer, uint32_t m
     }
   }
   TIM_OC_InitTypeDef channelOC;
-  channelOC.OCMode = TIM_OCMODE_PWM1;
+  channelOC.OCMode = mode;
   channelOC.Pulse = 0; //__HAL_TIM_GET_COMPARE(handle, channel);
   channelOC.OCPolarity = polarity;
   channelOC.OCFastMode = TIM_OCFAST_DISABLE;
@@ -195,7 +195,14 @@ TIM_HandleTypeDef* stm32_initPinPWM(uint32_t PWM_freq, PinMap* timer, uint32_t m
 
 
 
-
+/**
+0110: PWM mode 1 - In upcounting, channel 1 is active as long as TIMx_CNT<TIMx_CCR1
+else inactive. In downcounting, channel 1 is inactive (OC1REF=‘0’) as long as
+TIMx_CNT>TIMx_CCR1 else active (OC1REF=’1’).
+0111: PWM mode 2 - In upcounting, channel 1 is inactive as long as
+TIMx_CNT<TIMx_CCR1 else active. In downcounting, channel 1 is active as long as
+TIMx_CNT>TIMx_CCR1 else inactiv
+ */
 // init high side pin
 TIM_HandleTypeDef* _stm32_initPinPWMHigh(uint32_t PWM_freq, PinMap* timer) {
   uint32_t polarity = SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH ? TIM_OCPOLARITY_HIGH : TIM_OCPOLARITY_LOW;
