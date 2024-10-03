@@ -89,7 +89,7 @@ TIM_HandleTypeDef* stm32_useTimer(PinMap* timer) {
   handle->hdma[6] = NULL;
   handle->Init.Prescaler = 0;
   handle->Init.Period = ((1 << 16) - 1);
-  handle->Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
+  handle->Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED2;
   handle->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   handle->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   #if defined(TIM_RCR_REP)
@@ -201,12 +201,13 @@ else inactive. In downcounting, channel 1 is inactive (OC1REF=‘0’) as long a
 TIMx_CNT>TIMx_CCR1 else active (OC1REF=’1’).
 0111: PWM mode 2 - In upcounting, channel 1 is inactive as long as
 TIMx_CNT<TIMx_CCR1 else active. In downcounting, channel 1 is active as long as
-TIMx_CNT>TIMx_CCR1 else inactiv
+TIMx_CNT>TIMx_CCR1 else inactive
  */
 // init high side pin
 TIM_HandleTypeDef* _stm32_initPinPWMHigh(uint32_t PWM_freq, PinMap* timer) {
-  uint32_t polarity = SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH ? TIM_OCPOLARITY_HIGH : TIM_OCPOLARITY_LOW;
+  uint32_t polarity = SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH ? TIM_OCPOLARITY_HIGH : TIM_OCPOLARITY_LOW ;
   TIM_HandleTypeDef* handle = stm32_initPinPWM(PWM_freq, timer, TIM_OCMODE_PWM1, polarity);
+  LL_TIM_OC_EnablePreload(handle->Instance, stm32_getLLChannel(timer));
   return handle;
 }
 
@@ -214,6 +215,7 @@ TIM_HandleTypeDef* _stm32_initPinPWMHigh(uint32_t PWM_freq, PinMap* timer) {
 TIM_HandleTypeDef* _stm32_initPinPWMLow(uint32_t PWM_freq, PinMap* timer) {
   uint32_t polarity = SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH ? TIM_OCPOLARITY_HIGH : TIM_OCPOLARITY_LOW;
   TIM_HandleTypeDef* handle = stm32_initPinPWM(PWM_freq, timer, TIM_OCMODE_PWM2, polarity);
+  LL_TIM_OC_EnablePreload(handle->Instance, stm32_getLLChannel(timer));
   return handle;
 }
 
@@ -322,6 +324,8 @@ STM32DriverParams* _stm32_initHardware6PWMPair(long PWM_freq, float dead_zone, P
   params->timers_handle[paramsPos+1] = handle;
   params->channels[paramsPos] = channel1;
   params->channels[paramsPos+1] = channel2;
+  params->llchannels[paramsPos] = stm32_getLLChannel(pinH);
+  params->llchannels[paramsPos+1] = stm32_getLLChannel(pinL);
   return params;
 }
 

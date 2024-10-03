@@ -397,7 +397,9 @@ TIM_HandleTypeDef* stm32_alignTimers(TIM_HandleTypeDef *timers_in[], uint8_t num
 
 
   #ifdef SIMPLEFOC_STM32_DEBUG
-    SIMPLEFOC_DEBUG("STM32-DRV: Syncronising timers! Timer no. ", numTimers);
+    SimpleFOCDebug::print("STM32-DRV: Synchronising ");
+    SimpleFOCDebug::print(numTimers);
+    SimpleFOCDebug::println(" timers");
   #endif
 
   // see if there is more then 1 timers used for the pwm
@@ -441,7 +443,7 @@ TIM_HandleTypeDef* stm32_alignTimers(TIM_HandleTypeDef *timers_in[], uint8_t num
       LL_TIM_SetSlaveMode(timers[master_index]->Instance, LL_TIM_SLAVEMODE_DISABLED );
       // Configure the master  timer to send a trigger signal on enable 
       LL_TIM_SetTriggerOutput(timers[master_index]->Instance, LL_TIM_TRGO_ENABLE);
-      LL_TIM_EnableMasterSlaveMode(timers[master_index]->Instance);
+      //LL_TIM_EnableMasterSlaveMode(timers[master_index]->Instance);
       
       // configure other timers to get the input trigger from the master timer
       for (int slave_index=0; slave_index < numTimers; slave_index++) {
@@ -451,15 +453,24 @@ TIM_HandleTypeDef* stm32_alignTimers(TIM_HandleTypeDef *timers_in[], uint8_t num
           SIMPLEFOC_DEBUG("STM32-DRV: slave timer: TIM",  stm32_getTimerNumber(timers[slave_index]->Instance));
         #endif
         // Configure the slave timer to be triggered by the master enable signal
-        LL_TIM_SetTriggerInput(timers[slave_index]->Instance, stm32_getInternalSourceTrigger(timers[master_index], timers[slave_index]));
-        #if defined(STM32G4xx)
-        LL_TIM_SetSlaveMode(timers[slave_index]->Instance, LL_TIM_SLAVEMODE_COMBINED_GATEDRESET);
-        #else
+        uint32_t trigger = stm32_getInternalSourceTrigger(timers[master_index], timers[slave_index]);
+        // #ifdef SIMPLEFOC_STM32_DEBUG
+        //   SIMPLEFOC_DEBUG("STM32-DRV: slave trigger ITR ", (int)trigger);
+        // #endif
+        LL_TIM_SetTriggerInput(timers[slave_index]->Instance, trigger);
+        // #if defined(STM32G4xx)
+        // LL_TIM_SetSlaveMode(timers[slave_index]->Instance, LL_TIM_SLAVEMODE_COMBINED_GATEDRESET);
+        // #else
         LL_TIM_SetSlaveMode(timers[slave_index]->Instance, LL_TIM_SLAVEMODE_GATED);
-        #endif
+        // #endif
       }
-      for (int i=0; i<numTimers; i++) // resume the timers TODO at the moment the first PWM cycle is not well-aligned
-        stm32_resumeTimer(timers[i]);
+      for (int i=0; i<numTimers; i++) { // resume the timers TODO at the moment the first PWM cycle is not well-aligned
+        stm32_refreshTimer(timers[i]);
+        if (i != master_index)
+          stm32_resumeTimer(timers[i]);
+        SIMPLEFOC_DEBUG("STM32-DRV: slave counter: ", (int)timers[i]->Instance->CNT);
+      }
+      stm32_resumeTimer(timers[master_index]);
       return timers[master_index];
     }
   }

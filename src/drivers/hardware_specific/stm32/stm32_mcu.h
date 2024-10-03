@@ -3,6 +3,7 @@
 #include "../../hardware_api.h"
 
 #if defined(_STM32_DEF_) || defined(TARGET_STM32H7)
+// TARGET_M4 / TARGET_M7
 
 #ifndef SIMPLEFOC_STM32_MAX_TIMERSUSED
 #define SIMPLEFOC_STM32_MAX_TIMERSUSED 6
