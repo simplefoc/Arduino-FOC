@@ -16,6 +16,9 @@
 #pragma message("")
 
 void setupPWM(int pin_nr, long pwm_frequency, bool active_high, SilabsDriverParams* params, uint8_t index) {
+	GPIO_Port_TypeDef port = getSilabsPortFromArduinoPin(pin_nr);
+	uint32_t pin = getSilabsPinFromArduinoPin(pin_nr);
+	TIMER_TypeDef* timer = TIMER0; // TODO determine correct timer
 	uint32_t timerFreq = 0;
 	uint32_t topValue = 0;
 	//CMU_ClockEnable(cmuClock_GPIO, true); assume this is done by Arduino core
@@ -23,20 +26,23 @@ void setupPWM(int pin_nr, long pwm_frequency, bool active_high, SilabsDriverPara
 
   	TIMER_Init_TypeDef timerInit = TIMER_INIT_DEFAULT;
 	timerInit.enable = false;
+	timerInit.mode = timerModeUpDown;
 	// TODO adjust pre-scaler as needed to get the desired frequency
+	uint32_t max = TIMER_MaxCount(timer);
 	timerFreq = CMU_ClockFreqGet(cmuClock_TIMER0) / (timerInit.prescale + 1);
 	topValue = (timerFreq / pwm_frequency);
-	TIMER_TopSet(TIMER0, topValue);
+	TIMER_TopSet(timer, topValue);
   
   	TIMER_InitCC_TypeDef timerCCInit = TIMER_INITCC_DEFAULT;
 	timerCCInit.mode = timerCCModePWM;
+	timerCCInit.outInvert = !active_high;
 	GPIO->TIMERROUTE[0].ROUTEEN  = GPIO_TIMER_ROUTEEN_CC0PEN;
-  	GPIO->TIMERROUTE[0].CC0ROUTE = (gpioPortA << _GPIO_TIMER_CC0ROUTE_PORT_SHIFT)
-                    			 | (6 << _GPIO_TIMER_CC0ROUTE_PIN_SHIFT);
-  	TIMER_InitCC(TIMER0, 0, &timerCCInit);
+  	GPIO->TIMERROUTE[0].CC0ROUTE = (port << _GPIO_TIMER_CC0ROUTE_PORT_SHIFT)
+                    			 | (pin << _GPIO_TIMER_CC0ROUTE_PIN_SHIFT);
+  	TIMER_InitCC(timer, 0, &timerCCInit);
 
 	// TODO enable all the timers at the same time?
-	TIMER_Enable(TIMER0, true);
+	TIMER_Enable(timer, true);
 }
 
 
@@ -83,15 +89,15 @@ void* _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const
 
 
 void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l) {
-	// non-PIO solution...
 	SilabsDriverParams* params = new SilabsDriverParams();
 	params->dead_zone = dead_zone;
-	setupPWM(pinA_h, pwm_frequency, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, params, 0);
-	setupPWM(pinB_h, pwm_frequency, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, params, 2);
-	setupPWM(pinC_h, pwm_frequency, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, params, 4);
-	setupPWM(pinA_l, pwm_frequency, SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH, params, 1);
-	setupPWM(pinB_l, pwm_frequency, SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH, params, 3);
-	setupPWM(pinC_l, pwm_frequency, SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH, params, 5);
+	// TODO init using DTI if posssible
+	// setupPWM(pinA_h, pwm_frequency, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, params, 0);
+	// setupPWM(pinB_h, pwm_frequency, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, params, 2);
+	// setupPWM(pinC_h, pwm_frequency, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, params, 4);
+	// setupPWM(pinA_l, pwm_frequency, SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH, params, 1);
+	// setupPWM(pinB_l, pwm_frequency, SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH, params, 3);
+	// setupPWM(pinC_l, pwm_frequency, SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH, params, 5);
 	return params;
 }
 
@@ -99,7 +105,7 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 
 
 
-void writeDutyCycle(float val, uint8_t slice, uint8_t chan) {
+void writeDutyCycle(float val, TIMER_TypeDef* timer, uint8_t chan) {
 	//pwm_set_chan_level(slice, chan, (wrapvalues[slice]+1) * val);
 }
 
