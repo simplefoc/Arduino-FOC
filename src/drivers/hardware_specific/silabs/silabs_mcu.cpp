@@ -19,18 +19,17 @@ void setupPWM(int pin_nr, long pwm_frequency, bool active_high, SilabsDriverPara
 	GPIO_Port_TypeDef port = getSilabsPortFromArduinoPin(pin_nr);
 	uint32_t pin = getSilabsPinFromArduinoPin(pin_nr);
 	TIMER_TypeDef* timer = TIMER0; // TODO determine correct timer
-	uint32_t timerFreq = 0;
-	uint32_t topValue = 0;
 	//CMU_ClockEnable(cmuClock_GPIO, true); assume this is done by Arduino core
 	CMU_ClockEnable(cmuClock_TIMER0, true); // enable timer clock
 
   	TIMER_Init_TypeDef timerInit = TIMER_INIT_DEFAULT;
 	timerInit.enable = false;
 	timerInit.mode = timerModeUpDown;
-	// TODO adjust pre-scaler as needed to get the desired frequency
 	uint32_t max = TIMER_MaxCount(timer);
-	timerFreq = CMU_ClockFreqGet(cmuClock_TIMER0) / (timerInit.prescale + 1);
-	topValue = (timerFreq / pwm_frequency);
+	timerInit.prescale = pwm_frequency / max;
+	// TODO adjust pre-scaler as needed to get the desired frequency
+	uint32_t timerFreq = CMU_ClockFreqGet(cmuClock_TIMER0) / (timerInit.prescale + 1);
+	uint32_t topValue = (timerFreq / pwm_frequency / 2);
 	TIMER_TopSet(timer, topValue);
   
   	TIMER_InitCC_TypeDef timerCCInit = TIMER_INITCC_DEFAULT;
@@ -40,6 +39,12 @@ void setupPWM(int pin_nr, long pwm_frequency, bool active_high, SilabsDriverPara
   	GPIO->TIMERROUTE[0].CC0ROUTE = (port << _GPIO_TIMER_CC0ROUTE_PORT_SHIFT)
                     			 | (pin << _GPIO_TIMER_CC0ROUTE_PIN_SHIFT);
   	TIMER_InitCC(timer, 0, &timerCCInit);
+
+	params->timer[index] = timer;
+	params->channel[index] = 0;
+	params->pins[index] = pin_nr;
+	params->pwm_frequency = pwm_frequency;
+	params->resolution = topValue;
 
 	// TODO enable all the timers at the same time?
 	TIMER_Enable(timer, true);
