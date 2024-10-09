@@ -160,10 +160,10 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
     float Lq = 0;
     float d_electrical_angle = 0;
 
-    uint iterations = 40;    // how often the algorithm gets repeated.
-    uint cycles = 3;         // averaged measurements for each iteration
-    uint risetime_us = 200;  // initially short for worst case scenario with low inductance
-    uint settle_us = 100000; // initially long for worst case scenario with high inductance
+    unsigned int iterations = 40;    // how often the algorithm gets repeated.
+    unsigned int cycles = 3;         // averaged measurements for each iteration
+    unsigned int risetime_us = 200;  // initially short for worst case scenario with low inductance
+    unsigned int settle_us = 100000; // initially long for worst case scenario with high inductance
 
     // Pre-rotate the angle to the q-axis (only useful with sensor, else no harm in doing it)
     current_electric_angle += 0.5f * _PI;
