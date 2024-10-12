@@ -43,11 +43,11 @@ void Commander::run(Stream& serial, char eol){
       run(received_chars);
 
       // reset the command buffer
-      received_chars[0] = 0;
+      memset(received_chars, 0, MAX_COMMAND_LENGTH);
       rec_cnt=0;
     }
     if (rec_cnt>=MAX_COMMAND_LENGTH) { // prevent buffer overrun if message is too long
-        received_chars[0] = 0;
+        memset(received_chars, 0, MAX_COMMAND_LENGTH);
         rec_cnt=0;
     }
   }
@@ -363,7 +363,8 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
 void Commander::motion(FOCMotor* motor, char* user_cmd, char* separator){
   char cmd = user_cmd[0];
   char sub_cmd = user_cmd[1];
-  bool GET  = isSentinel(user_cmd[1]);
+  int value_index = (sub_cmd == SCMD_DOWNSAMPLE) ?  2 :  1;
+  bool GET  = isSentinel(user_cmd[value_index]);
   float value = atof(&user_cmd[(sub_cmd >= 'A'  && sub_cmd <= 'Z') ?  2 :  1]);
 
   switch(cmd){
