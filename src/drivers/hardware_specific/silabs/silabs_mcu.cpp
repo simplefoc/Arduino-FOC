@@ -35,6 +35,7 @@ void setupPWM(int pin_nr, long pwm_frequency, bool active_high, SilabsDriverPara
 	int8_t timer_nr = getTimerNumber(timer);
   	TIMER_InitCC_TypeDef timerCCInit = TIMER_INITCC_DEFAULT;
 	timerCCInit.mode = timerCCModePWM;
+	timerCCInit.coist = !active_high;
 	timerCCInit.outInvert = !active_high;
 	switch(channel) {
 		case 0:
@@ -65,12 +66,56 @@ void setupPWM(int pin_nr, long pwm_frequency, bool active_high, SilabsDriverPara
 	printPortLetter(port);
 	SimpleFOCDebug::print((int)pin);
 	SimpleFOCDebug::print(") on TIMER");
-	SimpleFOCDebug::print(getTimerNumber(timer));
+	SimpleFOCDebug::print(timer_nr);
 	SimpleFOCDebug::print(" CH");
 	SimpleFOCDebug::print(channel);
 	SimpleFOCDebug::print(" top ");
 	SimpleFOCDebug::println((int)params->resolution);
 }
+
+
+
+void setupComplementaryPWM(int pin_nr, SilabsDriverParams* params, uint8_t index, TIMER_TypeDef* timer, uint8_t channel){
+	int8_t timer_nr = getTimerNumber(timer);
+	PinName pin_n = pinToPinName(pin_nr);
+	GPIO_Port_TypeDef port = getSilabsPortFromArduinoPin(pin_n);
+	uint32_t pin = getSilabsPinFromArduinoPin(pin_n);
+	switch(channel) {
+		case 0:
+			GPIO->TIMERROUTE[timer_nr].ROUTEEN  |= GPIO_TIMER_ROUTEEN_CCC0PEN;
+			GPIO->TIMERROUTE[timer_nr].CDTI0ROUTE = (port << _GPIO_TIMER_CDTI0ROUTE_PORT_SHIFT)
+												    | (pin << _GPIO_TIMER_CDTI0ROUTE_PIN_SHIFT);
+			break;
+		case 1:
+			GPIO->TIMERROUTE[timer_nr].ROUTEEN  |= GPIO_TIMER_ROUTEEN_CCC1PEN;
+			GPIO->TIMERROUTE[timer_nr].CDTI1ROUTE = (port << _GPIO_TIMER_CDTI1ROUTE_PORT_SHIFT)
+												    | (pin << _GPIO_TIMER_CDTI1ROUTE_PIN_SHIFT);
+			break;
+		case 2:
+			GPIO->TIMERROUTE[timer_nr].ROUTEEN  |= GPIO_TIMER_ROUTEEN_CCC2PEN;
+			GPIO->TIMERROUTE[timer_nr].CDTI2ROUTE = (port << _GPIO_TIMER_CDTI2ROUTE_PORT_SHIFT)
+												    | (pin << _GPIO_TIMER_CDTI2ROUTE_PIN_SHIFT);
+			break;
+	}
+
+	params->pins[index] = pin_nr;
+	params->timer[index] = timer;
+	params->channel[index] = channel;
+
+	SimpleFOCDebug::print("DRV (Silabs): Pin ");
+	SimpleFOCDebug::print(pin_nr);
+	SimpleFOCDebug::print(" (P");
+	printPortLetter(port);
+	SimpleFOCDebug::print((int)pin);
+	SimpleFOCDebug::print(") on TIMER");
+	SimpleFOCDebug::print(timer_nr);
+	SimpleFOCDebug::print(" CH");
+	SimpleFOCDebug::print(channel);
+	SimpleFOCDebug::print("COMP top ");
+	SimpleFOCDebug::println((int)params->resolution);
+}
+
+
 
 
 
@@ -139,9 +184,29 @@ void initTimer(TIMER_TypeDef* timer, long pwm_frequency, SilabsDriverParams* par
 
 
 
-	// if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY;
-	// else pwm_frequency = _constrain(pwm_frequency, _PWM_FREQUENCY_MIN, _PWM_FREQUENCY_MAX);
-	// params->pwm_frequency = pwm_frequency;
+
+void initDeadTimeInsertion(TIMER_TypeDef* timer, long pwm_frequency, bool highside_active_high, bool lowside_active_high, SilabsDriverParams* params){
+	TIMER_InitDTI_TypeDef dtiInit = TIMER_INITDTI_DEFAULT;
+	dtiInit.enable = false; // or true? need to check first PWM cycle for this
+	dtiInit.activeLowOut = !highside_active_high;
+	dtiInit.invertComplementaryOut = !lowside_active_high;
+	dtiInit.riseTime = params->dead_zone * params->resolution;  // divided by 2 for symmetric dead-time, times 2 due to up-down counting
+	if (dtiInit.riseTime > 64) dtiInit.riseTime = 64; // max dead-time is 64 counts (each side)
+	dtiInit.fallTime = dtiInit.riseTime;
+	dtiInit.autoRestart = true;
+	SimpleFOCDebug::print("DRV (Silabs): Dead time ");
+	Serial.println(dtiInit.riseTime);
+	dtiInit.outputsEnableMask =   TIMER_DTOGEN_DTOGCC0EN | TIMER_DTOGEN_DTOGCDTI0EN 
+								| TIMER_DTOGEN_DTOGCC1EN | TIMER_DTOGEN_DTOGCDTI1EN 
+								| TIMER_DTOGEN_DTOGCC2EN | TIMER_DTOGEN_DTOGCDTI2EN;
+	unsigned long long max = TIMER_MaxCount(timer) + 1;
+	CMU_Clock_TypeDef timer_clock = getTimerClock(timer);
+	dtiInit.prescale = (TIMER_Prescale_TypeDef)(CMU_ClockFreqGet(timer_clock) / pwm_frequency / 2 / max);
+	TIMER_InitDTI(timer, &dtiInit);
+}
+
+
+
 
 void* _configure1PWM(long pwm_frequency, const int pinA) {
 	SilabsDriverParams* params = new SilabsDriverParams();
@@ -203,14 +268,20 @@ void* _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const
 
 void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l) {
 	SilabsDriverParams* params = new SilabsDriverParams();
+	int pins[6] = {pinA_h, pinA_l, pinB_h, pinB_l, pinC_h, pinC_l};
+	TIMER_TypeDef* timer = findFreeTimer(pins, 6);
+	initTimer(timer, pwm_frequency, params);
+	// init using DTI
 	params->dead_zone = dead_zone;
-	// TODO init using DTI if posssible
-	// setupPWM(pinA_h, pwm_frequency, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, params, 0);
-	// setupPWM(pinB_h, pwm_frequency, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, params, 2);
-	// setupPWM(pinC_h, pwm_frequency, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, params, 4);
-	// setupPWM(pinA_l, pwm_frequency, SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH, params, 1);
-	// setupPWM(pinB_l, pwm_frequency, SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH, params, 3);
-	// setupPWM(pinC_l, pwm_frequency, SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH, params, 5);
+	setupPWM(pinA_h, pwm_frequency, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, params, 0, timer, 0);
+	setupPWM(pinB_h, pwm_frequency, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, params, 2, timer, 1);
+	setupPWM(pinC_h, pwm_frequency, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, params, 4, timer, 2);
+	initDeadTimeInsertion(timer, pwm_frequency, SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH, SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH, params);
+	setupComplementaryPWM(pinA_l, params, 1, timer, 0);
+	setupComplementaryPWM(pinB_l, params, 3, timer, 1);
+	setupComplementaryPWM(pinC_l, params, 5, timer, 2);
+	TIMER_EnableDTI(timer, true);
+	TIMER_Enable(timer, true);
 	return params;
 }
 
@@ -253,6 +324,14 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
 	writeDutyCycle(dc_1b, ((SilabsDriverParams*)params)->timer[1], ((SilabsDriverParams*)params)->channel[1]);
 	writeDutyCycle(dc_2a, ((SilabsDriverParams*)params)->timer[2], ((SilabsDriverParams*)params)->channel[2]);
 	writeDutyCycle(dc_2b, ((SilabsDriverParams*)params)->timer[3], ((SilabsDriverParams*)params)->channel[3]);
+}
+
+
+void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params) {
+	// TODO: handle phase state
+	writeDutyCycle(dc_a, ((SilabsDriverParams*)params)->timer[0], ((SilabsDriverParams*)params)->channel[0]);
+	writeDutyCycle(dc_b, ((SilabsDriverParams*)params)->timer[2], ((SilabsDriverParams*)params)->channel[2]);
+	writeDutyCycle(dc_c, ((SilabsDriverParams*)params)->timer[4], ((SilabsDriverParams*)params)->channel[4]);
 }
 
 
