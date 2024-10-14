@@ -70,14 +70,17 @@
 
 #include "em_timer.h"
 
+#define SIMPLEFOC_SILABS_DEFAULT_PWM_FREQUENCY 25000
+
+
 typedef struct SilabsDriverParams {
-    int pins[6];
-    TIMER_TypeDef* timer[6];
+    int pins[6] = { -1 };
+    TIMER_TypeDef* timer[6] = { NULL };
     uint8_t channel[6];
     uint32_t pwm_frequency;
     uint32_t resolution;
     float dead_zone;
-};
+} SilabsDriverParams;
 
 
 
