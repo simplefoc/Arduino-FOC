@@ -8,6 +8,9 @@
 #ifndef SIMPLEFOC_STM32_MAX_TIMERSUSED
 #define SIMPLEFOC_STM32_MAX_TIMERSUSED 6
 #endif
+#ifndef SIMPLEFOC_STM32_MAX_TIMERSRESERVED
+#define SIMPLEFOC_STM32_MAX_TIMERSRESERVED 4
+#endif
 #ifndef SIMPLEFOC_STM32_MAX_MOTORSUSED
 #define SIMPLEFOC_STM32_MAX_MOTORSUSED 4
 #endif
@@ -53,11 +56,14 @@ typedef struct STM32DriverParams {
 // timer allocation functions
 int stm32_getNumTimersUsed();
 int stm32_getNumMotorsUsed();
+int stm32_getNumTimersReserved();
 STM32DriverParams* stm32_getMotorUsed(int index);
 bool stm32_isTimerUsed(TIM_HandleTypeDef* timer);
 bool stm32_isChannelUsed(PinMap* pin);
+bool stm32_isTimerReserved(TIM_TypeDef* timer);
 TIM_HandleTypeDef* stm32_getTimer(PinMap* timer);
 TIM_HandleTypeDef* stm32_useTimer(PinMap* timer);
+bool stm32_reserveTimer(TIM_TypeDef* timer);
 
 void stm32_pause(STM32DriverParams* params);
 void stm32_resume(STM32DriverParams* params);

@@ -27,6 +27,10 @@
 int numTimersUsed = 0;
 TIM_HandleTypeDef* timersUsed[SIMPLEFOC_STM32_MAX_TIMERSUSED];
 
+// reserve timers for other uses, so SimpleFOC doesn't use them for motors
+int numTimersReserved = 0;
+TIM_TypeDef* reservedTimers[SIMPLEFOC_STM32_MAX_TIMERSRESERVED];
+
 // track drivers initialized via SimpleFOC - used to know which timer channels are used
 int numMotorsUsed = 0;
 STM32DriverParams* motorsUsed[SIMPLEFOC_STM32_MAX_MOTORSUSED];
@@ -37,6 +41,16 @@ int stm32_getNumTimersUsed() {
 }
 int stm32_getNumMotorsUsed() {
   return numMotorsUsed;
+}
+int stm32_getNumTimersReserved() {
+  return numTimersReserved;
+}
+bool stm32_isTimerReserved(TIM_TypeDef* timer) {
+  for (int i=0; i<numTimersReserved; i++) {
+    if (reservedTimers[i] == timer)
+      return true;
+  }
+  return false;
 }
 bool stm32_isTimerUsed(TIM_HandleTypeDef* timer) {
   for (int i=0; i<numTimersUsed; i++) {
@@ -49,6 +63,9 @@ STM32DriverParams* stm32_getMotorUsed(int index) {
   return motorsUsed[index];
 }
 bool stm32_isChannelUsed(PinMap* pin) {
+  if (stm32_isTimerReserved((TIM_TypeDef*)pin->peripheral)) {
+    return true;
+  }
   for (int i=0; i<numMotorsUsed; i++) {
     for (int j=0; j<6; j++) {
       if (motorsUsed[i]->timers_handle[j] == NULL) break;
@@ -65,7 +82,14 @@ TIM_HandleTypeDef* stm32_getTimer(PinMap* timer) {
   }
   return NULL;
 }
-
+bool stm32_reserveTimer(TIM_TypeDef* timer) {
+  if (numTimersReserved >= SIMPLEFOC_STM32_MAX_TIMERSRESERVED) {
+    SIMPLEFOC_DEBUG("STM32-DRV: ERR: too many timers reserved");
+    return false;
+  }
+  reservedTimers[numTimersReserved++] = timer;
+  return true;
+}
 // function to get a timer handle given the pinmap entry of the pin you want to use
 // after calling this function, the timer is marked as used by SimpleFOC
 TIM_HandleTypeDef* stm32_useTimer(PinMap* timer) {
@@ -73,6 +97,10 @@ TIM_HandleTypeDef* stm32_useTimer(PinMap* timer) {
   if (handle != NULL) return handle;
   if (numTimersUsed >= SIMPLEFOC_STM32_MAX_TIMERSUSED) {
     SIMPLEFOC_DEBUG("STM32-DRV: ERR: too many timers used");
+    return NULL;
+  }
+  if (stm32_isTimerReserved((TIM_TypeDef*)timer->peripheral)) {
+    SIMPLEFOC_DEBUG("STM32-DRV: ERR: timer reserved");
     return NULL;
   }
   handle = new TIM_HandleTypeDef();
