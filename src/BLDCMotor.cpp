@@ -82,7 +82,16 @@ int BLDCMotor::init() {
     // current control loop controls voltage
     PID_current_q.limit = voltage_limit;
     PID_current_d.limit = voltage_limit;
+
+    if (_isset(phase_resistance) && _isset(phase_inductance)){
+      PID_current_d.P = phase_inductance * DEF_CURR_BANDWIDTH * _2PI;
+      PID_current_d.I = PID_current_d.P * phase_resistance / phase_inductance;
+      
+      PID_current_q.P = phase_inductance * DEF_CURR_BANDWIDTH * _2PI;
+      PID_current_q.I = PID_current_q.P * phase_resistance /phase_inductance;
+    }
   }
+  
   if(_isset(phase_resistance) || torque_controller != TorqueControlType::voltage){
     // velocity control loop controls current
     PID_velocity.limit = current_limit;
