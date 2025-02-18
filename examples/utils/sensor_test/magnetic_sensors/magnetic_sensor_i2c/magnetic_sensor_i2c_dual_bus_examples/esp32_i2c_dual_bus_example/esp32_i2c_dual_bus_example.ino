@@ -7,6 +7,8 @@
 MagneticSensorI2C sensor0 = MagneticSensorI2C(AS5600_I2C);
 MagneticSensorI2C sensor1 = MagneticSensorI2C(AS5600_I2C);
 
+// example of esp32 defining 2nd bus
+TwoWire Wire1(1);
 
 void setup() {
 
