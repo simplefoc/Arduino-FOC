@@ -49,17 +49,17 @@ void* _driverSyncLowSide(void* _driver_params, void* _cs_params){
   if (cs_params->timer_handle == NULL) return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
   
   // stop all the timers for the driver
-  _stopTimers(driver_params->timers, 6);
+  stm32_pause(driver_params);
 
   // if timer has repetition counter - it will downsample using it
   // and it does not need the software downsample
-  if( IS_TIM_REPETITION_COUNTER_INSTANCE(cs_params->timer_handle->getHandle()->Instance) ){
+  if( IS_TIM_REPETITION_COUNTER_INSTANCE(cs_params->timer_handle->Instance) ){
     // adjust the initial timer state such that the trigger 
     //   - for DMA transfer aligns with the pwm peaks instead of throughs.
     //   - for interrupt based ADC transfer 
     //   - only necessary for the timers that have repetition counters
-    cs_params->timer_handle->getHandle()->Instance->CR1 |= TIM_CR1_DIR;
-    cs_params->timer_handle->getHandle()->Instance->CNT =  cs_params->timer_handle->getHandle()->Instance->ARR;
+    cs_params->timer_handle->Instance->CR1 |= TIM_CR1_DIR;
+    cs_params->timer_handle->Instance->CNT =  cs_params->timer_handle->Instance->ARR;
     // remember that this timer has repetition counter - no need to downasmple
     needs_downsample[_adcToIndex(cs_params->adc_handle)] = 0;
   }else{
@@ -73,7 +73,7 @@ void* _driverSyncLowSide(void* _driver_params, void* _cs_params){
   }
   
   // set the trigger output event
-  LL_TIM_SetTriggerOutput(cs_params->timer_handle->getHandle()->Instance, LL_TIM_TRGO_UPDATE);
+  LL_TIM_SetTriggerOutput(cs_params->timer_handle->Instance, LL_TIM_TRGO_UPDATE);
 
   // Start the adc calibration
   HAL_ADCEx_Calibration_Start(cs_params->adc_handle,ADC_SINGLE_ENDED);
@@ -119,7 +119,7 @@ void* _driverSyncLowSide(void* _driver_params, void* _cs_params){
   }
 
   // restart all the timers of the driver
-  _startTimers(driver_params->timers, 6);
+  stm32_resume(driver_params);
   // return the cs parameters 
   // successfully initialized
   // TODO verify if success in future

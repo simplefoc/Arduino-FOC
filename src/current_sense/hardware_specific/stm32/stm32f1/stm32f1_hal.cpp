@@ -7,19 +7,19 @@
 
 // timer to injected TRGO
 // https://github.com/stm32duino/Arduino_Core_STM32/blob/e156c32db24d69cb4818208ccc28894e2f427cfa/system/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc_ex.h#L215
-uint32_t _timerToInjectedTRGO(HardwareTimer* timer){
-  if(timer->getHandle()->Instance == TIM1)  
+uint32_t _timerToInjectedTRGO(TIM_HandleTypeDef* timer){
+  if(timer->Instance == TIM1)  
     return ADC_EXTERNALTRIGINJECCONV_T1_TRGO;
 #ifdef TIM2 // if defined timer 2
-  else if(timer->getHandle()->Instance == TIM2) 
+  else if(timer->Instance == TIM2) 
     return ADC_EXTERNALTRIGINJECCONV_T2_TRGO;
 #endif
 #ifdef TIM4 // if defined timer 4
-  else if(timer->getHandle()->Instance == TIM4) 
+  else if(timer->Instance == TIM4) 
     return ADC_EXTERNALTRIGINJECCONV_T4_TRGO;
 #endif
 #ifdef TIM5 // if defined timer 5
-  else if(timer->getHandle()->Instance == TIM5) 
+  else if(timer->Instance == TIM5) 
     return ADC_EXTERNALTRIGINJECCONV_T5_TRGO;
 #endif
   else
@@ -28,11 +28,11 @@ uint32_t _timerToInjectedTRGO(HardwareTimer* timer){
 
 // timer to regular TRGO
 // https://github.com/stm32duino/Arduino_Core_STM32/blob/e156c32db24d69cb4818208ccc28894e2f427cfa/system/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc_ex.h#L215
-uint32_t _timerToRegularTRGO(HardwareTimer* timer){
-  if(timer->getHandle()->Instance == TIM3) 
+uint32_t _timerToRegularTRGO(TIM_HandleTypeDef* timer){
+  if(timer->Instance == TIM3) 
     return ADC_EXTERNALTRIGCONV_T3_TRGO;
 #ifdef TIM8 // if defined timer 8
-  else if(timer->getHandle()->Instance == TIM8) 
+  else if(timer->Instance == TIM8) 
     return ADC_EXTERNALTRIGCONV_T8_TRGO;
 #endif
   else
@@ -82,8 +82,8 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
 
   // automating TRGO flag finding - hardware specific
   uint8_t tim_num = 0;
-  while(driver_params->timers[tim_num] != NP && tim_num < 6){
-    uint32_t trigger_flag = _timerToInjectedTRGO(driver_params->timers[tim_num++]);
+  while(driver_params->timers_handle[tim_num] != NP && tim_num < 6){
+    uint32_t trigger_flag = _timerToInjectedTRGO(driver_params->timers_handle[tim_num++]);
     if(trigger_flag == _TRGO_NOT_AVAILABLE) continue; // timer does not have valid trgo for injected channels
 
     // if the code comes here, it has found the timer available
@@ -91,7 +91,7 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
     sConfigInjected.ExternalTrigInjecConv = trigger_flag;
     
     // this will be the timer with which the ADC will sync
-    cs_params->timer_handle = driver_params->timers[tim_num-1];
+    cs_params->timer_handle = driver_params->timers_handle[tim_num-1];
     // done
     break;
   }
@@ -105,7 +105,7 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   // display which timer is being used
   #ifdef SIMPLEFOC_STM32_DEBUG
     // it would be better to use the getTimerNumber from driver
-    SIMPLEFOC_DEBUG("STM32-CS: injected trigger for timer index: ", get_timer_index(cs_params->timer_handle->getHandle()->Instance) + 1); 
+    SIMPLEFOC_DEBUG("STM32-CS: injected trigger for timer index: ", get_timer_index(cs_params->timer_handle->Instance) + 1); 
   #endif
 
   // first channel
