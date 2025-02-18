@@ -132,7 +132,7 @@ void* _configureADCLowSide(const void* driver_params, const int pinA,const int p
   Stm32CurrentSenseParams* params = new Stm32CurrentSenseParams {
     .pins = { pinA, pinB, pinC },
     .adc_voltage_conv = (_ADC_VOLTAGE) / (_ADC_RESOLUTION),
-    .timer_handle = (HardwareTimer *)(HardwareTimer_Handle[get_timer_index(TIM1)]->__this)
+    .timer_handle = ((STM32DriverParams*)driver_params)->timers_handle[0],
   };
 
   return params;
@@ -153,21 +153,21 @@ void* _driverSyncLowSide(void* _driver_params, void* _cs_params){
   Stm32CurrentSenseParams* cs_params = (Stm32CurrentSenseParams*)_cs_params;
    
   // stop all the timers for the driver
-  _stopTimers(driver_params->timers, 6);
+  stm32_pause(driver_params);
 
   // if timer has repetition counter - it will downsample using it
   // and it does not need the software downsample
-  if( IS_TIM_REPETITION_COUNTER_INSTANCE(cs_params->timer_handle->getHandle()->Instance) ){
+  if( IS_TIM_REPETITION_COUNTER_INSTANCE(cs_params->timer_handle->Instance) ){
     // adjust the initial timer state such that the trigger for DMA transfer aligns with the pwm peaks instead of throughs.
     // only necessary for the timers that have repetition counters
-    cs_params->timer_handle->getHandle()->Instance->CR1 |= TIM_CR1_DIR;
-    cs_params->timer_handle->getHandle()->Instance->CNT =  cs_params->timer_handle->getHandle()->Instance->ARR;
+    cs_params->timer_handle->Instance->CR1 |= TIM_CR1_DIR;
+    cs_params->timer_handle->Instance->CNT =  cs_params->timer_handle->Instance->ARR;
   }
   // set the trigger output event
-  LL_TIM_SetTriggerOutput(cs_params->timer_handle->getHandle()->Instance, LL_TIM_TRGO_UPDATE);
+  LL_TIM_SetTriggerOutput(cs_params->timer_handle->Instance, LL_TIM_TRGO_UPDATE);
 
   // restart all the timers of the driver
-  _startTimers(driver_params->timers, 6);
+  stm32_resume(driver_params);
 
   // return the cs parameters 
   // successfully initialized
