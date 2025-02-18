@@ -34,7 +34,7 @@ class CurrentSense{
     FOCDriver* driver = nullptr; //!< driver link
     bool initialized = false; // true if current sense was successfully initialized   
     void* params = 0; //!< pointer to hardware specific parameters of current sensing
-    DriverType driver_type = DriverType::Unknown; //!< driver type (BLDC or Stepper)
+    DriverType driver_type = DriverType::UnknownDriver; //!< driver type (BLDC or Stepper)
     
     
     // ADC measurement gain for each phase
