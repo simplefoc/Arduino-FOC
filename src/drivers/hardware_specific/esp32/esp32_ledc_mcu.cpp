@@ -76,6 +76,7 @@ bool _ledcAttachChannelAdvanced(uint8_t pin, int _channel, int _group, uint32_t 
 
   ledc_timer_bit_t res = static_cast<ledc_timer_bit_t>(resolution);
   ledc_timer_config_t ledc_timer;
+  memset(&ledc_timer, 0, sizeof(ledc_timer));
   ledc_timer.speed_mode = group;
   ledc_timer.timer_num = LEDC_TIMER_0;
   ledc_timer.duty_resolution = res;
