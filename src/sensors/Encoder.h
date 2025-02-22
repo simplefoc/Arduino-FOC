@@ -68,7 +68,7 @@ class Encoder: public Sensor{
     /**
      * returns 0 if it does need search for absolute zero
      * 0 - encoder without index 
-     * 1 - ecoder with index
+     * 1 - encoder with index
      */
     int needsSearch() override;
 

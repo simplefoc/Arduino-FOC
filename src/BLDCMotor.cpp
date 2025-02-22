@@ -290,9 +290,7 @@ int BLDCMotor::alignSensor() {
     zero_electric_angle = electricalAngle();
     //zero_electric_angle =  _normalizeAngle(_electricalAngle(sensor_direction*sensor->getAngle(), pole_pairs));
     _delay(20);
-    if(monitor_port){
-      SIMPLEFOC_DEBUG("MOT: Zero elec. angle: ", zero_electric_angle);
-    }
+    SIMPLEFOC_DEBUG("MOT: Zero elec. angle: ", zero_electric_angle);
     // stop everything
     setPhaseVoltage(0, 0, 0);
     _delay(200);
