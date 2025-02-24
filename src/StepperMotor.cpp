@@ -315,23 +315,23 @@ void StepperMotor::loopFOC() {
       // read overall current magnitude
       current.q = current_sense->getDCCurrent(electrical_angle);
       // filter the value values
-      current.q = LPF_current_q(current.q);
+      current.q = LPF_current_q(current.q) + feed_forward_current.q;
       // calculate the phase voltage
       voltage.q = PID_current_q(current_sp - current.q);
       // d voltage  - lag compensation
-      if(_isset(phase_inductance)) voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit);
-      else voltage.d = 0;
+      if(_isset(phase_inductance)) voltage.d = _constrain( -(current_sp+feed_forward_current.q)*shaft_velocity*pole_pairs*phase_inductance+feed_forward_voltage.d, -voltage_limit, voltage_limit);
+      else voltage.d = feed_forward_voltage.d;
       break;
     case TorqueControlType::foc_current:
       if(!current_sense) return;
       // read dq currents
       current = current_sense->getFOCCurrents(electrical_angle);
       // filter values
-      current.q = LPF_current_q(current.q);
-      current.d = LPF_current_d(current.d);
+      current.q = LPF_current_q(current.q)+feed_forward_current.q;
+      current.d = LPF_current_d(current.d)+feed_forward_current.d;
       // calculate the phase voltages
-      voltage.q = PID_current_q(current_sp - current.q);
-      voltage.d = PID_current_d(-current.d);
+      voltage.q = PID_current_q(current_sp - current.q)+feed_forward_voltage.q;
+      voltage.d = PID_current_d(-current.d)+feed_forward_voltage.d;
       // d voltage - lag compensation - TODO verify
       // if(_isset(phase_inductance)) voltage.d = _constrain( voltage.d - current_sp*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit);
       break;
