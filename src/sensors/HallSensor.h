@@ -6,8 +6,6 @@
 #include "../common/foc_utils.h"
 #include "../common/time_utils.h"
 
-// seq 1 > 5 > 4 > 6 > 2 > 3 > 1     000 001 010 011 100 101 110 111
-const int8_t ELECTRIC_SECTORS[8] = { -1,  0,  4,  5,  2,  1,  3 , -1 };
 
 class HallSensor: public Sensor{
  public:
@@ -17,9 +15,9 @@ class HallSensor: public Sensor{
     @param encB  HallSensor B pin
     @param encC  HallSensor C pin
     @param pp  pole pairs  (e.g hoverboard motor has 15pp and small gimbals often have 7pp)
-    @param index index pin number (optional input)
+    @param hall_60deg Indicate if the hall sensors are 60 degrees apart electrically (means that they can all be one or off at the same time). In 60deg mode, B needs to lead, so you may need to swap the connections until you find one that works
     */
-    HallSensor(int encA, int encB, int encC, int pp);
+    HallSensor(int encA, int encB, int encC, int pp, bool hall_60deg = false);
 
     /** HallSensor initialise pins */
     void init();
@@ -47,7 +45,8 @@ class HallSensor: public Sensor{
     int pinA; //!< HallSensor hardware pin A
     int pinB; //!< HallSensor hardware pin B
     int pinC; //!< HallSensor hardware pin C
-    int use_interrupt; //!< True if interrupts have been attached
+    bool use_interrupt; //!< True if interrupts have been attached
+    bool hall_60deg; //!< Hall sensors are 60 degrees apart electrically (means that they can all be one or off at the same time)
 
     // HallSensor configuration
     Pullup pullup; //!< Configuration parameter internal or external pullups
@@ -93,7 +92,6 @@ class HallSensor: public Sensor{
     void (*onSectorChange)(int sector) = nullptr;
 
     volatile long pulse_diff;
-    
 };
 
 

@@ -1,17 +1,23 @@
 #include "HallSensor.h"
 
+// seq 1 > 5 > 4 > 6 > 2 > 3 > 1        000 001 010 011 100 101 110 111
+const int8_t ELECTRIC_SECTORS_120[8] = { -1,  0,  4,  5,  2,  1,  3 , -1 };
+
+// seq 1 > 5 > 4 > 6 > 2 > 3 > 1      000 001 010 011 100 101 110 111
+const int8_t ELECTRIC_SECTORS_60[8] = { 0,  5,  1,  2,  5,  4,  2 , 3 };
 
 /*
   HallSensor(int hallA, int hallB , int cpr, int index)
   - hallA, hallB, hallC    - HallSensor A, B and C pins
   - pp           - pole pairs
 */
-HallSensor::HallSensor(int _hallA, int _hallB, int _hallC, int _pp){
+HallSensor::HallSensor(int _hallA, int _hallB, int _hallC, int _pp, bool _hall_60deg){
 
   // hardware pins
   pinA = _hallA;
   pinB = _hallB;
   pinC = _hallC;
+  hall_60deg = _hall_60deg;
 
   // hall has 6 segments per electrical revolution
   cpr = _pp * 6;
@@ -50,7 +56,15 @@ void HallSensor::updateState() {
   long new_pulse_timestamp = _micros();
   hall_state = new_hall_state;
 
-  int8_t new_electric_sector = ELECTRIC_SECTORS[hall_state];
+  int8_t new_electric_sector;
+  if (hall_60deg)
+  {
+    new_electric_sector = ELECTRIC_SECTORS_60[hall_state];
+  }
+  else
+  {
+    new_electric_sector = ELECTRIC_SECTORS_120[hall_state];
+  }
   int8_t electric_sector_dif = new_electric_sector - electric_sector;
   if (electric_sector_dif > 3) {
     //underflow
