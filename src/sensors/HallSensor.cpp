@@ -2,10 +2,7 @@
 #include "./communication/SimpleFOCDebug.h"
 
 // seq 1 > 5 > 4 > 6 > 2 > 3 > 1        000 001 010 011 100 101 110 111
-const int8_t ELECTRIC_SECTORS_120[8] = { -1,  0,  4,  5,  2,  1,  3 , -1 };
-
-// seq 1 > 5 > 4 > 6 > 2 > 3 > 1      000 001 010 011 100 101 110 111
-const int8_t ELECTRIC_SECTORS_60[8] = { 0,  5,  1,  2,  5,  4,  2 , 3 };
+const int8_t ELECTRIC_SECTORS[8] = { -1,  0,  4,  5,  2,  1,  3 , -1 };
 
 /*
   HallSensor(int hallA, int hallB , int cpr, int index)
@@ -99,7 +96,7 @@ void HallSensor::updateState() {
   
 
   int8_t new_electric_sector;
-  new_electric_sector = ELECTRIC_SECTORS_120[new_hall_state];
+  new_electric_sector = ELECTRIC_SECTORS[new_hall_state];
   int8_t electric_sector_dif = new_electric_sector - electric_sector;
   if (electric_sector_dif > 3) {
     //underflow
