@@ -9,6 +9,17 @@
 
 class HallSensor: public Sensor{
  public:
+
+
+    enum class HallType : uint8_t
+    {
+      HALL_120 = 0,
+      HALL_60C = 0b001,
+      HALL_60B = 0b010,
+      HALL_60A = 0b100,
+      UNKNOWN = 0b111
+    };
+
     /**
     HallSensor class constructor
     @param encA  HallSensor A pin
@@ -17,7 +28,7 @@ class HallSensor: public Sensor{
     @param pp  pole pairs  (e.g hoverboard motor has 15pp and small gimbals often have 7pp)
     @param hall_60deg Indicate if the hall sensors are 60 degrees apart electrically (means that they can all be one or off at the same time). In 60deg mode, B needs to lead, so you may need to swap the connections until you find one that works
     */
-    HallSensor(int encA, int encB, int encC, int pp, bool hall_60deg = false);
+    HallSensor(int encA, int encB, int encC, int pp, HallType hall_type = HallType::UNKNOWN);
 
     /** HallSensor initialise pins */
     void init();
@@ -46,7 +57,7 @@ class HallSensor: public Sensor{
     int pinB; //!< HallSensor hardware pin B
     int pinC; //!< HallSensor hardware pin C
     bool use_interrupt; //!< True if interrupts have been attached
-    bool hall_60deg; //!< Hall sensors are 60 degrees apart electrically (means that they can all be one or off at the same time)
+    HallType hall_type, last_print_type; //!< Connectivity of hall sensor. The type indicates the pin to be swapped. Hall120 has no swapped pin
 
     // HallSensor configuration
     Pullup pullup; //!< Configuration parameter internal or external pullups
@@ -60,14 +71,24 @@ class HallSensor: public Sensor{
     /**  get current angular velocity (rad/s) */
     float getVelocity() override;
 
+    /** 
+     * returns 0 if it does need search for absolute zero
+     * 0 - magnetic sensor (& encoder with index which is found)
+     * 1 - ecoder with index (with index not found yet)
+     */
+    int needsSearch() override;
+
+
     // whether last step was CW (+1) or CCW (-1).  
     Direction direction;
     Direction old_direction;
 
     void attachSectorCallback(void (*onSectorChange)(int a) = nullptr);
 
-    // the current 3bit state of the hall sensors
-    volatile int8_t hall_state;
+    //last unique previous states, 0 = recent, used to detect the hall type
+    volatile uint8_t previous_states[3]; 
+    // the current 3bit state of the hall sensors, without any line flipped
+    volatile int8_t hall_state_raw;
     // the current sector of the sensor. Each sector is 60deg electrical
     volatile int8_t electric_sector;
     // the number of electric rotations

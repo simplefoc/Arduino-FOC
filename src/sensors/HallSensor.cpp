@@ -1,4 +1,5 @@
 #include "HallSensor.h"
+#include "./communication/SimpleFOCDebug.h"
 
 // seq 1 > 5 > 4 > 6 > 2 > 3 > 1        000 001 010 011 100 101 110 111
 const int8_t ELECTRIC_SECTORS_120[8] = { -1,  0,  4,  5,  2,  1,  3 , -1 };
@@ -11,13 +12,19 @@ const int8_t ELECTRIC_SECTORS_60[8] = { 0,  5,  1,  2,  5,  4,  2 , 3 };
   - hallA, hallB, hallC    - HallSensor A, B and C pins
   - pp           - pole pairs
 */
-HallSensor::HallSensor(int _hallA, int _hallB, int _hallC, int _pp, bool _hall_60deg){
+HallSensor::HallSensor(int _hallA, int _hallB, int _hallC, int _pp, HallType _hall_type){
 
   // hardware pins
   pinA = _hallA;
   pinB = _hallB;
   pinC = _hallC;
-  hall_60deg = _hall_60deg;
+  hall_type = _hall_type;
+  last_print_type = hall_type;
+  for (size_t i = 0; i < sizeof(previous_states); i++)
+  {
+    previous_states[i] = -1;
+  }
+  
 
   // hall has 6 segments per electrical revolution
   cpr = _pp * 6;
@@ -49,22 +56,50 @@ void HallSensor::handleC() {
  */
 void HallSensor::updateState() {
   int8_t new_hall_state = C_active + (B_active << 1) + (A_active << 2);
-
   // glitch avoidance #1 - sometimes we get an interrupt but pins haven't changed
-  if (new_hall_state == hall_state) return;
+  if (new_hall_state == hall_state_raw) return;
+  hall_state_raw = new_hall_state;
+
+  static const int num_previous_states = sizeof(previous_states);
+
+  //flip a line maybe
+  if (hall_type != HallType::UNKNOWN)
+  {
+    new_hall_state ^= static_cast<int8_t>(hall_type);
+  }
 
   long new_pulse_timestamp = _micros();
-  hall_state = new_hall_state;
+  if (hall_type == HallType::UNKNOWN) //Store previous steps for hall config detection
+  {
+    for (int i = num_previous_states - 2; i >= 0; i--)
+    {
+      previous_states[i+1] = previous_states[i];
+    }
+    previous_states[0] = new_hall_state;
+    //7 and 0 are illegal in 120deg mode, so we're gonna try to see which line hel up during that time and flip it so it doesn't happen
+    if ((previous_states[1] == 0b111 ||  previous_states[1] == 0b000) && previous_states[2] != -1)
+    {
+      if (previous_states[2] == previous_states[0])
+      {
+        //went back, can't do anything
+      }
+      else
+      {
+        hall_type = static_cast<HallType>((0b111 - previous_states[0] ^ previous_states[2])%8);
+        previous_states[0] ^= static_cast<int8_t>(hall_type);
+      }
+    }
+    if (abs(electric_rotations) > 2)
+    {
+      hall_type = HallType::HALL_120;
+    }
+  }
+  
+  
+  
 
   int8_t new_electric_sector;
-  if (hall_60deg)
-  {
-    new_electric_sector = ELECTRIC_SECTORS_60[hall_state];
-  }
-  else
-  {
-    new_electric_sector = ELECTRIC_SECTORS_120[hall_state];
-  }
+  new_electric_sector = ELECTRIC_SECTORS_120[new_hall_state];
   int8_t electric_sector_dif = new_electric_sector - electric_sector;
   if (electric_sector_dif > 3) {
     //underflow
@@ -124,6 +159,31 @@ void HallSensor::update() {
   if (use_interrupt) interrupts();
   angle_prev = ((float)((last_electric_rotations * 6 + last_electric_sector) % cpr) / (float)cpr) * _2PI ;
   full_rotations = (int32_t)((last_electric_rotations * 6 + last_electric_sector) / cpr);
+  if (last_print_type != hall_type)
+  {
+    last_print_type = hall_type;
+    switch (hall_type)
+    {
+    case HallType::HALL_120 :
+      SIMPLEFOC_DEBUG("HALL: Found type: HALL_120");
+      break;
+    case HallType::HALL_60A :
+    SIMPLEFOC_DEBUG("HALL: Found type: HALL_60A");
+      break;
+    case HallType::HALL_60B :
+      SIMPLEFOC_DEBUG("HALL: Found type: HALL_60B");
+        break;
+    case HallType::HALL_60C :
+      SIMPLEFOC_DEBUG("HALL: Found type: HALL_60C");
+      break;
+    
+    default:
+      SIMPLEFOC_DEBUG("HALL: Type unknown! Wtf!");
+      break;
+    }
+    
+  }
+  
 }
 
 
@@ -151,6 +211,11 @@ float HallSensor::getVelocity(){
     return direction * (_2PI / (float)cpr) / (last_pulse_diff / 1000000.0f);
   }
 
+}
+
+int HallSensor::needsSearch()
+{
+  return hall_type == HallType::UNKNOWN;
 }
 
 // HallSensor initialisation of the hardware pins 
