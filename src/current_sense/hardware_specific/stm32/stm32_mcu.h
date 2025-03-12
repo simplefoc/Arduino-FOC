@@ -3,6 +3,8 @@
 #define STM32_CURRENTSENSE_MCU_DEF
 #include "../../hardware_api.h"
 #include "../../../common/foc_utils.h"
+#include "../../../drivers/hardware_specific/stm32/stm32_mcu.h"
+#include "../../../drivers/hardware_specific/stm32/stm32_timerutils.h"
 
 #if defined(_STM32_DEF_) 
 
