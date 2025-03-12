@@ -136,6 +136,11 @@ class CurrentSense{
     */
     int alignStepperDriver(float align_voltage, StepperDriver* driver, bool modulation_centered);
     /**
+     * Function used to align the current sense with the Hybrid motor driver
+     */
+    int alignHybridDriver(float align_voltage, BLDCDriver* driver, bool modulation_centered);
+
+    /**
      * Function used to read the average current values over N samples
     */
     PhaseCurrent_s readAverageCurrents(int N=100);

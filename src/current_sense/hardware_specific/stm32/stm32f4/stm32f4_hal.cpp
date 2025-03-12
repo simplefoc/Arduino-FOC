@@ -22,10 +22,13 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   ADC_InjectionConfTypeDef sConfigInjected;
 
   // check if all pins belong to the same ADC
-  ADC_TypeDef* adc_pin1 = (ADC_TypeDef*)pinmap_peripheral(analogInputToPinName(cs_params->pins[0]), PinMap_ADC);
-  ADC_TypeDef* adc_pin2 = (ADC_TypeDef*)pinmap_peripheral(analogInputToPinName(cs_params->pins[1]), PinMap_ADC);
+  ADC_TypeDef* adc_pin1 = _isset(cs_params->pins[0]) ? (ADC_TypeDef*)pinmap_peripheral(analogInputToPinName(cs_params->pins[0]), PinMap_ADC) : nullptr;
+  ADC_TypeDef* adc_pin2 = _isset(cs_params->pins[1]) ? (ADC_TypeDef*)pinmap_peripheral(analogInputToPinName(cs_params->pins[1]), PinMap_ADC) : nullptr;
   ADC_TypeDef* adc_pin3 = _isset(cs_params->pins[2]) ? (ADC_TypeDef*)pinmap_peripheral(analogInputToPinName(cs_params->pins[2]), PinMap_ADC) : nullptr;
- if ( (adc_pin1 != adc_pin2) || ( (adc_pin3) && (adc_pin1 != adc_pin3) )){
+ if ( ((adc_pin1 != adc_pin2) &&  (adc_pin1 && adc_pin2))  || 
+      ((adc_pin2 != adc_pin3) &&  (adc_pin2 && adc_pin3))  ||
+      ((adc_pin1 != adc_pin3) &&  (adc_pin1 && adc_pin3)) 
+    ){
 #ifdef SIMPLEFOC_STM32_DEBUG
     SIMPLEFOC_DEBUG("STM32-CS: ERR: Analog pins dont belong to the same ADC!");
 #endif
@@ -116,39 +119,19 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
 #endif
   }
 
-
-  // first channel
-  sConfigInjected.InjectedRank = ADC_INJECTED_RANK_1;
-  sConfigInjected.InjectedChannel = _getADCChannel(analogInputToPinName(cs_params->pins[0]));
-  if (HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected) != HAL_OK){
-#ifdef SIMPLEFOC_STM32_DEBUG
-    SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init injected channel: ", (int)_getADCChannel(analogInputToPinName(cs_params->pins[0])) );
-#endif
-    return -1;
-  }
-
-  // second channel
-  sConfigInjected.InjectedRank = ADC_INJECTED_RANK_2;
-  sConfigInjected.InjectedChannel = _getADCChannel(analogInputToPinName(cs_params->pins[1]));
-  if (HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected) != HAL_OK){
-#ifdef SIMPLEFOC_STM32_DEBUG
-    SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init injected channel: ", (int)_getADCChannel(analogInputToPinName(cs_params->pins[1]))) ;
-#endif
-    return -1;
-  }
-
-  // third channel - if exists
-  if(_isset(cs_params->pins[2])){
-    sConfigInjected.InjectedRank = ADC_INJECTED_RANK_3;
-    sConfigInjected.InjectedChannel = _getADCChannel(analogInputToPinName(cs_params->pins[2]));
+  for(int i=0; i<3; i++){
+    // skip if not set
+    if (!_isset(cs_params->pins[i])) continue;
+    
+    sConfigInjected.InjectedRank = ADC_INJECTED_RANK_1 + i;
+    sConfigInjected.InjectedChannel = _getADCChannel(analogInputToPinName(cs_params->pins[i]));
     if (HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected) != HAL_OK){
-#ifdef SIMPLEFOC_STM32_DEBUG
-      SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init injected channel: ", (int)_getADCChannel(analogInputToPinName(cs_params->pins[2]))) ;
-#endif
+  #ifdef SIMPLEFOC_STM32_DEBUG
+      SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init injected channel: ", (int)_getADCChannel(analogInputToPinName(cs_params->pins[0])) );
+  #endif
       return -1;
     }
   }
-  
   cs_params->adc_handle = &hadc;
   return 0;
 }
@@ -165,14 +148,13 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
 int _adc_gpio_init(Stm32CurrentSenseParams* cs_params, const int pinA, const int pinB, const int pinC)
 {
   int pins[3] = {pinA, pinB, pinC};
-  const char* port_names[3] = {"A", "B", "C"};
   for(int i=0; i<3; i++){
     if(_isset(pins[i])){
       // check if pin is an analog pin
       if(pinmap_peripheral(analogInputToPinName(pins[i]), PinMap_ADC) == NP){
 #ifdef SIMPLEFOC_STM32_DEBUG
         SimpleFOCDebug::print("STM32-CS: ERR: Pin ");
-        SimpleFOCDebug::print(port_names[i]);
+        SimpleFOCDebug::print(i == 0 ? "A" : i == 1 ? "B" : "C");
         SimpleFOCDebug::println(" does not belong to any ADC!");
 #endif
         return -1;

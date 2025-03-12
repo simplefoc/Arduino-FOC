@@ -15,7 +15,8 @@ enum PhaseState : uint8_t {
 enum DriverType{
     UnknownDriver=0,
     BLDC=1,
-    Stepper=2
+    Stepper=2,
+    Hybrid=3
 };
 
 /**
