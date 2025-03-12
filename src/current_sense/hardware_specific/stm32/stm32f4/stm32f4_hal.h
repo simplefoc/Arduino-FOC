@@ -9,7 +9,7 @@
 #include "stm32f4_utils.h"
 
 int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* driver_params);
-void _adc_gpio_init(Stm32CurrentSenseParams* cs_params, const int pinA, const int pinB, const int pinC);
+int _adc_gpio_init(Stm32CurrentSenseParams* cs_params, const int pinA, const int pinB, const int pinC);
 
 #endif
 

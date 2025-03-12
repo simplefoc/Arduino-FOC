@@ -34,7 +34,7 @@ void* _configureADCLowSide(const void* driver_params, const int pinA, const int 
     .pins={(int)NOT_SET,(int)NOT_SET,(int)NOT_SET},
     .adc_voltage_conv = (_ADC_VOLTAGE_F4) / (_ADC_RESOLUTION_F4)
   };
-  _adc_gpio_init(cs_params, pinA,pinB,pinC);
+  if(_adc_gpio_init(cs_params, pinA,pinB,pinC) != 0) return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
   if(_adc_init(cs_params, (STM32DriverParams*)driver_params) != 0) return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
   return cs_params;
 }

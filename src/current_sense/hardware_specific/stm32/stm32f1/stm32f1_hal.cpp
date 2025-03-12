@@ -41,6 +41,14 @@ uint32_t _timerToRegularTRGO(TIM_HandleTypeDef* timer){
 
 ADC_HandleTypeDef hadc;
 
+/**
+ * Function initializing the ADC and the injected channels for the low-side current sensing
+ * 
+ * @param cs_params - current sense parameters
+ * @param driver_params - driver parameters
+ * 
+ * @return int - 0 if success 
+ */
 int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* driver_params)
 {
   ADC_InjectionConfTypeDef sConfigInjected;
@@ -135,23 +143,37 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   return 0;
 }
 
-void _adc_gpio_init(Stm32CurrentSenseParams* cs_params, const int pinA, const int pinB, const int pinC)
+/**
+ * Function to initialize the ADC GPIO pins
+ * 
+ * @param cs_params current sense parameters
+ * @param pinA pin number for phase A
+ * @param pinB pin number for phase B
+ * @param pinC pin number for phase C
+ * @return int 0 if success, -1 if error
+ */
+int _adc_gpio_init(Stm32CurrentSenseParams* cs_params, const int pinA, const int pinB, const int pinC)
 {
-  uint8_t cnt = 0;
-  if(_isset(pinA)){
-    pinmap_pinout(analogInputToPinName(pinA), PinMap_ADC);
-    cs_params->pins[cnt++] = pinA;
+  int pins[3] = {pinA, pinB, pinC};
+  const char* port_names[3] = {"A", "B", "C"};
+  for(int i=0; i<3; i++){
+    if(_isset(pins[i])){
+      // check if pin is an analog pin
+      if(pinmap_peripheral(analogInputToPinName(pins[i]), PinMap_ADC) == NP){
+#ifdef SIMPLEFOC_STM32_DEBUG
+        SimpleFOCDebug::print("STM32-CS: ERR: Pin ");
+        SimpleFOCDebug::print(port_names[i]);
+        SimpleFOCDebug::println(" does not belong to any ADC!");
+#endif
+        return -1;
+      }
+      pinmap_pinout(analogInputToPinName(pins[i]), PinMap_ADC);
+      cs_params->pins[i] = pins[i];
+    }
   }
-  if(_isset(pinB)){
-    pinmap_pinout(analogInputToPinName(pinB), PinMap_ADC);
-    cs_params->pins[cnt++] = pinB;
-  }
-  if(_isset(pinC)){ 
-    pinmap_pinout(analogInputToPinName(pinC), PinMap_ADC);
-    cs_params->pins[cnt] = pinC;
-  }
-
+  return 0;
 }
+
 
 extern "C" {
   void ADC1_2_IRQHandler(void)
