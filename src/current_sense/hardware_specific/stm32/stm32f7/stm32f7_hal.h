@@ -4,8 +4,6 @@
 
 #if defined(STM32F7xx)
 #include "stm32f7xx_hal.h"
-#include "../../../../common/foc_utils.h"
-#include "../../../../drivers/hardware_specific/stm32/stm32_mcu.h"
 #include "../stm32_mcu.h"
 #include "stm32f7_utils.h"
 

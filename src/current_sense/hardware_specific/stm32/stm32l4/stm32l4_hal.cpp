@@ -128,6 +128,13 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   while(driver_params->timers_handle[tim_num] != NP && tim_num < 6){
     uint32_t trigger_flag = _timerToInjectedTRGO(driver_params->timers_handle[tim_num++]);
     if(trigger_flag == _TRGO_NOT_AVAILABLE) continue; // timer does not have valid trgo for injected channels
+    
+    // check if TRGO used already - if yes use the next timer
+    if((driver_params->timers_handle[tim_num-1]->Instance->CR2 & LL_TIM_TRGO_ENABLE) || // if used for timer sync
+       (driver_params->timers_handle[tim_num-1]->Instance->CR2 & LL_TIM_TRGO_UPDATE)) // if used for ADC sync
+      {
+      continue;
+    }
 
     // if the code comes here, it has found the timer available
     // timer does have trgo flag for injected channels  
@@ -144,6 +151,10 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
     SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot sync any timer to injected channels!");
 #endif
     return -1;
+  }else{
+#ifdef SIMPLEFOC_STM32_DEBUG
+    SIMPLEFOC_DEBUG("STM32-CS: Using timer: ", stm32_getTimerNumber(cs_params->timer_handle->Instance));
+#endif
   }
 
 

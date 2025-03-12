@@ -6,8 +6,6 @@
 #if defined(STM32L4xx) 
 
 #include "stm32l4xx_hal.h"
-#include "../../../../common/foc_utils.h"
-#include "../../../../drivers/hardware_specific/stm32/stm32_mcu.h"
 #include "../stm32_mcu.h"
 #include "stm32l4_utils.h"
 
