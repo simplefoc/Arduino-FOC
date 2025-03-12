@@ -122,24 +122,22 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   #endif
   }
 
-  // first channel
-  sConfigInjected.InjectedRank = ADC_REGULAR_RANK_1;
-  sConfigInjected.InjectedChannel =  STM_PIN_CHANNEL(pinmap_function(analogInputToPinName(cs_params->pins[0]), PinMap_ADC));
-  HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected);
-  // second channel
-  sConfigInjected.InjectedRank = ADC_REGULAR_RANK_2;
-  sConfigInjected.InjectedChannel = STM_PIN_CHANNEL(pinmap_function(analogInputToPinName(cs_params->pins[1]), PinMap_ADC));
-  HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected);
 
-  // third channel - if exists
-  if(_isset(cs_params->pins[2])){
-    sConfigInjected.InjectedRank = ADC_REGULAR_RANK_3;
-    sConfigInjected.InjectedChannel = STM_PIN_CHANNEL(pinmap_function(analogInputToPinName(cs_params->pins[2]), PinMap_ADC));
-    HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected);
+
+  for(int i=0; i<3; i++){
+    // skip if not set
+    if (!_isset(cs_params->pins[i])) continue;
+    
+    sConfigInjected.InjectedRank = ADC_REGULAR_RANK_1 + i;
+    sConfigInjected.InjectedChannel = STM_PIN_CHANNEL(pinmap_function(analogInputToPinName(cs_params->pins[0]), PinMap_ADC));
+    if (HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected) != HAL_OK){
+  #ifdef SIMPLEFOC_STM32_DEBUG
+      SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init injected channel: ", (int)_getADCChannel(analogInputToPinName(cs_params->pins[0])) );
+  #endif
+      return -1;
+    }
   }
-  
   cs_params->adc_handle = &hadc;
-
   return 0;
 }
 
