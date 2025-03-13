@@ -127,12 +127,12 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
 #endif
   }
 
-
+  uint8_t rank_no = 0;
   for(int i=0; i<3; i++){
     // skip if not set
     if (!_isset(cs_params->pins[i])) continue;
     
-    sConfigInjected.InjectedRank = ADC_INJECTED_RANK_1 + i;
+    sConfigInjected.InjectedRank = ADC_INJECTED_RANK_1 + rank_no++;
     sConfigInjected.InjectedChannel = _getADCChannel(analogInputToPinName(cs_params->pins[i]));
     if (HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected) != HAL_OK){
   #ifdef SIMPLEFOC_STM32_DEBUG
