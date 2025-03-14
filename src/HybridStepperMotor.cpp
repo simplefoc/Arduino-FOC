@@ -30,6 +30,7 @@ HybridStepperMotor::HybridStepperMotor(int pp, float _R, float _KV, float _induc
 void HybridStepperMotor::linkDriver(BLDCDriver *_driver)
 {
   driver = _driver;
+  SIMPLEFOC_DEBUG("MOT: BLDCDriver linked, using pin C as the mid-phase");
 }
 
 // init hardware pins
@@ -64,10 +65,13 @@ int HybridStepperMotor::init()
   P_angle.limit = velocity_limit;
 
   // if using open loop control, set a CW as the default direction if not already set
-  if ((controller==MotionControlType::angle_openloop
-     ||controller==MotionControlType::velocity_openloop)
-     && (sensor_direction == Direction::UNKNOWN)) {
-      sensor_direction = Direction::CW;
+  // only if no sensor is used
+  if(!sensor){
+    if ((controller==MotionControlType::angle_openloop
+      ||controller==MotionControlType::velocity_openloop)
+      && (sensor_direction == Direction::UNKNOWN)) {
+        sensor_direction = Direction::CW;
+    }
   }
 
   _delay(500);
