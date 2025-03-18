@@ -2,7 +2,7 @@
 #include "./stm32_timerutils.h"
 #include <Arduino.h>
 
-#if defined(_STM32_DEF_) || defined(TARGET_STM32H7)
+#if defined(_STM32_DEF_) || defined(STM32H7xx)
 
 
 void stm32_pauseTimer(TIM_HandleTypeDef* handle){
@@ -213,7 +213,7 @@ int stm32_getInternalSourceTrigger(TIM_HandleTypeDef* master, TIM_HandleTypeDef*
   #endif
   return -1;
 }
-#elif defined(STM32F4xx) || defined(STM32F1xx) || defined(STM32L4xx) || defined(STM32F7xx) || defined(TARGET_STM32H7)
+#elif defined(STM32F4xx) || defined(STM32F1xx) || defined(STM32L4xx) || defined(STM32F7xx) || defined(STM32H7xx)
 
 // function finds the appropriate timer source trigger for the master/slave timer combination
 // returns -1 if no trigger source is found
@@ -252,7 +252,7 @@ int stm32_getInternalSourceTrigger(TIM_HandleTypeDef* master, TIM_HandleTypeDef*
       #if defined(TIM8)
       else if(TIM_slave == TIM8) return LL_TIM_TS_ITR1;
       #endif
-      #if defined(TIM5) && !defined(TARGET_STM32H7)
+      #if defined(TIM5) && !defined(STM32H7xx)
       else if(TIM_slave == TIM5) return LL_TIM_TS_ITR0;
       #endif
     }
@@ -268,10 +268,10 @@ int stm32_getInternalSourceTrigger(TIM_HandleTypeDef* master, TIM_HandleTypeDef*
       #if defined(TIM4)
       else if(TIM_slave == TIM4) return LL_TIM_TS_ITR2;
       #endif
-      #if defined(TIM5) && !defined(TARGET_STM32H7)
+      #if defined(TIM5) && !defined(STM32H7xx)
       else if(TIM_slave == TIM5) return LL_TIM_TS_ITR1;
       #endif
-      #if defined(TIM5) && defined(TARGET_STM32H7)
+      #if defined(TIM5) && defined(STM32H7xx)
       else if(TIM_slave == TIM5) return LL_TIM_TS_ITR2;
       #endif
     }
@@ -290,10 +290,10 @@ int stm32_getInternalSourceTrigger(TIM_HandleTypeDef* master, TIM_HandleTypeDef*
       #if defined(TIM8)
       else if(TIM_slave == TIM8) return LL_TIM_TS_ITR2;
       #endif
-      #if defined(TIM5) && !defined(TARGET_STM32H7)
+      #if defined(TIM5) && !defined(STM32H7xx)
       else if(TIM_slave == TIM5) return LL_TIM_TS_ITR1;
       #endif
-      #if defined(TIM5) && defined(TARGET_STM32H7)
+      #if defined(TIM5) && defined(STM32H7xx)
       else if(TIM_slave == TIM5) return LL_TIM_TS_ITR3;
       #endif
     }
@@ -326,7 +326,7 @@ int stm32_getInternalSourceTrigger(TIM_HandleTypeDef* master, TIM_HandleTypeDef*
       #endif
     }
   #endif
-  #if defined(TIM15) && defined(TARGET_STM32H7)
+  #if defined(TIM15) && defined(STM32H7xx)
     else if (TIM_master == TIM15){
       #if defined(TIM1)
       if(TIM_slave == TIM1) return LL_TIM_TS_ITR0;
@@ -514,7 +514,7 @@ uint32_t stm32_getTimerClockFreq(TIM_HandleTypeDef *handle) {
       return 0;
   }
 
-#if defined(STM32H7xx) || defined(TARGET_STM32H7) 
+#if defined(STM32H7xx) || defined(STM32H7xx) 
   /* When TIMPRE bit of the RCC_CFGR register is reset,
    *   if APBx prescaler is 1 or 2 then TIMxCLK = HCLK,
    *   otherwise TIMxCLK = 2x PCLKx.
