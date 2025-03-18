@@ -60,12 +60,16 @@ void* _driverSyncLowSide(void* _driver_params, void* _cs_params){
   // set the trigger output event
   LL_TIM_SetTriggerOutput(cs_params->timer_handle->Instance, LL_TIM_TRGO_UPDATE);
 
+  // Start the adc calibration
+  HAL_ADCEx_Calibration_Start(cs_params->adc_handle, ADC_CALIB_OFFSET_LINEARITY, ADC_SINGLE_ENDED);
+    
   // start the adc
   #ifdef SIMPLEFOC_STM32_ADC_INTERRUPT 
   HAL_ADCEx_InjectedStart_IT(cs_params->adc_handle);
   #else
   HAL_ADCEx_InjectedStart(cs_params->adc_handle);
   #endif
+
 
   // restart all the timers of the driver
   stm32_resume(driver_params);

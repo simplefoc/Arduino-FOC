@@ -35,7 +35,6 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   return -1;
  }
 
-
   /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
   */
   hadc.Instance = (ADC_TypeDef *)pinmap_peripheral(analogInputToPinName(cs_params->pins[0]), PinMap_ADC);
@@ -74,10 +73,15 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   // https://github.com/stm32duino/Arduino_Core_STM32/blob/e156c32db24d69cb4818208ccc28894e2f427cfa/system/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_adc.h#L170C13-L170C27
   hadc.Init.DMAContinuousRequests = DISABLE;
   // not sure about this one!!! maybe use: ADC_SAMPLING_MODE_NORMAL
-  hadc.Init.SamplingMode = ADC_SAMPLING_MODE_TRIGGER_CONTROLED;
+  hadc.Init.SamplingMode = ADC_SAMPLING_MODE_BULB;
 #endif
   hadc.Init.NbrOfConversion = 1;
+  hadc.Init.NbrOfDiscConversion = 0;
   hadc.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+
+  hadc.Init.LowPowerAutoWait = DISABLE;
+
+
   if ( HAL_ADC_Init(&hadc) != HAL_OK){
 #ifdef SIMPLEFOC_STM32_DEBUG
     SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init ADC!");
@@ -91,16 +95,20 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   // if ADC1 or ADC2
   if(hadc.Instance == ADC1 || hadc.Instance == ADC2){
     // more info here: https://github.com/stm32duino/Arduino_Core_STM32/blob/e156c32db24d69cb4818208ccc28894e2f427cfa/system/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_adc.h#L658
-    sConfigInjected.InjectedNbrOfConversion = ADC_SAMPLETIME_2CYCLE_5;
+    sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_2CYCLE_5;
   }else {
     // adc3
     // https://github.com/stm32duino/Arduino_Core_STM32/blob/e156c32db24d69cb4818208ccc28894e2f427cfa/system/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_adc.h#L673
-    sConfigInjected.InjectedNbrOfConversion = ADC3_SAMPLETIME_2CYCLES_5;
+    sConfigInjected.InjectedSamplingTime = ADC3_SAMPLETIME_2CYCLES_5;
   }
   sConfigInjected.ExternalTrigInjecConvEdge = ADC_EXTERNALTRIGINJECCONV_EDGE_RISINGFALLING;  
   sConfigInjected.AutoInjectedConv = DISABLE;
   sConfigInjected.InjectedDiscontinuousConvMode = DISABLE;
   sConfigInjected.InjectedOffset = 0;
+  sConfigInjected.InjectedSingleDiff            = ADC_SINGLE_ENDED;
+  sConfigInjected.InjectedOffsetNumber          = ADC_OFFSET_NONE;
+  sConfigInjected.QueueInjectedContext          = DISABLE;
+  sConfigInjected.InjecOversamplingMode         = DISABLE;  
 
   // automating TRGO flag finding - hardware specific
   uint8_t tim_num = 0;
@@ -139,11 +147,11 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
 #endif
   }
 
+  uint32_t ranks[4] = {ADC_INJECTED_RANK_1, ADC_INJECTED_RANK_2, ADC_INJECTED_RANK_3, ADC_INJECTED_RANK_4};
   for(int i=0; i<3; i++){
     // skip if not set
-    if (!_isset(cs_params->pins[i])) continue;
-    
-    sConfigInjected.InjectedRank = ADC_INJECTED_RANK_1 + i;
+    if (!_isset(cs_params->pins[i])) continue;    
+    sConfigInjected.InjectedRank = ranks[i];
     sConfigInjected.InjectedChannel = _getADCChannel(analogInputToPinName(cs_params->pins[i]));
     if (HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected) != HAL_OK){
   #ifdef SIMPLEFOC_STM32_DEBUG
@@ -152,7 +160,9 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
       return -1;
     }
   }
-  
+
+
+  delay(1000);
   #ifdef SIMPLEFOC_STM32_ADC_INTERRUPT
   // enable interrupt
   HAL_NVIC_SetPriority(ADC_IRQn, 0, 0);
