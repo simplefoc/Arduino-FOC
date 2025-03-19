@@ -1,4 +1,4 @@
-name: AVR
+name: MDED
 on: [push, pull_request]
 jobs:
   lint:
@@ -16,10 +16,10 @@ jobs:
     strategy:
       matrix:
         arduino-boards-fqbn:
-          - arduino:mbed:giga                        # arudino giga
+          #- arduino:mbed:giga                        # arudino giga
           - arduino:mbed:nanorp2040connect           # arduino nano rp2040 connect
           - arduino:mbed:nano33ble                   # arduino nano 33 ble
-          - arduino:mbed:portenta                    # arduino portenta
+          - arduino:mbed:envie_m7                    # arduino portenta
           
         include:
           - arduino-boards-fqbn: arduino:mbed:nanorp2040connect 
@@ -31,8 +31,8 @@ jobs:
           - arduino-boards-fqbn: arduino:mbed:envie_m7 
             sketch-names: open_loop_position_example.ino
             
-          - arduino-boards-fqbn: arduino:mbed:giga 
-            sketch-names: single_full_control_example.ino
+          # - arduino-boards-fqbn: arduino:mbed:giga 
+          #   sketch-names: single_full_control_example.ino
             
 
       # Do not cancel all jobs / architectures if one job fails
