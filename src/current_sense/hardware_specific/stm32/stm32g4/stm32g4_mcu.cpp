@@ -7,8 +7,8 @@
 #include "../../../../drivers/hardware_specific/stm32/stm32_mcu.h"
 #include "../../../hardware_api.h"
 #include "../stm32_mcu.h"
+#include "../stm32_adc_utils.h"
 #include "stm32g4_hal.h"
-#include "stm32g4_utils.h"
 #include "Arduino.h"
 
 // #define SIMPLEFOC_STM32_ADC_INTERRUPT
@@ -77,7 +77,7 @@ void* _driverSyncLowSide(void* _driver_params, void* _cs_params){
   LL_TIM_SetTriggerOutput(cs_params->timer_handle->Instance, LL_TIM_TRGO_UPDATE);
  
   // Start the adc calibration
-  HAL_ADCEx_Calibration_Start(cs_params->adc_handle,ADC_SINGLE_ENDED);
+  HAL_ADCEx_Calibration_Start(cs_params->adc_handle, ADC_SINGLE_ENDED);
 
   // start the adc
   if (use_adc_interrupt){

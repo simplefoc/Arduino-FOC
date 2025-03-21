@@ -19,7 +19,11 @@ ADC_HandleTypeDef hadc;
 int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* driver_params)
 {
   ADC_InjectionConfTypeDef sConfigInjected;
- 
+
+ /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
+  */
+  // hadc.Instance = _findBestADCForPins(3, cs_params->pins);
+
   // check if all pins belong to the same ADC
   ADC_TypeDef* adc_pin1 = _isset(cs_params->pins[0]) ? (ADC_TypeDef*)pinmap_peripheral(analogInputToPinName(cs_params->pins[0]), PinMap_ADC) : nullptr;
   ADC_TypeDef* adc_pin2 = _isset(cs_params->pins[1]) ? (ADC_TypeDef*)pinmap_peripheral(analogInputToPinName(cs_params->pins[1]), PinMap_ADC) : nullptr;
@@ -35,7 +39,7 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
  }
 
 
- /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
+  /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
   */
   hadc.Instance = (ADC_TypeDef *)pinmap_peripheral(analogInputToPinName(cs_params->pins[0]), PinMap_ADC);
   
@@ -92,7 +96,7 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
 #endif
   else{
 #ifdef SIMPLEFOC_STM32_DEBUG
-    SIMPLEFOC_DEBUG("STM32-CS: ERR: Pin does not belong to any ADC!");
+    SIMPLEFOC_DEBUG("STM32-CS: ERR: Cannot find a common ADC for the pins!");
 #endif
     return -1; // error not a valid ADC instance
   }
@@ -100,6 +104,7 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
 #ifdef SIMPLEFOC_STM32_DEBUG
     SIMPLEFOC_DEBUG("STM32-CS: Using ADC: ", _adcToIndex(&hadc)+1);
 #endif
+
 
   hadc.Init.ClockPrescaler =  ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc.Init.Resolution = ADC_RESOLUTION_12B;

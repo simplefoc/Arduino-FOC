@@ -6,8 +6,8 @@
 #include "../../../../drivers/hardware_specific/stm32/stm32_mcu.h"
 #include "../../../hardware_api.h"
 #include "../stm32_mcu.h"
+#include "../stm32_adc_utils.h"
 #include "stm32f4_hal.h"
-#include "stm32f4_utils.h"
 #include "Arduino.h"
 
 
