@@ -14,9 +14,11 @@
 /**
   * @brief  Return ADC HAL channel linked to a PinName
   * @param  pin: PinName
+  * @param  adc: ADC_TypeDef a pointer to the ADC handle
   * @retval Valid HAL channel
   */
-uint32_t _getADCChannel(PinName pin);
+uint32_t _getADCChannel(PinName pin, ADC_TypeDef* adc = NP);
+uint32_t _getADCInjectedRank(uint8_t ind);
 
 // timer to injected TRGO - architecure specific
 uint32_t _timerToInjectedTRGO(TIM_HandleTypeDef* timer);
@@ -27,9 +29,6 @@ uint32_t _timerToRegularTRGO(TIM_HandleTypeDef* timer);
 // function returning index of the ADC instance
 int _adcToIndex(ADC_HandleTypeDef *AdcHandle);
 int _adcToIndex(ADC_TypeDef *AdcHandle);
-
-
-
 
 // functions helping to find the best ADC channel
 int _findIndexOfFirstPinMapADCEntry(int pin);
