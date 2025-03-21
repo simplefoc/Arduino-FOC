@@ -162,8 +162,8 @@ bool IRAM_ATTR adcInit(uint8_t pin){
         analogReadResolution(SIMPLEFOC_ADC_RES);
     }   
     pinMode(pin, ANALOG);
-    analogSetPinAttenuation(pin, SIMPLEFOC_ADC_ATTEN);
     analogRead(pin);
+    analogSetPinAttenuation(pin, SIMPLEFOC_ADC_ATTEN);
 
 #if CONFIG_IDF_TARGET_ESP32 // if esp32 variant
     __configFastADCs();
