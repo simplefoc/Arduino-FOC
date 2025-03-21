@@ -317,14 +317,7 @@ uint32_t _getADCChannel(PinName pin, ADC_TypeDef *AdcHandle )
   for (int i = first_ind; i <= last_ind; i++) {
     if (PinMap_ADC[i].peripheral == AdcHandle) {
       channel =_getADCChannelFromPinMap(PinMap_ADC[i].pin);
-
-// #ifdef SIMPLEFOC_STM32_DEBUG
-      SimpleFOCDebug::print("STM32-CS: Configuring ADC");
-      SimpleFOCDebug::print(_adcToIndex(AdcHandle)+1);
-      SimpleFOCDebug::print(" channel: ");
-      SimpleFOCDebug::println((int)STM_PIN_CHANNEL(pinmap_function(PinMap_ADC[i].pin, PinMap_ADC)));
-// #endif
-
+      SIMPLEFOC_DEBUG("STM32-CS: ADC channel: ", (int)STM_PIN_CHANNEL(pinmap_function(PinMap_ADC[i].pin, PinMap_ADC)));
       break;
     }
   }
