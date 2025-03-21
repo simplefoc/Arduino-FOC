@@ -1,6 +1,6 @@
 #include "stm32_adc_utils.h"
 
-#if defined(_STM32_DEF_)
+#if defined(_STM32_DEF_) 
 
 // for searching the best ADCs, we need to know the number of ADCs 
 // it might be better to use some HAL variable for example ADC_COUNT

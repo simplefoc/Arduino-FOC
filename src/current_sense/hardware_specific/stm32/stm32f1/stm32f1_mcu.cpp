@@ -5,6 +5,7 @@
 #include "../../../../drivers/hardware_api.h"
 #include "../../../../drivers/hardware_specific/stm32/stm32_mcu.h"
 #include "../../../hardware_api.h"
+#include "../stm32_adc_utils.h"
 #include "../stm32_mcu.h"
 #include "stm32f1_hal.h"
 #include "Arduino.h"
@@ -24,17 +25,6 @@ uint8_t use_adc_interrupt = 1;
 #else
 uint8_t use_adc_interrupt = 0;
 #endif
-
-int _adcToIndex(ADC_HandleTypeDef *AdcHandle){
-  if(AdcHandle->Instance == ADC1) return 0;
-#ifdef ADC2 // if ADC2 exists
-  else if(AdcHandle->Instance == ADC2) return 1;
-#endif
-#ifdef ADC3 // if ADC3 exists
-  else if(AdcHandle->Instance == ADC3) return 2;
-#endif
-  return 0;
-}
 
 void* _configureADCLowSide(const void* driver_params, const int pinA, const int pinB, const int pinC){
 
@@ -107,16 +97,18 @@ void* _driverSyncLowSide(void* _driver_params, void* _cs_params){
 
 // function reading an ADC value and returning the read voltage
 float _readADCVoltageLowSide(const int pin, const void* cs_params){
+  uint8_t channel_no = 0;
   for(int i=0; i < 3; i++){
     if( pin == ((Stm32CurrentSenseParams*)cs_params)->pins[i]){ // found in the buffer
       if (use_adc_interrupt){
-        return adc_val[_adcToIndex(((Stm32CurrentSenseParams*)cs_params)->adc_handle)][i] * ((Stm32CurrentSenseParams*)cs_params)->adc_voltage_conv;
+        return adc_val[_adcToIndex(((Stm32CurrentSenseParams*)cs_params)->adc_handle)][channel_no] * ((Stm32CurrentSenseParams*)cs_params)->adc_voltage_conv;
       }else{ 
         // an optimized way to go from i to the channel i=0 -> channel 1, i=1 -> channel 2, i=2 -> channel 3
-        uint32_t channel = (i == 0) ? ADC_INJECTED_RANK_1 : (i == 1) ? ADC_INJECTED_RANK_2 : ADC_INJECTED_RANK_3;;
+        uint32_t channel = _getADCInjectedRank(channel_no);
         return HAL_ADCEx_InjectedGetValue(((Stm32CurrentSenseParams*)cs_params)->adc_handle, channel) * ((Stm32CurrentSenseParams*)cs_params)->adc_voltage_conv;
       }
     }
+    if(_isset(((Stm32CurrentSenseParams*)cs_params)->pins[i])) channel_no++;
   } 
   return 0;
 }
