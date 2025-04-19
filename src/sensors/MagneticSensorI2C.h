@@ -12,6 +12,7 @@ struct MagneticSensorI2CConfig_s  {
   int bit_resolution;
   int angle_register;
   int data_start_bit; 
+  int auto_increment_suppress;
 };
 // some predefined structures
 extern MagneticSensorI2CConfig_s AS5600_I2C,AS5048_I2C;
@@ -63,6 +64,7 @@ class MagneticSensorI2C: public Sensor{
     // I2C variables
     uint8_t angle_register_msb; //!< I2C angle register to read
     uint8_t chip_address; //!< I2C chip select pins
+    int auto_increment_suppress; //!< I2C auto increment suppress
 
     // I2C functions
     /** Read one I2C register value */

@@ -5,7 +5,8 @@ MagneticSensorI2CConfig_s AS5600_I2C = {
   .chip_address = 0x36,
   .bit_resolution = 12,
   .angle_register = 0x0C,
-  .data_start_bit = 11
+  .data_start_bit = 11,
+  .auto_increment_suppress = 1 // chip does not auto increment the angle register
 };
 
 /** Typical configuration for the 12bit AMS AS5048 magnetic sensor over I2C interface */
@@ -53,6 +54,7 @@ MagneticSensorI2C::MagneticSensorI2C(uint8_t _chip_address, int _bit_resolution,
 
 MagneticSensorI2C::MagneticSensorI2C(MagneticSensorI2CConfig_s config){
   chip_address = config.chip_address; 
+  auto_increment_suppress = config.auto_increment_suppress;
 
   // angle read register of the magnetic sensor
   angle_register_msb = config.angle_register;
@@ -79,6 +81,14 @@ void MagneticSensorI2C::init(TwoWire* _wire){
   wire->begin();
 
   this->Sensor::init(); // call base class init
+
+  if(auto_increment_suppress) {
+    // register address needs to be written only once as subsequent reads
+    // do not auto increment the register address.
+    wire->beginTransmission(chip_address);
+    wire->write(angle_register_msb);
+    currWireError = wire->endTransmission(false);
+  }
 }
 
 //  Shaft angle calculation
@@ -105,10 +115,13 @@ int MagneticSensorI2C::read(uint8_t angle_reg_msb) {
   // read the angle register first MSB then LSB
 	byte readArray[2];
 	uint16_t readValue = 0;
-  // notify the device that is aboout to be read
-	wire->beginTransmission(chip_address);
-	wire->write(angle_reg_msb);
-  currWireError = wire->endTransmission(false);
+
+  if(auto_increment_suppress == 0) {
+    // notify the device that it is aboout to be read
+    wire->beginTransmission(chip_address);
+    wire->write(angle_reg_msb);
+    currWireError = wire->endTransmission(false);
+  }
 
   // read the data msb and lsb
 	wire->requestFrom(chip_address, (uint8_t)2);
