@@ -26,18 +26,19 @@ uint32_t _timerToInjectedTRGO(TIM_HandleTypeDef* timer){
 // timer to regular TRGO
 // https://github.com/stm32duino/Arduino_Core_STM32/blob/e156c32db24d69cb4818208ccc28894e2f427cfa/system/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc.h#L331
 uint32_t _timerToRegularTRGO(TIM_HandleTypeDef* timer){
+#ifdef TIM2 // if defined timer 2
   if(timer->Instance == TIM2)  
     return ADC_EXTERNALTRIGCONV_T2_TRGO;
+#endif
 #ifdef TIM3 // if defined timer 3
-  else if(timer->Instance == TIM3) 
+  if(timer->Instance == TIM3) 
     return ADC_EXTERNALTRIGCONV_T3_TRGO;
 #endif
 #ifdef TIM8 // if defined timer 8
-  else if(timer->Instance == TIM8) 
+  if(timer->Instance == TIM8) 
     return ADC_EXTERNALTRIGCONV_T8_TRGO;
 #endif
-  else
-    return _TRGO_NOT_AVAILABLE;
+  return _TRGO_NOT_AVAILABLE;
 }
 
 #endif
