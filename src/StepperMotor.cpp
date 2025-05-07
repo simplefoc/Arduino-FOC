@@ -57,10 +57,13 @@ int StepperMotor::init() {
   P_angle.limit = velocity_limit;
 
   // if using open loop control, set a CW as the default direction if not already set
-  if ((controller==MotionControlType::angle_openloop
-     ||controller==MotionControlType::velocity_openloop)
-     && (sensor_direction == Direction::UNKNOWN)) {
-      sensor_direction = Direction::CW;
+  // only if no sensor is used
+  if(!sensor){
+    if ((controller==MotionControlType::angle_openloop
+      ||controller==MotionControlType::velocity_openloop)
+      && (sensor_direction == Direction::UNKNOWN)) {
+        sensor_direction = Direction::CW;
+    }
   }
 
   _delay(500);
