@@ -122,10 +122,19 @@ float HallSensor::getSensorAngle() {
 */
 float HallSensor::getVelocity(){
   noInterrupts();
-  long last_pulse_timestamp = pulse_timestamp;
-  long last_pulse_diff = pulse_diff;
+  unsigned long last_pulse_timestamp = pulse_timestamp;
+  unsigned long last_pulse_diff = pulse_diff;
   interrupts();
-  if (last_pulse_diff == 0 || ((long)(_micros() - last_pulse_timestamp) > last_pulse_diff*2) ) { // last velocity isn't accurate if too old
+  if (last_pulse_diff == 0) {
+    return 0;
+  } else if ((_micros() - last_pulse_timestamp) > last_pulse_diff*2) {
+    // Last velocity isn't accurate if too old.
+    // Reset to avoid the diff being used again when the time wraps.
+    noInterrupts();
+    if (pulse_diff == last_pulse_diff) {
+        pulse_diff = 0;
+    }
+    interrupts();
     return 0;
   } else {
     return direction * (_2PI / (float)cpr) / (last_pulse_diff / 1000000.0f);

@@ -90,7 +90,7 @@ class HallSensor: public Sensor{
     // function pointer for on sector change call back
     void (*onSectorChange)(int sector) = nullptr;
 
-    volatile long pulse_diff;
+    volatile unsigned long pulse_diff;
     
 };
 
