@@ -3,41 +3,8 @@
 #if defined(STM32F1xx)  
 
 #include "../../../../communication/SimpleFOCDebug.h"
+#include "../stm32_adc_utils.h"
 #define _TRGO_NOT_AVAILABLE 12345
-
-// timer to injected TRGO
-// https://github.com/stm32duino/Arduino_Core_STM32/blob/e156c32db24d69cb4818208ccc28894e2f427cfa/system/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc_ex.h#L215
-uint32_t _timerToInjectedTRGO(TIM_HandleTypeDef* timer){
-  if(timer->Instance == TIM1)  
-    return ADC_EXTERNALTRIGINJECCONV_T1_TRGO;
-#ifdef TIM2 // if defined timer 2
-  else if(timer->Instance == TIM2) 
-    return ADC_EXTERNALTRIGINJECCONV_T2_TRGO;
-#endif
-#ifdef TIM4 // if defined timer 4
-  else if(timer->Instance == TIM4) 
-    return ADC_EXTERNALTRIGINJECCONV_T4_TRGO;
-#endif
-#ifdef TIM5 // if defined timer 5
-  else if(timer->Instance == TIM5) 
-    return ADC_EXTERNALTRIGINJECCONV_T5_TRGO;
-#endif
-  else
-    return _TRGO_NOT_AVAILABLE;
-}
-
-// timer to regular TRGO
-// https://github.com/stm32duino/Arduino_Core_STM32/blob/e156c32db24d69cb4818208ccc28894e2f427cfa/system/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc_ex.h#L215
-uint32_t _timerToRegularTRGO(TIM_HandleTypeDef* timer){
-  if(timer->Instance == TIM3) 
-    return ADC_EXTERNALTRIGCONV_T3_TRGO;
-#ifdef TIM8 // if defined timer 8
-  else if(timer->Instance == TIM8) 
-    return ADC_EXTERNALTRIGCONV_T8_TRGO;
-#endif
-  else
-    return _TRGO_NOT_AVAILABLE;
-}
 
 ADC_HandleTypeDef hadc;
 
@@ -55,7 +22,8 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
     
   /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
   */
-  hadc.Instance = (ADC_TypeDef *)pinmap_peripheral(analogInputToPinName(cs_params->pins[0]), PinMap_ADC);
+  hadc.Instance = _findBestADCForPins(3, cs_params->pins);
+
   if(hadc.Instance == ADC1) __HAL_RCC_ADC1_CLK_ENABLE();
 #ifdef ADC2  // if defined ADC2
   else if(hadc.Instance == ADC2) __HAL_RCC_ADC2_CLK_ENABLE();
@@ -82,7 +50,12 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   
   /**Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time 
     */
-  sConfigInjected.InjectedNbrOfConversion = _isset(cs_params->pins[2]) ? 3 : 2;
+  sConfigInjected.InjectedNbrOfConversion = 0;
+  for(int pin_no=0; pin_no<3; pin_no++){
+    if(_isset(cs_params->pins[pin_no])){
+      sConfigInjected.InjectedNbrOfConversion++;
+    }
+  }
   sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_1CYCLE_5;
   sConfigInjected.AutoInjectedConv = DISABLE;
   sConfigInjected.InjectedDiscontinuousConvMode = DISABLE;
@@ -123,16 +96,16 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   }
 
 
-  uint32_t ranks[4]= {ADC_INJECTED_RANK_1, ADC_INJECTED_RANK_2, ADC_INJECTED_RANK_3, ADC_INJECTED_RANK_4};
+  uint8_t channel_no = 0;
   for(int i=0; i<3; i++){
     // skip if not set
     if (!_isset(cs_params->pins[i])) continue;
     
-    sConfigInjected.InjectedRank = ranks[i];
-    sConfigInjected.InjectedChannel = STM_PIN_CHANNEL(pinmap_function(analogInputToPinName(cs_params->pins[i]), PinMap_ADC));
+    sConfigInjected.InjectedRank = _getADCInjectedRank(channel_no++);
+    sConfigInjected.InjectedChannel = _getADCChannel(analogInputToPinName(cs_params->pins[i]), hadc.Instance);
     if (HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected) != HAL_OK){
   #ifdef SIMPLEFOC_STM32_DEBUG
-      SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init injected channel: ", (int)STM_PIN_CHANNEL(pinmap_function(analogInputToPinName(cs_params->pins[i]), PinMap_ADC)));
+      SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init injected channel: ", (int)_getADCChannel(analogInputToPinName(cs_params->pins[i]) , hadc.Instance));
   #endif
       return -1;
     }

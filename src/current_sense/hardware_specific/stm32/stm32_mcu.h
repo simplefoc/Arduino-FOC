@@ -19,5 +19,6 @@ typedef struct Stm32CurrentSenseParams {
   TIM_HandleTypeDef* timer_handle = NP;
 } Stm32CurrentSenseParams;
 
+
 #endif
 #endif

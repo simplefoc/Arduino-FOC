@@ -5,7 +5,6 @@
 //#define SIMPLEFOC_STM32_DEBUG
 
 #include "../../../../communication/SimpleFOCDebug.h"
-#define _TRGO_NOT_AVAILABLE 12345
 
 ADC_HandleTypeDef hadc;
 
@@ -21,23 +20,10 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
 {
   ADC_InjectionConfTypeDef sConfigInjected;
 
-  // check if all pins belong to the same ADC
-  ADC_TypeDef* adc_pin1 = _isset(cs_params->pins[0]) ? (ADC_TypeDef*)pinmap_peripheral(analogInputToPinName(cs_params->pins[0]), PinMap_ADC) : nullptr;
-  ADC_TypeDef* adc_pin2 = _isset(cs_params->pins[1]) ? (ADC_TypeDef*)pinmap_peripheral(analogInputToPinName(cs_params->pins[1]), PinMap_ADC) : nullptr;
-  ADC_TypeDef* adc_pin3 = _isset(cs_params->pins[2]) ? (ADC_TypeDef*)pinmap_peripheral(analogInputToPinName(cs_params->pins[2]), PinMap_ADC) : nullptr;
- if ( ((adc_pin1 != adc_pin2) &&  (adc_pin1 && adc_pin2))  || 
-      ((adc_pin2 != adc_pin3) &&  (adc_pin2 && adc_pin3))  ||
-      ((adc_pin1 != adc_pin3) &&  (adc_pin1 && adc_pin3)) 
-    ){
-#ifdef SIMPLEFOC_STM32_DEBUG
-    SIMPLEFOC_DEBUG("STM32-CS: ERR: Analog pins dont belong to the same ADC!");
-#endif
-  return -1;
- }
 
   /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
   */
-  hadc.Instance = (ADC_TypeDef *)pinmap_peripheral(analogInputToPinName(cs_params->pins[0]), PinMap_ADC);
+  hadc.Instance = _findBestADCForPins(3, cs_params->pins);
 
   if(hadc.Instance == ADC1) __HAL_RCC_ADC12_CLK_ENABLE();
 #ifdef ADC2  // if defined ADC2
@@ -48,7 +34,7 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
 #endif
   else{
 #ifdef SIMPLEFOC_STM32_DEBUG
-    SIMPLEFOC_DEBUG("STM32-CS: ERR: Pin does not belong to any ADC!");
+    SIMPLEFOC_DEBUG("STM32-CS: ERR: Cannot find a common ADC for the pins!");
 #endif
     return -1; // error not a valid ADC instance
   }
@@ -91,11 +77,16 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
     
   /**Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time 
     */
-  sConfigInjected.InjectedNbrOfConversion = _isset(cs_params->pins[2]) ? 3 : 2;
+  sConfigInjected.InjectedNbrOfConversion = 0;
+  for(int pin_no=0; pin_no<3; pin_no++){
+    if(_isset(cs_params->pins[pin_no])){
+      sConfigInjected.InjectedNbrOfConversion++;
+    }
+  }
   // if ADC1 or ADC2
   if(hadc.Instance == ADC1 || hadc.Instance == ADC2){
     // more info here: https://github.com/stm32duino/Arduino_Core_STM32/blob/e156c32db24d69cb4818208ccc28894e2f427cfa/system/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_adc.h#L658
-    sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_2CYCLE_5;
+    sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_1CYCLE_5;
   }else {
     // adc3
     // https://github.com/stm32duino/Arduino_Core_STM32/blob/e156c32db24d69cb4818208ccc28894e2f427cfa/system/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_adc.h#L673
@@ -147,20 +138,20 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
 #endif
   }
 
-  uint32_t ranks[4] = {ADC_INJECTED_RANK_1, ADC_INJECTED_RANK_2, ADC_INJECTED_RANK_3, ADC_INJECTED_RANK_4};
+  uint8_t channel_no = 0;
   for(int i=0; i<3; i++){
     // skip if not set
-    if (!_isset(cs_params->pins[i])) continue;    
-    sConfigInjected.InjectedRank = ranks[i];
-    sConfigInjected.InjectedChannel = _getADCChannel(analogInputToPinName(cs_params->pins[i]));
+    if (!_isset(cs_params->pins[i])) continue;
+    
+    sConfigInjected.InjectedRank = _getADCInjectedRank(channel_no++);
+    sConfigInjected.InjectedChannel = _getADCChannel(analogInputToPinName(cs_params->pins[i]), hadc.Instance);
     if (HAL_ADCEx_InjectedConfigChannel(&hadc, &sConfigInjected) != HAL_OK){
   #ifdef SIMPLEFOC_STM32_DEBUG
-      SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init injected channel: ", (int)_getADCChannel(analogInputToPinName(cs_params->pins[i])) );
+      SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init injected channel: ", (int)_getADCChannel(analogInputToPinName(cs_params->pins[i]) , hadc.Instance));
   #endif
       return -1;
     }
   }
-
 
   delay(1000);
   #ifdef SIMPLEFOC_STM32_ADC_INTERRUPT
@@ -205,13 +196,12 @@ int _adc_gpio_init(Stm32CurrentSenseParams* cs_params, const int pinA, const int
   return 0;
 }
 
-#ifdef SIMPLEFOC_STM32_ADC_INTERRUPT
+
 extern "C" {
   void ADC_IRQHandler(void)
   {
       HAL_ADC_IRQHandler(&hadc);
   }
 }
-#endif
 
 #endif

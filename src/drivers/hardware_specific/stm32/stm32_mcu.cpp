@@ -4,7 +4,7 @@
 #include "./stm32_timerutils.h"
 #include "./stm32_searchtimers.h"
 
-#if defined(_STM32_DEF_) || defined(TARGET_STM32H7)
+#if defined(_STM32_DEF_) || defined(TARGET_STM32H7) // if stm32duino or portenta
 
 #pragma message("")
 #pragma message("SimpleFOC: compiling for STM32")
