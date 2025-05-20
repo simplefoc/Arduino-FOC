@@ -77,7 +77,10 @@ int BLDCDriver6PWM::init() {
 
 
 // Set voltage to the pwm pin
-void BLDCDriver6PWM::setPwm(float Ua, float Ub, float Uc) {
+void BLDCDriver6PWM::setPwm(float Ua_, float Ub_, float Uc_) {
+  Ua = Ua_;
+  Ub = Ub_;
+  Uc = Uc_;
   // limit the voltage in driver
   Ua = _constrain(Ua, 0, voltage_limit);
   Ub = _constrain(Ub, 0, voltage_limit);

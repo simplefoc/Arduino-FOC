@@ -41,6 +41,10 @@ class FOCDriver{
 
         bool enable_active_high = true; //!< enable pin should be set to high to enable the driver (default is HIGH)
 
+        float Ua; //!< currently set phase A voltage
+        float Ub; //!< currently set phase B voltage
+        float Uc; //!< currently set phase C voltage
+
         /** get the driver type*/
         virtual DriverType type() = 0;
 };
