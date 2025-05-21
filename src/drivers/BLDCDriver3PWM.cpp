@@ -74,10 +74,8 @@ void BLDCDriver3PWM::setPhaseState(PhaseState sa, PhaseState sb, PhaseState sc) 
 }
 
 // Set voltage to the pwm pin
-void BLDCDriver3PWM::setPwm(float Ua_, float Ub_, float Uc_) {
-  Ua = Ua_;
-  Ub = Ub_;
-  Uc = Uc_;
+void BLDCDriver3PWM::setPwm(float Ua, float Ub, float Uc) {
+
   // limit the voltage in driver
   Ua = _constrain(Ua, 0.0f, voltage_limit);
   Ub = _constrain(Ub, 0.0f, voltage_limit);
