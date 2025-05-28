@@ -16,7 +16,7 @@
 // array of values of 4 injected channels per adc instance (3)
 uint32_t adc_val[3][4]={0};
 // does adc interrupt need a downsample - per adc (3)
-bool needs_downsample[3] = {1};
+bool needs_downsample[3] = {0};
 // downsampling variable - per adc (3)
 uint8_t tim_downsample[3] = {0};
 
@@ -48,26 +48,49 @@ void* _driverSyncLowSide(void* _driver_params, void* _cs_params){
   // stop all the timers for the driver
   stm32_pause(driver_params);
 
+  // If DIR is 0 (upcounting), the next event is high-side active (PWM rising edge)
+  // If DIR is 1 (downcounting), the next event is low-side active (PWM falling edge)
+  bool next_event_high_side = (cs_params->timer_handle->Instance->CR1 & TIM_CR1_DIR) == 0;
+  
   // if timer has repetition counter - it will downsample using it
   // and it does not need the software downsample
   if( IS_TIM_REPETITION_COUNTER_INSTANCE(cs_params->timer_handle->Instance) ){
     // adjust the initial timer state such that the trigger 
-    //   - for DMA transfer aligns with the pwm peaks instead of throughs.
-    //   - for interrupt based ADC transfer 
     //   - only necessary for the timers that have repetition counters
-    cs_params->timer_handle->Instance->CR1 |= TIM_CR1_DIR;
-    cs_params->timer_handle->Instance->CNT =  cs_params->timer_handle->Instance->ARR;
-    // remember that this timer has repetition counter - no need to downasmple
-    needs_downsample[_adcToIndex(cs_params->adc_handle)] = 0;
+    //   - basically make sure that the next trigger event is the one that is expected (high-side first then low-side)
+
+    // set the direction and the 
+    for(int i=0; i< 6; i++){
+      if(driver_params->timers_handle[i] == NP) continue; // skip if not set
+      if(next_event_high_side){
+        // Set DIR bit to 0 (downcounting)
+        driver_params->timers_handle[i]->Instance->CR1 |= TIM_CR1_DIR;
+        // Set CNT to ARR so it starts upcounting from the top
+        driver_params->timers_handle[i]->Instance->CNT =  driver_params->timers_handle[i]->Instance->ARR;
+      }else{
+        // Set DIR bit to 0 (upcounting)
+        driver_params->timers_handle[i]->Instance->CR1 &= ~TIM_CR1_DIR;
+        // Set CNT to ARR so it starts upcounting from zero
+        driver_params->timers_handle[i]->Instance->CNT = 0;// driver_params->timers_handle[i]->Instance->ARR;
+      }
+    }
   }else{
     if(!use_adc_interrupt){
       // If the timer has no repetition counter, it needs to use the interrupt to downsample for low side sensing
       use_adc_interrupt = 1;
-      #ifdef SIMPLEFOC_STM32_DEBUG
+      uint8_t adc_index  = _adcToIndex(cs_params->adc_handle);
+      // remember that this timer does not have the repetition counter - need to downasmple
+      needs_downsample[adc_index] = 1;
+
+      if(next_event_high_side) // Next event is high-side active
+        tim_downsample[adc_index] = 0; // skip the next interrupt (and every second one)
+      else // Next event is low-side active
+        tim_downsample[adc_index] = 1; // read the next one (and every second one after)
+      
       SIMPLEFOC_DEBUG("STM32-CS: timer has no repetition counter, ADC interrupt has to be used");
-      #endif
     }
   }
+  
   // set the trigger output event
   LL_TIM_SetTriggerOutput(cs_params->timer_handle->Instance, LL_TIM_TRGO_UPDATE);
 
@@ -127,6 +150,7 @@ extern "C" {
     adc_val[adc_index][0]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_1);
     adc_val[adc_index][1]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_2);
     adc_val[adc_index][2]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_3);
+    adc_val[adc_index][3]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_4);
   }
 }
 

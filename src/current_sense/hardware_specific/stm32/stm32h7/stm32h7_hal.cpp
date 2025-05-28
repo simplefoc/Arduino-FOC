@@ -59,7 +59,7 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   // https://github.com/stm32duino/Arduino_Core_STM32/blob/e156c32db24d69cb4818208ccc28894e2f427cfa/system/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_adc.h#L170C13-L170C27
   hadc.Init.DMAContinuousRequests = DISABLE;
   // not sure about this one!!! maybe use: ADC_SAMPLING_MODE_NORMAL
-  hadc.Init.SamplingMode = ADC_SAMPLING_MODE_BULB;
+  hadc.Init.SamplingMode = ADC_SAMPLING_MODE_NORMAL;
 #endif
   hadc.Init.NbrOfConversion = 1;
   hadc.Init.NbrOfDiscConversion = 0;
@@ -152,13 +152,6 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
       return -1;
     }
   }
-
-  delay(1000);
-  #ifdef SIMPLEFOC_STM32_ADC_INTERRUPT
-  // enable interrupt
-  HAL_NVIC_SetPriority(ADC_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(ADC_IRQn);
-  #endif
   
   cs_params->adc_handle = &hadc;
   return 0;
@@ -203,5 +196,14 @@ extern "C" {
       HAL_ADC_IRQHandler(&hadc);
   }
 }
+
+#ifdef ADC3
+extern "C" {
+  void ADC3_IRQHandler(void)
+  {
+      HAL_ADC_IRQHandler(&hadc);
+  }
+}
+#endif
 
 #endif
