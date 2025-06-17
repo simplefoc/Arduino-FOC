@@ -181,7 +181,7 @@ uint8_t _findNextTimer(int group){
 */
 int _findBestGroup(int no_pins, long pwm_freq, int* group, int* timer){
   // an empty group is always the best option
-  for(int i=0; i<2; i++){
+  for(int i=0; i<SOC_MCPWM_GROUPS; i++){
     if(!group_pins_used[i]){
       *group = i;
       *timer=0; // use the first timer in an empty group
@@ -196,7 +196,7 @@ int _findBestGroup(int no_pins, long pwm_freq, int* group, int* timer){
     // second best option is if there is a group with 
     // pair number of pwms available as we can then 
     // set the pwm frequency 
-    for(int i=0; i<2; i++){
+    for(int i=0; i<SOC_MCPWM_GROUPS; i++){
       if(_hasAvailablePins(i, no_pins+1)) {
         *group=i;
         *timer = _findNextTimer(i);
@@ -204,7 +204,7 @@ int _findBestGroup(int no_pins, long pwm_freq, int* group, int* timer){
       }
     }
     // third best option is any group that has enough pins
-    for(int i=0; i<2; i++){
+    for(int i=0; i<SOC_MCPWM_GROUPS; i++){
       if(_hasAvailablePins(i, no_pins)) {
         *group=i;
         *timer = _findLastTimer(i);

@@ -98,6 +98,7 @@ void loop() {
 
 #include "BLDCMotor.h"
 #include "StepperMotor.h"
+#include "HybridStepperMotor.h"
 #include "sensors/Encoder.h"
 #include "sensors/MagneticSensorSPI.h"
 #include "sensors/MagneticSensorI2C.h"

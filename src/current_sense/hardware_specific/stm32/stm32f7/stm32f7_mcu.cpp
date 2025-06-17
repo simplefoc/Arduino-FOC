@@ -6,8 +6,8 @@
 #include "../../../../drivers/hardware_specific/stm32/stm32_mcu.h"
 #include "../../../hardware_api.h"
 #include "../stm32_mcu.h"
+#include "../stm32_adc_utils.h"
 #include "stm32f7_hal.h"
-#include "stm32f7_utils.h"
 #include "Arduino.h"
 
 
@@ -28,7 +28,7 @@ void* _configureADCLowSide(const void* driver_params, const int pinA, const int 
     .pins={(int)NOT_SET,(int)NOT_SET,(int)NOT_SET},
     .adc_voltage_conv = (_ADC_VOLTAGE) / (_ADC_RESOLUTION)
   };
-  _adc_gpio_init(cs_params, pinA,pinB,pinC);
+  if(_adc_gpio_init(cs_params, pinA,pinB,pinC) != 0) return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
   if(_adc_init(cs_params, (STM32DriverParams*)driver_params) != 0) return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
   return cs_params;
 }
@@ -42,23 +42,23 @@ void* _driverSyncLowSide(void* _driver_params, void* _cs_params){
   if (cs_params->timer_handle == NULL) return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
   
   // stop all the timers for the driver
-  _stopTimers(driver_params->timers, 6);
+  stm32_pause(driver_params);
 
   // if timer has repetition counter - it will downsample using it
   // and it does not need the software downsample
-  if( IS_TIM_REPETITION_COUNTER_INSTANCE(cs_params->timer_handle->getHandle()->Instance) ){
+  if( IS_TIM_REPETITION_COUNTER_INSTANCE(cs_params->timer_handle->Instance) ){
     // adjust the initial timer state such that the trigger 
     //   - for DMA transfer aligns with the pwm peaks instead of throughs.
     //   - for interrupt based ADC transfer 
     //   - only necessary for the timers that have repetition counters
 
-    cs_params->timer_handle->getHandle()->Instance->CR1 |= TIM_CR1_DIR;
-    cs_params->timer_handle->getHandle()->Instance->CNT = cs_params->timer_handle->getHandle()->Instance->ARR;
+    cs_params->timer_handle->Instance->CR1 |= TIM_CR1_DIR;
+    cs_params->timer_handle->Instance->CNT = cs_params->timer_handle->Instance->ARR;
     // remember that this timer has repetition counter - no need to downasmple
     needs_downsample[_adcToIndex(cs_params->adc_handle)] = 0;
   }
   // set the trigger output event
-  LL_TIM_SetTriggerOutput(cs_params->timer_handle->getHandle()->Instance, LL_TIM_TRGO_UPDATE);
+  LL_TIM_SetTriggerOutput(cs_params->timer_handle->Instance, LL_TIM_TRGO_UPDATE);
 
   // start the adc
   #ifdef SIMPLEFOC_STM32_ADC_INTERRUPT 
@@ -68,7 +68,7 @@ void* _driverSyncLowSide(void* _driver_params, void* _cs_params){
   #endif
 
   // restart all the timers of the driver
-  _startTimers(driver_params->timers, 6);
+  stm32_resume(driver_params);
   
   // return the cs parameters 
   // successfully initialized
@@ -79,16 +79,18 @@ void* _driverSyncLowSide(void* _driver_params, void* _cs_params){
 
 // function reading an ADC value and returning the read voltage
 float _readADCVoltageLowSide(const int pin, const void* cs_params){
+  uint8_t channel_no = 0;
   for(int i=0; i < 3; i++){
     if( pin == ((Stm32CurrentSenseParams*)cs_params)->pins[i]){ // found in the buffer
       #ifdef SIMPLEFOC_STM32_ADC_INTERRUPT
-        return adc_val[_adcToIndex(((Stm32CurrentSenseParams*)cs_params)->adc_handle)][i] * ((Stm32CurrentSenseParams*)cs_params)->adc_voltage_conv;
+        return adc_val[_adcToIndex(((Stm32CurrentSenseParams*)cs_params)->adc_handle)][channel_no] * ((Stm32CurrentSenseParams*)cs_params)->adc_voltage_conv;
       #else
         // an optimized way to go from i to the channel i=0 -> channel 1, i=1 -> channel 2, i=2 -> channel 3
-        uint32_t channel = (i == 0) ? ADC_INJECTED_RANK_1 : (i == 1) ? ADC_INJECTED_RANK_2 : ADC_INJECTED_RANK_3;
+        uint32_t channel =  _getADCInjectedRank(channel_no);
         return HAL_ADCEx_InjectedGetValue(((Stm32CurrentSenseParams*)cs_params)->adc_handle, channel) * ((Stm32CurrentSenseParams*)cs_params)->adc_voltage_conv;
       #endif
     }
+    if(_isset(((Stm32CurrentSenseParams*)cs_params)->pins[i])) channel_no++;
   } 
   return 0;
 }

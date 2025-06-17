@@ -7,6 +7,7 @@
 [![RP2040 build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/rpi.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/rpi.yml)
 [![SAMD build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/samd.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/samd.yml)
 [![Teensy build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml) 
+[![MBED build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/arduino_mbed.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/arduino_mbed.yml)
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/simplefoc/arduino-foc)
 ![GitHub Release Date](https://img.shields.io/github/release-date/simplefoc/arduino-foc?color=blue)
@@ -29,27 +30,13 @@ Therefore this is an attempt to:
    - For official driver boards see [<span class="simple">Simple<span class="foc">FOC</span>Boards</span>](https://docs.simplefoc.com/boards)
    - Many many more boards developed by the community members, see [<span class="simple">Simple<span class="foc">FOC</span>Community</span>](https://community.simplefoc.com/)
 
-> NEXT RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.4
-> - ESP32 MCUs extended support [#414](https://github.com/simplefoc/Arduino-FOC/pull/414)
->   - Transition to the arduino-esp32 version v3.x (ESP-IDF v5.x) [#387](https://github.com/espressif/arduino-esp32/releases)
->   - New support for MCPWM driver
->   - New support for LEDC drivers - center-aligned PWM and 6PWM available 
->   - Rewritten and simplified the fast ADC driver code (`adcRead`) - for low-side and inline current sensing.
-> - Stepper motors current sensing support [#421](https://github.com/simplefoc/Arduino-FOC/pull/421)
->   - Support for current sensing (low-side and inline) - [see in docs](https://docs.simplefoc.com/current_sense)
->   - Support for true FOC control - `foc_current` torque control - [see in docs](https://docs.simplefoc.com/motion_control)
-> - New current sense alignment procedure  [#422](https://github.com/simplefoc/Arduino-FOC/pull/422) - [see in docs](https://docs.simplefoc.com/current_sense_align)
->   - Support for steppers
->   - Much more robust and reliable
->   - More verbose and informative 
-> - Support for HallSensors without interrupts [#424](https://docs.simplefoc.com/https://github.com/simplefoc/Arduino-FOC/pull/424) - [see in docs](hall_sensors) 
-> - Docs
->   - A short guide to debugging of common issues
->   - A short guide to the units in the library - [see in docs](https://docs.simplefoc.com/library_units)
-> - See the complete list of bugfixes and new features of v2.3.4 [fixes and PRs](https://github.com/simplefoc/Arduino-FOC/milestone/11) 
+> NEXT RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.5
+> - Motor characterization code thanks to @mcells
+> - Bugfix for ESP32 C6 thanks to @kondor1622
+> - See the complete list of bugfixes and new features of v2.3.5 [fixes and PRs](https://github.com/simplefoc/Arduino-FOC/milestone/12) 
 
 
-## Arduino *SimpleFOClibrary* v2.3.4
+## Arduino *SimpleFOClibrary* v2.3.5
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">
