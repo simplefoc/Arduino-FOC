@@ -14,7 +14,7 @@ struct MagneticSensorI2CConfig_s  {
   int data_start_bit; 
 };
 // some predefined structures
-extern MagneticSensorI2CConfig_s AS5600_I2C,AS5048_I2C;
+extern MagneticSensorI2CConfig_s AS5600_I2C,AS5048_I2C, MT6701_I2C;
 
 #if defined(TARGET_RP2040)
 #define SDA I2C_SDA
