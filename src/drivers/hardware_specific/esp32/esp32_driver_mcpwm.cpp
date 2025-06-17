@@ -282,6 +282,7 @@ void* _configure6PWMPinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no,
   pwm_config.count_mode = MCPWM_TIMER_COUNT_MODE_UP_DOWN;    
   pwm_config.intr_priority = 0;              
   pwm_config.period_ticks = _calcPWMPeriod(pwm_frequency);
+  pwm_config.flags.allow_pd = 0;
 
   CHECK_ERR(mcpwm_new_timer(&pwm_config, &timers[mcpwm_group][timer_no]), "Could not initialize the timer in group: " + String(mcpwm_group));
   pwm_periods[mcpwm_group][timer_no] = pwm_config.period_ticks / 2;
@@ -410,6 +411,7 @@ void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int
     pwm_config.count_mode = MCPWM_TIMER_COUNT_MODE_UP_DOWN;    
     pwm_config.intr_priority = 0;              
     pwm_config.period_ticks = _calcPWMPeriod(pwm_frequency);
+    pwm_config.flags.allow_pd = 0;
     // initialise the timer
     CHECK_ERR(mcpwm_new_timer(&pwm_config, &timers[mcpwm_group][timer_no]), "Could not initialize the timer in group: " + String(mcpwm_group));
     // save variables for later
