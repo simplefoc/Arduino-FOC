@@ -1,11 +1,7 @@
 #include "stm32_adc_utils.h"
+#include "stm32_mcu.h"
 
 #if defined(_STM32_DEF_) 
-
-// for searching the best ADCs, we need to know the number of ADCs 
-// it might be better to use some HAL variable for example ADC_COUNT
-// here I've assumed the maximum number of ADCs is 5
-#define ADC_COUNT 5
 
 
 
@@ -342,6 +338,93 @@ uint32_t _getADCInjectedRank(uint8_t ind){
       return 0;
       break;
   }
+}
+
+// returns 0 if no interrupt is needed, 1 if interrupt is needed
+uint32_t _initTimerInterruptDownsampling(Stm32CurrentSenseParams* cs_params, STM32DriverParams* driver_params, Stm32AdcInterruptConfig& adc_interrupt_config){
+
+  // If DIR is 0 (upcounting), the next event is high-side active (PWM rising edge)
+  // If DIR is 1 (downcounting), the next event is low-side active (PWM falling edge)
+  bool next_event_high_side = (cs_params->timer_handle->Instance->CR1 & TIM_CR1_DIR) == 0;
+  
+  // if timer has repetition counter - it will downsample using it
+  // and it does not need the software downsample
+  if( IS_TIM_REPETITION_COUNTER_INSTANCE(cs_params->timer_handle->Instance) ){
+    // adjust the initial timer state such that the trigger 
+    //   - only necessary for the timers that have repetition counters
+    //   - basically make sure that the next trigger event is the one that is expected (high-side first then low-side)
+
+    // set the direction and the 
+    for(int i=0; i< 6; i++){
+      if(driver_params->timers_handle[i] == NP) continue; // skip if not set
+      if(next_event_high_side){
+        // Set DIR bit to 0 (downcounting)
+        driver_params->timers_handle[i]->Instance->CR1 |= TIM_CR1_DIR;
+        // Set CNT to ARR so it starts upcounting from the top
+        driver_params->timers_handle[i]->Instance->CNT =  driver_params->timers_handle[i]->Instance->ARR;
+      }else{
+        // Set DIR bit to 0 (upcounting)
+        driver_params->timers_handle[i]->Instance->CR1 &= ~TIM_CR1_DIR;
+        // Set CNT to ARR so it starts upcounting from zero
+        driver_params->timers_handle[i]->Instance->CNT = 0;// driver_params->timers_handle[i]->Instance->ARR;
+      }
+    }
+    return 0; // no interrupt is needed, the timer will handle the downsampling
+  }else{
+    if(!adc_interrupt_config.use_adc_interrupt){
+      // If the timer has no repetition counter, it needs to use the interrupt to downsample for low side sensing
+      adc_interrupt_config.use_adc_interrupt = 1;
+      // remember that this timer does not have the repetition counter - need to downasmple
+      adc_interrupt_config.needs_downsample = 1;
+
+      if(next_event_high_side) // Next event is high-side active
+        adc_interrupt_config.tim_downsample = 0; // skip the next interrupt (and every second one)
+      else // Next event is low-side active
+        adc_interrupt_config.tim_downsample = 1; // read the next one (and every second one after)
+      
+      return 1; // interrupt is needed
+    }
+  }
+  return 1; // interrupt is needed
+}
+
+// returns 0 if no downsampling is needed, 1 if downsampling is needed, 2 if error
+uint8_t _handleInjectedConvCpltCallback(ADC_HandleTypeDef *AdcHandle, Stm32AdcInterruptConfig& adc_interrupt_config, uint32_t adc_val[4]) {
+
+  // if the timer han't repetition counter - downsample two times
+  if( adc_interrupt_config.needs_downsample && adc_interrupt_config.tim_downsample++ > 0) {
+    adc_interrupt_config.tim_downsample = 0;
+    return 1;
+  }
+  
+  adc_val[0]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_1);
+  adc_val[1]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_2);
+  adc_val[2]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_3);  
+  adc_val[3]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_4);  
+  
+  return 0; // no downsampling needed
+}
+
+// reads the ADC injected voltage for the given pin
+// returns the voltage 
+// if the pin is not found in the current sense parameters, returns 0
+float _readADCInjectedChannelVoltage(int pin, void* cs_params, Stm32AdcInterruptConfig& adc_interrupt_config, uint32_t adc_val[4]) {
+  Stm32CurrentSenseParams* cs_p = (Stm32CurrentSenseParams*)cs_params;
+  uint8_t channel_no = 0;
+  uint8_t adc_index = (uint8_t)_adcToIndex(cs_p->adc_handle);
+  for(int i=0; i < 3; i++){
+    if( pin == cs_p->pins[i]){ // found in the buffer
+      if (adc_interrupt_config.use_adc_interrupt){
+        return adc_val[channel_no] * cs_p->adc_voltage_conv;
+      }else{
+        // an optimized way to go from i to the channel i=0 -> channel 1, i=1 -> channel 2, i=2 -> channel 3
+        uint32_t channel = _getADCInjectedRank(channel_no);
+        return HAL_ADCEx_InjectedGetValue(cs_p->adc_handle, channel) * cs_p->adc_voltage_conv;
+      }
+    }
+    if(_isset(cs_p->pins[i])) channel_no++;
+  } 
+  return 0; // pin not found
 }
 
 #endif
