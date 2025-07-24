@@ -1,6 +1,8 @@
-#if defined(_SAMD21_) || defined(ARDUINO_QTPY_M0)
 
 #include "samd21_mcu.h"
+
+#if defined(_SAMD21_)
+
 #include "../../hardware_api.h"
 #include "../../../drivers/hardware_specific/samd/samd_mcu.h"
 
@@ -19,8 +21,8 @@ static void setupADCEventTriggerFromDriver(const SAMDHardwareDriverParams *par, 
   while (ADC->STATUS.bit.SYNCBUSY);
 
   ADC->REFCTRL.reg = ADC_REFCTRL_REFSEL_INTVCC1;  
-  ADC->CTRLB.reg = ADC_CTRLB_PRESCALER_DIV32 | ADC_CTRLB_RESSEL_12BIT;
-  // ADC->CTRLB.bit.FREERUN = 0; 
+  ADC->CTRLB.reg = ADC_CTRLB_PRESCALER_DIV16 | ADC_CTRLB_RESSEL_12BIT;
+  ADC->CTRLB.bit.FREERUN = 0; 
   while (ADC->STATUS.bit.SYNCBUSY);
 
   ADC->INPUTCTRL.bit.MUXPOS = g_APinDescription[_pinA].ulADCChannelNumber;
@@ -36,7 +38,7 @@ static void setupADCEventTriggerFromDriver(const SAMDHardwareDriverParams *par, 
   NVIC_EnableIRQ(ADC_IRQn);
 
   // --- Configure Event System ---
-  uint8_t tcc_num = par->tccPinConfigurations[0]->tcc.tccn; 
+  uint8_t tcc_num = par->tccPinConfigurations[1]->tcc.tccn; 
 
   // --- Enable event output on the PWM timer (important!) ---
   Tcc* tcc = nullptr;
@@ -83,11 +85,12 @@ static void setupADCEventTriggerFromDriver(const SAMDHardwareDriverParams *par, 
 
 // ADC interrupt (switch between A, B, C)
 void ADC_Handler() {
-
+  //digitalWrite(13,HIGH);
   // check if we are in high-side or low-side current sense
   is_high_side = !is_high_side;
   if(is_high_side){
     ADC->INTFLAG.reg = ADC_INTFLAG_RESRDY;
+    //digitalWrite(13,LOW);
     return;
   }
 
@@ -113,6 +116,7 @@ void ADC_Handler() {
     }
     ADC->INTFLAG.reg = ADC_INTFLAG_RESRDY;
   }
+  //digitalWrite(13,LOW);
 }
 
 

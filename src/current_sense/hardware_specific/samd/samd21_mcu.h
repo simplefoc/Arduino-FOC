@@ -1,4 +1,6 @@
-#if defined(_SAMD21_) || defined(ARDUINO_QTPY_M0) 
+#include "Arduino.h"
+
+#if defined(_SAMD21_)
 
 #ifndef CURRENT_SENSE_SAMD21_H
 #define CURRENT_SENSE_SAMD21_H
@@ -8,7 +10,7 @@
 #define SIMPLEFOC_SAMD_DEBUG_SERIAL Serial
 #endif
 
-#include "Arduino.h"
+#include "../../hardware_api.h" 
 
 #endif
 
