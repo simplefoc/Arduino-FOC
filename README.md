@@ -14,7 +14,7 @@
 ![GitHub commits since tagged version](https://img.shields.io/github/commits-since/simplefoc/arduino-foc/latest/dev)
 ![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/m/simplefoc/arduino-foc/dev)
 
-[![arduino-library-badge](https://ardubadge.simplefoc.com?lib=Simple%20FOC)](https://www.ardu-badge.com/badge/Simple%20FOC.svg)
+[![arduino-library-badge](https://www.ardu-badge.com/badge/Simple%20FOC.svg)](https://www.ardu-badge.com/badge/Simple%20FOC.svg)
 [![PlatformIO Registry](https://badges.registry.platformio.org/packages/askuric/library/Simple%20FOC.svg)](https://registry.platformio.org/libraries/askuric/Simple%20FOC)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![status](https://joss.theoj.org/papers/4382445f249e064e9f0a7f6c1bb06b1d/status.svg)](https://joss.theoj.org/papers/4382445f249e064e9f0a7f6c1bb06b1d)
@@ -30,10 +30,27 @@ Therefore this is an attempt to:
    - For official driver boards see [<span class="simple">Simple<span class="foc">FOC</span>Boards</span>](https://docs.simplefoc.com/boards)
    - Many many more boards developed by the community members, see [<span class="simple">Simple<span class="foc">FOC</span>Community</span>](https://community.simplefoc.com/)
 
-> NEXT RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.5
-> - Motor characterization code thanks to @mcells
-> - Bugfix for ESP32 C6 thanks to @kondor1622
+> NEXT RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.5 
+>
+> - ESP32 bugfix 
+>   - after the low-level API changes in the Arduino-ESP32 core [PR447](https://github.com/simplefoc/Arduino-FOC/pull/447)
+>   - Pin is not configured [PR458](https://github.com/simplefoc/Arduino-FOC/pull/458)
+>   - C6 MCPWM bugfix [PR440](https://github.com/simplefoc/Arduino-FOC/pull/440)
+> - New fuctionality
+>   - HybridStepperMotor added to the main library [PR457](https://github.com/simplefoc/Arduino-FOC/pull/457) - [see in docs](https://docs.simplefoc.com/steppermotor)
+>   - Motor characterisation (phase resistance and inductance) [PR436](https://github.com/simplefoc/Arduino-FOC/pull/436) - [see in docs](https://docs.simplefoc.com/bldcmotor#how-can-i-measure-the-phase-resistance-and-inductance)
+> - SAMD21 support for low-side current sensing [PR479](https://github.com/simplefoc/Arduino-FOC/pull/479)
+> - RP2350 support [PR435](https://github.com/simplefoc/Arduino-FOC/pull/435) [PR468](https://github.com/simplefoc/Arduino-FOC/pull/468)
+> - STM32
+>   - New driver code [PR442](https://github.com/simplefoc/Arduino-FOC/pull/442)
+>   - Low-side current sensing support for H7 family [PR460](https://github.com/simplefoc/Arduino-FOC/pull/460)
+> - Docs
+>   - Hybrid stepper motor example [see in docs](https://docs.simplefoc.com/stepper_control_shield)
+>   - Sensorless FOC example [see in docs](https://docs.simplefoc.com/sensorless_foc_nucleo_example)
+>   - A short guide to synchronous loop - [see in docs](https://docs.simplefoc.com/real_time_loop)
 > - See the complete list of bugfixes and new features of v2.3.5 [fixes and PRs](https://github.com/simplefoc/Arduino-FOC/milestone/12) 
+
+
 
 
 ## Arduino *SimpleFOClibrary* v2.3.5
