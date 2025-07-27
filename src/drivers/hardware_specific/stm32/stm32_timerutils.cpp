@@ -2,7 +2,7 @@
 #include "./stm32_timerutils.h"
 #include <Arduino.h>
 
-#if defined(_STM32_DEF_) || defined(TARGET_STM32H7)
+#if defined(_STM32_DEF_) || defined(TARGET_STM32H7) // if stm32duino or portenta
 
 
 void stm32_pauseTimer(TIM_HandleTypeDef* handle){
@@ -213,11 +213,17 @@ int stm32_getInternalSourceTrigger(TIM_HandleTypeDef* master, TIM_HandleTypeDef*
   #endif
   return -1;
 }
-#elif defined(STM32F4xx) || defined(STM32F1xx) || defined(STM32L4xx) || defined(STM32F7xx) || defined(TARGET_STM32H7)
+#elif defined(STM32F4xx) || defined(STM32F1xx) || defined(STM32L4xx) || defined(STM32F7xx) || defined(STM32H7xx) || defined(TARGET_STM32H7)
 
 // function finds the appropriate timer source trigger for the master/slave timer combination
 // returns -1 if no trigger source is found
-// currently supports the master timers to be from TIM1 to TIM4 and TIM8
+// currently supports the master timers to be from
+// 
+//   fammilies     | timers
+//   --------------| --------------------------------
+//   f1,f4,f7      | TIM1 to TIM4 and TIM8
+//   l4            | TIM1 to TIM4, TIM8 and TIM15
+//   h7            | TIM1 to TIM5, TIM8, TIM15, TIM23 and TIM24
 int stm32_getInternalSourceTrigger(TIM_HandleTypeDef* master, TIM_HandleTypeDef* slave) {
   // put master and slave in temp variables to avoid arrows
   TIM_TypeDef *TIM_master = master->Instance;
@@ -236,6 +242,14 @@ int stm32_getInternalSourceTrigger(TIM_HandleTypeDef* master, TIM_HandleTypeDef*
       #if defined(TIM8)
       else if(TIM_slave == TIM8) return LL_TIM_TS_ITR0;
       #endif
+      #if defined(STM32H7xx) || defined(TARGET_STM32H7)
+        #if defined(TIM23)
+        else if(TIM_slave == TIM23) return LL_TIM_TS_ITR0;
+        #endif
+        #if defined(TIM24)
+        else if(TIM_slave == TIM24) return LL_TIM_TS_ITR0;
+        #endif
+      #endif
     }
   #endif
   #if defined(TIM2) &&  defined(LL_TIM_TS_ITR1)
@@ -252,8 +266,17 @@ int stm32_getInternalSourceTrigger(TIM_HandleTypeDef* master, TIM_HandleTypeDef*
       #if defined(TIM8)
       else if(TIM_slave == TIM8) return LL_TIM_TS_ITR1;
       #endif
-      #if defined(TIM5) && !defined(TARGET_STM32H7)
-      else if(TIM_slave == TIM5) return LL_TIM_TS_ITR0;
+      #if defined(STM32H7xx) || defined(TARGET_STM32H7)
+        #if defined(TIM23)
+        else if(TIM_slave == TIM23) return LL_TIM_TS_ITR1;
+        #endif
+        #if defined(TIM24)
+        else if(TIM_slave == TIM24) return LL_TIM_TS_ITR1;
+        #endif
+      #else
+        #if defined(TIM5) 
+        else if(TIM_slave == TIM5) return LL_TIM_TS_ITR0;
+        #endif
       #endif
     }
   #endif
@@ -268,11 +291,20 @@ int stm32_getInternalSourceTrigger(TIM_HandleTypeDef* master, TIM_HandleTypeDef*
       #if defined(TIM4)
       else if(TIM_slave == TIM4) return LL_TIM_TS_ITR2;
       #endif
-      #if defined(TIM5) && !defined(TARGET_STM32H7)
-      else if(TIM_slave == TIM5) return LL_TIM_TS_ITR1;
-      #endif
-      #if defined(TIM5) && defined(TARGET_STM32H7)
-      else if(TIM_slave == TIM5) return LL_TIM_TS_ITR2;
+      #if defined(STM32H7xx) || defined(TARGET_STM32H7)
+        #if defined(TIM5)
+        else if(TIM_slave == TIM5) return LL_TIM_TS_ITR2;
+        #endif
+        #if defined(TIM23)
+        else if(TIM_slave == TIM23) return LL_TIM_TS_ITR2;
+        #endif
+        #if defined(TIM24)
+        else if(TIM_slave == TIM24) return LL_TIM_TS_ITR2;
+        #endif
+      #else
+        #if defined(TIM5)
+        else if(TIM_slave == TIM5) return LL_TIM_TS_ITR1;
+        #endif
       #endif
     }
   #endif  
@@ -290,17 +322,27 @@ int stm32_getInternalSourceTrigger(TIM_HandleTypeDef* master, TIM_HandleTypeDef*
       #if defined(TIM8)
       else if(TIM_slave == TIM8) return LL_TIM_TS_ITR2;
       #endif
-      #if defined(TIM5) && !defined(TARGET_STM32H7)
-      else if(TIM_slave == TIM5) return LL_TIM_TS_ITR1;
-      #endif
-      #if defined(TIM5) && defined(TARGET_STM32H7)
-      else if(TIM_slave == TIM5) return LL_TIM_TS_ITR3;
+
+      #if defined(STM32H7xx) || defined(TARGET_STM32H7)
+        #if defined(TIM5)
+        else if(TIM_slave == TIM5) return LL_TIM_TS_ITR3;
+        #endif
+        #if defined(TIM23)
+        else if(TIM_slave == TIM23) return LL_TIM_TS_ITR3;
+        #endif
+        #if defined(TIM24)
+        else if(TIM_slave == TIM24) return LL_TIM_TS_ITR3;
+        #endif
+      #else
+        #if defined(TIM5)
+        else if(TIM_slave == TIM5) return LL_TIM_TS_ITR2;
+        #endif
       #endif
     }
   #endif 
   #if defined(TIM5) 
     else if (TIM_master == TIM5){
-      #if !defined(STM32L4xx) // only difference between F4,F1 and L4
+      #if defined(STM32F4xx) || defined(STM32F1xx) || defined(STM32F7xx) // f1, f4 adn f7 have tim5 sycned with tim1 and tim3 while others (l4, h7) have tim15
       #if defined(TIM1)
       if(TIM_slave == TIM1) return LL_TIM_TS_ITR0;
       #endif
@@ -310,6 +352,15 @@ int stm32_getInternalSourceTrigger(TIM_HandleTypeDef* master, TIM_HandleTypeDef*
       #endif
       #if defined(TIM8)
       if(TIM_slave == TIM8) return LL_TIM_TS_ITR3;
+      #endif
+
+      #if defined(STM32H7xx) || defined(TARGET_STM32H7)
+        #if defined(TIM23)
+        else if(TIM_slave == TIM23) return LL_TIM_TS_ITR4;
+        #endif
+        #if defined(TIM24)
+        else if(TIM_slave == TIM24) return LL_TIM_TS_ITR4;
+        #endif
       #endif
     }
   #endif
@@ -321,18 +372,81 @@ int stm32_getInternalSourceTrigger(TIM_HandleTypeDef* master, TIM_HandleTypeDef*
       #if defined(TIM4)
       else if(TIM_slave == TIM4) return LL_TIM_TS_ITR3;
       #endif
-      #if defined(TIM5)
-      else if(TIM_slave == TIM5) return LL_TIM_TS_ITR3;
+
+      #if defined(STM32H7xx) || defined(TARGET_STM32H7)
+        #if defined(TIM5)
+        else if(TIM_slave == TIM5) return LL_TIM_TS_ITR1;
+        #endif
+        #if defined(TIM23)
+        else if(TIM_slave == TIM23) return LL_TIM_TS_ITR5;
+        #endif
+        #if defined(TIM24)
+        else if(TIM_slave == TIM24) return LL_TIM_TS_ITR5;
+        #endif
+      #else
+        #if defined(TIM5)
+        else if(TIM_slave == TIM5) return LL_TIM_TS_ITR3;
+        #endif
       #endif
     }
   #endif
-  #if defined(TIM15) && defined(TARGET_STM32H7)
+  #if defined(TIM15) && (defined(STM32L4xx) || defined(STM32H7xx) || defined(TARGET_STM32H7) )
     else if (TIM_master == TIM15){
       #if defined(TIM1)
       if(TIM_slave == TIM1) return LL_TIM_TS_ITR0;
       #endif
       #if defined(TIM3)
       if(TIM_slave == TIM3) return LL_TIM_TS_ITR2;
+      #endif
+    }
+  #endif
+  #if defined(TIM23) && (defined(STM32H7xx) || defined(TARGET_STM32H7))
+    else if (TIM_master == TIM23){
+      #if defined(TIM1)
+      if(TIM_slave == TIM1) return LL_TIM_TS_ITR12;
+      #endif
+      #if defined(TIM2)
+      if(TIM_slave == TIM2) return LL_TIM_TS_ITR12;
+      #endif
+      #if defined(TIM3)
+      if(TIM_slave == TIM3) return LL_TIM_TS_ITR12;
+      #endif
+      #if defined(TIM4)
+      if(TIM_slave == TIM4) return LL_TIM_TS_ITR12;
+      #endif
+      #if defined(TIM5)
+      if(TIM_slave == TIM5) return LL_TIM_TS_ITR12;
+      #endif
+      #if defined(TIM8)
+      if(TIM_slave == TIM8) return LL_TIM_TS_ITR12;
+      #endif
+      #if defined(TIM24)
+      if(TIM_slave == TIM24) return LL_TIM_TS_ITR12;
+      #endif
+    }
+  #endif
+  #if defined(TIM24) && (defined(STM32H7xx) || defined(TARGET_STM32H7))
+    else if (TIM_master == TIM24){
+      #if defined(TIM1)
+      if(TIM_slave == TIM1) return LL_TIM_TS_ITR13;
+      #endif
+      #if defined(TIM2)
+      if(TIM_slave == TIM2) return LL_TIM_TS_ITR13;
+      #endif
+      #if defined(TIM3)
+      if(TIM_slave == TIM3) return LL_TIM_TS_ITR13;
+      #endif
+      #if defined(TIM4)
+      if(TIM_slave == TIM4) return LL_TIM_TS_ITR13;
+      #endif
+      #if defined(TIM5)
+      if(TIM_slave == TIM5) return LL_TIM_TS_ITR13;
+      #endif
+      #if defined(TIM8)
+      if(TIM_slave == TIM8) return LL_TIM_TS_ITR13;
+      #endif
+      #if defined(TIM23)
+      if(TIM_slave == TIM23) return LL_TIM_TS_ITR13;
       #endif
     }
   #endif
