@@ -77,8 +77,8 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   // automating TRGO flag finding - hardware specific
   uint8_t tim_num = 0;
   for (size_t i=0; i<6; i++) {
-    HardwareTimer *timer_to_check = driver_params->timers[tim_num++];
-    TIM_TypeDef *instance_to_check = timer_to_check->getHandle()->Instance;
+    TIM_HandleTypeDef *timer_to_check = driver_params->timers_handle[tim_num++];
+    TIM_TypeDef *instance_to_check = timer_to_check->Instance;
 
     // bool TRGO_already_configured = instance_to_check->CR2 & LL_TIM_TRGO_UPDATE;
     // if(TRGO_already_configured) continue;
@@ -110,7 +110,7 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   // display which timer is being used
   #ifdef SIMPLEFOC_STM32_DEBUG
     // it would be better to use the getTimerNumber from driver
-    SIMPLEFOC_DEBUG("STM32-CS: injected trigger for timer index: ", get_timer_index(cs_params->timer_handle->getHandle()->Instance) + 1);
+    SIMPLEFOC_DEBUG("STM32-CS: injected trigger for timer index: ", get_timer_index(cs_params->timer_handle->Instance) + 1);
   #endif
 
 

@@ -76,8 +76,8 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
 
   // automating TRGO flag finding - hardware specific
   uint8_t tim_num = 0;
-  while(driver_params->timers[tim_num] != NP && tim_num < 6){
-    uint32_t trigger_flag = _timerToInjectedTRGO(driver_params->timers[tim_num++]);
+  while(driver_params->timers_handle[tim_num] != NP && tim_num < 6){
+    uint32_t trigger_flag = _timerToInjectedTRGO(driver_params->timers_handle[tim_num++]);
     if(trigger_flag == _TRGO_NOT_AVAILABLE) continue; // timer does not have valid trgo for injected channels
 
     // if the code comes here, it has found the timer available
@@ -85,7 +85,7 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
     sConfigInjected.ExternalTrigInjecConv = trigger_flag;
     
     // this will be the timer with which the ADC will sync
-    cs_params->timer_handle = driver_params->timers[tim_num-1];
+    cs_params->timer_handle = driver_params->timers_handle[tim_num-1];
     // done
     break;
   }
@@ -99,7 +99,7 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
   // display which timer is being used
   #ifdef SIMPLEFOC_STM32_DEBUG
     // it would be better to use the getTimerNumber from driver
-    SIMPLEFOC_DEBUG("STM32-CS: injected trigger for timer index: ", get_timer_index(cs_params->timer_handle->getHandle()->Instance) + 1);
+    SIMPLEFOC_DEBUG("STM32-CS: injected trigger for timer index: ", get_timer_index(cs_params->timer_handle->Instance) + 1);
   #endif
 
 
