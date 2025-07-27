@@ -235,7 +235,6 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
 
   int pins[3] = {pinA, pinB, pinC};
   for(int i = 0; i < 3; i++){
-    group_channels_used[group]++;
     if(!_ledcAttachChannelAdvanced(pins[i], group_channels_used[group], group, pwm_frequency, _PWM_RES_BIT, false)){
       SIMPLEFOC_DEBUG("EP32-DRV: ERROR - Failed to configure pin:",  pins[i]);
       return SIMPLEFOC_DRIVER_INIT_FAILED;
@@ -243,6 +242,7 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
     
     params->channels[i] = static_cast<ledc_channel_t>(group_channels_used[group]);
     params->groups[i] = (ledc_mode_t)group;
+    group_channels_used[group]++;
   }
   SIMPLEFOC_DEBUG("EP32-DRV: 3PWM setup successful in group: ", (group));
   return params;
