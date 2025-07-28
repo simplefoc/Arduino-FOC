@@ -149,6 +149,15 @@ class FOCMotor
      */
     float electricalAngle();
 
+    /**
+     * Measure resistance and inductance of a motor and print results to debug.
+     * If a sensor is available, an estimate of zero electric angle will be reported too.
+     * @param voltage The voltage applied to the motor
+     * @param correction_factor  Is 1.5 for 3 phase motors, because we measure over a series-parallel connection. TODO: what about 2 phase motors?
+     * @returns 0 for success, >0 for failure
+     */
+    int characteriseMotor(float voltage, float correction_factor);
+
     // state variables
     float target; //!< current target value - depends of the controller
     float feed_forward_velocity = 0.0f; //!< current feed forward velocity

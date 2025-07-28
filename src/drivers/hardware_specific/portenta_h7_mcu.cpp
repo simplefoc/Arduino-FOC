@@ -1,7 +1,7 @@
 
 #include "../hardware_api.h"
 
-#if defined(TARGET_PORTENTA_H7)
+#if defined(TARGET_PORTENTA_H7) && false
 
 
 #pragma message("")

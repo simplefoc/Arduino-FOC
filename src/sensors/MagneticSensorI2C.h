@@ -8,13 +8,17 @@
 #include "../common/time_utils.h"
 
 struct MagneticSensorI2CConfig_s  {
-  int chip_address;
-  int bit_resolution;
-  int angle_register;
-  int data_start_bit; 
+  uint8_t chip_address;
+  uint8_t bit_resolution;
+  uint8_t angle_register;
+  uint8_t msb_mask;
+  uint8_t msb_shift;
+  uint8_t lsb_mask;
+  uint8_t lsb_shift;
 };
+
 // some predefined structures
-extern MagneticSensorI2CConfig_s AS5600_I2C,AS5048_I2C;
+extern MagneticSensorI2CConfig_s AS5600_I2C, AS5048_I2C, MT6701_I2C;
 
 #if defined(TARGET_RP2040)
 #define SDA I2C_SDA
@@ -31,7 +35,7 @@ class MagneticSensorI2C: public Sensor{
      * @param angle_register_msb  angle read register msb
      * @param _bits_used_msb number of used bits in msb
      */
-    MagneticSensorI2C(uint8_t _chip_address, int _bit_resolution, uint8_t _angle_register_msb, int _msb_bits_used);
+    MagneticSensorI2C(uint8_t _chip_address, int _bit_resolution, uint8_t _angle_register_msb, int _msb_bits_used, bool lsb_right_aligned = true);
 
     /**
      * MagneticSensorI2C class constructor
@@ -56,13 +60,7 @@ class MagneticSensorI2C: public Sensor{
 
   private:
     float cpr; //!< Maximum range of the magnetic sensor
-    uint16_t lsb_used; //!< Number of bits used in LSB register
-    uint8_t lsb_mask;
-    uint8_t msb_mask;
-    
-    // I2C variables
-    uint8_t angle_register_msb; //!< I2C angle register to read
-    uint8_t chip_address; //!< I2C chip select pins
+    MagneticSensorI2CConfig_s _conf;
 
     // I2C functions
     /** Read one I2C register value */
@@ -76,8 +74,6 @@ class MagneticSensorI2C: public Sensor{
     
     /* the two wire instance for this sensor */
     TwoWire* wire;
-
-
 };
 
 

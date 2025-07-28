@@ -1,0 +1,51 @@
+name: MDED
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: arduino/arduino-lint-action@v1
+        with:
+          library-manager: update
+          project-type: library
+  build:
+    name: Test compiling 
+    runs-on: ubuntu-latest
+   
+    strategy:
+      matrix:
+        arduino-boards-fqbn:
+          #- arduino:mbed:giga                        # arudino giga
+          - arduino:mbed:nanorp2040connect           # arduino nano rp2040 connect
+          - arduino:mbed:nano33ble                   # arduino nano 33 ble
+          - arduino:mbed:envie_m7                    # arduino portenta
+          
+        include:
+          - arduino-boards-fqbn: arduino:mbed:nanorp2040connect 
+            sketch-names: open_loop_position_example.ino
+
+          - arduino-boards-fqbn: arduino:mbed:nano33ble 
+            sketch-names: open_loop_position_example.ino
+            
+          - arduino-boards-fqbn: arduino:mbed:envie_m7 
+            sketch-names: open_loop_position_example.ino
+            
+          # - arduino-boards-fqbn: arduino:mbed:giga 
+          #   sketch-names: single_full_control_example.ino
+            
+
+      # Do not cancel all jobs / architectures if one job fails
+      fail-fast: false
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+    - name: Compile all examples
+      uses: ArminJo/arduino-test-compile@master
+      with:
+          arduino-board-fqbn: ${{ matrix.arduino-boards-fqbn }}
+          required-libraries: ${{ matrix.required-libraries }}
+          platform-url: ${{ matrix.platform-url }}
+          sketch-names: ${{ matrix.sketch-names }}
+          sketches-exclude: ${{ matrix.sketches-exclude }}
+          build-properties: ${{ toJson(matrix.build-properties) }}

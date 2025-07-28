@@ -6,11 +6,11 @@
 #include "./rp2040_mcu.h"
 
 
-#if defined(TARGET_RP2040)
+#if defined(TARGET_RP2040) || defined(TARGET_RP2350)
 
 
 #pragma message("")
-#pragma message("SimpleFOC: compiling for RP2040")
+#pragma message("SimpleFOC: compiling for RP2040/RP2350")
 #pragma message("")
 
 #if !defined(SIMPLEFOC_DEBUG_RP2040)
@@ -93,7 +93,7 @@ void syncSlices() {
 		pwm_set_counter(i, 0);
 	}
 	// enable all slices
-	pwm_set_mask_enabled(0xFF);
+	pwm_set_mask_enabled(0xFFF);
 }
 
 
