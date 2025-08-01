@@ -179,48 +179,77 @@ uint32_t _getADCChannelFromPinMap(PinName pin)
       channel = ADC_CHANNEL_0;
       break;
 #endif
+#ifdef ADC_CHANNEL_1
     case 1:
       channel = ADC_CHANNEL_1;
       break;
+#endif
+#ifdef ADC_CHANNEL_2
     case 2:
       channel = ADC_CHANNEL_2;
       break;
+#endif
+#ifdef ADC_CHANNEL_3
     case 3:
       channel = ADC_CHANNEL_3;
       break;
+#endif
+#ifdef ADC_CHANNEL_4
     case 4:
       channel = ADC_CHANNEL_4;
       break;
+#endif
+#ifdef ADC_CHANNEL_5
     case 5:
       channel = ADC_CHANNEL_5;
       break;
+#endif
+#ifdef ADC_CHANNEL_6
     case 6:
       channel = ADC_CHANNEL_6;
       break;
+#endif
+#ifdef ADC_CHANNEL_7
     case 7:
       channel = ADC_CHANNEL_7;
       break;
+#endif
+#ifdef ADC_CHANNEL_8
     case 8:
       channel = ADC_CHANNEL_8;
       break;
+#endif
+#ifdef ADC_CHANNEL_9
     case 9:
       channel = ADC_CHANNEL_9;
       break;
+#endif
+#ifdef ADC_CHANNEL_10
     case 10:
       channel = ADC_CHANNEL_10;
       break;
+#endif
+#ifdef ADC_CHANNEL_11
     case 11:
       channel = ADC_CHANNEL_11;
       break;
+#endif
+#ifdef ADC_CHANNEL_12
     case 12:
       channel = ADC_CHANNEL_12;
       break;
+#endif
+#ifdef ADC_CHANNEL_13
     case 13:
       channel = ADC_CHANNEL_13;
       break;
+#endif
+#ifdef ADC_CHANNEL_14
     case 14:
       channel = ADC_CHANNEL_14;
       break;
+#endif
+#ifdef ADC_CHANNEL_15
     case 15:
       channel = ADC_CHANNEL_15;
       break;
@@ -246,12 +275,18 @@ uint32_t _getADCChannelFromPinMap(PinName pin)
     case 20:
       channel = ADC_CHANNEL_20;
       break;
+#endif
+#ifdef ADC_CHANNEL_21
     case 21:
       channel = ADC_CHANNEL_21;
       break;
+#endif
+#ifdef ADC_CHANNEL_22
     case 22:
       channel = ADC_CHANNEL_22;
       break;
+#endif
+#ifdef ADC_CHANNEL_23
     case 23:
       channel = ADC_CHANNEL_23;
       break;
@@ -259,9 +294,13 @@ uint32_t _getADCChannelFromPinMap(PinName pin)
     case 24:
       channel = ADC_CHANNEL_24;
       break;
+#endif
+#ifdef ADC_CHANNEL_25
     case 25:
       channel = ADC_CHANNEL_25;
       break;
+#endif
+#ifdef ADC_CHANNEL_26
     case 26:
       channel = ADC_CHANNEL_26;
       break;
@@ -269,18 +308,27 @@ uint32_t _getADCChannelFromPinMap(PinName pin)
     case 27:
       channel = ADC_CHANNEL_27;
       break;
+#endif
+#ifdef ADC_CHANNEL_28
     case 28:
       channel = ADC_CHANNEL_28;
       break;
+#endif
+#ifdef ADC_CHANNEL_29
     case 29:
       channel = ADC_CHANNEL_29;
       break;
+#endif
+#ifdef ADC_CHANNEL_30
     case 30:
       channel = ADC_CHANNEL_30;
       break;
+#endif
+#ifdef ADC_CHANNEL_31
     case 31:
       channel = ADC_CHANNEL_31;
       break;
+#endif
 #endif
 #endif
 #endif
@@ -322,18 +370,26 @@ uint32_t _getADCChannel(PinName pin, ADC_TypeDef *AdcHandle )
 
 uint32_t _getADCInjectedRank(uint8_t ind){
   switch (ind) {
+  #ifdef ADC_INJECTED_RANK_1
     case 0:
       return ADC_INJECTED_RANK_1;
       break;
+#endif
+#ifdef ADC_INJECTED_RANK_2
     case 1:
       return ADC_INJECTED_RANK_2;
       break;
+#endif
+#ifdef ADC_INJECTED_RANK_3
     case 2:
       return ADC_INJECTED_RANK_3;
       break;
+#endif
+#ifdef ADC_INJECTED_RANK_4
     case 3:
       return ADC_INJECTED_RANK_4;
       break;
+#endif
     default:
       return 0;
       break;
@@ -390,41 +446,50 @@ uint32_t _initTimerInterruptDownsampling(Stm32CurrentSenseParams* cs_params, STM
 
 // returns 0 if no downsampling is needed, 1 if downsampling is needed, 2 if error
 uint8_t _handleInjectedConvCpltCallback(ADC_HandleTypeDef *AdcHandle, Stm32AdcInterruptConfig& adc_interrupt_config, uint32_t adc_val[4]) {
+  #ifndef HAL_ADCEx_InjectedGetValue
+    return 0; // error: function not available
+  #else
 
-  // if the timer han't repetition counter - downsample two times
-  if( adc_interrupt_config.needs_downsample && adc_interrupt_config.tim_downsample++ > 0) {
-    adc_interrupt_config.tim_downsample = 0;
-    return 1;
-  }
-  
-  adc_val[0]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_1);
-  adc_val[1]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_2);
-  adc_val[2]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_3);  
-  adc_val[3]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_4);  
-  
-  return 0; // no downsampling needed
+    // if the timer han't repetition counter - downsample two times
+    if( adc_interrupt_config.needs_downsample && adc_interrupt_config.tim_downsample++ > 0) {
+      adc_interrupt_config.tim_downsample = 0;
+      return 1;
+    }
+    
+    adc_val[0]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_1);
+    adc_val[1]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_2);
+    adc_val[2]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_3);  
+    adc_val[3]=HAL_ADCEx_InjectedGetValue(AdcHandle, ADC_INJECTED_RANK_4);  
+    
+    return 0; // no downsampling needed
+  #endif
 }
 
 // reads the ADC injected voltage for the given pin
 // returns the voltage 
 // if the pin is not found in the current sense parameters, returns 0
 float _readADCInjectedChannelVoltage(int pin, void* cs_params, Stm32AdcInterruptConfig& adc_interrupt_config, uint32_t adc_val[4]) {
-  Stm32CurrentSenseParams* cs_p = (Stm32CurrentSenseParams*)cs_params;
-  uint8_t channel_no = 0;
-  uint8_t adc_index = (uint8_t)_adcToIndex(cs_p->adc_handle);
-  for(int i=0; i < 3; i++){
-    if( pin == cs_p->pins[i]){ // found in the buffer
-      if (adc_interrupt_config.use_adc_interrupt){
-        return adc_val[channel_no] * cs_p->adc_voltage_conv;
-      }else{
-        // an optimized way to go from i to the channel i=0 -> channel 1, i=1 -> channel 2, i=2 -> channel 3
-        uint32_t channel = _getADCInjectedRank(channel_no);
-        return HAL_ADCEx_InjectedGetValue(cs_p->adc_handle, channel) * cs_p->adc_voltage_conv;
+  #ifndef HAL_ADCEx_InjectedGetValue
+    return 0; // error: function not available
+  #else
+    
+    Stm32CurrentSenseParams* cs_p = (Stm32CurrentSenseParams*)cs_params;
+    uint8_t channel_no = 0;
+    uint8_t adc_index = (uint8_t)_adcToIndex(cs_p->adc_handle);
+    for(int i=0; i < 3; i++){
+      if( pin == cs_p->pins[i]){ // found in the buffer
+        if (adc_interrupt_config.use_adc_interrupt){
+          return adc_val[channel_no] * cs_p->adc_voltage_conv;
+        }else{
+          // an optimized way to go from i to the channel i=0 -> channel 1, i=1 -> channel 2, i=2 -> channel 3
+          uint32_t channel = _getADCInjectedRank(channel_no);
+          return HAL_ADCEx_InjectedGetValue(cs_p->adc_handle, channel) * cs_p->adc_voltage_conv;
+        }
       }
-    }
-    if(_isset(cs_p->pins[i])) channel_no++;
-  } 
-  return 0; // pin not found
+      if(_isset(cs_p->pins[i])) channel_no++;
+    } 
+    return 0; // pin not found
+  #endif
 }
 
 #endif
