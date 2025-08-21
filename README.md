@@ -30,30 +30,22 @@ Therefore this is an attempt to:
    - For official driver boards see [<span class="simple">Simple<span class="foc">FOC</span>Boards</span>](https://docs.simplefoc.com/boards)
    - Many many more boards developed by the community members, see [<span class="simple">Simple<span class="foc">FOC</span>Community</span>](https://community.simplefoc.com/)
 
-> NEXT RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.5 
+> NEXT RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.6 
 >
+> - STM32 bugfix 
+>   - BG341 low-side current sense sync was lost in v2.3.5 - fixed [#482](https://github.com/simplefoc/Arduino-FOC/pull/482)
 > - ESP32 bugfix 
->   - after the low-level API changes in the Arduino-ESP32 core [PR447](https://github.com/simplefoc/Arduino-FOC/pull/447)
->   - Pin is not configured [PR458](https://github.com/simplefoc/Arduino-FOC/pull/458)
->   - C6 MCPWM bugfix [PR440](https://github.com/simplefoc/Arduino-FOC/pull/440)
+>   - Now compiles for all v3.x arduino-esp32 versions (v2.3.5 was compatible with v3.2.x) 
+>   - `adcRead` small refactor - no more magic numbers
 > - New fuctionality
->   - HybridStepperMotor added to the main library [PR457](https://github.com/simplefoc/Arduino-FOC/pull/457) - [see in docs](https://docs.simplefoc.com/steppermotor)
->   - Motor characterisation (phase resistance and inductance) [PR436](https://github.com/simplefoc/Arduino-FOC/pull/436) - [see in docs](https://docs.simplefoc.com/bldcmotor#how-can-i-measure-the-phase-resistance-and-inductance)
-> - SAMD21 support for low-side current sensing [PR479](https://github.com/simplefoc/Arduino-FOC/pull/479)
-> - RP2350 support [PR435](https://github.com/simplefoc/Arduino-FOC/pull/435) [PR468](https://github.com/simplefoc/Arduino-FOC/pull/468)
-> - STM32
->   - New driver code [PR442](https://github.com/simplefoc/Arduino-FOC/pull/442)
->   - Low-side current sensing support for H7 family [PR460](https://github.com/simplefoc/Arduino-FOC/pull/460)
-> - Docs
->   - Hybrid stepper motor example [see in docs](https://docs.simplefoc.com/stepper_control_shield)
->   - Sensorless FOC example [see in docs](https://docs.simplefoc.com/sensorless_foc_nucleo_example)
->   - A short guide to synchronous loop - [see in docs](https://docs.simplefoc.com/real_time_loop)
-> - See the complete list of bugfixes and new features of v2.3.5 [fixes and PRs](https://github.com/simplefoc/Arduino-FOC/milestone/12) 
+>    - Add current and voltage feed forward terms to motor classes by @Copper280z in https://github.com/simplefoc/Arduino-FOC/pull/454
+>    - Velocity Calculation rework by @Copper280z in https://github.com/simplefoc/Arduino-FOC/pull/45
+> - Examples
+>   - `align_current_sense.ino` example added to the `examples/utls/current_sense_test` allowing to verify the alignment between the driver and the current sense phases
 
 
 
-
-## Arduino *SimpleFOClibrary* v2.3.5
+## Arduino *SimpleFOClibrary* v2.3.6
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">
