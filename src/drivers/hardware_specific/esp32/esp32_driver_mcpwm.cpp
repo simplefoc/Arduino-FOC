@@ -96,9 +96,19 @@
 * and here: // https://docs.espressif.com/projects/esp-idf/en/v5.1.4/esp32/migration-guides/release-5.x/5.0/peripherals.html
 */
 
-#include "../../hardware_api.h"
+#include "../../hardware_api.h" 
 
 #if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC)
+
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 4, 0)
+#define ESP_IDF_VERSION_UNDER_5_4_0
+#pragma message("")
+#pragma message("SimpleFOC: ESP IDF version under 5.4.0, consider upgrading!")
+#pragma message("")
+#else ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
+#define ESP_IDF_VERSION_ABOVE_5_4_0
+#endif
+
 
 #include "esp32_driver_mcpwm.h"
 
@@ -282,7 +292,9 @@ void* _configure6PWMPinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no,
   pwm_config.count_mode = MCPWM_TIMER_COUNT_MODE_UP_DOWN;    
   pwm_config.intr_priority = 0;              
   pwm_config.period_ticks = _calcPWMPeriod(pwm_frequency);
+#ifdef ESP_IDF_VERSION_ABOVE_5_4_0
   pwm_config.flags.allow_pd = 0;
+#endif
 
   CHECK_ERR(mcpwm_new_timer(&pwm_config, &timers[mcpwm_group][timer_no]), "Could not initialize the timer in group: " + String(mcpwm_group));
   pwm_periods[mcpwm_group][timer_no] = pwm_config.period_ticks / 2;
@@ -411,7 +423,9 @@ void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int
     pwm_config.count_mode = MCPWM_TIMER_COUNT_MODE_UP_DOWN;    
     pwm_config.intr_priority = 0;              
     pwm_config.period_ticks = _calcPWMPeriod(pwm_frequency);
+#ifdef ESP_IDF_VERSION_ABOVE_5_4_0
     pwm_config.flags.allow_pd = 0;
+#endif
     // initialise the timer
     CHECK_ERR(mcpwm_new_timer(&pwm_config, &timers[mcpwm_group][timer_no]), "Could not initialize the timer in group: " + String(mcpwm_group));
     // save variables for later
