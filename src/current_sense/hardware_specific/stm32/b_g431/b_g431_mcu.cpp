@@ -7,6 +7,7 @@
 #include "../stm32_mcu.h"
 #include "../../../../drivers/hardware_specific/stm32/stm32_mcu.h"
 #include "communication/SimpleFOCDebug.h"
+#include "../stm32_adc_utils.h"
 
 #define _ADC_VOLTAGE 3.3f
 #define _ADC_RESOLUTION 4096.0f
@@ -24,6 +25,16 @@ static DMA_HandleTypeDef hdma_adc2;
 
 volatile uint16_t adcBuffer1[ADC_BUF_LEN_1] = {0}; // Buffer for store the results of the ADC conversion
 volatile uint16_t adcBuffer2[ADC_BUF_LEN_2] = {0}; // Buffer for store the results of the ADC conversion
+
+
+// structure containing the configuration of the adc interrupt
+Stm32AdcInterruptConfig adc_interrupt_config[5] = {
+  {0, 0, 0}, // ADC1
+  {0, 0, 0}, // ADC2
+  {0, 0, 0}, // ADC3
+  {0, 0, 0}, // ADC4
+  {0, 0, 0}  // ADC5
+};
 
 // function reading an ADC value and returning the read voltage
 // As DMA is being used just return the DMA result
@@ -155,14 +166,16 @@ void* _driverSyncLowSide(void* _driver_params, void* _cs_params){
   // stop all the timers for the driver
   stm32_pause(driver_params);
 
-  // if timer has repetition counter - it will downsample using it
-  // and it does not need the software downsample
-  if( IS_TIM_REPETITION_COUNTER_INSTANCE(cs_params->timer_handle->Instance) ){
-    // adjust the initial timer state such that the trigger for DMA transfer aligns with the pwm peaks instead of throughs.
-    // only necessary for the timers that have repetition counters
-    cs_params->timer_handle->Instance->CR1 |= TIM_CR1_DIR;
-    cs_params->timer_handle->Instance->CNT =  cs_params->timer_handle->Instance->ARR;
+  // get the index of the adc
+  int adc_index = _adcToIndex(cs_params->adc_handle);
+
+  bool tim_interrupt = _initTimerInterruptDownsampling(cs_params, driver_params, adc_interrupt_config[adc_index]);
+  if(tim_interrupt) {
+  // error in the timer interrupt initialization
+    SIMPLEFOC_DEBUG("STM32-CS: timer has no repetition counter, ADC interrupt not supported for B-G431");
+    return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
   }
+
   // set the trigger output event
   LL_TIM_SetTriggerOutput(cs_params->timer_handle->Instance, LL_TIM_TRGO_UPDATE);
 
