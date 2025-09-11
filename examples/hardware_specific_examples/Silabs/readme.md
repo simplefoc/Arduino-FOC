@@ -22,9 +22,13 @@ Required hardware:
 * **BLDC Motor: DF45M024053 – A2**
 * USB cable for programming and serial monitor
 
-👉 Connect the Arduino Nano Matter board to the DRV8305EVM according to the board pin mapping (phase outputs, PWM inputs, and Hall sensor connections).
+A dedicated interface board set-up connecting the Motor - Power Stage - Nano Matter. Jump wires can be used as well to connect the boards.
 
-Of course. Here is a clear wiring table for your README markdown file, based on the connections shown in the user guide.
+![hw_setup](hw_setup.png)
+
+Connect the Arduino Nano Matter board to the DRV8305EVM according to the board pin mapping (phase outputs, PWM inputs, and Hall sensor connections).
+
+![MC Wiring](nanoMatterMC_Wiring.png)
 
 ### Wiring Table: Arduino Nano Matter to BOOSTXL-DRV8305 & BLDC Motor
 
@@ -46,8 +50,8 @@ This table describes the connections between the Arduino Nano Matter, the TI BOO
 | `D1` (MISO1)  | `SDO` | N/A | DRV8035 SPI connection, configuration and status reading (Optional, not mandatory to run examples)|
 | `D2` (SCK1)   | `SCLK`| N/A | DRV8035 SPI clock, configuration and status reading (Optional, not mandatory to run examples)|
 | `D3` (SS1)    | `SCS` | N/A | DRV8035 SPI chip select, configuration and status reading (Optional, not mandatory to run examples)|
-| `D4`  | N/A | HALL A or Encoder A | Motor sensor connection (HALL configuration in examples) |
-| `D5`  | N/A | HALL B or Encoder B | Motor sensor connection (HALL configuration in examples) |
+| `D4`  | N/A | HALL A or Encoder A | Motor sensor connection (Hall configuration in examples) |
+| `D5`  | N/A | HALL B or Encoder B | Motor sensor connection (Hall configuration in examples) |
 | `D6`  | `PWMHA` | N/A | PWM Phase A High-Side Gate Signal |
 | `D7`  | `PWMLA` | N/A | PWM Phase A Low-Side Gate Signal |
 | `D8`  | `PWMHB` | N/A | PWM Phase B High-Side Gate Signal |
@@ -55,21 +59,15 @@ This table describes the connections between the Arduino Nano Matter, the TI BOO
 | `D10` | `PWMHC` | N/A | PWM Phase C High-Side Gate Signal |
 | `D11` | `PWMLC` | N/A | PWM Phase C Low-Side Gate Signal |
 | `D12` | `ENGATE` | N/A | Enable DRV8305 gate driver |
-| `D13` | N/A | HALL C or Encoder Index | Motor sensor connection (HALL configuration in examples) |
+| `D13` | N/A | HALL C or Encoder Index | Motor sensor connection (Hall configuration in examples) |
 | N/A | `PHASE U` | `PHASE U` | Motor phase connection |
 | N/A | `PHASE V` | `PHASE V` | Motor phase connection |
 | N/A | `PHASE W` | `PHASE W` | Motor phase connection |
 
 **Important Notes:**
-*   **Power:** Ensure the DRV8305's `PVDD` and `GVDD` jumpers are correctly set for your motor's voltage. The power supply should rated twice as motor nominal power. The Booster pack can supply the nanomatter if nano Matter is not connected to USB.
+*   **Power:** Ensure the DRV8305's `PVDD` and `GVDD` jumpers are correctly set for your motor's voltage. The power supply should be rated at least twice the motor’s nominal power. The BoosterPack can supply the Nano Matter if it is not connected to USB.
 * **Rotor sensor:** Some Encoder or Hall sensors might require 5V supply, make sure of proper level shifting if required. 
-*   **SPI:** The SPI connection (`nSCS`, `SPI_CLK`, `SPI_MOSI`, `SPI_MISO`) is used to configure the DRV8305 driver IC (e.g., set gain, fault parameters). It is optional for the examples. The examples are using the defualt gate driver configuration. Only needed in case Dead time or other settings needed to be changed.
-
-![MC Wiring](nanoMatterMC_Wiring.png)
-
-Below a dedicated interface board set-up connecting the Motor - Power Stage - Nano Matter.
-
-![hw_setup](hw_setup.png)
+*   **SPI:** The SPI connection (`nSCS`, `SPI_CLK`, `SPI_MOSI`, `SPI_MISO`) is used to configure the DRV8305 driver IC (e.g., set gain, fault parameters). It is optional for the examples. The examples are using the default gate driver configuration. Only needed if you wish to change the default gate driver configuration (e.g., dead time, fault parameters).
 
 ---
 
