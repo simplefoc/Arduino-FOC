@@ -29,7 +29,7 @@ HallSensor *sensor;
 // Current sensor
 LowsideCurrentSense *current_sense;
 
-// Interrupt routine intialisation
+// Interrupt routine initialization
 // channel A and B callbacks
 void doA() { sensor->handleA(); }
 void doB() { sensor->handleB(); }
@@ -74,9 +74,9 @@ void setup() {
   }
   driver->enable();
 
-  // HallSensor(int hallA, int hallB , int cpr, int index)
-  //  - hallA, hallB, hallC    - HallSensor A, B and C pins
-  //  - pp                     - pole pairs
+  // HallSensor(int encA, int encB, int encC, int pp)
+  //  - encA, encB, encC    - HallSensor A, B and C pins
+  //  - pp                  - pole pairs
   sensor = new HallSensor(5, 4, 13, 8);
   if (!sensor) return;
 

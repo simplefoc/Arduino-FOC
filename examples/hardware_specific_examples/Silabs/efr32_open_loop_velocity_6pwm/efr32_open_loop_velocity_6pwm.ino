@@ -67,7 +67,6 @@ void setup() {
   motor->linkDriver(driver);
 
   // default voltage_power_supply
-  // motor->voltage_limit = 3;
   motor->voltage_limit = 0.8f;
 
   // set motion control loop to be used
