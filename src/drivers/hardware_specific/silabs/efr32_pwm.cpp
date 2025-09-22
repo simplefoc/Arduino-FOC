@@ -1,7 +1,6 @@
-#include <pinDefinitions.h>
-
 #if defined(ARDUINO_ARCH_SILABS)
 
+#include <pinDefinitions.h>
 #include <em_device.h>
 #include <em_gpio.h>
 #include <em_bus.h>

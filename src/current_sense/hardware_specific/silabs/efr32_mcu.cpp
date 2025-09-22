@@ -1,7 +1,6 @@
+#if defined(ARDUINO_ARCH_SILABS)
 #include <pinDefinitions.h>
 #include <pins_arduino.h>
-
-#if defined(ARDUINO_ARCH_SILABS)
 
 #include <em_device.h>
 #include <em_prs.h>
