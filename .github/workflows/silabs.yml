@@ -1,0 +1,41 @@
+name: SILABS
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: arduino/arduino-lint-action@v1
+        with:
+          library-manager: update
+          project-type: library
+  build:
+    name: Test compiling 
+    runs-on: ubuntu-latest
+   
+    strategy:
+      matrix:
+        arduino-boards-fqbn:
+          - SiliconLabs:silabs:nano_matter          # efr32 nano matter
+          
+        include:
+            
+          - arduino-boards-fqbn: SiliconLabs:silabs:nano_matter
+            platform-url: https://siliconlabs.github.io/arduino/package_arduinosilabs_index.json
+            sketch-names: efr32_hall_sensor_velocity_6pwm.ino, efr32_open_loop_velocity_6pwm.ino, efr32_torque_velocity_6pwm.ino
+
+      # Do not cancel all jobs / architectures if one job fails
+      fail-fast: false
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+    - name: Compile all examples
+      uses: ArminJo/arduino-test-compile@master
+      with:
+          arduino-board-fqbn: ${{ matrix.arduino-boards-fqbn }}
+          required-libraries: ${{ matrix.required-libraries }}
+          platform-url: ${{ matrix.platform-url }}
+          sketch-names: ${{ matrix.sketch-names }}
+          sketches-exclude: ${{ matrix.sketches-exclude }}
+          build-properties: ${{ toJson(matrix.build-properties) }}
+          
