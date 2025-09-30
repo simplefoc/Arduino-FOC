@@ -104,6 +104,7 @@ bool _ledcAttachChannelAdvanced(uint8_t pin, int _channel, int _group, uint32_t 
   uint32_t duty = ledc_get_duty(group, channel);
   ledc_channel_config_t ledc_channel;
   ledc_channel.speed_mode = group;
+  ledc_channel.sleep_mode = LEDC_SLEEP_MODE_KEEP_ALIVE;
   ledc_channel.channel =  channel;
   ledc_channel.timer_sel = LEDC_TIMER_0; 
   ledc_channel.intr_type = LEDC_INTR_DISABLE;
