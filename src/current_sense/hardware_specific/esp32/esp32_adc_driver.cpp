@@ -2,7 +2,7 @@
 #include "esp32_mcu.h"
 #include "esp32_adc_driver.h"
 
-#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) 
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32)
 #define SIMPLEFOC_ADC_ATTEN ADC_11db
 #define SIMPLEFOC_ADC_RES 12
 
@@ -12,12 +12,12 @@
 #include "soc/sens_reg.h"
 
 // configure the ADCs in RTC mode
-// saves about 3us per call 
+// saves about 3us per call
 // going from 12us to 9us
-// 
+//
 // TODO: See if we need to configure both ADCs or we can just configure the one we'll use
 //       For the moment we will configure both
-void __configFastADCs(){
+void IRAM_ATTR __configFastADCs(){
 
     SIMPLEFOC_ESP32_CS_DEBUG("Configuring fast ADCs");
 
@@ -46,9 +46,9 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
     int8_t channel = digitalPinToAnalogChannel(pin);
     if(channel < 0){
         SIMPLEFOC_ESP32_CS_DEBUG("ERROR: Not ADC pin: "+String(pin));
-        return false; //not adc pin 
+        return false; //not adc pin
     }
-    
+
     // channels <= MAX_CHANNEL_NUM belong to ADC1
     // channels > MAX_CHANNEL_NUM belong to ADC2 (where the channel number is number-SOC_ADC_MAX_CHANNEL_NUM)
     uint8_t adc_num = (channel >= SOC_ADC_MAX_CHANNEL_NUM) ? 2 : 1;
@@ -65,7 +65,7 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
             SET_PERI_REG_MASK(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_SAR_M);
 
             // wait for conversion
-            while (GET_PERI_REG_MASK(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DONE_SAR) == 0); 
+            while (GET_PERI_REG_MASK(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DONE_SAR) == 0);
             // read the value
             value = GET_PERI_REG_BITS2(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DATA_SAR, SENS_MEAS1_DATA_SAR_S);
             break;
@@ -76,7 +76,7 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
             SET_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M);
 
             // wait for conversion
-            while (GET_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DONE_SAR) == 0); 
+            while (GET_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DONE_SAR) == 0);
             // read the value
             value = GET_PERI_REG_BITS2(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S);
             break;
@@ -91,10 +91,10 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
 #include "soc/sens_reg.h"
 
 
-// configure the ADCs in RTC mode 
+// configure the ADCs in RTC mode
 // no real gain - see if we do something with it later
 // void __configFastADCs(){
-    
+
 //     SET_PERI_REG_MASK(SENS_SAR_READER1_CTRL_REG, SENS_SAR1_DATA_INV);
 //     SET_PERI_REG_MASK(SENS_SAR_READER2_CTRL_REG, SENS_SAR2_DATA_INV);
 
@@ -137,7 +137,7 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
             SET_PERI_REG_MASK(SENS_SAR_MEAS1_CTRL2_REG, SENS_MEAS1_START_SAR_M);
 
             // wait for conversion
-            while (GET_PERI_REG_MASK(SENS_SAR_MEAS1_CTRL2_REG, SENS_MEAS1_DONE_SAR) == 0); 
+            while (GET_PERI_REG_MASK(SENS_SAR_MEAS1_CTRL2_REG, SENS_MEAS1_DONE_SAR) == 0);
             // read the value
             value = GET_PERI_REG_BITS2(SENS_SAR_MEAS1_CTRL2_REG, SENS_MEAS1_DATA_SAR, SENS_MEAS1_DATA_SAR_S);
             break;
@@ -148,7 +148,7 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
             SET_PERI_REG_MASK(SENS_SAR_MEAS2_CTRL2_REG, SENS_MEAS2_START_SAR_M);
 
             // wait for conversion
-            while (GET_PERI_REG_MASK(SENS_SAR_MEAS2_CTRL2_REG, SENS_MEAS2_DONE_SAR) == 0); 
+            while (GET_PERI_REG_MASK(SENS_SAR_MEAS2_CTRL2_REG, SENS_MEAS2_DONE_SAR) == 0);
             // read the value
             value = GET_PERI_REG_BITS2(SENS_SAR_MEAS2_CTRL2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S);
             break;
@@ -171,7 +171,7 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin){
 // configure the ADC for the pin
 bool IRAM_ATTR adcInit(uint8_t pin){
     static bool initialized = false;
-    
+
     int8_t channel = digitalPinToAnalogChannel(pin);
     if(channel < 0){
         SIMPLEFOC_ESP32_CS_DEBUG("ERROR: Not ADC pin: "+String(pin));
@@ -186,7 +186,7 @@ bool IRAM_ATTR adcInit(uint8_t pin){
     if(! initialized){
         analogSetAttenuation(SIMPLEFOC_ADC_ATTEN);
         analogReadResolution(SIMPLEFOC_ADC_RES);
-    }   
+    }
     pinMode(pin, ANALOG);
     analogRead(pin);
     analogSetPinAttenuation(pin, SIMPLEFOC_ADC_ATTEN);
