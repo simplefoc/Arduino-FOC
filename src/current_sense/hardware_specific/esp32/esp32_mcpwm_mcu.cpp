@@ -43,7 +43,7 @@
 
 
 // function reading an ADC value and returning the read voltage
-float _readADCVoltageLowSide(const int pin, const void* cs_params){
+float IRAM_ATTR _readADCVoltageLowSide(const int pin, const void* cs_params){
   ESP32CurrentSenseParams* p = (ESP32CurrentSenseParams*)cs_params;
   int no_channel = 0;
   for(int i=0; i < 3; i++){
@@ -59,7 +59,7 @@ float _readADCVoltageLowSide(const int pin, const void* cs_params){
 
 
 // function configuring low-side current sensing
-void* _configureADCLowSide(const void* driver_params, const int pinA,const int pinB,const int pinC){
+void* IRAM_ATTR _configureADCLowSide(const void* driver_params, const int pinA,const int pinB,const int pinC){
   // check if driver timer is already running
   // fail if it is
   // the easiest way that I've found to check if timer is running
@@ -116,7 +116,7 @@ static bool IRAM_ATTR _mcpwmTriggerADCCallback(mcpwm_timer_handle_t tim, const m
   return true;
 }
 
-void* _driverSyncLowSide(void* driver_params, void* cs_params){
+void* IRAM_ATTR _driverSyncLowSide(void* driver_params, void* cs_params){
 #ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG
   pinMode(DEBUGPIN, OUTPUT);
 #endif
