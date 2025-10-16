@@ -105,14 +105,14 @@ static bool IRAM_ATTR _mcpwmTriggerADCCallback(mcpwm_timer_handle_t tim, const m
 
   // sample the phase currents one at a time
   // ESP's adc read takes around 10us which is very long
-  // increment buffer index
-  p->buffer_index = (p->buffer_index + 1);
-  if(p->buffer_index == p->no_adc_channels){
-    p->buffer_index = 0;
-  }
-
   // so we are sampling one phase per call
   p->adc_buffer[p->buffer_index] = adcRead(p->pins[p->buffer_index]);
+
+  // increment buffer index
+  p->buffer_index++;
+  if(p->buffer_index >= p->no_adc_channels){
+    p->buffer_index = 0;
+  }
 
 #ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG // debugging toggle pin to measure the time of the interrupt with oscilloscope
   gpio_set_level(GPIO_NUM,0); //cca 250ns for on+off
