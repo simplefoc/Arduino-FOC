@@ -16,6 +16,7 @@ BLDCDriver6PWM::BLDCDriver6PWM(int phA_h,int phA_l,int phB_h,int phB_l,int phC_h
   voltage_power_supply = DEF_POWER_SUPPLY;
   voltage_limit = NOT_SET;
   pwm_frequency = NOT_SET;
+  inverse_power_supply = 1.0f / voltage_power_supply;
 
   // dead zone initial - 2%
   dead_zone = 0.02f;
@@ -60,6 +61,8 @@ int BLDCDriver6PWM::init() {
   // sanity check for the voltage limit configuration
   if( !_isset(voltage_limit) || voltage_limit > voltage_power_supply) voltage_limit =  voltage_power_supply;
 
+  inverse_power_supply = 1.0f / voltage_power_supply;
+
   // set phase state to disabled
   phase_state[0] = PhaseState::PHASE_OFF;
   phase_state[1] = PhaseState::PHASE_OFF;
@@ -84,9 +87,9 @@ void BLDCDriver6PWM::setPwm(float Ua, float Ub, float Uc) {
   Uc = _constrain(Uc, 0, voltage_limit);
   // calculate duty cycle
   // limited in [0,1]
-  dc_a = _constrain(Ua / voltage_power_supply, 0.0f , 1.0f );
-  dc_b = _constrain(Ub / voltage_power_supply, 0.0f , 1.0f );
-  dc_c = _constrain(Uc / voltage_power_supply, 0.0f , 1.0f );
+  dc_a = _constrain(Ua * inverse_power_supply, 0.0f , 1.0f );
+  dc_b = _constrain(Ub * inverse_power_supply, 0.0f , 1.0f );
+  dc_c = _constrain(Uc * inverse_power_supply, 0.0f , 1.0f );
   // hardware specific writing
   // hardware specific function - depending on driver and mcu
   _writeDutyCycle6PWM(dc_a, dc_b, dc_c, phase_state, params);

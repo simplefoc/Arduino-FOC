@@ -35,6 +35,7 @@ class FOCDriver{
         long pwm_frequency; //!< pwm frequency value in hertz
         float voltage_power_supply; //!< power supply voltage
         float voltage_limit; //!< limiting voltage set to the motor
+        float inverse_power_supply; //!< inverse of the power supply, very useful to replace divisions with reciprocal multiply which is faster
 
         bool initialized = false; //!< true if driver was successfully initialized
         void* params = 0; //!< pointer to hardware specific parameters of driver
