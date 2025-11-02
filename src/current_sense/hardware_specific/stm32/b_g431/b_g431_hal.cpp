@@ -137,6 +137,10 @@ void  MX_ADC1_Init(ADC_HandleTypeDef* hadc1)
   #ifdef OPAMP_USE_INTERNAL_CHANNEL
   sConfig.Channel = ADC_CHANNEL_13;  // ADC1_IN3 = PA2 = OP1_OUT or ADC1_IN13 for internal channel
   sConfig.Rank = ADC_REGULAR_RANK_1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+  sConfig.SingleDiff = ADC_SINGLE_ENDED;
+  sConfig.OffsetNumber = ADC_OFFSET_NONE;
+  sConfig.Offset = 0;
   #else
   sConfig.Channel = ADC_CHANNEL_3;  // ADC1_IN3 = PA2 = OP1_OUT or ADC1_IN13 for internal channel
   sConfig.Rank = ADC_REGULAR_RANK_2;
