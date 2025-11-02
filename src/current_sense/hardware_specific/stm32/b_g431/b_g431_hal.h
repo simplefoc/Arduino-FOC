@@ -14,7 +14,9 @@ void MX_OPAMP1_Init(OPAMP_HandleTypeDef* hopamp);
 void MX_OPAMP2_Init(OPAMP_HandleTypeDef* hopamp);
 void MX_OPAMP3_Init(OPAMP_HandleTypeDef* hopamp);
 
-#define OPAMP_USE_INTERNAL_CHANNEL
+#ifndef OPAMP_USE_INTERNAL_CHANNEL
+    #define OPAMP_USE_INTERNAL_CHANNEL 1
+#endif
 #endif
 
 #endif
