@@ -380,7 +380,7 @@ void HAL_OPAMP_MspDeInit(OPAMP_HandleTypeDef* hopamp)
     PA2     ------> OPAMP1_VOUT
     PA3     ------> OPAMP1_VINM 
     */
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3);
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_1|(GPIO_PIN_2 * OPAMP_USE_INTERNAL_CHANNEL)|GPIO_PIN_3);
 
   /* USER CODE BEGIN OPAMP1_MspDeInit 1 */
 
@@ -397,7 +397,7 @@ void HAL_OPAMP_MspDeInit(OPAMP_HandleTypeDef* hopamp)
     PA6     ------> OPAMP2_VOUT
     PA7     ------> OPAMP2_VINP 
     */
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7);
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_5|(GPIO_PIN_6 * OPAMP_USE_INTERNAL_CHANNEL)|GPIO_PIN_7);
 
   /* USER CODE BEGIN OPAMP2_MspDeInit 1 */
 
@@ -414,7 +414,7 @@ void HAL_OPAMP_MspDeInit(OPAMP_HandleTypeDef* hopamp)
     PB1     ------> OPAMP3_VOUT
     PB2     ------> OPAMP3_VINM 
     */
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2);
+    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_0|(GPIO_PIN_1 * OPAMP_USE_INTERNAL_CHANNEL)|GPIO_PIN_2);
 
   /* USER CODE BEGIN OPAMP3_MspDeInit 1 */
 
