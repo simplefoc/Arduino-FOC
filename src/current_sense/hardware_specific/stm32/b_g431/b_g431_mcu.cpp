@@ -93,7 +93,7 @@ void _configureOPAMP(OPAMP_HandleTypeDef *hopamp, OPAMP_TypeDef *OPAMPx_Def){
   hopamp->Init.PowerMode = OPAMP_POWERMODE_HIGHSPEED;
   hopamp->Init.Mode = OPAMP_PGA_MODE;
   hopamp->Init.NonInvertingInput = OPAMP_NONINVERTINGINPUT_IO0;
-  hopamp->Init.InternalOutput = OPAMP_USE_INTERNAL_CHANNEL;
+  hopamp->Init.InternalOutput = OPAMP_USE_INTERNAL_CHANNEL ? ENABLE : DISABLE;
   hopamp->Init.TimerControlledMuxmode = OPAMP_TIMERCONTROLLEDMUXMODE_DISABLE;
   hopamp->Init.PgaConnect = OPAMP_PGA_CONNECT_INVERTINGINPUT_IO0_BIAS;
   hopamp->Init.PgaGain = OPAMP_PGA_GAIN_16_OR_MINUS_15;
