@@ -13,6 +13,10 @@ void MX_ADC2_Init(ADC_HandleTypeDef* hadc2);
 void MX_OPAMP1_Init(OPAMP_HandleTypeDef* hopamp);
 void MX_OPAMP2_Init(OPAMP_HandleTypeDef* hopamp);
 void MX_OPAMP3_Init(OPAMP_HandleTypeDef* hopamp);
+
+#ifndef OPAMP_USE_INTERNAL_CHANNEL
+    #define OPAMP_USE_INTERNAL_CHANNEL 1
+#endif
 #endif
 
 #endif

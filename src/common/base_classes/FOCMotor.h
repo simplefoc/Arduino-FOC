@@ -22,7 +22,7 @@
 #define _MON_ANGLE  0b0000001 // monitor angle value
 
 /**
- *  Motiron control type
+ *  Motion control type
  */
 enum MotionControlType : uint8_t {
   torque            = 0x00,     //!< Torque control

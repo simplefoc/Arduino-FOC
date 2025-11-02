@@ -15,7 +15,7 @@
 enum VerboseMode : uint8_t {
   nothing       = 0x00, // display nothing - good for monitoring
   on_request    = 0x01, // display only on user request
-  user_friendly = 0x02,  // display textual messages to the user
+  user_friendly = 0x02, // display textual messages to the user
   machine_readable = 0x03 // display machine readable commands, matching commands to set each settings
 };
 
@@ -86,7 +86,7 @@ class Commander
     void run(char* user_input);
 
     /**
-     *  Function adding a callback to the coomander withe the command id
+     *  Function adding a callback to the commander with the command id
      * @param id         - char command letter
      * @param onCommand  - function pointer void function(char*)
      * @param label      - string label to be displayed when scan command sent
