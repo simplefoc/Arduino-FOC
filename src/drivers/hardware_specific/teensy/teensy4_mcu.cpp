@@ -526,16 +526,59 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 }
 
 
+// Helper function to enable or disable pwm pins based on phase state (allows for disabling the motor)
+static inline void _teensy4_apply_phase_state(
+    IMXRT_FLEXPWM_t *flexpwm, int submodule, PhaseState state
+)
+{
+  uint16_t submodule_mask = 1u << submodule;
+  uint16_t enable_a       = FLEXPWM_OUTEN_PWMA_EN( submodule_mask );
+  uint16_t enable_b       = FLEXPWM_OUTEN_PWMB_EN( submodule_mask );
+
+  switch ( state )
+  {
+    case PhaseState::PHASE_OFF:
+      flexpwm->OUTEN &= ~( enable_a | enable_b );
+      break;
+    case PhaseState::PHASE_HI:
+      flexpwm->OUTEN |= enable_a;
+      flexpwm->OUTEN &= ~enable_b;
+      break;
+    case PhaseState::PHASE_LO:
+      flexpwm->OUTEN &= ~enable_a;
+      flexpwm->OUTEN |= enable_b;
+      break;
+    case PhaseState::PHASE_ON:
+    default:
+      flexpwm->OUTEN |= ( enable_a | enable_b );
+      break;
+  }
+}
 
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 6PWM setting
 // - hardware specific
 void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params){
-  Teensy4DriverParams* p = (Teensy4DriverParams*)((TeensyDriverParams*)params)->additional_params;
-  _UNUSED(phase_state);
-  write_pwm_pair (p->flextimers[0], p->submodules[0], dc_a);
-  write_pwm_pair (p->flextimers[1], p->submodules[1], dc_b);
-  write_pwm_pair (p->flextimers[2], p->submodules[2], dc_c);
+  Teensy4DriverParams *p = (Teensy4DriverParams *)( (TeensyDriverParams *)params )->additional_params;
+
+  PhaseState phase_a = phase_state ? phase_state[ 0 ] : PhaseState::PHASE_ON;
+  PhaseState phase_b = phase_state ? phase_state[ 1 ] : PhaseState::PHASE_ON;
+  PhaseState phase_c = phase_state ? phase_state[ 2 ] : PhaseState::PHASE_ON;
+
+  if ( PhaseState::PHASE_OFF == phase_a )
+    dc_a = 0.0f;
+  if ( PhaseState::PHASE_OFF == phase_b )
+    dc_b = 0.0f;
+  if ( PhaseState::PHASE_OFF == phase_c )
+    dc_c = 0.0f;
+
+  _teensy4_apply_phase_state( p->flextimers[ 0 ], p->submodules[ 0 ], phase_a );
+  _teensy4_apply_phase_state( p->flextimers[ 1 ], p->submodules[ 1 ], phase_b );
+  _teensy4_apply_phase_state( p->flextimers[ 2 ], p->submodules[ 2 ], phase_c );
+
+  write_pwm_pair( p->flextimers[ 0 ], p->submodules[ 0 ], dc_a );
+  write_pwm_pair( p->flextimers[ 1 ], p->submodules[ 1 ], dc_b );
+  write_pwm_pair( p->flextimers[ 2 ], p->submodules[ 2 ], dc_c );
 }
 
 void write_pwm_on_pin(IMXRT_FLEXPWM_t *p, unsigned int submodule, uint8_t channel, float duty)
