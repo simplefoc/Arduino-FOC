@@ -20,9 +20,11 @@ typedef struct ESP32CurrentSenseParams {
 } ESP32CurrentSenseParams;
 
 // macros for debugging wuing the simplefoc debug system
-#define SIMPLEFOC_ESP32_CS_DEBUG(str)\
 #ifndef SIMPLEFOC_DISABLE_DEBUG  
-  SimpleFOCDebug::println( "ESP32-CS: "+ String(str));\
+#define SIMPLEFOC_ESP32_CS_DEBUG(str)\
+  SimpleFOCDebug::println( "ESP32-CS: "+ String(str));  
+#else
+#define SIMPLEFOC_ESP32_CS_DEBUG(str)
 #endif   
 
   

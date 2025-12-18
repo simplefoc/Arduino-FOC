@@ -32,9 +32,11 @@ typedef struct ESP32MCPWMDriverParams {
 } ESP32MCPWMDriverParams; 
 
 
-#define SIMPLEFOC_ESP32_DEBUG(tag, str)\
 #ifndef SIMPLEFOC_DISABLE_DEBUG
+#define SIMPLEFOC_ESP32_DEBUG(tag, str)\
     SimpleFOCDebug::println( "ESP32-"+String(tag)+ ": "+ String(str));
+#else
+#define SIMPLEFOC_ESP32_DEBUG(tag, str) 
 #endif
 
 #define SIMPLEFOC_ESP32_DRV_DEBUG(str)\
