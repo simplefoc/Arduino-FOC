@@ -256,9 +256,23 @@ class FOCMotor
 
     // monitoring functions
     Print* monitor_port; //!< Serial terminal variable if provided
+
+    //!< time between two loopFOC executions in microseconds
+    uint32_t loop_time_us = 0; //!< filtered loop times
+    // last loop time measurement update
+    void updateLoopTime() {
+      uint32_t now = _micros();
+      last_loop_time_us = now - last_loop_timestamp_us;
+      loop_time_us = 0.9f * loop_time_us + 0.1f * last_loop_time_us;
+      last_loop_timestamp_us = now;
+    }
+
   private:
     // monitor counting variable
     unsigned int monitor_cnt = 0 ; //!< counting variable
+
+    uint32_t last_loop_timestamp_us = 0; //!< timestamp of the last loopFOC execution in microseconds
+    uint32_t last_loop_time_us = 0; //!< time between two loopFOC executions in microseconds    
 };
 
 

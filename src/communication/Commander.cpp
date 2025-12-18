@@ -266,6 +266,23 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
           break;
        }
       break;
+    case CMD_FOC_PARAMS:
+      printVerbose(F("FOC | "));
+      switch (sub_cmd){
+        case SCMD_LOOPFOC_TIME:      // loopFOC execution time
+          printVerbose(F("loop time: "));
+          println((int)motor->loop_time_us);
+          break;
+        case SCMD_REINIT_FOC:
+          printVerbose(F("Reinit!"));
+          motor->initFOC();
+          println(F("done"));
+          break;
+        default:
+          printError();
+          break;
+      }
+      break;
     case CMD_MONITOR:     // get current values of the state variables
       printVerbose(F("Monitor | "));
       switch (sub_cmd){

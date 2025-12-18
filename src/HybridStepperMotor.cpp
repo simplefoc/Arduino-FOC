@@ -313,6 +313,8 @@ int HybridStepperMotor::absoluteZeroSearch()
 // Iterative function looping FOC algorithm, setting Uq on the Motor
 // The faster it can be run the better
 void HybridStepperMotor::loopFOC() {
+  // update loop time measurement
+  updateLoopTime();
   
   // update sensor - do this even in open-loop mode, as user may be switching between modes and we could lose track
   //                 of full rotations otherwise.
