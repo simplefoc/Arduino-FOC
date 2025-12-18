@@ -6,6 +6,7 @@
 #define SIMPLEFOC_ADC_ATTEN ADC_11db
 #define SIMPLEFOC_ADC_RES 12
 
+static portMUX_TYPE spinlock =  portMUX_INITIALIZER_UNLOCKED;
 
 #if CONFIG_IDF_TARGET_ESP32 // if esp32 variant
 
@@ -38,6 +39,7 @@ void IRAM_ATTR __configFastADCs(){
     SET_PERI_REG_BITS(SENS_SAR_MEAS_WAIT1_REG, SENS_SAR_AMP_WAIT2, 0x1, SENS_SAR_AMP_WAIT2_S);
     SET_PERI_REG_BITS(SENS_SAR_MEAS_WAIT2_REG, SENS_SAR_AMP_WAIT3, 0x1, SENS_SAR_AMP_WAIT3_S);
     while (GET_PERI_REG_BITS2(SENS_SAR_SLAVE_ADDR1_REG, 0x7, SENS_MEAS_STATUS_S) != 0); //wait det_fsm==
+
 }
 
 
@@ -56,6 +58,10 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
 
     // variable to hold the ADC value
     uint16_t value = 0;
+
+    //Protects against core migration, on single core chips this is noop.
+    portENTER_CRITICAL(&spinlock);
+
     // do the ADC conversion
     switch(adc_num){
         case 1:
@@ -81,6 +87,8 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
             value = GET_PERI_REG_BITS2(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S);
             break;
     }
+
+    portEXIT_CRITICAL(&spinlock);
 
     // return value
     return value;
@@ -128,6 +136,10 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
 
     // variable to hold the ADC value
     uint16_t value = 0;
+
+    //Protects against core migration, on single core chips this is noop.
+    portENTER_CRITICAL(&spinlock);
+
     // do the ADC conversion
     switch(adc_num){
         case 1:
@@ -153,6 +165,8 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
             value = GET_PERI_REG_BITS2(SENS_SAR_MEAS2_CTRL2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S);
             break;
     }
+
+    portEXIT_CRITICAL(&spinlock);
 
     return value;
 }
