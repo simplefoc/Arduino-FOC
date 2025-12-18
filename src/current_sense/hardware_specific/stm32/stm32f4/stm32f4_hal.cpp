@@ -143,7 +143,7 @@ int _adc_gpio_init(Stm32CurrentSenseParams* cs_params, const int pinA, const int
     if(_isset(pins[i])){
       // check if pin is an analog pin
       if(pinmap_peripheral(analogInputToPinName(pins[i]), PinMap_ADC) == NP){
-#ifdef SIMPLEFOC_STM32_DEBUG
+#if defined(SIMPLEFOC_STM32_DEBUG) && !defined(SIMPLEFOC_DISABLE_DEBUG)
         SimpleFOCDebug::print("STM32-CS: ERR: Pin ");
         SimpleFOCDebug::print(i == 0 ? "A" : i == 1 ? "B" : "C");
         SimpleFOCDebug::println(" does not belong to any ADC!");

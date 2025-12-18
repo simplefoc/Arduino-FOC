@@ -145,6 +145,7 @@ ADC_TypeDef* _findBestADCForPins(int numPins, int pins[]) {
     }
   }
 
+#ifndef SIMPLEFOC_DISABLE_DEBUG
   for (int i = 0; i < ADC_COUNT; i++) {
     if(!pins_at_adc[i]) continue;
     SimpleFOCDebug::print("STM32-CS: ADC");
@@ -152,6 +153,7 @@ ADC_TypeDef* _findBestADCForPins(int numPins, int pins[]) {
     SimpleFOCDebug::print(" pins: ");
     SimpleFOCDebug::println(pins_at_adc[i]);
   }
+#endif
 
   // now take the first ADC that has all pins connected
   for (int i = 0; i < ADC_COUNT; i++) {

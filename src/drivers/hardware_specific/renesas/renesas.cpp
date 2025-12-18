@@ -121,7 +121,9 @@ ClockDivAndRange getClockDivAndRange(uint32_t pwm_frequency, uint8_t timer_chann
       result.clk_div = TIMER_SOURCE_DIV_1024;
   }
   else {
+    #if !defined(SIMPLEFOC_DISABLE_DEBUG)
       SimpleFOCDebug::println("DRV: PWM frequency too low");
+    #endif
   }
   return result;
 };
@@ -181,7 +183,7 @@ bool configureTimerPin(RenesasHardwareDriverParams* params, uint8_t index, bool 
 
   // configure timer channel - frequency / top value
   ClockDivAndRange timings = getClockDivAndRange(params->pwm_frequency, timer_channel);
-  #if defined(SIMPLEFOC_RENESAS_DEBUG)
+  #if defined(SIMPLEFOC_RENESAS_DEBUG)  && !defined(SIMPLEFOC_DISABLE_DEBUG)
   SimpleFOCDebug::println("---PWM Config---");
   SimpleFOCDebug::println("DRV: pwm pin: ", pin);
   if (complementary)
@@ -269,7 +271,9 @@ bool configureTimerPin(RenesasHardwareDriverParams* params, uint8_t index, bool 
     return false;
   }
   if (err == FSP_ERR_ALREADY_OPEN) {
+    #if !defined(SIMPLEFOC_DISABLE_DEBUG)
     SimpleFOCDebug::println("DRV: timer already open");
+    #endif
     return false;
   }
 
@@ -306,12 +310,12 @@ bool startTimerChannels(RenesasHardwareDriverParams* params, int num_channels) {
     //   return false;
     // }
     mask |= (1 << params->channels[i]);
-#if defined(SIMPLEFOC_RENESAS_DEBUG)
+#if defined(SIMPLEFOC_RENESAS_DEBUG)  && !defined(SIMPLEFOC_DISABLE_DEBUG)
     SimpleFOCDebug::println("DRV: starting timer: ", params->channels[i]);
 #endif
   }
   params->timer_config[0]->ctrl.p_reg->GTSTR |= mask;
-  #if defined(SIMPLEFOC_RENESAS_DEBUG)
+  #if defined(SIMPLEFOC_RENESAS_DEBUG)  && !defined(SIMPLEFOC_DISABLE_DEBUG)
     SimpleFOCDebug::println("DRV: timers started");
   #endif
   return true;
