@@ -446,7 +446,7 @@ uint32_t _initTimerInterruptDownsampling(Stm32CurrentSenseParams* cs_params, STM
 
 // returns 0 if no downsampling is needed, 1 if downsampling is needed, 2 if error
 uint8_t _handleInjectedConvCpltCallback(ADC_HandleTypeDef *AdcHandle, Stm32AdcInterruptConfig& adc_interrupt_config, uint32_t adc_val[4]) {
-  #ifndef HAL_ADCEx_InjectedGetValue
+  #ifndef ADC_INJECTED_RANK_1
     return 0; // error: function not available
   #else
 
@@ -469,7 +469,7 @@ uint8_t _handleInjectedConvCpltCallback(ADC_HandleTypeDef *AdcHandle, Stm32AdcIn
 // returns the voltage 
 // if the pin is not found in the current sense parameters, returns 0
 float _readADCInjectedChannelVoltage(int pin, void* cs_params, Stm32AdcInterruptConfig& adc_interrupt_config, uint32_t adc_val[4]) {
-  #ifndef HAL_ADCEx_InjectedGetValue
+  #ifndef ADC_INJECTED_RANK_1
     return 0; // error: function not available
   #else
     
