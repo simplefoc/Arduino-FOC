@@ -573,29 +573,29 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
       Ub = -0.5f * Ualpha + _SQRT3_2 * Ubeta;
       Uc = -0.5f * Ualpha - _SQRT3_2 * Ubeta;
 
-      center = driver->voltage_limit/2;
-      if (foc_modulation == FOCModulationType::SpaceVectorPWM){
-        // discussed here: https://community.simplefoc.com/t/embedded-world-2023-stm32-cordic-co-processor/3107/165?u=candas1
-        // a bit more info here: https://microchipdeveloper.com/mct5001:which-zsm-is-best
-        // Midpoint Clamp
-        float Umin = min(Ua, min(Ub, Uc));
-        float Umax = max(Ua, max(Ub, Uc));
-        center -= (Umax+Umin) / 2;
-      } 
-
-      if (!modulation_centered) {
+      // centering the voltages around either
+      // modulation_centered == true > driver.voltage_limit/2
+      // modulation_centered == false > or Adaptable centering, all phases drawn to 0 when Uq=0
+      if (modulation_centered) {
+        center = driver->voltage_limit/2;
+        if (foc_modulation == FOCModulationType::SpaceVectorPWM){
+          // discussed here: https://community.simplefoc.com/t/embedded-world-2023-stm32-cordic-co-processor/3107/165?u=candas1
+          // a bit more info here: https://microchipdeveloper.com/mct5001:which-zsm-is-best
+          // Midpoint Clamp
+          float Umin = min(Ua, min(Ub, Uc));
+          float Umax = max(Ua, max(Ub, Uc));
+          center -= (Umax+Umin) / 2;
+        } 
+        Ua += center;
+        Ub += center;
+        Uc += center;
+      }else{
         float Umin = min(Ua, min(Ub, Uc));
         Ua -= Umin;
         Ub -= Umin;
         Uc -= Umin;
-      }else{
-        Ua += center;
-        Ub += center;
-        Uc += center;
       }
-
       break;
-
   }
 
   // set the voltages in driver
