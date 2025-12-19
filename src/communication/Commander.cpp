@@ -269,6 +269,18 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
           motor->initFOC();
           println(F("done"));
           break;
+        case SCMD_TUNE_CURR:
+          printVerbose(F("PI tune curr.| "));
+          {
+            int res = motor->tuneCurrentController(value);
+            if(res == 0){
+              println(F("done"));
+            } else {
+              printVerbose(F("failed, err code: "));
+              println(res);
+            }
+          }
+          break;
         default:
           printError();
           break;

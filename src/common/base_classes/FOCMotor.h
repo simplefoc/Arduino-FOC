@@ -159,6 +159,16 @@ class FOCMotor
      */
     int characteriseMotor(float voltage, float correction_factor);
 
+    /**
+     * Auto-tune the current controller PID parameters based on desired bandwidth.
+     * Uses a simple method that assumes a first order system and requires knowledge of
+     * the motor phase resistance and inductance (if not set, the characteriseMotor function can be used).
+     * 
+     * @param bandwidth Desired closed-loop bandwidth in Hz.
+     * @returns returns 0 for success, >0 for failure
+     */
+    int tuneCurrentController(float bandwidth);
+
     // state variables
     float target; //!< current target value - depends of the controller
     float feed_forward_velocity = 0.0f; //!< current feed forward velocity

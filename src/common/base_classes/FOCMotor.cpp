@@ -309,6 +309,9 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
       SIMPLEFOC_DEBUG("WARN: MOT: Measured Q inductance is more than twice the D inductance. This is probably wrong. From experience, the lower value is probably close to reality.");
     }    
 
+    // store the measured values
+    phase_resistance = 2.0f * resistance;
+    phase_inductance = (Ld + Lq) / 2.0f;
     return 0;
     
 }
@@ -520,4 +523,42 @@ void FOCMotor::updateMotionControlType(MotionControlType new_motion_controller) 
 
   // finally set the new controller
   controller = new_motion_controller; 
+}
+
+
+int FOCMotor::tuneCurrentController(float bandwidth) {
+  if (bandwidth <= 0.0f) {
+    // check bandwidth is positive
+    SIMPLEFOC_DEBUG("ERR: MOT: Cannot tune current controller: bandwidth must be positive");
+    return 1;
+  }
+  if (loop_time_us && bandwidth > 0.5f * (1e6f / loop_time_us)) {
+    // check bandwidth is not too high for the control loop frequency
+    SIMPLEFOC_DEBUG("ERR: MOT: Bandwidth too high, current loop freq:" , (1e6f / loop_time_us));
+    return 2;
+  }
+  if (!_isset(phase_resistance) || !_isset(phase_inductance)) {
+    // need motor parameters to tune the controller
+    SIMPLEFOC_DEBUG("MOT: Measuring motor parameters!");
+    if(characteriseMotor( voltage_sensor_align )) { 
+      return 3;
+    }
+  }
+
+  // Simple tuning method for a first order system
+  float Kp = phase_inductance * (_2PI * bandwidth);
+  float Ki = phase_resistance * (_2PI * bandwidth);
+
+  PID_current_q.P = Kp;
+  PID_current_q.I = Ki;
+  PID_current_d.P = Kp;
+  PID_current_d.I = Ki;
+  LPF_current_d.Tf = 1.0f / (_2PI * bandwidth * 5.0f); // filter cutoff at 5x bandwidth
+  LPF_current_q.Tf = 1.0f / (_2PI * bandwidth * 5.0f); // filter cutoff at 5x bandwidth
+
+  SIMPLEFOC_DEBUG("MOT: Current controller tuned:\nMOT: Bandwidth (Hz): ", bandwidth);
+  SIMPLEFOC_DEBUG("MOT:   Kp: ", Kp);
+  SIMPLEFOC_DEBUG("MOT:   Ki: ", Ki);
+
+  return 0;
 }

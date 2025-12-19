@@ -75,15 +75,6 @@ int BLDCMotor::init() {
   // constrain voltage for sensor alignment
   if(voltage_sensor_align > voltage_limit) voltage_sensor_align = voltage_limit;
 
-  // update the controller limits
-  if (_isset(phase_resistance) && _isset(phase_inductance)){
-    PID_current_d.P = phase_inductance * DEF_CURR_BANDWIDTH * _2PI;
-    PID_current_d.I = PID_current_d.P * phase_resistance / phase_inductance;
-
-    PID_current_q.P = phase_inductance * DEF_CURR_BANDWIDTH * _2PI;
-    PID_current_q.I = PID_current_q.P * phase_resistance /phase_inductance;
-  }
-  
   // update limits in the motor controllers
   updateCurrentLimit(current_limit);
   updateVoltageLimit(voltage_limit);
