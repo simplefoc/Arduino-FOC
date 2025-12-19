@@ -7,13 +7,14 @@
 [![RP2040 build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/rpi.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/rpi.yml)
 [![SAMD build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/samd.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/samd.yml)
 [![Teensy build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/teensy.yml) 
+[![MBED build](https://github.com/simplefoc/Arduino-FOC/actions/workflows/arduino_mbed.yml/badge.svg)](https://github.com/simplefoc/Arduino-FOC/actions/workflows/arduino_mbed.yml)
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/simplefoc/arduino-foc)
 ![GitHub Release Date](https://img.shields.io/github/release-date/simplefoc/arduino-foc?color=blue)
 ![GitHub commits since tagged version](https://img.shields.io/github/commits-since/simplefoc/arduino-foc/latest/dev)
 ![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/m/simplefoc/arduino-foc/dev)
 
-[![arduino-library-badge](https://ardubadge.simplefoc.com?lib=Simple%20FOC)](https://www.ardu-badge.com/badge/Simple%20FOC.svg)
+[![arduino-library-badge](https://www.ardu-badge.com/badge/Simple%20FOC.svg)](https://www.ardu-badge.com/badge/Simple%20FOC.svg)
 [![PlatformIO Registry](https://badges.registry.platformio.org/packages/askuric/library/Simple%20FOC.svg)](https://registry.platformio.org/libraries/askuric/Simple%20FOC)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![status](https://joss.theoj.org/papers/4382445f249e064e9f0a7f6c1bb06b1d/status.svg)](https://joss.theoj.org/papers/4382445f249e064e9f0a7f6c1bb06b1d)
@@ -29,27 +30,22 @@ Therefore this is an attempt to:
    - For official driver boards see [<span class="simple">Simple<span class="foc">FOC</span>Boards</span>](https://docs.simplefoc.com/boards)
    - Many many more boards developed by the community members, see [<span class="simple">Simple<span class="foc">FOC</span>Community</span>](https://community.simplefoc.com/)
 
-> NEXT RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.4
-> - ESP32 MCUs extended support [#414](https://github.com/simplefoc/Arduino-FOC/pull/414)
->   - Transition to the arduino-esp32 version v3.x (ESP-IDF v5.x) [#387](https://github.com/espressif/arduino-esp32/releases)
->   - New support for MCPWM driver
->   - New support for LEDC drivers - center-aligned PWM and 6PWM available 
->   - Rewritten and simplified the fast ADC driver code (`adcRead`) - for low-side and inline current sensing.
-> - Stepper motors current sensing support [#421](https://github.com/simplefoc/Arduino-FOC/pull/421)
->   - Support for current sensing (low-side and inline) - [see in docs](https://docs.simplefoc.com/current_sense)
->   - Support for true FOC control - `foc_current` torque control - [see in docs](https://docs.simplefoc.com/motion_control)
-> - New current sense alignment procedure  [#422](https://github.com/simplefoc/Arduino-FOC/pull/422) - [see in docs](https://docs.simplefoc.com/current_sense_align)
->   - Support for steppers
->   - Much more robust and reliable
->   - More verbose and informative 
-> - Support for HallSensors without interrupts [#424](https://docs.simplefoc.com/https://github.com/simplefoc/Arduino-FOC/pull/424) - [see in docs](hall_sensors) 
-> - Docs
->   - A short guide to debugging of common issues
->   - A short guide to the units in the library - [see in docs](https://docs.simplefoc.com/library_units)
-> - See the complete list of bugfixes and new features of v2.3.4 [fixes and PRs](https://github.com/simplefoc/Arduino-FOC/milestone/11) 
+> NEXT RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.3.6 
+>
+> - STM32 bugfix 
+>   - BG341 low-side current sense sync was lost in v2.3.5 - fixed [#482](https://github.com/simplefoc/Arduino-FOC/pull/482)
+> - ESP32 bugfix 
+>   - Now compiles for all v3.x arduino-esp32 versions (v2.3.5 was compatible with v3.2.x) 
+>   - `adcRead` small refactor - no more magic numbers
+> - New fuctionality
+>    - Add current and voltage feed forward terms to motor classes by @Copper280z in https://github.com/simplefoc/Arduino-FOC/pull/454
+>    - Velocity Calculation rework by @Copper280z in https://github.com/simplefoc/Arduino-FOC/pull/45
+> - Examples
+>   - `align_current_sense.ino` example added to the `examples/utls/current_sense_test` allowing to verify the alignment between the driver and the current sense phases
 
 
-## Arduino *SimpleFOClibrary* v2.3.4
+
+## Arduino *SimpleFOClibrary* v2.3.6
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">

@@ -1,10 +1,20 @@
 #include "esp32_driver_mcpwm.h"
 
 #if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC)
-  
+
 #pragma message("")
 #pragma message("SimpleFOC: compiling for ESP32 MCPWM driver")
 #pragma message("")
+
+
+int esp32_gpio_nr(int pin) {
+  #if defined(BOARD_HAS_PIN_REMAP) && !defined(BOARD_USES_HW_GPIO_NUMBERS)
+    return digitalPinToGPIONumber(pin);
+  #else
+    return pin;
+  #endif
+}
+
 
 // function setting the high pwm frequency to the supplied pins
 // - DC motor  - 1PWM setting
@@ -20,11 +30,11 @@ void* _configure1PWM(long pwm_frequency, const int pinA) {
   }
   SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 1PWM in group: "+String(group)+" on timer: "+String(timer));
   // configure the timer
-  int pins[1] = {pinA};
+  int pins[1] = { esp32_gpio_nr(pinA) };
   return _configurePinsMCPWM(pwm_frequency, group, timer, 1, pins);
 }
 
-  
+
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 2PWM setting
 // - hardware specific
@@ -42,7 +52,7 @@ void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
     // configure the 2pwm on only one group
     SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 2PWM in group: "+String(group)+" on timer: "+String(timer));
     // configure the timer
-    int pins[2] = {pinA,  pinB};
+    int pins[2] = { esp32_gpio_nr(pinA),  esp32_gpio_nr(pinB) };
     return _configurePinsMCPWM(pwm_frequency, group, timer, 2, pins);
   }else{
     SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 2PWM as two 1PWM drivers");
@@ -92,7 +102,7 @@ void* _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const i
   }
   SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 3PWM in group: "+String(group)+" on timer: "+String(timer));
   // configure the timer
-  int pins[3] = {pinA,  pinB, pinC};
+  int pins[3] = { esp32_gpio_nr(pinA),  esp32_gpio_nr(pinB),  esp32_gpio_nr(pinC) };
   return _configurePinsMCPWM(pwm_frequency, group, timer, 3, pins);
 }
 
@@ -122,7 +132,7 @@ void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const in
 
     // the code is a bit huge for what it does
     // it just instantiates two 2PMW drivers and combines the returned params
-    int pins[2][2] = {{pinA,  pinB},{pinC, pinD}};
+    int pins[2][2] = {{ esp32_gpio_nr(pinA),  esp32_gpio_nr(pinB) },{ esp32_gpio_nr(pinC), esp32_gpio_nr(pinD) }};
     for(int i =0; i<2; i++){
       int timer = _findNextTimer(i); //find next available timer in group i
       SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 2PWM in group: "+String(i)+" on timer: "+String(timer));
@@ -162,13 +172,13 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
   }
   SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 6PWM in group: "+String(group)+" on timer: "+String(timer));
   // configure the timer
-  int pins[6] = {pinA_h,pinA_l,  pinB_h, pinB_l, pinC_h, pinC_l};
+  int pins[6] = { esp32_gpio_nr(pinA_h),  esp32_gpio_nr(pinA_l),  esp32_gpio_nr(pinB_h),  esp32_gpio_nr(pinB_l),  esp32_gpio_nr(pinC_h),  esp32_gpio_nr(pinC_l) };
   return _configure6PWMPinsMCPWM(pwm_frequency, group, timer, dead_zone, pins);
 }
 
 // function setting the pwm duty cycle to the hardware
 // - BLDC motor - 3PWM setting
-void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* params){
+void IRAM_ATTR _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* params){
   _setDutyCycle(((ESP32MCPWMDriverParams*)params)->comparator[0], ((ESP32MCPWMDriverParams*)params)->mcpwm_period, dc_a);
   _setDutyCycle(((ESP32MCPWMDriverParams*)params)->comparator[1], ((ESP32MCPWMDriverParams*)params)->mcpwm_period, dc_b);
   _setDutyCycle(((ESP32MCPWMDriverParams*)params)->comparator[2], ((ESP32MCPWMDriverParams*)params)->mcpwm_period, dc_c);
@@ -177,14 +187,14 @@ void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* params){
 // function setting the pwm duty cycle to the hardware
 // - DCMotor -1PWM setting
 // - hardware specific
-void _writeDutyCycle1PWM(float dc_a, void* params){
+void IRAM_ATTR _writeDutyCycle1PWM(float dc_a, void* params){
   _setDutyCycle(((ESP32MCPWMDriverParams*)params)->comparator[0], ((ESP32MCPWMDriverParams*)params)->mcpwm_period, dc_a);
 }
 
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 2PWM setting
 // - hardware specific
-void _writeDutyCycle2PWM(float dc_a,  float dc_b, void* params){
+void IRAM_ATTR _writeDutyCycle2PWM(float dc_a,  float dc_b, void* params){
   _setDutyCycle(((ESP32MCPWMDriverParams*)params)->comparator[0], ((ESP32MCPWMDriverParams*)params)->mcpwm_period, dc_a);
   _setDutyCycle(((ESP32MCPWMDriverParams*)params)->comparator[1], ((ESP32MCPWMDriverParams*)params)->mcpwm_period, dc_b);
 }
@@ -194,7 +204,7 @@ void _writeDutyCycle2PWM(float dc_a,  float dc_b, void* params){
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 4PWM setting
 // - hardware specific
-void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, void* params){
+void IRAM_ATTR _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, void* params){
   // se the PWM on the slot timers
   _setDutyCycle(((ESP32MCPWMDriverParams*)params)->comparator[0], ((ESP32MCPWMDriverParams*)params)->mcpwm_period, dc_1a);
   _setDutyCycle(((ESP32MCPWMDriverParams*)params)->comparator[1], ((ESP32MCPWMDriverParams*)params)->mcpwm_period, dc_1b);
@@ -202,7 +212,7 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
   _setDutyCycle(((ESP32MCPWMDriverParams*)params)->comparator[3], ((ESP32MCPWMDriverParams*)params)->mcpwm_period, dc_2b);
 }
 
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params){
+void IRAM_ATTR _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params){
 #if SIMPLEFOC_ESP32_HW_DEADTIME == true
   _setDutyCycle(((ESP32MCPWMDriverParams*)params)->comparator[0], ((ESP32MCPWMDriverParams*)params)->mcpwm_period, dc_a);
   _setDutyCycle(((ESP32MCPWMDriverParams*)params)->comparator[1], ((ESP32MCPWMDriverParams*)params)->mcpwm_period, dc_b);
@@ -214,7 +224,7 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_
   _forcePhaseState(((ESP32MCPWMDriverParams*)params)->generator[4], ((ESP32MCPWMDriverParams*)params)->generator[5], phase_state[2]);
 #else
   uint32_t period = ((ESP32MCPWMDriverParams*)params)->mcpwm_period;
-  float dead_zone = (float)((ESP32MCPWMDriverParams*)params)->dead_zone /2.0f;
+  const float dead_zone = (float)((ESP32MCPWMDriverParams*)params)->dead_zone * 0.5f;
   _setDutyCycle(((ESP32MCPWMDriverParams*)params)->comparator[0], period,  (phase_state[0] == PHASE_ON || phase_state[0] == PHASE_HI) ? dc_a-dead_zone : 0.0f);
   _setDutyCycle(((ESP32MCPWMDriverParams*)params)->comparator[1], period,  (phase_state[0] == PHASE_ON || phase_state[0] == PHASE_LO) ? dc_a+dead_zone : 1.0f);
   _setDutyCycle(((ESP32MCPWMDriverParams*)params)->comparator[2], period,  (phase_state[1] == PHASE_ON || phase_state[1] == PHASE_HI) ? dc_b-dead_zone : 0.0f);

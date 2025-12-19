@@ -38,12 +38,12 @@
 
 
 /**
- *  Low side adc reading implementation 
+ *  Low side adc reading implementation
 */
 
 
 // function reading an ADC value and returning the read voltage
-float _readADCVoltageLowSide(const int pin, const void* cs_params){
+float IRAM_ATTR _readADCVoltageLowSide(const int pin, const void* cs_params){
   ESP32CurrentSenseParams* p = (ESP32CurrentSenseParams*)cs_params;
   int no_channel = 0;
   for(int i=0; i < 3; i++){
@@ -58,12 +58,12 @@ float _readADCVoltageLowSide(const int pin, const void* cs_params){
 }
 
 
-// function configuring low-side current sensing 
-void* _configureADCLowSide(const void* driver_params, const int pinA,const int pinB,const int pinC){
-  // check if driver timer is already running 
+// function configuring low-side current sensing
+void* IRAM_ATTR _configureADCLowSide(const void* driver_params, const int pinA,const int pinB,const int pinC){
+  // check if driver timer is already running
   // fail if it is
   // the easiest way that I've found to check if timer is running
-  // is to start it and stop it 
+  // is to start it and stop it
   ESP32MCPWMDriverParams *p = (ESP32MCPWMDriverParams*)driver_params;
   mcpwm_timer_t* t = (mcpwm_timer_t*) p->timers[0];
 
@@ -74,7 +74,7 @@ void* _configureADCLowSide(const void* driver_params, const int pinA,const int p
     return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
   }
 
-  
+
   ESP32CurrentSenseParams* params = new ESP32CurrentSenseParams{};
   int no_adc_channels = 0;
 
@@ -90,16 +90,37 @@ void* _configureADCLowSide(const void* driver_params, const int pinA,const int p
       params->pins[no_adc_channels++] = adc_pins[i];
     }
   }
-  
+
   t->user_data = params;
   params->adc_voltage_conv = (_ADC_VOLTAGE)/(_ADC_RESOLUTION);
   params->no_adc_channels = no_adc_channels;
   return params;
 }
 
+static bool IRAM_ATTR _mcpwmTriggerADCCallback(mcpwm_timer_handle_t tim, const mcpwm_timer_event_data_t* edata, void* user_data){
+  ESP32CurrentSenseParams *p = (ESP32CurrentSenseParams*)user_data;
+#ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG // debugging toggle pin to measure the time of the interrupt with oscilloscope
+  gpio_set_level(GPIO_NUM,1); //cca 250ns for on+off
+#endif
 
+  // sample the phase currents one at a time
+  // ESP's adc read takes around 10us which is very long
+  // so we are sampling one phase per call
+  p->adc_buffer[p->buffer_index] = adcRead(p->pins[p->buffer_index]);
 
-void* _driverSyncLowSide(void* driver_params, void* cs_params){
+  // increment buffer index
+  p->buffer_index++;
+  if(p->buffer_index >= p->no_adc_channels){
+    p->buffer_index = 0;
+  }
+
+#ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG // debugging toggle pin to measure the time of the interrupt with oscilloscope
+  gpio_set_level(GPIO_NUM,0); //cca 250ns for on+off
+#endif
+  return true;
+}
+
+void* IRAM_ATTR _driverSyncLowSide(void* driver_params, void* cs_params){
 #ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG
   pinMode(DEBUGPIN, OUTPUT);
 #endif
@@ -115,29 +136,12 @@ void* _driverSyncLowSide(void* driver_params, void* cs_params){
 
   // set the callback for the low side current sensing
   // mcpwm_timer_event_callbacks_t can be used to set the callback
-  // for three timer events 
+  // for three timer events
   // - on_full  - low-side
-  // - on_empty - high-side 
+  // - on_empty - high-side
   // - on_sync  - sync event (not used with simplefoc)
   auto cbs = mcpwm_timer_event_callbacks_t{
-    .on_full = [](mcpwm_timer_handle_t tim, const mcpwm_timer_event_data_t* edata, void* user_data){ 
-      ESP32CurrentSenseParams *p = (ESP32CurrentSenseParams*)user_data;
-#ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG // debugging toggle pin to measure the time of the interrupt with oscilloscope
-      gpio_set_level(GPIO_NUM,1); //cca 250ns for on+off
-#endif
-
-      // sample the phase currents one at a time
-      // ESP's adc read takes around 10us which is very long 
-      // increment buffer index
-      p->buffer_index = (p->buffer_index + 1) % p->no_adc_channels;
-      // so we are sampling one phase per call
-      p->adc_buffer[p->buffer_index] = adcRead(p->pins[p->buffer_index]); 
-
-#ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG // debugging toggle pin to measure the time of the interrupt with oscilloscope
-      gpio_set_level(GPIO_NUM,0); //cca 250ns for on+off
-#endif
-      return true; 
-    },
+    .on_full = _mcpwmTriggerADCCallback,
   };
   SIMPLEFOC_ESP32_CS_DEBUG("Timer "+String(t->timer_id)+" enable interrupt callback.");
   // set the timer state to init (so that we can call the `mcpwm_timer_register_event_callbacks` )

@@ -34,7 +34,7 @@ class CurrentSense{
     FOCDriver* driver = nullptr; //!< driver link
     bool initialized = false; // true if current sense was successfully initialized   
     void* params = 0; //!< pointer to hardware specific parameters of current sensing
-    DriverType driver_type = DriverType::Unknown; //!< driver type (BLDC or Stepper)
+    DriverType driver_type = DriverType::UnknownDriver; //!< driver type (BLDC or Stepper)
     
     
     // ADC measurement gain for each phase
@@ -135,6 +135,11 @@ class CurrentSense{
      * Function used to align the current sense with the Stepper motor driver
     */
     int alignStepperDriver(float align_voltage, StepperDriver* driver, bool modulation_centered);
+    /**
+     * Function used to align the current sense with the Hybrid motor driver
+     */
+    int alignHybridDriver(float align_voltage, BLDCDriver* driver, bool modulation_centered);
+
     /**
      * Function used to read the average current values over N samples
     */

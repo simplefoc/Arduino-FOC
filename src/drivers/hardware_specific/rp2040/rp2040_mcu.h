@@ -4,7 +4,7 @@
 
 #include "Arduino.h"
 
-#if defined(TARGET_RP2040)
+#if defined(TARGET_RP2040) || defined(TARGET_RP2350)
 
 
 

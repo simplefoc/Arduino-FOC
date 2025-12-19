@@ -11,9 +11,28 @@ MagneticSensorSPIConfig_s AS5147_SPI = {
   .command_rw_bit = 14,
   .command_parity_bit = 15
 };
-// AS5048 and AS5047 are the same as AS5147
-MagneticSensorSPIConfig_s AS5048_SPI = AS5147_SPI;
-MagneticSensorSPIConfig_s AS5047_SPI = AS5147_SPI;
+
+// AS5048 and AS5047 share the same configuration as AS5147
+// we have to explicilty assign them anyway due to compiler issues
+// Ex. https://community.simplefoc.com/t/esp32s3-qtpy-platformio-spi-problem/7444
+MagneticSensorSPIConfig_s AS5048_SPI = {
+  .spi_mode = SPI_MODE1,
+  .clock_speed = 1000000,
+  .bit_resolution = 14,
+  .angle_register = 0x3FFF,
+  .data_start_bit = 13,
+  .command_rw_bit = 14,
+  .command_parity_bit = 15
+};
+MagneticSensorSPIConfig_s AS5047_SPI = {
+  .spi_mode = SPI_MODE1,
+  .clock_speed = 1000000,
+  .bit_resolution = 14,
+  .angle_register = 0x3FFF,
+  .data_start_bit = 13,
+  .command_rw_bit = 14,
+  .command_parity_bit = 15
+};
 
 /** Typical configuration for the 14bit MonolithicPower MA730 magnetic sensor over SPI interface */
 MagneticSensorSPIConfig_s MA730_SPI = {

@@ -18,6 +18,7 @@
  #define CMD_INDUCTANCE    'I' //!< motor phase inductance
  #define CMD_KV_RATING 'K' //!< motor kv rating
  #define CMD_PWMMOD   'W' //!< pwm modulation
+ #define CMD_FOC_PARAMS 'F'  //!< time parameters
 
  // commander configuration
  #define CMD_SCAN    '?' //!< command scaning the network - only for commander
@@ -48,5 +49,7 @@
  #define SCMD_PWMMOD_TYPE   'T'  //!<< Pwm modulation type
  #define SCMD_PWMMOD_CENTER 'C'  //!<< Pwm modulation center flag
 
+ #define SCMD_LOOPFOC_TIME   'L' //!< loopFOC execution time
+ #define SCMD_REINIT_FOC    'R' //!< reinitialize FOC
 
 #endif
