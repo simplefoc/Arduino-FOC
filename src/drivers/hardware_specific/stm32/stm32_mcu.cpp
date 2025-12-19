@@ -177,7 +177,7 @@ TIM_HandleTypeDef* stm32_initPinPWM(uint32_t PWM_freq, PinMap* timer, uint32_t m
   uint32_t channel = STM_PIN_CHANNEL(timer->function);
   if (handle==NULL) {
     handle = stm32_useTimer(timer);
-    #ifdef SIMPLEFOC_STM32_DEBUG
+    #if  defined(SIMPLEFOC_STM32_DEBUG) && !defined(SIMPLEFOC_DISABLE_DEBUG) 
     SIMPLEFOC_DEBUG("STM32-DRV: Initializing TIM", (int)stm32_getTimerNumber(handle->Instance));
     #endif
     uint32_t arr = stm32_setClockAndARR(handle, PWM_freq);
@@ -185,7 +185,7 @@ TIM_HandleTypeDef* stm32_initPinPWM(uint32_t PWM_freq, PinMap* timer, uint32_t m
       SIMPLEFOC_DEBUG("STM32-DRV: WARN timer resolution too low (<8bit): ", (int)arr+1);
     }
     else {
-      #ifdef SIMPLEFOC_STM32_DEBUG
+      #if  defined(SIMPLEFOC_STM32_DEBUG) && !defined(SIMPLEFOC_DISABLE_DEBUG) 
       SIMPLEFOC_DEBUG("STM32-DRV: Timer resolution set to: ", (int)arr+1);
       #endif
     }
@@ -210,7 +210,7 @@ TIM_HandleTypeDef* stm32_initPinPWM(uint32_t PWM_freq, PinMap* timer, uint32_t m
   if (IS_TIM_BREAK_INSTANCE(handle->Instance)) {
     __HAL_TIM_MOE_ENABLE(handle);
   }
-  #ifdef SIMPLEFOC_STM32_DEBUG
+  #if defined(SIMPLEFOC_STM32_DEBUG) && !defined(SIMPLEFOC_DISABLE_DEBUG) 
     SimpleFOCDebug::print("STM32-DRV: Configured TIM");
     SimpleFOCDebug::print((int)stm32_getTimerNumber(handle->Instance));
     SIMPLEFOC_DEBUG("_CH", (int)channel);
@@ -289,7 +289,7 @@ int stm32_checkTimerFrequency(long pwm_frequency, TIM_HandleTypeDef *timers[], u
       common_pwm_freq = pwm_freq;
     } else {
       if (pwm_freq != common_pwm_freq) {
-        #ifdef SIMPLEFOC_STM32_DEBUG
+        #if  defined(SIMPLEFOC_STM32_DEBUG) && !defined(SIMPLEFOC_DISABLE_DEBUG) 
         SimpleFOCDebug::print("STM32-DRV: ERR: Timer frequency different: TIM");
         SimpleFOCDebug::print(stm32_getTimerNumber(timers_distinct[0]->Instance));
         SimpleFOCDebug::print(" freq: ");
@@ -303,7 +303,7 @@ int stm32_checkTimerFrequency(long pwm_frequency, TIM_HandleTypeDef *timers[], u
     }
   }
   if ( (common_pwm_freq - (float)pwm_frequency) > 1.0f) {
-      #ifdef SIMPLEFOC_STM32_DEBUG
+      #if  defined(SIMPLEFOC_STM32_DEBUG) && !defined(SIMPLEFOC_DISABLE_DEBUG) 
       SIMPLEFOC_DEBUG("STM32-DRV: ERR: Common timer frequency unexpected: ", common_pwm_freq);
       #endif
       return -1;

@@ -149,7 +149,7 @@ int _stm32_findBestTimerCombination(int numPins, int index, int pins[], PinMap* 
       score = _stm32_findBestTimerCombination(numPins, index+1, pins, searchArray);
     else {
       score = _stm32_scoreCombination(numPins, searchArray);
-      #ifdef SIMPLEFOC_STM32_DEBUG
+      #if defined(SIMPLEFOC_STM32_DEBUG) && !defined(SIMPLEFOC_DISABLE_DEBUG) 
       stm32_printTimerCombination(numPins, searchArray, score);
       #endif
     }
@@ -171,13 +171,13 @@ int _stm32_findBestTimerCombination(int numPins, int index, int pins[], PinMap* 
 int stm32_findBestTimerCombination(int numPins, int pins[], PinMap* pinTimers[]) {
   int bestScore = _stm32_findBestTimerCombination(numPins, 0, pins, pinTimers);
   if (bestScore == NOT_FOUND) {
-    #ifdef SIMPLEFOC_STM32_DEBUG
+    #if defined(SIMPLEFOC_STM32_DEBUG) && !defined(SIMPLEFOC_DISABLE_DEBUG) 
     SimpleFOCDebug::println("STM32-DRV: no workable combination found on these pins");
     #endif
     return -10; // no workable combination found
   }
   else if (bestScore >= 0) {
-    #ifdef SIMPLEFOC_STM32_DEBUG
+    #if  defined(SIMPLEFOC_STM32_DEBUG) && !defined(SIMPLEFOC_DISABLE_DEBUG) 
     SimpleFOCDebug::print("STM32-DRV: best: ");
     stm32_printTimerCombination(numPins, pinTimers, bestScore);
     #endif
