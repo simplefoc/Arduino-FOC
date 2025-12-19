@@ -378,3 +378,146 @@ void FOCMotor::monitor() {
   }
 }   
 
+
+
+// Function (iterative) generating open loop movement for target velocity
+// - target_velocity - rad/s
+// it uses voltage_limit variable
+float FOCMotor::velocityOpenloop(float target_velocity){
+  // get current timestamp
+  unsigned long now_us = _micros();
+  // calculate the sample time from last call
+  float Ts = (now_us - open_loop_timestamp) * 1e-6f;
+  // quick fix for strange cases (micros overflow + timestamp not defined)
+  if(Ts <= 0 || Ts > 0.5f) Ts = 1e-3f;
+
+  // calculate the necessary angle to achieve target velocity
+  shaft_angle = _normalizeAngle(shaft_angle + target_velocity*Ts);
+  // for display purposes
+  shaft_velocity = target_velocity;
+
+  // save timestamp for next call
+  open_loop_timestamp = now_us;
+
+  if (torque_controller == TorqueControlType::voltage)
+    return voltage_limit;
+  else
+    return current_limit;
+}
+
+// Function (iterative) generating open loop movement towards the target angle
+// - target_angle - rad
+// it uses voltage_limit and velocity_limit variables
+float FOCMotor::angleOpenloop(float target_angle){
+  // get current timestamp
+  unsigned long now_us = _micros();
+  // calculate the sample time from last call
+  float Ts = (now_us - open_loop_timestamp) * 1e-6f;
+  // quick fix for strange cases (micros overflow + timestamp not defined)
+  if(Ts <= 0 || Ts > 0.5f) Ts = 1e-3f;
+
+  // calculate the necessary angle to move from current position towards target angle
+  // with maximal velocity (velocity_limit)
+  // TODO sensor precision: this calculation is not numerically precise. The angle can grow to the point
+  //                        where small position changes are no longer captured by the precision of floats
+  //                        when the total position is large.
+  if(abs( target_angle - shaft_angle ) > abs(velocity_limit*Ts)){
+    shaft_angle += _sign(target_angle - shaft_angle) * abs( velocity_limit )*Ts;
+    shaft_velocity = velocity_limit;
+  }else{
+    shaft_angle = target_angle;
+    shaft_velocity = 0;
+  }
+
+  // save timestamp for next call
+  open_loop_timestamp = now_us;
+
+  // use voltage limit or current limit
+  if (torque_controller == TorqueControlType::voltage)
+    return voltage_limit;
+  else
+    return current_limit;
+}
+
+// Function udating loop time measurement
+// time between two loopFOC executions in microseconds
+// It filters the value using low pass filtering alpha = 0.1
+void FOCMotor::updateLoopTime() {
+  uint32_t now = _micros();
+  last_loop_time_us = now - last_loop_timestamp_us;
+  loop_time_us = 0.9f * loop_time_us + 0.1f * last_loop_time_us;
+  last_loop_timestamp_us = now;
+}
+
+// Update limit values in controllers when changed
+void FOCMotor::updateVelocityLimit(float new_velocity_limit) {
+  velocity_limit = new_velocity_limit;
+  P_angle.limit = abs(velocity_limit);
+}
+
+// Update limit values in controllers when changed
+void FOCMotor::updateCurrentLimit(float new_current_limit) {
+  current_limit = new_current_limit;
+  if(torque_controller != TorqueControlType::voltage) 
+    // if current control
+    PID_velocity.limit = new_current_limit;
+}
+
+// Update limit values in controllers when changed
+// PID values and limits
+void FOCMotor::updateVoltageLimit(float new_voltage_limit) {
+  voltage_limit = new_voltage_limit;
+  PID_current_q.limit = new_voltage_limit;
+  PID_current_d.limit = new_voltage_limit;
+  if(torque_controller == TorqueControlType::voltage) 
+    // if voltage control
+    PID_velocity.limit = new_voltage_limit;
+}
+
+// Update torque control type and related controller limit values
+void FOCMotor::updateTorqueControlType(TorqueControlType new_torque_controller) {
+  torque_controller = new_torque_controller;
+  if (torque_controller == TorqueControlType::voltage) {
+    // voltage control
+    PID_velocity.limit = voltage_limit;
+  } else {
+    // current control
+    PID_velocity.limit = current_limit;
+  }
+}
+
+// Update motion control type and related target values
+// - if changing to angle control set target to current angle
+// - if changing to velocity control set target to zero
+// - if changing to torque control set target to zero
+void FOCMotor::updateMotionControlType(MotionControlType new_motion_controller) {
+  if (controller == new_motion_controller) return; // no change
+  switch(new_motion_controller)
+  {
+  case MotionControlType::angle:
+    if(controller != MotionControlType::angle_openloop) break;
+  case MotionControlType::angle_openloop:
+    if(controller != MotionControlType::angle) break;
+    // if the previous controller was not angle control
+    // set target to current angle
+    target = shaft_angle;
+    break;
+  case MotionControlType::velocity:
+    if(controller != MotionControlType::velocity_openloop) break;
+  case MotionControlType::velocity_openloop:
+    if(controller != MotionControlType::velocity) break;
+    // if the previous controller was not velocity control
+    // stop the motor
+    target = 0;
+    break;
+  case MotionControlType::torque:
+    // if torque control set target to zero
+    target = 0;
+    break;
+  default:
+    break;
+  }
+
+  // finally set the new controller
+  controller = new_motion_controller; 
+}

@@ -28,8 +28,8 @@ enum MotionControlType : uint8_t {
   torque            = 0x00,     //!< Torque control
   velocity          = 0x01,     //!< Velocity motion control
   angle             = 0x02,     //!< Position/angle motion control
-  velocity_openloop = 0x03,
-  angle_openloop    = 0x04
+  velocity_openloop = 0x03,     //!< Open loop velocity control
+  angle_openloop    = 0x04      //!< Open loop position/angle control
 };
 
 /**
@@ -39,6 +39,7 @@ enum TorqueControlType : uint8_t {
   voltage            = 0x00,     //!< Torque control using voltage
   dc_current         = 0x01,     //!< Torque control using DC current (one current magnitude)
   foc_current        = 0x02,     //!< torque control using dq currents
+  estimated_current  = 0x03      //!< torque control using estimated current (provided motor parameters)
 };
 
 /**
@@ -259,20 +260,89 @@ class FOCMotor
 
     //!< time between two loopFOC executions in microseconds
     uint32_t loop_time_us = 0; //!< filtered loop times
-    // last loop time measurement update
-    void updateLoopTime() {
-      uint32_t now = _micros();
-      last_loop_time_us = now - last_loop_timestamp_us;
-      loop_time_us = 0.9f * loop_time_us + 0.1f * last_loop_time_us;
-      last_loop_timestamp_us = now;
-    }
 
+    /**
+     * Function udating loop time measurement
+     * time between two loopFOC executions in microseconds
+     * It filters the value using low pass filtering alpha = 0.1
+     * @note - using _micros() function - be aware of its overflow every ~70 minutes
+     */
+    void updateLoopTime();
+
+    /**
+     * Update limit values in controllers when changed
+     * @param new_velocity_limit - new velocity limit value
+     * 
+     * @note Updates velocity limit in:
+     *  - motor.velocity_limit
+     *  - motor.P_angle.limit
+     */
+    void updateVelocityLimit(float new_velocity_limit);
+    /**
+     * Update limit values in controllers when changed
+     * @param new_current_limit - new current limit value
+     * 
+     * @note Updates current limit in:
+     *  - motor.current_limit
+     *  - motor.PID_velocity.limit (if current control)
+     */
+    void updateCurrentLimit(float new_current_limit);
+    /**
+     * Update limit values in controllers when changed
+     * @param new_voltage_limit - new voltage limit value
+     * 
+     * @note Updates voltage limit in:
+     *  - motor.voltage_limit
+     *  - motor.PID_current_q.limit
+     *  - motor.PID_current_d.limit
+     *  - motor.PID_velocity.limit (if voltage control)
+     */
+    void updateVoltageLimit(float new_voltage_limit);
+
+    /**
+     * Update torque control type and related controller limit values
+     * @param new_torque_controller - new torque control type
+     * 
+     * @note Updates motor.torque_controller and motor.PID_velocity.limit
+     */
+    void updateTorqueControlType(TorqueControlType new_torque_controller);
+    /**
+     * Update motion control type and related target values
+     * @param new_motion_controller - new motion control type
+     * 
+     * @note Updates the target value based on the new controller type
+     * - if velocity control: target is set to 0rad/s
+     * - if angle control: target is set to the current shaft_angle
+     * - if torque control: target is set to 0V or 0A depending on torque control type
+     */
+    void updateMotionControlType(MotionControlType new_motion_controller);
+
+    // Open loop motion control    
+    /**
+     * Function (iterative) generating open loop movement for target velocity
+     * it uses voltage_limit variable
+     * 
+     * @param target_velocity - rad/s
+     */
+    float velocityOpenloop(float target_velocity);
+    /**
+     * Function (iterative) generating open loop movement towards the target angle
+     * it uses voltage_limit and velocity_limit variables
+     * 
+     * @param target_angle - rad
+     */
+    float angleOpenloop(float target_angle);
+    // open loop variables
+    uint32_t open_loop_timestamp;
+    
   private:
     // monitor counting variable
     unsigned int monitor_cnt = 0 ; //!< counting variable
 
     uint32_t last_loop_timestamp_us = 0; //!< timestamp of the last loopFOC execution in microseconds
-    uint32_t last_loop_time_us = 0; //!< time between two loopFOC executions in microseconds    
+    uint32_t last_loop_time_us = 0; //!< time between two loopFOC executions in microseconds
+    
+    
 };
 
 

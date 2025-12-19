@@ -100,25 +100,6 @@ class BLDCMotor: public FOCMotor
     int alignCurrentSense();
     /** Motor and sensor alignment to the sensors absolute 0 angle  */
     int absoluteZeroSearch();
-
-        
-    // Open loop motion control    
-    /**
-     * Function (iterative) generating open loop movement for target velocity
-     * it uses voltage_limit variable
-     * 
-     * @param target_velocity - rad/s
-     */
-    float velocityOpenloop(float target_velocity);
-    /**
-     * Function (iterative) generating open loop movement towards the target angle
-     * it uses voltage_limit and velocity_limit variables
-     * 
-     * @param target_angle - rad
-     */
-    float angleOpenloop(float target_angle);
-    // open loop variables
-    long open_loop_timestamp;
 };
 
 

@@ -47,14 +47,11 @@ int StepperMotor::init() {
   // constrain voltage for sensor alignment
   if(voltage_sensor_align > voltage_limit) voltage_sensor_align = voltage_limit;
 
-  // update the controller limits
-  if(_isset(phase_resistance)){
-    // velocity control loop controls current
-    PID_velocity.limit = current_limit;
-  }else{
-    PID_velocity.limit = voltage_limit;
-  }
-  P_angle.limit = velocity_limit;
+  
+  // update limits in the motor controllers
+  updateCurrentLimit(current_limit);
+  updateVoltageLimit(voltage_limit);
+  updateVelocityLimit(velocity_limit);
 
   // if using open loop control, set a CW as the default direction if not already set
   // only if no sensor is used
@@ -71,7 +68,6 @@ int StepperMotor::init() {
   SIMPLEFOC_DEBUG("MOT: Enable driver.");
   enable();
   _delay(500);
-
   motor_status = FOCMotorStatus::motor_uncalibrated;
   return 1;
 }
@@ -80,6 +76,8 @@ int StepperMotor::init() {
 // disable motor driver
 void StepperMotor::disable()
 {
+  // disable the current sense
+  if(current_sense) current_sense->disable();
   // set zero to PWM
   driver->setPwm(0, 0);
   // disable driver
@@ -94,6 +92,13 @@ void StepperMotor::enable()
   driver->enable();
   // set zero to PWM
   driver->setPwm(0, 0);
+  // enable the current sense
+  if(current_sense) current_sense->enable();
+  // reset the pids
+  PID_velocity.reset();
+  P_angle.reset();
+  PID_current_q.reset();
+  PID_current_d.reset();
   // motor status update
   enabled = 1;
 }
@@ -181,16 +186,17 @@ int StepperMotor::alignSensor() {
   int exit_flag = 1; //success
   SIMPLEFOC_DEBUG("MOT: Align sensor.");
 
+  // check if sensor needs zero search
+  if(sensor->needsSearch()) exit_flag = absoluteZeroSearch();
+  // stop init if not found index
+  if(!exit_flag) return exit_flag;
+
   // v2.3.3 fix for R_AVR_7_PCREL against symbol" bug for AVR boards
   // TODO figure out why this works
   float voltage_align = voltage_sensor_align;
 
   // if unknown natural direction
   if(sensor_direction == Direction::UNKNOWN){
-    // check if sensor needs zero search
-    if(sensor->needsSearch()) exit_flag = absoluteZeroSearch();
-    // stop init if not found index
-    if(!exit_flag) return exit_flag;
 
     // find natural direction
     // move one electrical revolution forward
@@ -215,7 +221,8 @@ int StepperMotor::alignSensor() {
     setPhaseVoltage(0, 0, 0);
     _delay(200);
     // determine the direction the sensor moved
-    if (mid_angle == end_angle) {
+    float moved =  fabs(mid_angle - end_angle);
+    if (moved<MIN_ANGLE_DETECT_MOVEMENT) { // minimum angle to detect movement
       SIMPLEFOC_DEBUG("MOT: Failed to notice movement");
       return 0; // failed calibration
     } else if (mid_angle < end_angle) {
@@ -226,7 +233,6 @@ int StepperMotor::alignSensor() {
       sensor_direction = Direction::CW;
     }
     // check pole pair number
-    float moved =  fabs(mid_angle - end_angle);
     pp_check_result = !(fabs(moved*pole_pairs - _2PI) > 0.5f);  // 0.5f is arbitrary number it can be lower or higher!
     if( pp_check_result==false ) {
       SIMPLEFOC_DEBUG("MOT: PP check: fail - estimated pp: ", _2PI/moved);
@@ -234,9 +240,8 @@ int StepperMotor::alignSensor() {
       SIMPLEFOC_DEBUG("MOT: PP check: OK!");
     }
 
-  } else { 
+  } else 
     SIMPLEFOC_DEBUG("MOT: Skip dir calib.");
-  }
 
   // zero electric angle not known
   if(!_isset(zero_electric_angle)){
@@ -250,9 +255,7 @@ int StepperMotor::alignSensor() {
     zero_electric_angle = 0;
     zero_electric_angle = electricalAngle();
     _delay(20);
-    if(monitor_port){
-      SIMPLEFOC_DEBUG("MOT: Zero elec. angle: ", zero_electric_angle);
-    }
+    SIMPLEFOC_DEBUG("MOT: Zero elec. angle: ", zero_electric_angle);
     // stop everything
     setPhaseVoltage(0, 0, 0);
     _delay(200);
@@ -290,7 +293,6 @@ int StepperMotor::absoluteZeroSearch() {
   return !sensor->needsSearch();
 }
 
-
 // Iterative function looping FOC algorithm, setting Uq on the Motor
 // The faster it can be run the better
 void StepperMotor::loopFOC() {
@@ -301,42 +303,66 @@ void StepperMotor::loopFOC() {
   //                 of full rotations otherwise.
   if (sensor) sensor->update();
 
-  // if open-loop do nothing
-  if( controller==MotionControlType::angle_openloop || controller==MotionControlType::velocity_openloop ) return;
-
   // if disabled do nothing
   if(!enabled) return;
 
-  // Needs the update() to be called first
-  // This function will not have numerical issues because it uses Sensor::getMechanicalAngle() 
-  // which is in range 0-2PI
-  electrical_angle = electricalAngle();
+  // if open-loop do nothing
+  if( controller==MotionControlType::angle_openloop || controller==MotionControlType::velocity_openloop ) 
+    // calculate the open loop electirical angle
+    electrical_angle = _electricalAngle((shaft_angle), pole_pairs);
+  else
+    // Needs the update() to be called first
+    // This function will not have numerical issues because it uses Sensor::getMechanicalAngle() 
+    // which is in range 0-2PI
+    electrical_angle = electricalAngle();
+
   switch (torque_controller) {
     case TorqueControlType::voltage:
-      // no need to do anything really
+      voltage.q = _constrain(current_sp, -voltage_limit, voltage_limit) + feed_forward_voltage.q;
+      voltage.d = feed_forward_voltage.d;
+      break;
+    case TorqueControlType::estimated_current:
+      if(! _isset(phase_resistance)) return; 
+      // constrain current setpoint
+      current_sp = _constrain(current_sp, -current_limit, current_limit)  + feed_forward_current.q; // desired current is the setpoint
+      // calculate the back-emf voltage if KV_rating available U_bemf = vel*(1/KV)
+      if (_isset(KV_rating)) voltage_bemf = shaft_velocity/(KV_rating*_SQRT2)/_RPM_TO_RADS;
+      // filter the value values
+      current.q = LPF_current_q(current_sp);
+      // calculate the phase voltage
+      voltage.q = current.q * phase_resistance + voltage_bemf;
+      // constrain voltage within limits
+      voltage.q = _constrain(voltage.q, -voltage_limit, voltage_limit) + feed_forward_voltage.q;
+      // d voltage  - lag compensation
+      if(_isset(phase_inductance)) voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit) + feed_forward_voltage.d;
+      else voltage.d = feed_forward_voltage.d;
       break;
     case TorqueControlType::dc_current:
       if(!current_sense) return;
+      // constrain current setpoint
+      current_sp = _constrain(current_sp, -current_limit, current_limit) + feed_forward_current.q;
       // read overall current magnitude
       current.q = current_sense->getDCCurrent(electrical_angle);
       // filter the value values
-      current.q = LPF_current_q(current.q) + feed_forward_current.q;
+      current.q = LPF_current_q(current.q);
       // calculate the phase voltage
-      voltage.q = PID_current_q(current_sp - current.q);
+      voltage.q = PID_current_q(current_sp - current.q) + feed_forward_voltage.q;
       // d voltage  - lag compensation
-      if(_isset(phase_inductance)) voltage.d = _constrain( -(current_sp+feed_forward_current.q)*shaft_velocity*pole_pairs*phase_inductance+feed_forward_voltage.d, -voltage_limit, voltage_limit);
+      if(_isset(phase_inductance)) voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit) + feed_forward_voltage.d;
       else voltage.d = feed_forward_voltage.d;
       break;
     case TorqueControlType::foc_current:
       if(!current_sense) return;
+      // constrain current setpoint
+      current_sp = _constrain(current_sp, -current_limit, current_limit) + feed_forward_current.q;
       // read dq currents
       current = current_sense->getFOCCurrents(electrical_angle);
       // filter values
-      current.q = LPF_current_q(current.q)+feed_forward_current.q;
-      current.d = LPF_current_d(current.d)+feed_forward_current.d;
+      current.q = LPF_current_q(current.q);
+      current.d = LPF_current_d(current.d); 
       // calculate the phase voltages
-      voltage.q = PID_current_q(current_sp - current.q)+feed_forward_voltage.q;
-      voltage.d = PID_current_d(-current.d)+feed_forward_voltage.d;
+      voltage.q = PID_current_q(current_sp - current.q) + feed_forward_voltage.q;
+      voltage.d = PID_current_d(feed_forward_current.d - current.d) + feed_forward_voltage.d;
       // d voltage - lag compensation - TODO verify
       // if(_isset(phase_inductance)) voltage.d = _constrain( voltage.d - current_sp*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit);
       break;
@@ -351,52 +377,43 @@ void StepperMotor::loopFOC() {
 
 // Iterative function running outer loop of the FOC algorithm
 // Behavior of this function is determined by the motor.controller variable
-// It runs either angle, velocity or voltage loop
+// It runs either angle, velocity or torque loop
 // - needs to be called iteratively it is asynchronous function
 // - if target is not set it uses motor.target value
 void StepperMotor::move(float new_target) {
 
   // set internal target variable
-  if(_isset(new_target) ) target = new_target;
+  if(_isset(new_target)) target = new_target;
   
   // downsampling (optional)
   if(motion_cnt++ < motion_downsample) return;
   motion_cnt = 0;
 
+  // read value even if motor is disabled to keep the monitoring updated
+  // except for the open loop modes where the values are updated within angle/velocityOpenLoop functions
+  
   // shaft angle/velocity need the update() to be called first
   // get shaft angle
   // TODO sensor precision: the shaft_angle actually stores the complete position, including full rotations, as a float
   //                        For this reason it is NOT precise when the angles become large.
   //                        Additionally, the way LPF works on angle is a precision issue, and the angle-LPF is a problem
   //                        when switching to a 2-component representation.
-  if( controller!=MotionControlType::angle_openloop && controller!=MotionControlType::velocity_openloop ) 
-    shaft_angle = shaftAngle(); // read value even if motor is disabled to keep the monitoring updated but not in openloop mode
-  // get angular velocity 
-  shaft_velocity = shaftVelocity(); // read value even if motor is disabled to keep the monitoring updated
+  if( controller!=MotionControlType::angle_openloop && controller!=MotionControlType::velocity_openloop ){
+    // read the values only if the motor is not in open loop
+    // because in open loop the shaft angle/velocity is updated within angle/velocityOpenLoop functions
+    shaft_angle = shaftAngle(); 
+    shaft_velocity = shaftVelocity(); 
+  }
 
   // if disabled do nothing
   if(!enabled) return;
+  
 
-
-  // calculate the back-emf voltage if KV_rating available U_bemf = vel*(1/KV)
-  if (_isset(KV_rating)) voltage_bemf = shaft_velocity/(KV_rating*_SQRT3)/_RPM_TO_RADS;
-  // estimate the motor current if phase reistance available and current_sense not available
-  if(!current_sense && _isset(phase_resistance)) current.q = (voltage.q - voltage_bemf)/phase_resistance;
-
-   // upgrade the current based voltage limit
+  // upgrade the current based voltage limit
   switch (controller) {
     case MotionControlType::torque:
-      if(torque_controller == TorqueControlType::voltage){ // if voltage torque control
-        if(!_isset(phase_resistance))  voltage.q = target;
-        else  voltage.q =  target*phase_resistance + voltage_bemf;
-        voltage.q = _constrain(voltage.q, -voltage_limit, voltage_limit);
-        // set d-component (lag compensation if known inductance)
-        if(!_isset(phase_inductance)) voltage.d = 0;
-        else voltage.d = _constrain( -target*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit);
-      }else{
-        current_sp = target; // if current/foc_current torque control
-      }
-      break;
+        current_sp =  target;
+        break;
     case MotionControlType::angle:
       // TODO sensor precision: this calculation is not numerically precise. The target value cannot express precise positions when
       //                        the angles are large. This results in not being able to command small changes at high position values.
@@ -405,39 +422,23 @@ void StepperMotor::move(float new_target) {
       shaft_angle_sp = target;
       // calculate velocity set point
       shaft_velocity_sp = feed_forward_velocity + P_angle( shaft_angle_sp - shaft_angle );
-      shaft_velocity_sp = _constrain(shaft_velocity_sp,-velocity_limit, velocity_limit);
+      shaft_velocity_sp = _constrain(shaft_velocity_sp, -velocity_limit, velocity_limit);
       // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
       current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
-      // if torque controlled through voltage
-      if(torque_controller == TorqueControlType::voltage){
-        // use voltage if phase-resistance not provided
-        if(!_isset(phase_resistance))  voltage.q = current_sp;
-        else  voltage.q =  _constrain( current_sp*phase_resistance + voltage_bemf , -voltage_limit, voltage_limit);
-        // set d-component (lag compensation if known inductance)
-        if(!_isset(phase_inductance)) voltage.d = 0;
-        else voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit);
-      }
       break;
     case MotionControlType::velocity:
       // velocity set point - sensor precision: this calculation is numerically precise.
       shaft_velocity_sp = target;
       // calculate the torque command
       current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if current/foc_current torque control
-      // if torque controlled through voltage control
-      if(torque_controller == TorqueControlType::voltage){
-        // use voltage if phase-resistance not provided
-        if(!_isset(phase_resistance))  voltage.q = current_sp;
-        else  voltage.q = _constrain( current_sp*phase_resistance + voltage_bemf , -voltage_limit, voltage_limit);
-        // set d-component (lag compensation if known inductance)
-        if(!_isset(phase_inductance)) voltage.d = 0;
-        else voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit);
-      }
       break;
     case MotionControlType::velocity_openloop:
       // velocity control in open loop - sensor precision: this calculation is numerically precise.
       shaft_velocity_sp = target;
-      voltage.q = velocityOpenloop(shaft_velocity_sp); // returns the voltage that is set to the motor
-      voltage.d = 0;
+      // this function updates the shaft_angle and shaft_velocity
+      // returns the voltage or current that is to be set to the motor (depending on torque control mode)
+      // returned values correspond to the voltage_limit and current_limit
+      current_sp = velocityOpenloop(shaft_velocity_sp); 
       break;
     case MotionControlType::angle_openloop:
       // angle control in open loop - 
@@ -445,8 +446,10 @@ void StepperMotor::move(float new_target) {
       //                        to the same problems in small set-point changes at high angles 
       //                        as the closed loop version.
       shaft_angle_sp = target;
-      voltage.q = angleOpenloop(shaft_angle_sp); // returns the voltage that is set to the motor
-      voltage.d = 0;
+      // this function updates the shaft_angle and shaft_velocity
+      // returns the voltage or current that is to be set to the motor (depending on torque control mode)
+      // returned values correspond to the voltage_limit and current_limit
+      current_sp = angleOpenloop(shaft_angle_sp); 
       break;
   }
 }
@@ -471,74 +474,4 @@ void StepperMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
 
   // set the voltages in hardware
   driver->setPwm(Ualpha, Ubeta);
-}
-
-// Function (iterative) generating open loop movement for target velocity
-// - target_velocity - rad/s
-// it uses voltage_limit variable
-float StepperMotor::velocityOpenloop(float target_velocity){
-  // get current timestamp
-  unsigned long now_us = _micros();
-  // calculate the sample time from last call
-  float Ts = (now_us - open_loop_timestamp) * 1e-6f;
-  // quick fix for strange cases (micros overflow + timestamp not defined)
-  if(Ts <= 0 || Ts > 0.5f) Ts = 1e-3f;
-
-  // calculate the necessary angle to achieve target velocity
-  shaft_angle = _normalizeAngle(shaft_angle + target_velocity*Ts);
-  // for display purposes
-  shaft_velocity = target_velocity;
-
-  // use voltage limit or current limit
-  float Uq = voltage_limit;
-  if(_isset(phase_resistance)){
-    Uq = _constrain(current_limit*phase_resistance + fabs(voltage_bemf),-voltage_limit, voltage_limit);
-    // recalculate the current  
-    current.q = (Uq - fabs(voltage_bemf))/phase_resistance;
-  }
-
-  // set the maximal allowed voltage (voltage_limit) with the necessary angle
-  setPhaseVoltage(Uq,  0, _electricalAngle(shaft_angle, pole_pairs));
-
-  // save timestamp for next call
-  open_loop_timestamp = now_us;
-
-  return Uq;
-}
-
-// Function (iterative) generating open loop movement towards the target angle
-// - target_angle - rad
-// it uses voltage_limit and velocity_limit variables
-float StepperMotor::angleOpenloop(float target_angle){
-  // get current timestamp
-  unsigned long now_us = _micros();
-  // calculate the sample time from last call
-  float Ts = (now_us - open_loop_timestamp) * 1e-6f;
-  // quick fix for strange cases (micros overflow + timestamp not defined)
-  if(Ts <= 0 || Ts > 0.5f) Ts = 1e-3f;
-
-  // calculate the necessary angle to move from current position towards target angle
-  // with maximal velocity (velocity_limit)
-  if(abs( target_angle - shaft_angle ) > abs(velocity_limit*Ts)){
-    shaft_angle += _sign(target_angle - shaft_angle) * abs( velocity_limit )*Ts;
-    shaft_velocity = velocity_limit;
-  }else{
-    shaft_angle = target_angle;
-    shaft_velocity = 0;
-  }
-
-  // use voltage limit or current limit
-  float Uq = voltage_limit;
-  if(_isset(phase_resistance)){
-    Uq = _constrain(current_limit*phase_resistance + fabs(voltage_bemf),-voltage_limit, voltage_limit);
-    // recalculate the current  
-    current.q = (Uq - fabs(voltage_bemf))/phase_resistance;
-  }
-  // set the maximal allowed voltage (voltage_limit) with the necessary angle
-  setPhaseVoltage(Uq,  0, _electricalAngle((shaft_angle), pole_pairs));
-
-  // save timestamp for next call
-  open_loop_timestamp = now_us;
-
-  return Uq;
 }
