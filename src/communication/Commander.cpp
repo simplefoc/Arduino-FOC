@@ -262,7 +262,11 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
       switch (sub_cmd){
         case SCMD_LOOPFOC_TIME:      // loopFOC execution time
           printVerbose(F("loop time: "));
-          println((int)motor->loop_time_us);
+          println((int)motor->loopfoc_time_us);
+          break;
+        case SCMD_MOVE_TIME:      // loopFOC execution time
+          printVerbose(F("move time: "));
+          println((int)motor->move_time_us);
           break;
         case SCMD_REINIT_FOC:
           printVerbose(F("Reinit!"));

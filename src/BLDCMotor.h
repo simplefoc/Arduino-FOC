@@ -32,46 +32,20 @@ class BLDCMotor: public FOCMotor
      */
     virtual void linkDriver(BLDCDriver* driver);
 
-    /** 
-      * BLDCDriver link:
-      * - 3PWM 
-      * - 6PWM 
-    */
-    BLDCDriver* driver; 
+
+    float Ua, Ub, Uc;//!< Current phase voltages Ua,Ub and Uc set to motor
+
+    BLDCDriver* driver; //!< BLDCDriver instance
+    // Methods implementing the FOCMotor interface
     
     /**  Motor hardware init function */
-  	int init() override;
+    int init() override;
     /** Motor disable function */
   	void disable() override;
     /** Motor enable function */
     void enable() override;
 
     /**
-     * Function initializing FOC algorithm
-     * and aligning sensor's and motors' zero position 
-     */  
-    int initFOC() override;
-    /**
-     * Function running FOC algorithm in real-time
-     * it calculates the gets motor angle and sets the appropriate voltages 
-     * to the phase pwm signals
-     * - the faster you can run it the better Arduino UNO ~1ms, Bluepill ~ 100us
-     */ 
-    void loopFOC() override;
-
-    /**
-     * Function executing the control loops set by the controller parameter of the BLDCMotor.
-     * 
-     * @param target  Either voltage, angle or velocity based on the motor.controller
-     *                If it is not set the motor will use the target set in its variable motor.target
-     * 
-     * This function doesn't need to be run upon each loop execution - depends of the use case
-     */
-    void move(float target = NOT_SET) override;
-    
-    float Ua, Ub, Uc;//!< Current phase voltages Ua,Ub and Uc set to motor
-    
-  /**
     * Method using FOC to set Uq to the motor at the optimal angle
     * Heart of the FOC algorithm
     * 
@@ -80,6 +54,17 @@ class BLDCMotor: public FOCMotor
     * @param angle_el current electrical angle of the motor
     */
     void setPhaseVoltage(float Uq, float Ud, float angle_el) override;
+
+    /**
+     * Method estimating the Back EMF voltage based
+     * based on the current velocity and KV rating
+     * 
+     * @param velocity Current motor velocity
+     */
+    float estimateBEMF(float velocity) override;
+
+
+    // Methods overriding the FOCMotor default behavior
 
     /**
      * Measure resistance and inductance of a BLDCMotor and print results to debug.
@@ -91,15 +76,7 @@ class BLDCMotor: public FOCMotor
       return FOCMotor::characteriseMotor(voltage, 1.5f);
     }
     
-  private:
-    // FOC methods 
 
-    /** Sensor alignment to electrical 0 angle of the motor */
-    int alignSensor();
-    /** Current sense and motor phase alignment */
-    int alignCurrentSense();
-    /** Motor and sensor alignment to the sensors absolute 0 angle  */
-    int absoluteZeroSearch();
 };
 
 

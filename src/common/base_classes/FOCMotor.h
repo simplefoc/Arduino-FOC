@@ -78,12 +78,60 @@ class FOCMotor
      */
     FOCMotor();
 
+
+    // Methods that need to be implemented, defining the FOCMotor interface
+
     /**  Motor hardware init function */
-  	virtual int init()=0;
+  	virtual int init() = 0;
     /** Motor disable function */
   	virtual void disable()=0;
     /** Motor enable function */
     virtual void enable()=0;
+
+    /**
+    * Method using FOC to set Uq to the motor at the optimal angle
+    * Heart of the FOC algorithm
+    * 
+    * @param Uq Current voltage in q axis to set to the motor
+    * @param Ud Current voltage in d axis to set to the motor
+    * @param angle_el current electrical angle of the motor
+    */
+    virtual void setPhaseVoltage(float Uq, float Ud, float angle_el)=0;
+    
+    /**
+     * Estimation of the Back EMF voltage
+     * 
+     * @param velocity - current shaft velocity
+     */
+    virtual float estimateBEMF(float velocity){return 0.0f;};
+
+    // Methods that have a default behavior but can be overriden if needed
+
+    /**
+     * Function initializing FOC algorithm
+     * and aligning sensor's and motors' zero position 
+     * 
+     * - If zero_electric_offset parameter is set the alignment procedure is skipped
+     */  
+    virtual int initFOC();
+
+    /**
+     * Function running FOC algorithm in real-time
+     * it calculates the gets motor angle and sets the appropriate voltages 
+     * to the phase pwm signals
+     * - the faster you can run it the better Arduino UNO ~1ms, Bluepill ~ 100us
+     */ 
+    virtual void loopFOC();
+
+    /**
+     * Function executing the control loops set by the controller.
+     * 
+     * @param target  Either voltage, angle or velocity based on the motor.controller
+     *                If it is not set the motor will use the target set in its variable motor.target
+     * 
+     * This function doesn't need to be run upon each loop execution - depends of the use case
+     */
+    virtual void move(float target = NOT_SET);
 
     /**
      * Function linking a motor and a sensor 
@@ -100,40 +148,6 @@ class FOCMotor
     void linkCurrentSense(CurrentSense* current_sense);
 
 
-    /**
-     * Function initializing FOC algorithm
-     * and aligning sensor's and motors' zero position 
-     * 
-     * - If zero_electric_offset parameter is set the alignment procedure is skipped
-     */  
-    virtual int initFOC()=0;
-    /**
-     * Function running FOC algorithm in real-time
-     * it calculates the gets motor angle and sets the appropriate voltages 
-     * to the phase pwm signals
-     * - the faster you can run it the better Arduino UNO ~1ms, Bluepill ~ 100us
-     */ 
-    virtual void loopFOC()=0;
-    /**
-     * Function executing the control loops set by the controller parameter of the BLDCMotor.
-     * 
-     * @param target  Either voltage, angle or velocity based on the motor.controller
-     *                If it is not set the motor will use the target set in its variable motor.target
-     * 
-     * This function doesn't need to be run upon each loop execution - depends of the use case
-     */
-    virtual void move(float target = NOT_SET)=0;
-
-    /**
-    * Method using FOC to set Uq to the motor at the optimal angle
-    * Heart of the FOC algorithm
-    * 
-    * @param Uq Current voltage in q axis to set to the motor
-    * @param Ud Current voltage in d axis to set to the motor
-    * @param angle_el current electrical angle of the motor
-    */
-    virtual void setPhaseVoltage(float Uq, float Ud, float angle_el)=0;
-    
     // State calculation methods 
     /** Shaft angle calculation in radians [rad] */
     float shaftAngle();
@@ -143,12 +157,11 @@ class FOCMotor
      */
     float shaftVelocity();
 
-
-
     /** 
      * Electrical angle calculation  
      */
     float electricalAngle();
+
 
     /**
      * Measure resistance and inductance of a motor and print results to debug.
@@ -260,24 +273,15 @@ class FOCMotor
       * - HallSensor
     */
     Sensor* sensor; 
-    /** 
-      * CurrentSense link
-    */
+    //!< CurrentSense link
     CurrentSense* current_sense; 
 
     // monitoring functions
     Print* monitor_port; //!< Serial terminal variable if provided
 
     //!< time between two loopFOC executions in microseconds
-    uint32_t loop_time_us = 0; //!< filtered loop times
-
-    /**
-     * Function udating loop time measurement
-     * time between two loopFOC executions in microseconds
-     * It filters the value using low pass filtering alpha = 0.1
-     * @note - using _micros() function - be aware of its overflow every ~70 minutes
-     */
-    void updateLoopTime();
+    uint32_t loopfoc_time_us = 0; //!< filtered loop times
+    uint32_t move_time_us = 0; // filtered motion control times
 
     /**
      * Update limit values in controllers when changed
@@ -342,15 +346,49 @@ class FOCMotor
      * @param target_angle - rad
      */
     float angleOpenloop(float target_angle);
-    // open loop variables
-    uint32_t open_loop_timestamp;
+  
+  protected:
+
+    /**
+     * Function udating loop time measurement
+     * time between two loopFOC executions in microseconds
+     * It filters the value using low pass filtering alpha = 0.1
+     * @note - using _micros() function - be aware of its overflow every ~70 minutes
+     */
+    void updateLoopFOCTime(){
+      updateTime(loopfoc_time_us, last_loopfoc_time_us, last_loopfoc_timestamp_us);
+    }
+
+    void updateMotionControlTime(){
+      updateTime(move_time_us, last_move_time_us, last_move_timestamp_us);
+    }
+
+    /** Sensor alignment to electrical 0 angle of the motor */
+    int alignSensor();
+    /** Current sense and motor phase alignment */
+    int alignCurrentSense();
+    /** Motor and sensor alignment to the sensors absolute 0 angle  */
+    int absoluteZeroSearch();
     
+    uint32_t last_loopfoc_timestamp_us = 0; //!< timestamp of the last loopFOC execution in microseconds
+    uint32_t last_loopfoc_time_us = 0; //!< last elapsed time of loopFOC in microseconds
+    uint32_t last_move_timestamp_us = 0; //!< timestamp of the last move execution in microseconds
+    uint32_t last_move_time_us = 0; //!< last elapsed time of move in microseconds
   private:
     // monitor counting variable
     unsigned int monitor_cnt = 0 ; //!< counting variable
 
-    uint32_t last_loop_timestamp_us = 0; //!< timestamp of the last loopFOC execution in microseconds
-    uint32_t last_loop_time_us = 0; //!< time between two loopFOC executions in microseconds
+    // time measuring function 
+    // It filters the value using low pass filtering alpha = 0.1
+    void updateTime(uint32_t& elapsed_time_filetered, uint32_t& elapsed_time, uint32_t& last_timestamp_us, float alpha = 0.1f){
+      uint32_t now = _micros();
+      elapsed_time = now - last_timestamp_us;
+      elapsed_time_filetered = (1-alpha) * elapsed_time_filetered + alpha * elapsed_time;
+      last_timestamp_us = now;
+    }
+
+    // open loop variables
+    uint32_t open_loop_timestamp;
     
     
 };
