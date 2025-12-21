@@ -49,7 +49,9 @@
  #define SCMD_PWMMOD_TYPE   'T'  //!<< Pwm modulation type
  #define SCMD_PWMMOD_CENTER 'C'  //!<< Pwm modulation center flag
 
- #define SCMD_LOOPFOC_TIME   'L' //!< loopFOC execution time
+ #define SCMD_LOOPFOC_TIME  'L' //!< loopFOC time between executions (filtered)
+ #define SCMD_MOVE_TIME     'M' //!< move time between executions (filtered)
  #define SCMD_REINIT_FOC    'R' //!< reinitialize FOC
+ #define SCMD_TUNE_CURR     'C' //!< tune current controller
 
 #endif

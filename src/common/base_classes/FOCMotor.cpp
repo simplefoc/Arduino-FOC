@@ -309,6 +309,9 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
       SIMPLEFOC_DEBUG("WARN: MOT: Measured Q inductance is more than twice the D inductance. This is probably wrong. From experience, the lower value is probably close to reality.");
     }    
 
+    // store the measured values
+    phase_resistance = 2.0f * resistance;
+    phase_inductance = (Ld + Lq) / 2.0f;
     return 0;
     
 }
@@ -439,16 +442,6 @@ float FOCMotor::angleOpenloop(float target_angle){
     return current_limit;
 }
 
-// Function udating loop time measurement
-// time between two loopFOC executions in microseconds
-// It filters the value using low pass filtering alpha = 0.1
-void FOCMotor::updateLoopTime() {
-  uint32_t now = _micros();
-  last_loop_time_us = now - last_loop_timestamp_us;
-  loop_time_us = 0.9f * loop_time_us + 0.1f * last_loop_time_us;
-  last_loop_timestamp_us = now;
-}
-
 // Update limit values in controllers when changed
 void FOCMotor::updateVelocityLimit(float new_velocity_limit) {
   velocity_limit = new_velocity_limit;
@@ -520,4 +513,398 @@ void FOCMotor::updateMotionControlType(MotionControlType new_motion_controller) 
 
   // finally set the new controller
   controller = new_motion_controller; 
+}
+
+
+int FOCMotor::tuneCurrentController(float bandwidth) {
+  if (bandwidth <= 0.0f) {
+    // check bandwidth is positive
+    SIMPLEFOC_DEBUG("ERR: MOT: Cannot tune current controller: bandwidth must be positive");
+    return 1;
+  }
+  if (loopfoc_time_us && bandwidth > 0.5f * (1e6f / loopfoc_time_us)) {
+    // check bandwidth is not too high for the control loop frequency
+    SIMPLEFOC_DEBUG("ERR: MOT: Bandwidth too high, current loop freq:" , (1e6f / loopfoc_time_us));
+    return 2;
+  }
+  if (!_isset(phase_resistance) || !_isset(phase_inductance)) {
+    // need motor parameters to tune the controller
+    SIMPLEFOC_DEBUG("MOT: Measuring motor parameters!");
+    if(characteriseMotor( voltage_sensor_align )) { 
+      return 3;
+    }
+  }
+
+  // Simple tuning method for a first order system
+  float Kp = phase_inductance * (_2PI * bandwidth);
+  float Ki = phase_resistance * (_2PI * bandwidth);
+
+  PID_current_q.P = Kp;
+  PID_current_q.I = Ki;
+  PID_current_d.P = Kp;
+  PID_current_d.I = Ki;
+  LPF_current_d.Tf = 1.0f / (_2PI * bandwidth * 5.0f); // filter cutoff at 5x bandwidth
+  LPF_current_q.Tf = 1.0f / (_2PI * bandwidth * 5.0f); // filter cutoff at 5x bandwidth
+
+  SIMPLEFOC_DEBUG("MOT: Current controller tuned:\nMOT: Bandwidth (Hz): ", bandwidth);
+  SIMPLEFOC_DEBUG("MOT:   Kp: ", Kp);
+  SIMPLEFOC_DEBUG("MOT:   Ki: ", Ki);
+
+  return 0;
+}
+
+
+
+// Iterative function looping FOC algorithm, setting Uq on the Motor
+// The faster it can be run the better
+void FOCMotor::loopFOC() {
+  // update loop time measurement
+  updateLoopFOCTime();
+  
+  // update sensor - do this even in open-loop mode, as user may be switching between modes and we could lose track
+  //                 of full rotations otherwise.
+  if (sensor) sensor->update();
+
+  // if disabled do nothing
+  if(!enabled) return;
+
+  // if open-loop do nothing
+  if( controller==MotionControlType::angle_openloop || controller==MotionControlType::velocity_openloop ) 
+    // calculate the open loop electirical angle
+    electrical_angle = _electricalAngle((shaft_angle), pole_pairs);
+  else
+    // Needs the update() to be called first
+    // This function will not have numerical issues because it uses Sensor::getMechanicalAngle() 
+    // which is in range 0-2PI
+    electrical_angle = electricalAngle();
+
+  switch (torque_controller) {
+    case TorqueControlType::voltage:
+      voltage.q = _constrain(current_sp, -voltage_limit, voltage_limit) + feed_forward_voltage.q;
+      voltage.d = feed_forward_voltage.d;
+      break;
+    case TorqueControlType::estimated_current:
+      if(! _isset(phase_resistance)) return; 
+      // constrain current setpoint
+      current_sp = _constrain(current_sp, -current_limit, current_limit)  + feed_forward_current.q; // desired current is the setpoint
+      // calculate the back-emf voltage if KV_rating available U_bemf = vel*(1/KV)
+      if (_isset(KV_rating)) voltage_bemf = estimateBEMF(shaft_velocity);
+      // filter the value values
+      current.q = LPF_current_q(current_sp);
+      // calculate the phase voltage
+      voltage.q = current.q * phase_resistance + voltage_bemf;
+      // constrain voltage within limits
+      voltage.q = _constrain(voltage.q, -voltage_limit, voltage_limit) + feed_forward_voltage.q;
+      // d voltage  - lag compensation
+      if(_isset(phase_inductance)) voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit) + feed_forward_voltage.d;
+      else voltage.d = feed_forward_voltage.d;
+      break;
+    case TorqueControlType::dc_current:
+      if(!current_sense) return;
+      // constrain current setpoint
+      current_sp = _constrain(current_sp, -current_limit, current_limit) + feed_forward_current.q;
+      // read overall current magnitude
+      current.q = current_sense->getDCCurrent(electrical_angle);
+      // filter the value values
+      current.q = LPF_current_q(current.q);
+      // calculate the phase voltage
+      voltage.q = PID_current_q(current_sp - current.q) + feed_forward_voltage.q;
+      // d voltage  - lag compensation
+      if(_isset(phase_inductance)) voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit) + feed_forward_voltage.d;
+      else voltage.d = feed_forward_voltage.d;
+      break;
+    case TorqueControlType::foc_current:
+      if(!current_sense) return;
+      // constrain current setpoint
+      current_sp = _constrain(current_sp, -current_limit, current_limit) + feed_forward_current.q;
+      // read dq currents
+      current = current_sense->getFOCCurrents(electrical_angle);
+      // filter values
+      current.q = LPF_current_q(current.q);
+      current.d = LPF_current_d(current.d); 
+      // calculate the phase voltages
+      voltage.q = PID_current_q(current_sp - current.q) + feed_forward_voltage.q;
+      voltage.d = PID_current_d(feed_forward_current.d - current.d) + feed_forward_voltage.d;
+      // d voltage - lag compensation - TODO verify
+      // if(_isset(phase_inductance)) voltage.d = _constrain( voltage.d - current_sp*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit);
+      break;
+    default:
+      // no torque control selected
+      SIMPLEFOC_DEBUG("MOT: no torque control selected!");
+      break;
+  }
+  // set the phase voltage - FOC heart function :)
+  setPhaseVoltage(voltage.q, voltage.d, electrical_angle);
+}
+
+// Iterative function running outer loop of the FOC algorithm
+// Behavior of this function is determined by the motor.controller variable
+// It runs either angle, velocity or voltage loop
+// - needs to be called iteratively it is asynchronous function
+// - if target is not set it uses motor.target value
+void FOCMotor::move(float new_target) {
+
+  // set internal target variable
+  if(_isset(new_target) ) target = new_target;
+  
+  // downsampling (optional)
+  if(motion_cnt++ < motion_downsample) return;
+  motion_cnt = 0;
+
+  // calculate the elapsed time between the calls
+  // TODO replace downsample by runnind the code at 
+  // a specific frequency (or almost)
+  updateMotionControlTime();
+
+  // read value even if motor is disabled to keep the monitoring updated
+  // except for the open loop modes where the values are updated within angle/velocityOpenLoop functions
+  
+  // shaft angle/velocity need the update() to be called first
+  // get shaft angle
+  // TODO sensor precision: the shaft_angle actually stores the complete position, including full rotations, as a float
+  //                        For this reason it is NOT precise when the angles become large.
+  //                        Additionally, the way LPF works on angle is a precision issue, and the angle-LPF is a problem
+  //                        when switching to a 2-component representation.
+  if( controller!=MotionControlType::angle_openloop && controller!=MotionControlType::velocity_openloop ){
+    // read the values only if the motor is not in open loop
+    // because in open loop the shaft angle/velocity is updated within angle/velocityOpenLoop functions
+    shaft_angle = shaftAngle(); 
+    shaft_velocity = shaftVelocity(); 
+  }
+
+  // if disabled do nothing
+  if(!enabled) return;
+  
+
+  // upgrade the current based voltage limit
+  switch (controller) {
+    case MotionControlType::torque:
+        current_sp =  target;
+        break;
+    case MotionControlType::angle:
+      // TODO sensor precision: this calculation is not numerically precise. The target value cannot express precise positions when
+      //                        the angles are large. This results in not being able to command small changes at high position values.
+      //                        to solve this, the delta-angle has to be calculated in a numerically precise way.
+      // angle set point
+      shaft_angle_sp = target;
+      // calculate velocity set point
+      shaft_velocity_sp = feed_forward_velocity + P_angle( shaft_angle_sp - shaft_angle );
+      shaft_velocity_sp = _constrain(shaft_velocity_sp, -velocity_limit, velocity_limit);
+      // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
+      current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
+      break;
+    case MotionControlType::velocity:
+      // velocity set point - sensor precision: this calculation is numerically precise.
+      shaft_velocity_sp = target;
+      // calculate the torque command
+      current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if current/foc_current torque control
+      break;
+    case MotionControlType::velocity_openloop:
+      // velocity control in open loop - sensor precision: this calculation is numerically precise.
+      shaft_velocity_sp = target;
+      // this function updates the shaft_angle and shaft_velocity
+      // returns the voltage or current that is to be set to the motor (depending on torque control mode)
+      // returned values correspond to the voltage_limit and current_limit
+      current_sp = velocityOpenloop(shaft_velocity_sp); 
+      break;
+    case MotionControlType::angle_openloop:
+      // angle control in open loop - 
+      // TODO sensor precision: this calculation NOT numerically precise, and subject
+      //                        to the same problems in small set-point changes at high angles 
+      //                        as the closed loop version.
+      shaft_angle_sp = target;
+      // this function updates the shaft_angle and shaft_velocity
+      // returns the voltage or current that is to be set to the motor (depending on torque control mode)
+      // returned values correspond to the voltage_limit and current_limit
+      current_sp = angleOpenloop(shaft_angle_sp); 
+      break;
+  }
+}
+
+
+// FOC initialization function
+int  FOCMotor::initFOC() {
+  int exit_flag = 1;
+
+  motor_status = FOCMotorStatus::motor_calibrating;
+
+  // align motor if necessary
+  // alignment necessary for encoders!
+  // sensor and motor alignment - can be skipped
+  // by setting motor.sensor_direction and motor.zero_electric_angle
+  if(sensor){
+    exit_flag *= alignSensor();
+    // added the shaft_angle update
+    sensor->update();
+    shaft_angle = shaftAngle();
+
+    // aligning the current sensor - can be skipped
+    // checks if driver phases are the same as current sense phases
+    // and checks the direction of measuremnt.
+    if(exit_flag){
+      if(current_sense){ 
+        if (!current_sense->initialized) {
+          motor_status = FOCMotorStatus::motor_calib_failed;
+          SIMPLEFOC_DEBUG("MOT: Init FOC error, current sense not initialized");
+          exit_flag = 0;
+        }else{
+          exit_flag *= alignCurrentSense();
+        }
+      }
+      else { SIMPLEFOC_DEBUG("MOT: No current sense."); }
+    }
+
+  } else {
+    SIMPLEFOC_DEBUG("MOT: No sensor.");
+    if ((controller == MotionControlType::angle_openloop || controller == MotionControlType::velocity_openloop)){
+      exit_flag = 1;    
+      SIMPLEFOC_DEBUG("MOT: Openloop only!");
+    }else{
+      exit_flag = 0; // no FOC without sensor
+    }
+  }
+
+  if(exit_flag){
+    SIMPLEFOC_DEBUG("MOT: Ready.");
+    motor_status = FOCMotorStatus::motor_ready;
+  }else{
+    SIMPLEFOC_DEBUG("MOT: Init FOC failed.");
+    motor_status = FOCMotorStatus::motor_calib_failed;
+    disable();
+  }
+
+  return exit_flag;
+}
+
+// Calibarthe the motor and current sense phases
+int FOCMotor::alignCurrentSense() {
+  int exit_flag = 1; // success
+
+  SIMPLEFOC_DEBUG("MOT: Align current sense.");
+
+  // align current sense and the driver
+  exit_flag = current_sense->driverAlign(voltage_sensor_align, modulation_centered);
+  if(!exit_flag){
+    // error in current sense - phase either not measured or bad connection
+    SIMPLEFOC_DEBUG("MOT: Align error!");
+    exit_flag = 0;
+  }else{
+    // output the alignment status flag
+    SIMPLEFOC_DEBUG("MOT: Success: ", exit_flag);
+  }
+
+  return exit_flag > 0;
+}
+
+// Encoder alignment to electrical 0 angle
+int FOCMotor::alignSensor() {
+  int exit_flag = 1; // success
+  SIMPLEFOC_DEBUG("MOT: Align sensor.");
+
+  // check if sensor needs zero search
+  if(sensor->needsSearch()) exit_flag = absoluteZeroSearch();
+  // stop init if not found index
+  if(!exit_flag) return exit_flag;
+
+  // v2.3.3 fix for R_AVR_7_PCREL against symbol" bug for AVR boards
+  // TODO figure out why this works
+  float voltage_align = voltage_sensor_align;
+
+  // if unknown natural direction
+  if(sensor_direction == Direction::UNKNOWN){
+
+    // find natural direction
+    // move one electrical revolution forward
+    for (int i = 0; i <=500; i++ ) {
+      float angle = _3PI_2 + _2PI * i / 500.0f;
+      setPhaseVoltage(voltage_align, 0,  angle);
+	    sensor->update();
+      _delay(2);
+    }
+    // take and angle in the middle
+    sensor->update();
+    float mid_angle = sensor->getAngle();
+    // move one electrical revolution backwards
+    for (int i = 500; i >=0; i-- ) {
+      float angle = _3PI_2 + _2PI * i / 500.0f ;
+      setPhaseVoltage(voltage_align, 0,  angle);
+	    sensor->update();
+      _delay(2);
+    }
+    sensor->update();
+    float end_angle = sensor->getAngle();
+    // setPhaseVoltage(0, 0, 0);
+    _delay(200);
+    // determine the direction the sensor moved
+    float moved =  fabs(mid_angle - end_angle);
+    if (moved<MIN_ANGLE_DETECT_MOVEMENT) { // minimum angle to detect movement
+      SIMPLEFOC_DEBUG("MOT: Failed to notice movement");
+      return 0; // failed calibration
+    } else if (mid_angle < end_angle) {
+      SIMPLEFOC_DEBUG("MOT: sensor_direction==CCW");
+      sensor_direction = Direction::CCW;
+    } else{
+      SIMPLEFOC_DEBUG("MOT: sensor_direction==CW");
+      sensor_direction = Direction::CW;
+    }
+    // check pole pair number
+    pp_check_result = !(fabs(moved*pole_pairs - _2PI) > 0.5f);  // 0.5f is arbitrary number it can be lower or higher!
+    if( pp_check_result==false ) {
+      SIMPLEFOC_DEBUG("MOT: PP check: fail - estimated pp: ", _2PI/moved);
+    } else {
+      SIMPLEFOC_DEBUG("MOT: PP check: OK!");
+    }
+
+  } else SIMPLEFOC_DEBUG("MOT: Skip dir calib."); 
+
+  // zero electric angle not known
+  if(!_isset(zero_electric_angle)){
+    // align the electrical phases of the motor and sensor
+    // set angle -90(270 = 3PI/2) degrees
+    setPhaseVoltage(voltage_align, 0,  _3PI_2);
+    _delay(700);
+    // read the sensor
+    sensor->update();
+    // get the current zero electric angle
+    zero_electric_angle = 0;
+    zero_electric_angle = electricalAngle();
+    _delay(20);
+    SIMPLEFOC_DEBUG("MOT: Zero elec. angle: ", zero_electric_angle);
+    // stop everything
+    setPhaseVoltage(0, 0, 0);
+    _delay(200);
+  } else { SIMPLEFOC_DEBUG("MOT: Skip offset calib."); }
+  return exit_flag;
+}
+
+
+// Encoder alignment the absolute zero angle
+// - to the index
+int FOCMotor::absoluteZeroSearch() {
+  // sensor precision: this is all ok, as the search happens near the 0-angle, where the precision
+  //                    of float is sufficient.
+  SIMPLEFOC_DEBUG("MOT: Index search...");
+  // search the absolute zero with small velocity
+  float limit_vel = velocity_limit;
+  float limit_volt = voltage_limit;
+  velocity_limit = velocity_index_search;
+  voltage_limit = voltage_sensor_align;
+  shaft_angle = 0;
+  while(sensor->needsSearch() && shaft_angle < _2PI){
+    angleOpenloop(1.5f*_2PI);
+    // call important for some sensors not to loose count
+    // not needed for the search
+    sensor->update();
+  }
+  // disable motor
+  setPhaseVoltage(0, 0, 0);
+  // reinit the limits
+  velocity_limit = limit_vel;
+  voltage_limit = limit_volt;
+  // check if the zero found
+  if(monitor_port){
+    if(sensor->needsSearch()) { SIMPLEFOC_DEBUG("MOT: Error: Not found!"); }
+    else { SIMPLEFOC_DEBUG("MOT: Success!"); }
+  }
+  return !sensor->needsSearch();
 }

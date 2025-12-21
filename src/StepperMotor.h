@@ -42,38 +42,17 @@ class StepperMotor: public FOCMotor
     */
     StepperDriver* driver; 
 
+
+    // Methods implementing the FOCMotor interface
+
     /**  Motor hardware init function */
-  	int init() override;
+    int init() override;
     /** Motor disable function */
   	void disable() override;
     /** Motor enable function */
     void enable() override;
-
-    /**
-     * Function initializing FOC algorithm
-     * and aligning sensor's and motors' zero position 
-     * 
-     * - If zero_electric_offset parameter is set the alignment procedure is skipped
-     */  
-    int initFOC() override;
-    /**
-     * Function running FOC algorithm in real-time
-     * it calculates the gets motor angle and sets the appropriate voltages 
-     * to the phase pwm signals
-     * - the faster you can run it the better Arduino UNO ~1ms, Bluepill ~ 100us
-     */ 
-    void loopFOC() override;
-    /**
-     * Function executing the control loops set by the controller parameter of the StepperMotor.
-     * 
-     * @param target  Either voltage, angle or velocity based on the motor.controller
-     *                If it is not set the motor will use the target set in its variable motor.target
-     * 
-     * This function doesn't need to be run upon each loop execution - depends of the use case
-     */
-    void move(float target = NOT_SET) override;
     
-  /**
+    /**
     * Method using FOC to set Uq to the motor at the optimal angle
     * Heart of the FOC algorithm
     * 
@@ -83,6 +62,16 @@ class StepperMotor: public FOCMotor
     */
     void setPhaseVoltage(float Uq, float Ud, float angle_el) override;
 
+    /**
+     * Method estimating the Back EMF voltage based
+     * based on the current velocity and KV rating
+     * 
+     * @param velocity Current motor velocity
+     */
+    float estimateBEMF(float velocity) override;
+
+    // Methods overriding the FOCMotor default behavior
+    
     /**
      * Measure resistance and inductance of a StepperMotor and print results to debug.
      * If a sensor is available, an estimate of zero electric angle will be reported too.
@@ -94,14 +83,6 @@ class StepperMotor: public FOCMotor
       return FOCMotor::characteriseMotor(voltage, 1.0f);
     }
 
-  private:
-  
-    /** Sensor alignment to electrical 0 angle of the motor */
-    int alignSensor();
-    /** Motor and sensor alignment to the sensors absolute 0 angle  */
-    int absoluteZeroSearch();
-    /** Current sense and motor phase alignment */
-    int alignCurrentSense();
 };
 
 
