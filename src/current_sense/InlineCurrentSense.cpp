@@ -67,6 +67,7 @@ void InlineCurrentSense::calibrateOffsets(){
     offset_ic = 0;
     // read the adc voltage 1000 times ( arbitrary number )
     for (int i = 0; i < calibration_rounds; i++) {
+        _startADC3PinConversionInline();
         if(_isset(pinA)) offset_ia += _readADCVoltageInline(pinA, params);
         if(_isset(pinB)) offset_ib += _readADCVoltageInline(pinB, params);
         if(_isset(pinC)) offset_ic += _readADCVoltageInline(pinC, params);
@@ -81,6 +82,7 @@ void InlineCurrentSense::calibrateOffsets(){
 // read all three phase currents (if possible 2 or 3)
 PhaseCurrent_s InlineCurrentSense::getPhaseCurrents(){
     PhaseCurrent_s current;
+    _startADC3PinConversionInline();
     current.a = (!_isset(pinA)) ? 0 : (_readADCVoltageInline(pinA, params) - offset_ia)*gain_a;// amps
     current.b = (!_isset(pinB)) ? 0 : (_readADCVoltageInline(pinB, params) - offset_ib)*gain_b;// amps
     current.c = (!_isset(pinC)) ? 0 : (_readADCVoltageInline(pinC, params) - offset_ic)*gain_c; // amps

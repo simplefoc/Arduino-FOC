@@ -7,12 +7,21 @@
 */
 // function reading an ADC value and returning the read voltage
 float IRAM_ATTR _readADCVoltageInline(const int pinA, const void* cs_params){
+#if ESP32_I2S_ADC == true
+  return _readADCVoltageI2S(pinA, cs_params);
+#else
   uint32_t raw_adc = adcRead(pinA);
-  return raw_adc * ((ESP32CurrentSenseParams*)cs_params)->adc_voltage_conv;
+  return raw_adc * ((ESP32MCPWMCurrentSenseParams *)cs_params)->adc_voltage_conv;
+#endif
 }
 
 // function reading an ADC value and returning the read voltage
 void* IRAM_ATTR _configureADCInline(const void* driver_params, const int pinA, const int pinB, const int pinC){
+
+#if ESP32_I2S_ADC == true
+  return _configureI2S(false, driver_params, pinA, pinB, pinC);
+#else
+  _UNUSED(driver_params);
 
   ESP32CurrentSenseParams* params = new ESP32CurrentSenseParams {
     .pins = { pinA, pinB, pinC },
@@ -30,8 +39,8 @@ void* IRAM_ATTR _configureADCInline(const void* driver_params, const int pinA, c
       }
     }
   }
-
   return params;
+#endif
 }
 
 

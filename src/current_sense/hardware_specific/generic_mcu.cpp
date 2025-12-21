@@ -45,3 +45,7 @@ __attribute__((weak)) void* _driverSyncLowSide(void* driver_params, void* cs_par
 // function starting the ADC conversion for the high side current sensing
 // only necessary for certain types of MCUs 
 __attribute__((weak)) void _startADC3PinConversionLowSide(){ }
+
+// function starting the ADC conversion for the inline current sensing
+// only necessary for certain types of MCUs
+__attribute__((weak)) void _startADC3PinConversionInline(){ }

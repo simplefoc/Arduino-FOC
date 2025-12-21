@@ -16,6 +16,7 @@
 #include "soc/mcpwm_reg.h"
 #include "soc/mcpwm_struct.h"
 
+#include "esp32_i2s_driver.h"
 
 
 // adding a debug toggle pin to measure the time of the interrupt with oscilloscope
@@ -44,6 +45,9 @@
 
 // function reading an ADC value and returning the read voltage
 float IRAM_ATTR _readADCVoltageLowSide(const int pin, const void* cs_params){
+#if ESP32_I2S_ADC == true
+  return _readADCVoltageI2S(pin, cs_params);
+#else
   ESP32CurrentSenseParams* p = (ESP32CurrentSenseParams*)cs_params;
   int no_channel = 0;
   for(int i=0; i < 3; i++){
@@ -55,11 +59,18 @@ float IRAM_ATTR _readADCVoltageLowSide(const int pin, const void* cs_params){
   SIMPLEFOC_DEBUG("ERROR: ADC pin not found in the buffer!");
   // not found
   return  0;
+#endif
 }
 
 
 // function configuring low-side current sensing
 void* IRAM_ATTR _configureADCLowSide(const void* driver_params, const int pinA,const int pinB,const int pinC){
+
+
+#if ESP32_I2S_ADC == true
+  return _configureI2S(false, driver_params, pinA, pinB, pinC);
+#endif
+
   // check if driver timer is already running
   // fail if it is
   // the easiest way that I've found to check if timer is running
@@ -95,6 +106,7 @@ void* IRAM_ATTR _configureADCLowSide(const void* driver_params, const int pinA,c
   params->adc_voltage_conv = (_ADC_VOLTAGE)/(_ADC_RESOLUTION);
   params->no_adc_channels = no_adc_channels;
   return params;
+#endif
 }
 
 static bool IRAM_ATTR _mcpwmTriggerADCCallback(mcpwm_timer_handle_t tim, const mcpwm_timer_event_data_t* edata, void* user_data){
@@ -103,16 +115,21 @@ static bool IRAM_ATTR _mcpwmTriggerADCCallback(mcpwm_timer_handle_t tim, const m
   gpio_set_level(GPIO_NUM,1); //cca 250ns for on+off
 #endif
 
-  // sample the phase currents one at a time
-  // ESP's adc read takes around 10us which is very long
-  // so we are sampling one phase per call
-  p->adc_buffer[p->buffer_index] = adcRead(p->pins[p->buffer_index]);
 
-  // increment buffer index
-  p->buffer_index++;
-  if(p->buffer_index >= p->no_adc_channels){
-    p->buffer_index = 0;
-  }
+  #if ESP32_I2S_ADC == true
+    readFiFo();
+  #else
+    // sample the phase currents one at a time
+    // ESP's adc read takes around 10us which is very long
+    // so we are sampling one phase per call
+    p->adc_buffer[p->buffer_index] = adcRead(p->pins[p->buffer_index]);
+
+    // increment buffer index
+    p->buffer_index++;
+    if(p->buffer_index >= p->no_adc_channels){
+      p->buffer_index = 0;
+    }
+  #endif
 
 #ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG // debugging toggle pin to measure the time of the interrupt with oscilloscope
   gpio_set_level(GPIO_NUM,0); //cca 250ns for on+off
