@@ -15,7 +15,7 @@ float LowPassFilter::operator() (float x)
     float dt = Ts; 
     // if Ts is not set, use adaptive sampling time
     // calculate the ellapsed time dt
-    if(_isset(dt)){
+    if(!_isset(dt)){
         unsigned long timestamp = _micros();
         float dt = (timestamp - timestamp_prev)*1e-6f;
 

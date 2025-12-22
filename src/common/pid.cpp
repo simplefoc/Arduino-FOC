@@ -20,7 +20,7 @@ float PIDController::operator() (float error){
     float dt = Ts; 
     // if Ts is not set, use adaptive sampling time
     // calculate the ellapsed time dt
-    if(_isset(dt)){
+    if(!_isset(dt)){
         unsigned long timestamp_now = _micros();
         dt = (timestamp_now - timestamp_prev) * 1e-6f;
         // quick fix for strange cases (micros overflow)

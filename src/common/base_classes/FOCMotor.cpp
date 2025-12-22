@@ -485,30 +485,30 @@ void FOCMotor::updateTorqueControlType(TorqueControlType new_torque_controller) 
 // - if changing to torque control set target to zero
 void FOCMotor::updateMotionControlType(MotionControlType new_motion_controller) {
   if (controller == new_motion_controller) return; // no change
-  switch(new_motion_controller)
-  {
-  case MotionControlType::angle:
-    if(controller != MotionControlType::angle_openloop) break;
-  case MotionControlType::angle_openloop:
-    if(controller != MotionControlType::angle) break;
-    // if the previous controller was not angle control
-    // set target to current angle
-    target = shaft_angle;
-    break;
-  case MotionControlType::velocity:
-    if(controller != MotionControlType::velocity_openloop) break;
-  case MotionControlType::velocity_openloop:
-    if(controller != MotionControlType::velocity) break;
-    // if the previous controller was not velocity control
-    // stop the motor
-    target = 0;
-    break;
-  case MotionControlType::torque:
-    // if torque control set target to zero
-    target = 0;
-    break;
-  default:
-    break;
+
+  switch(new_motion_controller){
+    case MotionControlType::angle:
+      if(controller == MotionControlType::angle_openloop) break;
+    case MotionControlType::angle_openloop:
+      if(controller == MotionControlType::angle) break;
+      // if the previous controller was not angle control
+      // set target to current angle
+      target = shaft_angle;
+      break;
+    case MotionControlType::velocity:
+      if(controller == MotionControlType::velocity_openloop) break;
+    case MotionControlType::velocity_openloop:
+      if(controller == MotionControlType::velocity) break;
+      // if the previous controller was not velocity control
+      // stop the motor
+      target = 0;
+      break;
+    case MotionControlType::torque:
+      // if torque control set target to zero
+      target = 0;
+      break;
+    default:
+      break;
   }
 
   // finally set the new controller
