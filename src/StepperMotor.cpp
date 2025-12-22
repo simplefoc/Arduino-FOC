@@ -7,7 +7,7 @@
 // - R             - motor phase resistance
 // - KV            - motor kv rating (rmp/v)
 // - L             - motor phase inductance [H]
-StepperMotor::StepperMotor(int pp, float _R, float _KV, float _inductance)
+StepperMotor::StepperMotor(int pp, float _R, float _KV, float _Lq, float _Ld)
 : FOCMotor()
 {
   // number od pole pairs
@@ -18,7 +18,8 @@ StepperMotor::StepperMotor(int pp, float _R, float _KV, float _inductance)
   // usually used rms
   KV_rating = _KV;
   // save phase inductance
-  phase_inductance = _inductance;
+  phase_inductance_dq = {_Ld, _Lq};
+  phase_inductance = _Lq;  // FOR BACKWARDS COMPATIBILITY
 
   // torque control type is voltage by default
   // current and foc_current not supported yet
@@ -36,11 +37,11 @@ void StepperMotor::linkDriver(StepperDriver* _driver) {
 int StepperMotor::init() {
   if (!driver || !driver->initialized) {
     motor_status = FOCMotorStatus::motor_init_failed;
-    SIMPLEFOC_DEBUG("MOT: Init not possible, driver not initialized");
+    SIMPLEFOC_MOTOR_ERROR("Init not possible, driver not init");
     return 0;
   }
   motor_status = FOCMotorStatus::motor_initializing;
-  SIMPLEFOC_DEBUG("MOT: Init");
+  SIMPLEFOC_MOTOR_DEBUG("Init");
 
   // sanity check for the voltage limit configuration
   if(voltage_limit > driver->voltage_limit) voltage_limit =  driver->voltage_limit;
@@ -52,6 +53,12 @@ int StepperMotor::init() {
   updateVoltageLimit(voltage_limit);
   updateVelocityLimit(velocity_limit);
 
+  if(_isset(phase_inductance) && !(_isset(phase_inductance_dq.q))) {
+    // if only single inductance value is set, use it for both d and q axis
+    phase_inductance_dq = {phase_inductance, phase_inductance};
+  } 
+
+  
   // if using open loop control, set a CW as the default direction if not already set
   // only if no sensor is used
   if(!sensor){
@@ -64,7 +71,7 @@ int StepperMotor::init() {
 
   _delay(500);
   // enable motor
-  SIMPLEFOC_DEBUG("MOT: Enable driver.");
+  SIMPLEFOC_MOTOR_DEBUG("Enable driver.");
   enable();
   _delay(500);
   motor_status = FOCMotorStatus::motor_uncalibrated;

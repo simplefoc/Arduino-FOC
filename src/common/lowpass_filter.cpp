@@ -17,7 +17,7 @@ float LowPassFilter::operator() (float x)
     // calculate the ellapsed time dt
     if(!_isset(dt)){
         unsigned long timestamp = _micros();
-        float dt = (timestamp - timestamp_prev)*1e-6f;
+        dt = (timestamp - timestamp_prev)*1e-6f;
 
         if (dt < 0.0f ) dt = 1e-3f;
         else if(dt > 0.3f) {

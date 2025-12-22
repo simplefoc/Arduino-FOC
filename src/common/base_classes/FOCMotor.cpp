@@ -88,7 +88,7 @@ void FOCMotor::useMonitoring(Print &print){
   monitor_port = &print; //operate on the address of print
   #ifndef SIMPLEFOC_DISABLE_DEBUG
   SimpleFOCDebug::enable(&print);
-  SIMPLEFOC_DEBUG("MOT: Monitor enabled!");
+  SIMPLEFOC_MOTOR_DEBUG("Monitor enabled!");
   #endif
 }
 
@@ -96,17 +96,17 @@ void FOCMotor::useMonitoring(Print &print){
 int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
     if (!this->current_sense || !this->current_sense->initialized)
     {
-      SIMPLEFOC_DEBUG("ERR: MOT: Cannot characterise motor: CS unconfigured or not initialized");
+      SIMPLEFOC_MOTOR_ERROR("Fail. CS not init.");
       return 1;
     }
 
     if (voltage <= 0.0f){
-      SIMPLEFOC_DEBUG("ERR: MOT: Cannot characterise motor: Voltage is negative or less than zero");
+      SIMPLEFOC_MOTOR_ERROR("Fail. Volt. <= 0");
       return 2;
     }
     voltage = _constrain(voltage, 0.0f, voltage_limit);
     
-    SIMPLEFOC_DEBUG("MOT: Measuring phase to phase resistance, keep motor still...");
+    SIMPLEFOC_MOTOR_DEBUG("Meas R..");
 
     float current_electric_angle = electricalAngle();
 
@@ -135,23 +135,23 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
 
     if (fabsf(r_currents.d - zerocurrent.d) < 0.2f)
     {
-      SIMPLEFOC_DEBUG("ERR: MOT: Motor characterisation failed: measured current too low");
+      SIMPLEFOC_MOTOR_ERROR("Fail. current too low");
       return 3;
     }
     
     float resistance = voltage / (correction_factor * (r_currents.d - zerocurrent.d));
     if (resistance <= 0.0f)
     {
-      SIMPLEFOC_DEBUG("ERR: MOT: Motor characterisation failed: Calculated resistance <= 0");
+      SIMPLEFOC_MOTOR_ERROR("Fail. Est. R<= 0");
       return 4;
     }
     
-    SIMPLEFOC_DEBUG("MOT: Estimated phase to phase resistance: ", 2.0f * resistance);
+    SIMPLEFOC_MOTOR_DEBUG("Est. R: ", 2.0f * resistance);
     _delay(100);
 
 
     // Start inductance measurement
-    SIMPLEFOC_DEBUG("MOT: Measuring inductance, keep motor still...");
+    SIMPLEFOC_MOTOR_DEBUG("Meas L...");
 
     unsigned long t0 = 0;
     unsigned long t1 = 0;
@@ -220,7 +220,7 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
         Ltemp = i < 2 ? inductanced : Ltemp * 0.6 + inductanced * 0.4;
         
         float timeconstant = fabsf(Ltemp / resistance); // Timeconstant of an RL circuit (L/R) 
-        // SIMPLEFOC_DEBUG("MOT: Estimated time constant in us: ", 1000000.0f * timeconstant);
+        // SIMPLEFOC_MOTOR_DEBUG("Estimated time constant in us: ", 1000000.0f * timeconstant);
 
         // Wait as long as possible (due to limited timing accuracy & sample rate), but as short as needed (while the current still changes)
         risetime_us = _constrain(risetime_us * 0.6f + 0.4f * 1000000 * 0.6f * timeconstant, 100, 10000);
@@ -292,26 +292,26 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
         estimated_zero_electric_angle = estimated_zero_electric_angle_B;
       }
 
-      SIMPLEFOC_DEBUG("MOT: Newly estimated electrical zero: ", estimated_zero_electric_angle);
-      SIMPLEFOC_DEBUG("MOT: Current electrical zero: ", zero_electric_angle);
+      SIMPLEFOC_MOTOR_DEBUG("New el. zero: ", estimated_zero_electric_angle);
+      SIMPLEFOC_MOTOR_DEBUG("Curr. el. zero: ", zero_electric_angle);
     }
     
 
-    SIMPLEFOC_DEBUG("MOT: Inductance measurement complete!");
-    SIMPLEFOC_DEBUG("MOT: Measured D-inductance in mH: ", Ld * 1000.0f);
-    SIMPLEFOC_DEBUG("MOT: Measured Q-inductance in mH: ", Lq * 1000.0f);
+    SIMPLEFOC_MOTOR_DEBUG("Ld [mH]: ", Ld * 1000.0f);
+    SIMPLEFOC_MOTOR_DEBUG("Lq [mH]: ", Lq * 1000.0f);
     if (Ld > Lq)
     {
-      SIMPLEFOC_DEBUG("WARN: MOT: Measured inductance is larger in D than in Q axis. This is normally a sign of a measurement error.");
+      SIMPLEFOC_MOTOR_WARN("Ld>Lq. Likely error.");
     }
     if (Ld * 2.0f < Lq)
     {
-      SIMPLEFOC_DEBUG("WARN: MOT: Measured Q inductance is more than twice the D inductance. This is probably wrong. From experience, the lower value is probably close to reality.");
+      SIMPLEFOC_MOTOR_WARN("Lq > 2*Ld. Likely error.");
     }    
 
     // store the measured values
     phase_resistance = 2.0f * resistance;
-    phase_inductance = (Ld + Lq) / 2.0f;
+    phase_inductance_dq = {Ld, Lq};
+    phase_inductance = (Ld + Lq) / 2.0f; // FOR BACKWARDS COMPATIBILITY
     return 0;
     
 }
@@ -519,36 +519,37 @@ void FOCMotor::updateMotionControlType(MotionControlType new_motion_controller) 
 int FOCMotor::tuneCurrentController(float bandwidth) {
   if (bandwidth <= 0.0f) {
     // check bandwidth is positive
-    SIMPLEFOC_DEBUG("ERR: MOT: Cannot tune current controller: bandwidth must be positive");
+    SIMPLEFOC_MOTOR_ERROR("Fail. BW <= 0");
     return 1;
   }
   if (loopfoc_time_us && bandwidth > 0.5f * (1e6f / loopfoc_time_us)) {
     // check bandwidth is not too high for the control loop frequency
-    SIMPLEFOC_DEBUG("ERR: MOT: Bandwidth too high, current loop freq:" , (1e6f / loopfoc_time_us));
+    SIMPLEFOC_MOTOR_ERROR("Fail. BW too high, current loop freq:" , (1e6f / loopfoc_time_us));
     return 2;
   }
-  if (!_isset(phase_resistance) || !_isset(phase_inductance)) {
+  if (!_isset(phase_resistance) || (!_isset(phase_inductance) && !_isset(phase_inductance_dq.q))) {
     // need motor parameters to tune the controller
-    SIMPLEFOC_DEBUG("MOT: Measuring motor parameters!");
+    SIMPLEFOC_MOTOR_WARN("Motor params missing!");
     if(characteriseMotor( voltage_sensor_align )) { 
       return 3;
     }
+  }else if (_isset(phase_inductance) && !(_isset(phase_inductance_dq.q))) {
+    // if only single inductance value is set, use it for both d and q axis
+    phase_inductance_dq = {phase_inductance, phase_inductance};
   }
 
-  // Simple tuning method for a first order system
-  float Kp = phase_inductance * (_2PI * bandwidth);
-  float Ki = phase_resistance * (_2PI * bandwidth);
-
-  PID_current_q.P = Kp;
-  PID_current_q.I = Ki;
-  PID_current_d.P = Kp;
-  PID_current_d.I = Ki;
+  PID_current_q.P = phase_inductance_dq.q * (_2PI * bandwidth);
+  PID_current_q.I = phase_resistance * (_2PI * bandwidth);
+  PID_current_d.P = phase_inductance_dq.d * (_2PI * bandwidth);
+  PID_current_d.I = phase_resistance * (_2PI * bandwidth);
   LPF_current_d.Tf = 1.0f / (_2PI * bandwidth * 5.0f); // filter cutoff at 5x bandwidth
   LPF_current_q.Tf = 1.0f / (_2PI * bandwidth * 5.0f); // filter cutoff at 5x bandwidth
 
-  SIMPLEFOC_DEBUG("MOT: Current controller tuned:\nMOT: Bandwidth (Hz): ", bandwidth);
-  SIMPLEFOC_DEBUG("MOT:   Kp: ", Kp);
-  SIMPLEFOC_DEBUG("MOT:   Ki: ", Ki);
+  SIMPLEFOC_MOTOR_DEBUG("Tunned PI params for BW [Hz]: ", bandwidth);
+  SIMPLEFOC_MOTOR_DEBUG("Pq: ", PID_current_q.P);
+  SIMPLEFOC_MOTOR_DEBUG("Iq: ", PID_current_q.I);
+  SIMPLEFOC_MOTOR_DEBUG("Pd: ", PID_current_d.P);
+  SIMPLEFOC_MOTOR_DEBUG("Id: ", PID_current_d.I);
 
   return 0;
 }
@@ -596,7 +597,7 @@ void FOCMotor::loopFOC() {
       // constrain voltage within limits
       voltage.q = _constrain(voltage.q, -voltage_limit, voltage_limit) + feed_forward_voltage.q;
       // d voltage  - lag compensation
-      if(_isset(phase_inductance)) voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit) + feed_forward_voltage.d;
+      if(_isset(phase_inductance_dq.d)) voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance_dq.d, -voltage_limit, voltage_limit) + feed_forward_voltage.d;
       else voltage.d = feed_forward_voltage.d;
       break;
     case TorqueControlType::dc_current:
@@ -610,7 +611,7 @@ void FOCMotor::loopFOC() {
       // calculate the phase voltage
       voltage.q = PID_current_q(current_sp - current.q) + feed_forward_voltage.q;
       // d voltage  - lag compensation
-      if(_isset(phase_inductance)) voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit) + feed_forward_voltage.d;
+      if(_isset(phase_inductance_dq.d)) voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance_dq.d, -voltage_limit, voltage_limit) + feed_forward_voltage.d;
       else voltage.d = feed_forward_voltage.d;
       break;
     case TorqueControlType::foc_current:
@@ -626,11 +627,11 @@ void FOCMotor::loopFOC() {
       voltage.q = PID_current_q(current_sp - current.q) + feed_forward_voltage.q;
       voltage.d = PID_current_d(feed_forward_current.d - current.d) + feed_forward_voltage.d;
       // d voltage - lag compensation - TODO verify
-      // if(_isset(phase_inductance)) voltage.d = _constrain( voltage.d - current_sp*shaft_velocity*pole_pairs*phase_inductance, -voltage_limit, voltage_limit);
+      // if(_isset(phase_inductance_dq.d)) voltage.d = _constrain( voltage.d - current_sp*shaft_velocity*pole_pairs*phase_inductance_dq.d, -voltage_limit, voltage_limit);
       break;
     default:
       // no torque control selected
-      SIMPLEFOC_DEBUG("MOT: no torque control selected!");
+      SIMPLEFOC_MOTOR_ERROR("no torque control selected!");
       break;
   }
   // set the phase voltage - FOC heart function :)
@@ -745,30 +746,30 @@ int  FOCMotor::initFOC() {
       if(current_sense){ 
         if (!current_sense->initialized) {
           motor_status = FOCMotorStatus::motor_calib_failed;
-          SIMPLEFOC_DEBUG("MOT: Init FOC error, current sense not initialized");
+          SIMPLEFOC_MOTOR_ERROR("Init FOC error, current sense not init");
           exit_flag = 0;
         }else{
           exit_flag *= alignCurrentSense();
         }
       }
-      else { SIMPLEFOC_DEBUG("MOT: No current sense."); }
+      else { SIMPLEFOC_MOTOR_ERROR("No current sense"); }
     }
 
   } else {
-    SIMPLEFOC_DEBUG("MOT: No sensor.");
+    SIMPLEFOC_MOTOR_DEBUG("No sensor.");
     if ((controller == MotionControlType::angle_openloop || controller == MotionControlType::velocity_openloop)){
       exit_flag = 1;    
-      SIMPLEFOC_DEBUG("MOT: Openloop only!");
+      SIMPLEFOC_MOTOR_ERROR("Openloop only!");
     }else{
       exit_flag = 0; // no FOC without sensor
     }
   }
 
   if(exit_flag){
-    SIMPLEFOC_DEBUG("MOT: Ready.");
+    SIMPLEFOC_MOTOR_DEBUG("Ready.");
     motor_status = FOCMotorStatus::motor_ready;
   }else{
-    SIMPLEFOC_DEBUG("MOT: Init FOC failed.");
+    SIMPLEFOC_MOTOR_ERROR("Init FOC fail");
     motor_status = FOCMotorStatus::motor_calib_failed;
     disable();
   }
@@ -780,17 +781,17 @@ int  FOCMotor::initFOC() {
 int FOCMotor::alignCurrentSense() {
   int exit_flag = 1; // success
 
-  SIMPLEFOC_DEBUG("MOT: Align current sense.");
+  SIMPLEFOC_MOTOR_DEBUG("Align current sense.");
 
   // align current sense and the driver
   exit_flag = current_sense->driverAlign(voltage_sensor_align, modulation_centered);
   if(!exit_flag){
     // error in current sense - phase either not measured or bad connection
-    SIMPLEFOC_DEBUG("MOT: Align error!");
+    SIMPLEFOC_MOTOR_ERROR("Align error!");
     exit_flag = 0;
   }else{
     // output the alignment status flag
-    SIMPLEFOC_DEBUG("MOT: Success: ", exit_flag);
+    SIMPLEFOC_MOTOR_DEBUG("Success: ", exit_flag);
   }
 
   return exit_flag > 0;
@@ -799,7 +800,7 @@ int FOCMotor::alignCurrentSense() {
 // Encoder alignment to electrical 0 angle
 int FOCMotor::alignSensor() {
   int exit_flag = 1; // success
-  SIMPLEFOC_DEBUG("MOT: Align sensor.");
+  SIMPLEFOC_MOTOR_DEBUG("Align sensor.");
 
   // check if sensor needs zero search
   if(sensor->needsSearch()) exit_flag = absoluteZeroSearch();
@@ -838,24 +839,24 @@ int FOCMotor::alignSensor() {
     // determine the direction the sensor moved
     float moved =  fabs(mid_angle - end_angle);
     if (moved<MIN_ANGLE_DETECT_MOVEMENT) { // minimum angle to detect movement
-      SIMPLEFOC_DEBUG("MOT: Failed to notice movement");
+      SIMPLEFOC_MOTOR_ERROR("Failed to notice movement");
       return 0; // failed calibration
     } else if (mid_angle < end_angle) {
-      SIMPLEFOC_DEBUG("MOT: sensor_direction==CCW");
+      SIMPLEFOC_MOTOR_DEBUG("sensor dir: CCW");
       sensor_direction = Direction::CCW;
     } else{
-      SIMPLEFOC_DEBUG("MOT: sensor_direction==CW");
+      SIMPLEFOC_MOTOR_DEBUG("sensor dir: CW");
       sensor_direction = Direction::CW;
     }
     // check pole pair number
     pp_check_result = !(fabs(moved*pole_pairs - _2PI) > 0.5f);  // 0.5f is arbitrary number it can be lower or higher!
     if( pp_check_result==false ) {
-      SIMPLEFOC_DEBUG("MOT: PP check: fail - estimated pp: ", _2PI/moved);
+      SIMPLEFOC_MOTOR_WARN("PP check: fail - est. pp: ", _2PI/moved);
     } else {
-      SIMPLEFOC_DEBUG("MOT: PP check: OK!");
+      SIMPLEFOC_MOTOR_DEBUG("PP check: OK!");
     }
 
-  } else SIMPLEFOC_DEBUG("MOT: Skip dir calib."); 
+  } else SIMPLEFOC_MOTOR_DEBUG("Skip dir calib."); 
 
   // zero electric angle not known
   if(!_isset(zero_electric_angle)){
@@ -869,11 +870,11 @@ int FOCMotor::alignSensor() {
     zero_electric_angle = 0;
     zero_electric_angle = electricalAngle();
     _delay(20);
-    SIMPLEFOC_DEBUG("MOT: Zero elec. angle: ", zero_electric_angle);
+    SIMPLEFOC_MOTOR_DEBUG("Zero elec. angle: ", zero_electric_angle);
     // stop everything
     setPhaseVoltage(0, 0, 0);
     _delay(200);
-  } else { SIMPLEFOC_DEBUG("MOT: Skip offset calib."); }
+  } else { SIMPLEFOC_MOTOR_DEBUG("Skip offset calib."); }
   return exit_flag;
 }
 
@@ -883,7 +884,7 @@ int FOCMotor::alignSensor() {
 int FOCMotor::absoluteZeroSearch() {
   // sensor precision: this is all ok, as the search happens near the 0-angle, where the precision
   //                    of float is sufficient.
-  SIMPLEFOC_DEBUG("MOT: Index search...");
+  SIMPLEFOC_MOTOR_DEBUG("Index search...");
   // search the absolute zero with small velocity
   float limit_vel = velocity_limit;
   float limit_volt = voltage_limit;
@@ -903,8 +904,8 @@ int FOCMotor::absoluteZeroSearch() {
   voltage_limit = limit_volt;
   // check if the zero found
   if(monitor_port){
-    if(sensor->needsSearch()) { SIMPLEFOC_DEBUG("MOT: Error: Not found!"); }
-    else { SIMPLEFOC_DEBUG("MOT: Success!"); }
+    if(sensor->needsSearch()) { SIMPLEFOC_MOTOR_ERROR("Not found!"); }
+    else { SIMPLEFOC_MOTOR_DEBUG("Success!"); }
   }
   return !sensor->needsSearch();
 }

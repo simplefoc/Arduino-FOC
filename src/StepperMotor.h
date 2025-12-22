@@ -27,7 +27,7 @@ class StepperMotor: public FOCMotor
      @param KV  motor KV rating (1/K_bemf) - rpm/V
      @param L  motor phase inductance - [H]
     */
-    StepperMotor(int pp,  float R = NOT_SET, float KV = NOT_SET, float L = NOT_SET);
+    StepperMotor(int pp,  float R = NOT_SET, float KV = NOT_SET, float L_q = NOT_SET, float L_d = NOT_SET);
 
     /**
      * Function linking a motor and a foc driver 

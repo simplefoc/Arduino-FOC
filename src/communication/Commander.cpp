@@ -224,11 +224,34 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
       break;
     case CMD_INDUCTANCE:
       printVerbose(F("L phase: "));
-      if(!GET){
-        motor->phase_inductance = value;
+      switch (sub_cmd){
+        case SCMD_INDUCT_D:
+          printVerbose(F("d: "));
+          if(!GET){
+            motor->phase_inductance_dq.d = value;
+            motor->phase_inductance = value;
+          }
+          if(_isset(motor->phase_inductance_dq.d)) println(motor->phase_inductance_dq.d);
+          else println(0);
+          break;
+        case SCMD_INDUCT_Q:
+          printVerbose(F("q: "));
+          if(!GET){
+            motor->phase_inductance_dq.q = value;
+          }
+          if(_isset(motor->phase_inductance_dq.q)) println(motor->phase_inductance_dq.q);
+          else println(0);
+          break;
+        default:
+          if(!GET){
+            motor->phase_inductance = value;
+            motor->phase_inductance_dq.d = value;
+            motor->phase_inductance_dq.q = value;
+          }
+          if(_isset(motor->phase_inductance)) println(motor->phase_inductance);
+          else println(0);
+          break;
       }
-      if(_isset(motor->phase_inductance)) println(motor->phase_inductance);
-      else println(0);
       break;
     case CMD_KV_RATING:
       printVerbose(F("Motor KV: "));
@@ -240,8 +263,8 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
       break;
     case CMD_SENSOR:
       // Sensor zero offset
-       printVerbose(F("Sensor | "));
-       switch (sub_cmd){
+      printVerbose(F("Sensor | "));
+      switch (sub_cmd){
         case SCMD_SENS_MECH_OFFSET:      // zero offset
           printVerbose(F("offset: "));
           if(!GET) motor->sensor_offset = value;
@@ -255,7 +278,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
         default:
           printError();
           break;
-       }
+      }
       break;
     case CMD_FOC_PARAMS:
       printVerbose(F("FOC | "));

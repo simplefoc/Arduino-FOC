@@ -11,6 +11,24 @@
 #include "../pid.h"
 #include "../lowpass_filter.h"
 
+#ifndef SIMPLEFOC_DISABLE_DEBUG
+#define SIMPLEFOC_MOTOR_WARN(msg, ...)  \
+      SimpleFOCDebug::print("WARN-MOT: "); \
+      SIMPLEFOC_DEBUG(msg, ##__VA_ARGS__)
+
+#define SIMPLEFOC_MOTOR_ERROR(msg, ...)  \
+      SimpleFOCDebug::print("ERR-MOT: "); \
+      SIMPLEFOC_DEBUG(msg, ##__VA_ARGS__)
+
+#define SIMPLEFOC_MOTOR_DEBUG(msg, ...)  \
+      SimpleFOCDebug::print("MOT:"); \
+      SIMPLEFOC_DEBUG(msg, ##__VA_ARGS__)
+      
+#else
+#define SIMPLEFOC_MOTOR_DEBUG(msg, ...)
+#define SIMPLEFOC_MOTOR_ERROR(msg, ...)
+#define SIMPLEFOC_MOTOR_WARN(msg, ...)
+#endif
 
 // monitoring bitmap
 #define _MON_TARGET 0b1000000 // monitor target value
@@ -207,7 +225,8 @@ class FOCMotor
     float	phase_resistance; //!< motor phase resistance
     int pole_pairs;//!< motor pole pairs number
     float KV_rating; //!< motor KV rating
-    float	phase_inductance; //!< motor phase inductance
+    float	phase_inductance; //!< motor phase inductance q axis - FOR BACKWARDS COMPATIBILITY
+    DQ_s	phase_inductance_dq{NOT_SET, NOT_SET}; //!< motor direct axis phase inductance
 
     // limiting variables
     float voltage_limit; //!< Voltage limiting variable - global limit

@@ -35,7 +35,7 @@ int trap_150_map[12][3] = {
 // - R             - motor phase resistance
 // - KV            - motor kv rating (rmp/v)
 // - L             - motor phase inductance
-BLDCMotor::BLDCMotor(int pp, float _R, float _KV, float _inductance)
+BLDCMotor::BLDCMotor(int pp, float _R, float _KV, float _Lq, float _Ld)
 : FOCMotor()
 {
   // save pole pairs number
@@ -46,7 +46,8 @@ BLDCMotor::BLDCMotor(int pp, float _R, float _KV, float _inductance)
   // 1/sqrt(3) - rms value
   KV_rating = _KV;
   // save phase inductance
-  phase_inductance = _inductance;
+  phase_inductance_dq = {_Ld, _Lq};
+  phase_inductance = _Lq;  // FOR BACKWARDS COMPATIBILITY
 
   // torque control type is voltage by default
   torque_controller = TorqueControlType::voltage;
@@ -64,11 +65,11 @@ void BLDCMotor::linkDriver(BLDCDriver* _driver) {
 int BLDCMotor::init() {
   if (!driver || !driver->initialized) {
     motor_status = FOCMotorStatus::motor_init_failed;
-    SIMPLEFOC_DEBUG("MOT: Init not possible, driver not initialized");
+    SIMPLEFOC_MOTOR_ERROR("Init not possible, driver not init");
     return 0;
   }
   motor_status = FOCMotorStatus::motor_initializing;
-  SIMPLEFOC_DEBUG("MOT: Init");
+  SIMPLEFOC_MOTOR_DEBUG("Init");
 
   // sanity check for the voltage limit configuration
   if(voltage_limit > driver->voltage_limit) voltage_limit =  driver->voltage_limit;
@@ -79,6 +80,11 @@ int BLDCMotor::init() {
   updateCurrentLimit(current_limit);
   updateVoltageLimit(voltage_limit);
   updateVelocityLimit(velocity_limit);
+  
+  if(_isset(phase_inductance) && !(_isset(phase_inductance_dq.q))) {
+    // if only single inductance value is set, use it for both d and q axis
+    phase_inductance_dq = {phase_inductance, phase_inductance};
+  } 
   
   // if using open loop control, set a CW as the default direction if not already set
   // only if no sensor is used
@@ -92,7 +98,7 @@ int BLDCMotor::init() {
 
   _delay(500);
   // enable motor
-  SIMPLEFOC_DEBUG("MOT: Enable driver.");
+  SIMPLEFOC_MOTOR_DEBUG("Enable driver.");
   enable();
   _delay(500);
   motor_status = FOCMotorStatus::motor_uncalibrated;
@@ -214,28 +220,29 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
 
     case FOCModulationType::SinePWM :
     case FOCModulationType::SpaceVectorPWM :
-      // Sinusoidal PWM modulation
-      // Inverse Park + Clarke transformation
-      _sincos(angle_el, &_sa, &_ca);
 
-      // Inverse park transform
-      Ualpha = _ca * Ud - _sa * Uq;  // -sin(angle) * Uq;
-      Ubeta = _sa * Ud + _ca * Uq;    //  cos(angle) * Uq;
-
-      // Clarke transform
-      Ua = Ualpha;
-      Ub = -0.5f * Ualpha + _SQRT3_2 * Ubeta;
-      Uc = -0.5f * Ualpha - _SQRT3_2 * Ubeta;
-
-      // centering the voltages around either
-      // - centered modulation: around driver.voltage_limit/2
-      // - non-centered modulation: pulls the lowest voltage to 0 
-      //     - Can be useful for low-side current sensing 
-      //       in cases where the ADC had long sample time
-      //     - The part of the duty cycle in which all phases are 
-      //       off is longer than in centered modulation   
-      //     - Both SinePWM and SpaceVectorPWM have the same form for non-centered modulation
       if (modulation_centered) {
+        // Sinusoidal PWM modulation
+        // Inverse Park + Clarke transformation
+        _sincos(angle_el, &_sa, &_ca);
+
+        // Inverse park transform
+        Ualpha = _ca * Ud - _sa * Uq;  // -sin(angle) * Uq;
+        Ubeta = _sa * Ud + _ca * Uq;    //  cos(angle) * Uq;
+
+        // Clarke transform
+        Ua = Ualpha;
+        Ub = -0.5f * Ualpha + _SQRT3_2 * Ubeta;
+        Uc = -0.5f * Ualpha - _SQRT3_2 * Ubeta;
+
+        // centering the voltages around either
+        // - centered modulation: around driver.voltage_limit/2
+        // - non-centered modulation: pulls the lowest voltage to 0 
+        //     - Can be useful for low-side current sensing 
+        //       in cases where the ADC had long sample time
+        //     - The part of the duty cycle in which all phases are 
+        //       off is longer than in centered modulation   
+        //     - Both SinePWM and SpaceVectorPWM have the same form for non-centered modulation
         center = driver->voltage_limit/2;
         if (foc_modulation == FOCModulationType::SpaceVectorPWM){
           // discussed here: https://community.simplefoc.com/t/embedded-world-2023-stm32-cordic-co-processor/3107/165?u=candas1
@@ -249,10 +256,41 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
         Ub += center;
         Uc += center;
       }else{
-        float Umin = min(Ua, min(Ub, Uc));
-        Ua -= Umin;
-        Ub -= Umin;
-        Uc -= Umin;
+        angle_el = _normalizeAngle(angle_el + _PI_2);
+        _sincos(angle_el, &_sa, &_ca);
+
+        
+
+        // Inverse park transform
+        Ualpha = _ca * Uq;//- _sa * Uq;  // -sin(angle) * Uq;
+        Ubeta = _sa * Uq;// + _ca * Uq;    //  cos(angle) * Uq;
+
+        // Clarke transform
+        
+        // determine the segment I, II, III
+        if ((angle_el >= 0) && (angle_el < _120_D2R)) {
+          // section I
+          Ua = Ualpha + _1_SQRT3 * Ubeta;
+          Ub = _2_SQRT3 * Ubeta;
+          Uc = 0;
+
+        } else if ((angle_el >= _120_D2R) && (angle_el < (2 * _120_D2R))) {
+          // section III
+          Ua = 0;
+          Ub = _1_SQRT3 * Ubeta - Ualpha;
+          Uc = -_1_SQRT3 * Ubeta - Ualpha;
+
+        } else if ((angle_el >= (2 * _120_D2R)) && (angle_el < (3 * _120_D2R))) {
+          // section II
+          Ua = Ualpha - _1_SQRT3 * Ubeta;
+          Ub = 0;
+          Uc = - _2_SQRT3 * Ubeta;
+        }
+
+        Ua = Ua*1.5;  
+        Ub = Ub*1.5;  
+        Uc = Uc*1.5;
+
       }
       break;
   }
