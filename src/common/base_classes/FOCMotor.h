@@ -21,7 +21,7 @@
       SIMPLEFOC_DEBUG(msg, ##__VA_ARGS__)
 
 #define SIMPLEFOC_MOTOR_DEBUG(msg, ...)  \
-      SimpleFOCDebug::print("MOT:"); \
+      SimpleFOCDebug::print("MOT: "); \
       SIMPLEFOC_DEBUG(msg, ##__VA_ARGS__)
       
 #else

@@ -221,7 +221,6 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
     case FOCModulationType::SinePWM :
     case FOCModulationType::SpaceVectorPWM :
 
-      if (modulation_centered) {
         // Sinusoidal PWM modulation
         // Inverse Park + Clarke transformation
         _sincos(angle_el, &_sa, &_ca);
@@ -243,6 +242,7 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
         //     - The part of the duty cycle in which all phases are 
         //       off is longer than in centered modulation   
         //     - Both SinePWM and SpaceVectorPWM have the same form for non-centered modulation
+      if (modulation_centered) {
         center = driver->voltage_limit/2;
         if (foc_modulation == FOCModulationType::SpaceVectorPWM){
           // discussed here: https://community.simplefoc.com/t/embedded-world-2023-stm32-cordic-co-processor/3107/165?u=candas1
@@ -256,41 +256,10 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
         Ub += center;
         Uc += center;
       }else{
-        angle_el = _normalizeAngle(angle_el + _PI_2);
-        _sincos(angle_el, &_sa, &_ca);
-
-        
-
-        // Inverse park transform
-        Ualpha = _ca * Uq;//- _sa * Uq;  // -sin(angle) * Uq;
-        Ubeta = _sa * Uq;// + _ca * Uq;    //  cos(angle) * Uq;
-
-        // Clarke transform
-        
-        // determine the segment I, II, III
-        if ((angle_el >= 0) && (angle_el < _120_D2R)) {
-          // section I
-          Ua = Ualpha + _1_SQRT3 * Ubeta;
-          Ub = _2_SQRT3 * Ubeta;
-          Uc = 0;
-
-        } else if ((angle_el >= _120_D2R) && (angle_el < (2 * _120_D2R))) {
-          // section III
-          Ua = 0;
-          Ub = _1_SQRT3 * Ubeta - Ualpha;
-          Uc = -_1_SQRT3 * Ubeta - Ualpha;
-
-        } else if ((angle_el >= (2 * _120_D2R)) && (angle_el < (3 * _120_D2R))) {
-          // section II
-          Ua = Ualpha - _1_SQRT3 * Ubeta;
-          Ub = 0;
-          Uc = - _2_SQRT3 * Ubeta;
-        }
-
-        Ua = Ua*1.5;  
-        Ub = Ub*1.5;  
-        Uc = Uc*1.5;
-
+        float Umin = min(Ua, min(Ub, Uc));
+        Ua -= Umin;
+        Ub -= Umin;
+        Uc -= Umin;
       }
       break;
   }
