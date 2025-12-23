@@ -115,9 +115,9 @@ int _findIndexOfLastPinMapADCEntry(int pin) {
 // each pin can be connected to multiple ADCs
 // the function will try to find a single ADC that can be used for all pins
 // if not possible it will return nullptr
-ADC_TypeDef* _findBestADCForPins(int numPins, int pins[]) {
+ADC_TypeDef* _findBestADCForPins(int numPins, int pins[], ADC_HandleTypeDef adc_handles[]) {
 
-  // assuning that there is less than 8 ADCs
+  // assuning that there is at most 5 ADCs
   uint8_t pins_at_adc[ADC_COUNT] = {0};
 
   // check how many pins are there and are not set
@@ -152,11 +152,19 @@ ADC_TypeDef* _findBestADCForPins(int numPins, int pins[]) {
     SimpleFOCDebug::print(i+1);
     SimpleFOCDebug::print(" pins: ");
     SimpleFOCDebug::println(pins_at_adc[i]);
+    if (adc_handles[i].Instance != NP) {
+      SimpleFOCDebug::print("STM32-CS: ADC");
+      SimpleFOCDebug::print(i+1);
+      SimpleFOCDebug::println(" already in use!");
+    }
   }
 #endif
 
   // now take the first ADC that has all pins connected
   for (int i = 0; i < ADC_COUNT; i++) {
+    if (adc_handles[i].Instance != NP) {
+      continue; // ADC already in use
+    }
     if (pins_at_adc[i] == no_pins) {
       return _indexToADC(i);
     }
