@@ -121,7 +121,9 @@ uint8_t group_pins_used[2] = {0};
 // last operator in the group
 mcpwm_oper_handle_t last_operator[2];
 
-
+void _notifyLowSideUsingComparator(int group_id){
+  group_pins_used[group_id] +=1;
+}
 
 // checking if group has pins available
 bool _hasAvailablePins(int group, int no_pins){
