@@ -158,5 +158,11 @@ void _setDutyCycle(mcpwm_cmpr_handle_t cmpr, uint32_t mcpwm_period, float duty_c
  */
 void _forcePhaseState(mcpwm_gen_handle_t generator_high, mcpwm_gen_handle_t generator_low, PhaseState phase_state);
 
+/**
+ * function notifying the driver that low side is used with comparator
+ * @param group_id - mcpwm group id
+ */
+void _notifyLowSideUsingComparator(int group_id);
+
 #endif
 #endif
