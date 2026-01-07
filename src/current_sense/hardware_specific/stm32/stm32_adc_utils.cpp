@@ -605,6 +605,14 @@ float _readRegularADCVoltage(const int pin){
 
   ADC_ChannelConfTypeDef sConfig = {0};
   sConfig.Channel = last_channel[adc_index];
+  // the shortes possible sampling time 
+  // this seems to be a constant in HAL - the shortest time enum is equal to 0
+  // G4 - 2.5 cycles
+  // F1, H7 - 1.5 cycles
+  // L4 - 2.5 cycles
+  // F4, F7 - 3 cycles
+  sConfig.SamplingTime = 0; 
+
 #ifdef ADC_REGULAR_RANK_1
   sConfig.Rank = ADC_REGULAR_RANK_1;
 #else
@@ -616,15 +624,10 @@ float _readRegularADCVoltage(const int pin){
 #ifdef ADC_OFFSET_NONE
   sConfig.OffsetNumber = ADC_OFFSET_NONE;
 #endif
-  // the shortes possible sampling time 
-  // this seems to be a constant in HAL - the shortest time enum is equal to 0
-  // G4 - 2.5 cycles
-  // F1, H7 - 1.5 cycles
-  // L4 - 2.5 cycles
-  // F4, F7 - 3 cycles
-  sConfig.SamplingTime = 0; 
+#ifndef STM32F1xx
   sConfig.Offset = 0;
-  
+#endif 
+
   if (HAL_ADC_ConfigChannel(&hadc[adc_index], &sConfig) != HAL_OK) {
 #ifdef SIMPLEFOC_STM32_DEBUG
     SIMPLEFOC_DEBUG("STM32-CS: ERR: Failed to configure regular channel");
