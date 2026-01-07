@@ -7,6 +7,7 @@
 #include "stm32f1xx_hal.h"
 #include "../stm32_mcu.h"
 #include "../stm32_adc_hal.h"
+#include "stm32f1xx_ll_adc.h"
 
 #endif
 

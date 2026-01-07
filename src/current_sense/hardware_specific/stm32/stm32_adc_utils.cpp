@@ -4,6 +4,13 @@
 
 #if defined(_STM32_DEF_) 
 
+#ifdef STM32F1xx
+#include "stm32f1xx_ll_adc.h"
+#endif
+#ifdef STM32F7xx
+#include "stm32f7xx_ll_adc.h"
+#endif
+
 
 extern ADC_HandleTypeDef hadc[];
 
