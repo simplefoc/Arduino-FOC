@@ -1,9 +1,11 @@
 #include "stm32_adc_utils.h"
 #include "stm32_mcu.h"
+#include "stm32_adc_hal.h"
 
 #if defined(_STM32_DEF_) 
 
 
+extern ADC_HandleTypeDef hadc[];
 
 int _adcToIndex(ADC_TypeDef *AdcHandle){
   if(AdcHandle == ADC1) return 0;
@@ -110,12 +112,37 @@ int _findIndexOfLastPinMapADCEntry(int pin) {
   return _findIndexOfLastEntry(pinName);
 }
 
+// find the best ADC for the given pin
+// returns the ADC_TypeDef pointer or nullptr if not found
+// It returns already configured ADC if possible
+// otherwise it returns the first available unconfigured ADC
+ADC_TypeDef* _findBestADCForRegularPin(int pin, ADC_HandleTypeDef adc_handles[]) {
+  PinName pinName = digitalPinToPinName(pin);
+  int index = _findIndexOfFirstPinMapADCEntry(pin);
+  int last_index = _findIndexOfLastPinMapADCEntry(pin);
+  if (index == -1) {
+    return nullptr;
+  }
+  for (int j = index; j <= last_index; j++) {
+    if (PinMap_ADC[j].pin == NC) {
+      break;
+    }
+    int adcIndex = _adcToIndex((ADC_TypeDef*)PinMap_ADC[j].peripheral);
+    if (adc_handles[adcIndex].Instance != NP) {
+      // if ADC is already configured, return it
+      return (ADC_TypeDef*)PinMap_ADC[j].peripheral;
+    }
+  }
+  // return the first available ADC
+  return (ADC_TypeDef*)PinMap_ADC[index].peripheral;
+}
+
 // find the best ADC combination for the given pins
 // returns the index of the best ADC 
 // each pin can be connected to multiple ADCs
 // the function will try to find a single ADC that can be used for all pins
 // if not possible it will return nullptr
-ADC_TypeDef* _findBestADCForPins(int numPins, int pins[], ADC_HandleTypeDef adc_handles[]) {
+ADC_TypeDef* _findBestADCForInjectedPins(int numPins, int pins[], ADC_HandleTypeDef adc_handles[]) {
 
   // assuning that there is at most 5 ADCs
   uint8_t pins_at_adc[ADC_COUNT] = {0};
@@ -153,9 +180,12 @@ ADC_TypeDef* _findBestADCForPins(int numPins, int pins[], ADC_HandleTypeDef adc_
     SimpleFOCDebug::print(" pins: ");
     SimpleFOCDebug::println(pins_at_adc[i]);
     if (adc_handles[i].Instance != NP) {
-      SimpleFOCDebug::print("STM32-CS: ADC");
-      SimpleFOCDebug::print(i+1);
-      SimpleFOCDebug::println(" already in use!");
+      // check if ADC injeted is already in use
+      if(!LL_ADC_INJ_IsTriggerSourceSWStart(adc_handles[i].Instance)) {
+       SimpleFOCDebug::print("STM32-CS: ADC");
+        SimpleFOCDebug::print(i+1);
+        SimpleFOCDebug::println(" already in use for injected channels!");
+      }
     }
   }
 #endif
@@ -163,7 +193,8 @@ ADC_TypeDef* _findBestADCForPins(int numPins, int pins[], ADC_HandleTypeDef adc_
   // now take the first ADC that has all pins connected
   for (int i = 0; i < ADC_COUNT; i++) {
     if (adc_handles[i].Instance != NP) {
-      continue; // ADC already in use
+      if (!LL_ADC_INJ_IsTriggerSourceSWStart(adc_handles[i].Instance))
+        continue; // ADC already in use for injected
     }
     if (pins_at_adc[i] == no_pins) {
       return _indexToADC(i);
@@ -371,7 +402,6 @@ uint32_t _getADCChannel(PinName pin, ADC_TypeDef *AdcHandle )
   for (int i = first_ind; i <= last_ind; i++) {
     if (PinMap_ADC[i].peripheral == AdcHandle) {
       channel =_getADCChannelFromPinMap(PinMap_ADC[i].pin);
-      SIMPLEFOC_DEBUG("STM32-CS: ADC channel: ", (int)STM_PIN_CHANNEL(pinmap_function(PinMap_ADC[i].pin, PinMap_ADC)));
       break;
     }
   }
@@ -500,6 +530,133 @@ float _readADCInjectedChannelVoltage(int pin, void* cs_params, Stm32AdcInterrupt
     } 
     return 0; // pin not found
   #endif
+}
+
+
+
+int last_pin[ADC_COUNT] = {-1,-1,-1,-1,-1};
+uint32_t last_channel[ADC_COUNT] = {0,0,0,0,0};
+
+/**
+ * Read a regular ADC channel while injected channels are running for current sensing.
+ * 
+ * This function performs a one-shot regular conversion on the same ADC that is being
+ * used for injected current sensing. Injected conversions have hardware priority and
+ * will pre-empt regular conversions, so this function may experience some latency.
+ * 
+ * The function will retry a few times if the ADC returns HAL_BUSY, making it suitable
+ * for reading auxiliary sensors (temperature, voltage, potentiometers, etc.) while
+ * motor control is active.
+ * 
+ * @param pin - Arduino pin number to read (must be on the same ADC as current sensing)
+ * @return float - Voltage reading in volts, or -1.0f on error
+ */
+float _readRegularADCVoltage(const int pin){
+
+  ADC_HandleTypeDef* hadc = _get_adc_handles();
+
+  int adc_index = NOT_SET;
+  for(int i = 0; i < ADC_COUNT; i++){
+    if(last_pin[i] == pin){
+      adc_index = i;
+      break;
+    }
+  }
+  // avoid re-configuring the channel if reading the same pin as last time
+  if(!_isset(adc_index)){
+    ADC_TypeDef* adc_instance = _findBestADCForRegularPin(pin, hadc);
+    if(adc_instance == NP){
+  #ifdef SIMPLEFOC_STM32_DEBUG
+      SIMPLEFOC_DEBUG("STM32-CS: ERR: Pin does not belong to any ADC!");
+  #endif
+      return -1.0f;
+    } 
+    adc_index = _adcToIndex(adc_instance);
+
+    ADC_HandleTypeDef adc_handle = hadc[adc_index];
+    if (adc_handle.Instance == NP) {
+  #ifdef SIMPLEFOC_STM32_DEBUG
+      SIMPLEFOC_DEBUG("STM32-CS: WARN: ADC not configured, need to configure it: ADC", adc_index+1);
+  #endif
+      if(_adc_init_regular(adc_instance) != 0){
+  #ifdef SIMPLEFOC_STM32_DEBUG
+        SIMPLEFOC_DEBUG("STM32-CS: ERR: Failed to initialize ADC for pin ", pin);
+  #endif
+        return -1.0f;
+      }
+    }
+
+    
+  last_pin[adc_index] = pin;
+  // Configure the regular channel for this pin
+  PinName pinName = analogInputToPinName(pin);
+  uint32_t channel = _getADCChannel(pinName, adc_instance);
+  
+  last_channel[adc_index] = channel;
+  }
+  
+
+  ADC_ChannelConfTypeDef sConfig = {0};
+  sConfig.Channel = last_channel[adc_index];
+#ifdef ADC_REGULAR_RANK_1
+  sConfig.Rank = ADC_REGULAR_RANK_1;
+#else
+  sConfig.Rank = 1;
+#endif
+#ifdef ADC_SINGLE_ENDED
+  sConfig.SingleDiff = ADC_SINGLE_ENDED;
+#endif
+#ifdef ADC_OFFSET_NONE
+  sConfig.OffsetNumber = ADC_OFFSET_NONE;
+#endif
+  // the shortes possible sampling time 
+  // this seems to be a constant in HAL - the shortest time enum is equal to 0
+  // G4 - 2.5 cycles
+  // F1, H7 - 1.5 cycles
+  // L4 - 2.5 cycles
+  // F4, F7 - 3 cycles
+  sConfig.SamplingTime = 0; 
+  sConfig.Offset = 0;
+  
+  if (HAL_ADC_ConfigChannel(&hadc[adc_index], &sConfig) != HAL_OK) {
+#ifdef SIMPLEFOC_STM32_DEBUG
+    SIMPLEFOC_DEBUG("STM32-CS: ERR: Failed to configure regular channel");
+#endif
+    return -1.0f;
+  }
+
+  // Try to start conversion, with retries for HAL_BUSY
+  // (ADC may be busy with injected conversion)
+  HAL_StatusTypeDef status;
+  int retries = 5;
+  
+  do {
+    status = HAL_ADC_Start(&hadc[adc_index]);
+    if (status == HAL_BUSY) {
+      // Wait a bit for injected conversion to complete
+      delayMicroseconds(1);
+      retries--;
+    }
+  } while (status == HAL_BUSY && retries > 0);
+  
+  if (status != HAL_OK) {
+#ifdef SIMPLEFOC_STM32_DEBUG
+    SIMPLEFOC_DEBUG("STM32-CS: ERR: ADC busy or failed to start");
+#endif
+    return -1.0f;
+  }
+  
+  // Wait for conversion to complete
+  // Timeout of 1ms should be more than enough
+  if (HAL_ADC_PollForConversion(&hadc[adc_index], 1) == HAL_OK) {
+    uint32_t raw = HAL_ADC_GetValue(&hadc[adc_index]);
+    return raw * 3.3f / 4096.0f; // assuming 12-bit ADC and 3.3V reference
+  }
+  
+#ifdef SIMPLEFOC_STM32_DEBUG
+  SIMPLEFOC_DEBUG("STM32-CS: ERR: Regular conversion timeout");
+#endif
+  return -1.0f;
 }
 
 #endif
