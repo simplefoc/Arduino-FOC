@@ -18,8 +18,6 @@
 #include "../../../drivers/hardware_specific/stm32/stm32_mcu.h"
 #include "stm32_mcu.h"
 
-
-
 /* Exported Functions */
 /**
   * @brief  Return ADC HAL channel linked to a PinName
@@ -43,7 +41,7 @@ int _adcToIndex(ADC_TypeDef *AdcHandle);
 // functions helping to find the best ADC channel
 int _findIndexOfFirstPinMapADCEntry(int pin);
 int _findIndexOfLastPinMapADCEntry(int pin);
-ADC_TypeDef* _findBestADCForPins(int num_pins, int pins[]);
+ADC_TypeDef* _findBestADCForPins(int num_pins, int pins[], ADC_HandleTypeDef adc_handles[]);
 
 
 // Structure to hold ADC interrupt configuration per ADC instance
