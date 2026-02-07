@@ -39,31 +39,36 @@
 
 #define MIN_ANGLE_DETECT_MOVEMENT (_2PI/101.0f)
 
-// dq current structure
-struct DQCurrent_s
+// dq variables
+struct DQ_s
 {
     float d;
     float q;
 };
-// phase current structure
-struct PhaseCurrent_s
+
+// dq voltage structs
+typedef DQ_s DQVoltage_s;
+// dq current structs
+typedef DQ_s DQCurrent_s;
+
+// alpha-beta variables    
+struct AB_s
+{
+    float alpha;
+    float beta;
+};
+typedef AB_s ABVoltage_s;  // NOT USED
+typedef AB_s ABCurrent_s;
+
+// phase structs
+struct Phase_s
 {
     float a;
     float b;
     float c;
 };
-// dq voltage structs
-struct DQVoltage_s
-{
-    float d;
-    float q;
-};
-// alpha beta current structure
-struct ABCurrent_s
-{
-    float alpha;
-    float beta;
-};
+typedef Phase_s PhaseVoltage_s; // NOT USED
+typedef Phase_s PhaseCurrent_s;
 
 
 /**

@@ -224,11 +224,34 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
       break;
     case CMD_INDUCTANCE:
       printVerbose(F("L phase: "));
-      if(!GET){
-        motor->phase_inductance = value;
+      switch (sub_cmd){
+        case SCMD_INDUCT_D:
+          printVerbose(F("d: "));
+          if(!GET){
+            motor->phase_inductance_dq.d = value;
+            motor->phase_inductance = value;
+          }
+          if(_isset(motor->phase_inductance_dq.d)) println(motor->phase_inductance_dq.d);
+          else println(0);
+          break;
+        case SCMD_INDUCT_Q:
+          printVerbose(F("q: "));
+          if(!GET){
+            motor->phase_inductance_dq.q = value;
+          }
+          if(_isset(motor->phase_inductance_dq.q)) println(motor->phase_inductance_dq.q);
+          else println(0);
+          break;
+        default:
+          if(!GET){
+            motor->phase_inductance = value;
+            motor->phase_inductance_dq.d = value;
+            motor->phase_inductance_dq.q = value;
+          }
+          if(_isset(motor->phase_inductance)) println(motor->phase_inductance);
+          else println(0);
+          break;
       }
-      if(_isset(motor->phase_inductance)) println(motor->phase_inductance);
-      else println(0);
       break;
     case CMD_KV_RATING:
       printVerbose(F("Motor KV: "));
@@ -240,8 +263,8 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
       break;
     case CMD_SENSOR:
       // Sensor zero offset
-       printVerbose(F("Sensor | "));
-       switch (sub_cmd){
+      printVerbose(F("Sensor | "));
+      switch (sub_cmd){
         case SCMD_SENS_MECH_OFFSET:      // zero offset
           printVerbose(F("offset: "));
           if(!GET) motor->sensor_offset = value;
@@ -255,19 +278,35 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
         default:
           printError();
           break;
-       }
+      }
       break;
     case CMD_FOC_PARAMS:
       printVerbose(F("FOC | "));
       switch (sub_cmd){
         case SCMD_LOOPFOC_TIME:      // loopFOC execution time
           printVerbose(F("loop time: "));
-          println((int)motor->loop_time_us);
+          println((int)motor->loopfoc_time_us);
+          break;
+        case SCMD_MOVE_TIME:      // loopFOC execution time
+          printVerbose(F("move time: "));
+          println((int)motor->move_time_us);
           break;
         case SCMD_REINIT_FOC:
           printVerbose(F("Reinit!"));
           motor->initFOC();
           println(F("done"));
+          break;
+        case SCMD_TUNE_CURR:
+          printVerbose(F("PI tune curr.| "));
+          {
+            int res = motor->tuneCurrentController(value);
+            if(res == 0){
+              println(F("done"));
+            } else {
+              printVerbose(F("failed, err code: "));
+              println(res);
+            }
+          }
           break;
         default:
           printError();
