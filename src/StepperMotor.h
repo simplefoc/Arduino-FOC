@@ -21,11 +21,12 @@ class StepperMotor: public FOCMotor
 {
   public:
     /**
-      StepperMotor class constructor
-      @param pp  pole pair number 
-     @param R  motor phase resistance - [Ohm]
-     @param KV  motor KV rating (1/K_bemf) - rpm/V
-     @param L  motor phase inductance - [H]
+    *  StepperMotor class constructor
+    *  @param pp  pole pair number
+    *  @param R  motor phase resistance - [Ohm]
+    *  @param KV  motor KV rating (1/K_bemf) - rpm/V
+    *  @param Lq  motor q-axis inductance - [H]
+    *  @param Ld  motor d-axis inductance - [H]
     */
     StepperMotor(int pp,  float R = NOT_SET, float KV = NOT_SET, float L_q = NOT_SET, float L_d = NOT_SET);
 

@@ -5,7 +5,8 @@
 // - pp            - pole pair number
 // - R             - motor phase resistance
 // - KV            - motor kv rating (rmp/v)
-// - L             - motor phase inductance [H]
+// - Lq            - motor q-axis inductance [H]
+// - Ld            - motor d-axis inductance [H]
 HybridStepperMotor::HybridStepperMotor(int pp, float _R, float _KV, float _Lq, float _Ld)
     : FOCMotor()
 {

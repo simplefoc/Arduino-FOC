@@ -4,7 +4,7 @@
 /** Typical configuration for the 14bit AMS AS5147 magnetic sensor over SPI interface */
 MagneticSensorSPIConfig_s AS5147_SPI = {
   .spi_mode = SPI_MODE1,
-  .clock_speed = 1000000,
+  .clock_speed = 1000000, // 1MHz clock (AMS should be able to accept up to 10MHz)
   .bit_resolution = 14,
   .angle_register = 0x3FFF,
   .data_start_bit = 13,
@@ -17,7 +17,7 @@ MagneticSensorSPIConfig_s AS5147_SPI = {
 // Ex. https://community.simplefoc.com/t/esp32s3-qtpy-platformio-spi-problem/7444
 MagneticSensorSPIConfig_s AS5048_SPI = {
   .spi_mode = SPI_MODE1,
-  .clock_speed = 1000000,
+  .clock_speed = 1000000, // 1MHz clock (AMS should be able to accept up to 10MHz)
   .bit_resolution = 14,
   .angle_register = 0x3FFF,
   .data_start_bit = 13,
@@ -26,7 +26,7 @@ MagneticSensorSPIConfig_s AS5048_SPI = {
 };
 MagneticSensorSPIConfig_s AS5047_SPI = {
   .spi_mode = SPI_MODE1,
-  .clock_speed = 1000000,
+  .clock_speed = 1000000, // 1MHz clock (AMS should be able to accept up to 10MHz)
   .bit_resolution = 14,
   .angle_register = 0x3FFF,
   .data_start_bit = 13,
@@ -37,7 +37,7 @@ MagneticSensorSPIConfig_s AS5047_SPI = {
 /** Typical configuration for the 14bit MonolithicPower MA730 magnetic sensor over SPI interface */
 MagneticSensorSPIConfig_s MA730_SPI = {
   .spi_mode = SPI_MODE0,
-  .clock_speed = 1000000,
+  .clock_speed = 1000000, 
   .bit_resolution = 14,
   .angle_register = 0x0000,
   .data_start_bit = 15,

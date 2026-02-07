@@ -706,7 +706,7 @@ void FOCMotor::move(float new_target) {
       // angle set point
       shaft_angle_sp = target;
       // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
-      current_sp = P_angle(shaft_angle_sp - shaft_angle); // if current/foc_current torque control
+      current_sp = P_angle(shaft_angle_sp - shaft_angle);
       break;
     case MotionControlType::angle:
       // TODO sensor precision: this calculation is not numerically precise. The target value cannot express precise positions when

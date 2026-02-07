@@ -34,7 +34,8 @@ int trap_150_map[12][3] = {
 // - pp            - pole pair number
 // - R             - motor phase resistance
 // - KV            - motor kv rating (rmp/v)
-// - L             - motor phase inductance
+// - Lq            - motor q-axis inductance [H]
+// - Ld            - motor d-axis inductance [H]
 BLDCMotor::BLDCMotor(int pp, float _R, float _KV, float _Lq, float _Ld)
 : FOCMotor()
 {

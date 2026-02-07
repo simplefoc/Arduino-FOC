@@ -425,7 +425,7 @@ void Commander::motion(FOCMotor* motor, char* user_cmd, char* separator){
           break;
         default:
           // change control type
-          if(!GET && value >= 0 && (int)value < 5) // if set command
+          if(!GET && value >= 0 && (int)value < 6) // if set command
             motor->updateMotionControlType((MotionControlType)value); // update motion control type
           switch(motor->controller){
             case MotionControlType::torque:
