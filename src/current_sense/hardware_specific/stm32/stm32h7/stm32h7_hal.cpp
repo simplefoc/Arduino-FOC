@@ -27,8 +27,6 @@ int _adc_init_regular(ADC_TypeDef* adc_instance)
 
   /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
   */
-  auto adc_instance = _findBestADCForInjectedPins(3, cs_params->pins, hadc);
-
   if(adc_instance == ADC1) __HAL_RCC_ADC12_CLK_ENABLE();
 #ifdef ADC2  // if defined ADC2
   else if(adc_instance == ADC2) __HAL_RCC_ADC12_CLK_ENABLE();
