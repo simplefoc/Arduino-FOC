@@ -43,7 +43,7 @@ class StepperMotor: public FOCMotor
     StepperDriver* driver; 
 
     /**  Motor hardware init function */
-  	void init() override;
+  	int init() override;
     /** Motor disable function */
   	void disable() override;
     /** Motor enable function */
@@ -73,8 +73,6 @@ class StepperMotor: public FOCMotor
      */
     void move(float target = NOT_SET) override;
     
-    float	Ualpha,Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
-
   /**
     * Method using FOC to set Uq to the motor at the optimal angle
     * Heart of the FOC algorithm
@@ -85,30 +83,25 @@ class StepperMotor: public FOCMotor
     */
     void setPhaseVoltage(float Uq, float Ud, float angle_el) override;
 
+    /**
+     * Measure resistance and inductance of a StepperMotor and print results to debug.
+     * If a sensor is available, an estimate of zero electric angle will be reported too.
+     * TODO: determine the correction factor
+     * @param voltage The voltage applied to the motor
+     * @returns 0 for success, >0 for failure
+     */
+    int characteriseMotor(float voltage){
+      return FOCMotor::characteriseMotor(voltage, 1.0f);
+    }
+
   private:
   
     /** Sensor alignment to electrical 0 angle of the motor */
     int alignSensor();
     /** Motor and sensor alignment to the sensors absolute 0 angle  */
     int absoluteZeroSearch();
-        
-    // Open loop motion control    
-    /**
-     * Function (iterative) generating open loop movement for target velocity
-     * it uses voltage_limit variable
-     * 
-     * @param target_velocity - rad/s
-     */
-    float velocityOpenloop(float target_velocity);
-    /**
-     * Function (iterative) generating open loop movement towards the target angle
-     * it uses voltage_limit and velocity_limit variables
-     * 
-     * @param target_angle - rad
-     */
-    float angleOpenloop(float target_angle);
-    // open loop variables
-    long open_loop_timestamp;
+    /** Current sense and motor phase alignment */
+    int alignCurrentSense();
 };
 
 

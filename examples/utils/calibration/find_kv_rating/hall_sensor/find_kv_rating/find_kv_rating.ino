@@ -33,12 +33,18 @@ Commander command = Commander(Serial);
 void doTarget(char* cmd) { command.scalar(&target_voltage, cmd); }
 void calcKV(char* cmd) { 
   // calculate the KV
-  Serial.println(motor.shaft_velocity/motor.target*30.0f/_PI);
+  Serial.println(motor.shaft_velocity/motor.target/_SQRT3*30.0f/_PI);
 
 }
 
 void setup() { 
   
+  // use monitoring with serial 
+  Serial.begin(115200);
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&Serial);
+
   // initialize encoder sensor hardware
   sensor.init();
   sensor.enableInterrupts(doA, doB, doC); 
@@ -58,9 +64,7 @@ void setup() {
 
   // set motion control loop to be used
   motor.controller = MotionControlType::torque;
-
-  // use monitoring with serial 
-  Serial.begin(115200);
+  
   // comment out if not needed
   motor.useMonitoring(Serial);
 

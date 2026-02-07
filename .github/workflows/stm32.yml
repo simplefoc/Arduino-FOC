@@ -1,0 +1,68 @@
+name: STM32
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: arduino/arduino-lint-action@v1
+        with:
+          library-manager: update
+          project-type: library
+  build:
+    name: Test compiling 
+    runs-on: ubuntu-latest
+   
+    strategy:
+      matrix:
+        arduino-boards-fqbn:
+          - STMicroelectronics:stm32:GenF1:pnum=BLUEPILL_F103C8   # stm32 bluepill
+          - STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE # stm32 nucleo 
+          - STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F746ZG # stm32 nucleo f746zg
+          - STMicroelectronics:stm32:GenF4:pnum=GENERIC_F405RGTX  # stm32f405 - odrive
+          - STMicroelectronics:stm32:GenL4:pnum=GENERIC_L475RGTX  # stm32l475
+          - STMicroelectronics:stm32:Disco:pnum=B_G431B_ESC1      # B-G431-ESC1
+
+        include:
+          - arduino-boards-fqbn: STMicroelectronics:stm32:GenF1:pnum=BLUEPILL_F103C8 # bluepill - hs examples
+            platform-url:  https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
+            sketch-names: bluepill_position_control.ino, stm32_i2c_dual_bus_example.ino, stm32_spi_alt_example.ino
+
+          - arduino-boards-fqbn: STMicroelectronics:stm32:Disco:pnum=B_G431B_ESC1      # B-G431-ESC1
+            platform-url:  https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
+            sketch-names: B_G431B_ESC1.ino
+            build-properties: 
+              B_G431B_ESC1:
+                -DHAL_OPAMP_MODULE_ENABLED
+
+          - arduino-boards-fqbn: STMicroelectronics:stm32:GenF4:pnum=GENERIC_F405RGTX  # stm32f405 - odrive
+            platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
+            sketch-names: odrive_example_encoder.ino, odrive_example_spi.ino, stm32_current_control_low_side.ino
+            
+          - arduino-boards-fqbn: STMicroelectronics:stm32:GenL4:pnum=GENERIC_L475RGTX  # stm32l475
+            platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
+            sketch-names: single_full_control_example.ino, stm32_spi_alt_example.ino, double_full_control_example.ino, stm32_current_control_low_side.ino
+            
+          - arduino-boards-fqbn: STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE # nucleo one full example
+            platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
+            sketch-names: single_full_control_example.ino, stm32_spi_alt_example.ino, double_full_control_example.ino, stm32_current_control_low_side.ino
+            
+          - arduino-boards-fqbn: STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F746ZG # nucleo f7 one full example
+            platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
+            sketch-names: single_full_control_example.ino, stm32_spi_alt_example.ino, double_full_control_example.ino, stm32_current_control_low_side.ino
+            
+
+      # Do not cancel all jobs / architectures if one job fails
+      fail-fast: false
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+    - name: Compile all examples
+      uses: ArminJo/arduino-test-compile@master
+      with:
+          arduino-board-fqbn: ${{ matrix.arduino-boards-fqbn }}
+          required-libraries: ${{ matrix.required-libraries }}
+          platform-url: ${{ matrix.platform-url }}
+          sketch-names: ${{ matrix.sketch-names }}
+          sketches-exclude: ${{ matrix.sketches-exclude }}
+          build-properties: ${{ toJson(matrix.build-properties) }}

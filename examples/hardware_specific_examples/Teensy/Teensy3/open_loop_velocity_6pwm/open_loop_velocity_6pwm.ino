@@ -18,6 +18,12 @@ void doLimit(char* cmd) { command.scalar(&motor.voltage_limit, cmd); }
 
 void setup() {
 
+  // use monitoring with serial 
+  Serial.begin(115200);
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&Serial);
+
   // driver config
   // power supply voltage [V]
   driver.voltage_power_supply = 12;
@@ -32,7 +38,7 @@ void setup() {
   // limiting motor movements
   // limit the voltage to be set to the motor
   // start very low for high resistance motors
-  // currnet = resistance*voltage, so try to be well under 1Amp
+  // currnet = voltage/resistance, so try to be well under 1Amp
   motor.voltage_limit = 3;   // [V]
  
   // open loop control config
@@ -48,7 +54,6 @@ void setup() {
   command.add('T', doTarget, "target velocity");
   command.add('L', doLimit, "voltage limit");
 
-  Serial.begin(115200);
   Serial.println("Motor ready!");
   Serial.println("Set target velocity [rad/s]");
   _delay(1000);

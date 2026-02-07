@@ -1,0 +1,106 @@
+/**
+ *  @file HybridStepperMotor.h
+ *
+ */
+
+#ifndef HybridStepperMotor_h
+#define HybridStepperMotor_h
+
+#include "Arduino.h"
+#include "common/base_classes/FOCMotor.h"
+#include "common/base_classes/StepperDriver.h"
+#include "common/base_classes/Sensor.h"
+#include "common/foc_utils.h"
+#include "common/time_utils.h"
+#include "common/defaults.h"
+
+/**
+ Stepper Motor class
+*/
+class HybridStepperMotor : public FOCMotor
+{
+public:
+    /**
+      HybridStepperMotor class constructor
+      @param pp  pole pair number
+     @param R  motor phase resistance - [Ohm]
+     @param KV  motor KV rating (1/K_bemf) - rpm/V
+     @param L  motor phase inductance - [H]
+    */
+    HybridStepperMotor(int pp, float R = NOT_SET, float KV = NOT_SET, float L = NOT_SET);
+
+    /**
+     * Function linking a motor and a foc driver
+     *
+     * @param driver BLDCDriver handle for hardware peripheral control
+     */
+    void linkDriver(BLDCDriver *driver);
+
+    /**
+     * BLDCDriver link:
+     */
+    BLDCDriver *driver;
+
+    /**  Motor hardware init function */
+    int init() override;
+    /** Motor disable function */
+    void disable() override;
+    /** Motor enable function */
+    void enable() override;
+
+    /**
+     * Function initializing FOC algorithm
+     * and aligning sensor's and motors' zero position
+     */
+    int initFOC() override;
+
+    /**
+     * Function running FOC algorithm in real-time
+     * it calculates the gets motor angle and sets the appropriate voltages
+     * to the phase pwm signals
+     * - the faster you can run it the better Arduino UNO ~1ms, Bluepill ~ 100us
+     */
+    void loopFOC() override;
+
+    /**
+     * Function executing the control loops set by the controller parameter of the HybridStepperMotor.
+     *
+     * @param target  Either voltage, angle or velocity based on the motor.controller
+     *                If it is not set the motor will use the target set in its variable motor.target
+     *
+     * This function doesn't need to be run upon each loop execution - depends of the use case
+     */
+    void move(float target = NOT_SET) override;
+
+    float Ua, Ub, Uc; //!< Phase voltages used for inverse Park and Clarke transform
+
+    /**
+     * Method using FOC to set Uq to the motor at the optimal angle
+     * Heart of the FOC algorithm
+     *
+     * @param Uq Current voltage in q axis to set to the motor
+     * @param Ud Current voltage in d axis to set to the motor
+     * @param angle_el current electrical angle of the motor
+     */
+    void setPhaseVoltage(float Uq, float Ud, float angle_el) override;
+
+    /**
+     * Measure resistance and inductance of a StepperMotor and print results to debug.
+     * If a sensor is available, an estimate of zero electric angle will be reported too.
+     * TODO: determine the correction factor
+     * @param voltage The voltage applied to the motor
+     * @returns 0 for success, >0 for failure
+     */
+    int characteriseMotor(float voltage){
+      return FOCMotor::characteriseMotor(voltage, 1.0f);
+    }
+    
+private:
+    int alignCurrentSense();
+    /** Sensor alignment to electrical 0 angle of the motor */
+    int alignSensor();
+    /** Motor and sensor alignment to the sensors absolute 0 angle  */
+    int absoluteZeroSearch();
+};
+
+#endif

@@ -8,6 +8,8 @@
 #define _ADC_VOLTAGE 3.3f
 #define _ADC_RESOLUTION 1024.0f
 
+extern ADC_HandleTypeDef hadc[];
+
 // function reading an ADC value and returning the read voltage
 void* _configureADCInline(const void* driver_params, const int pinA,const int pinB,const int pinC){
   _UNUSED(driver_params);

@@ -18,6 +18,12 @@ void doMotor(char* cmd) { command.motor(&motor, cmd); }
 
 void setup() {
 
+  // use monitoring with SerialUSB 
+  SerialUSB.begin(115200);
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&SerialUSB);
+
   // initialise magnetic sensor hardware
   sensor.init();
   // link the motor to the sensor
@@ -31,8 +37,6 @@ void setup() {
   // set motion control loop to be used
   motor.controller = MotionControlType::torque;
 
-  // use monitoring with SerialUSB 
-  SerialUSB.begin(115200);
   // comment out if not needed
   motor.useMonitoring(SerialUSB);
 

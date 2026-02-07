@@ -22,7 +22,7 @@
 #define _MON_ANGLE  0b0000001 // monitor angle value
 
 /**
- *  Motiron control type
+ *  Motion control type
  */
 enum MotionControlType : uint8_t {
   torque            = 0x00,     //!< Torque control
@@ -40,6 +40,7 @@ enum TorqueControlType : uint8_t {
   voltage            = 0x00,     //!< Torque control using voltage
   dc_current         = 0x01,     //!< Torque control using DC current (one current magnitude)
   foc_current        = 0x02,     //!< torque control using dq currents
+  estimated_current  = 0x03      //!< torque control using estimated current (provided motor parameters)
 };
 
 /**
@@ -79,7 +80,7 @@ class FOCMotor
     FOCMotor();
 
     /**  Motor hardware init function */
-  	virtual void init()=0;
+  	virtual int init()=0;
     /** Motor disable function */
   	virtual void disable()=0;
     /** Motor enable function */
@@ -150,6 +151,15 @@ class FOCMotor
      */
     float electricalAngle();
 
+    /**
+     * Measure resistance and inductance of a motor and print results to debug.
+     * If a sensor is available, an estimate of zero electric angle will be reported too.
+     * @param voltage The voltage applied to the motor
+     * @param correction_factor  Is 1.5 for 3 phase motors, because we measure over a series-parallel connection. TODO: what about 2 phase motors?
+     * @returns 0 for success, >0 for failure
+     */
+    int characteriseMotor(float voltage, float correction_factor);
+
     // state variables
     float target; //!< current target value - depends of the controller
     float feed_forward_velocity = 0.0f; //!< current feed forward velocity
@@ -162,6 +172,10 @@ class FOCMotor
     DQVoltage_s voltage;//!< current d and q voltage set to the motor
     DQCurrent_s current;//!< current d and q current measured
     float voltage_bemf; //!< estimated backemf voltage (if provided KV constant)
+    float	Ualpha, Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
+
+    DQCurrent_s feed_forward_current;//!< current d and q current measured
+    DQVoltage_s feed_forward_voltage;//!< current d and q voltage set to the motor
 
     // motor configuration parameters
     float voltage_sensor_align;//!< sensor and motor align voltage parameter
@@ -244,9 +258,92 @@ class FOCMotor
 
     // monitoring functions
     Print* monitor_port; //!< Serial terminal variable if provided
+
+    //!< time between two loopFOC executions in microseconds
+    uint32_t loop_time_us = 0; //!< filtered loop times
+
+    /**
+     * Function udating loop time measurement
+     * time between two loopFOC executions in microseconds
+     * It filters the value using low pass filtering alpha = 0.1
+     * @note - using _micros() function - be aware of its overflow every ~70 minutes
+     */
+    void updateLoopTime();
+
+    /**
+     * Update limit values in controllers when changed
+     * @param new_velocity_limit - new velocity limit value
+     * 
+     * @note Updates velocity limit in:
+     *  - motor.velocity_limit
+     *  - motor.P_angle.limit
+     */
+    void updateVelocityLimit(float new_velocity_limit);
+    /**
+     * Update limit values in controllers when changed
+     * @param new_current_limit - new current limit value
+     * 
+     * @note Updates current limit in:
+     *  - motor.current_limit
+     *  - motor.PID_velocity.limit (if current control)
+     */
+    void updateCurrentLimit(float new_current_limit);
+    /**
+     * Update limit values in controllers when changed
+     * @param new_voltage_limit - new voltage limit value
+     * 
+     * @note Updates voltage limit in:
+     *  - motor.voltage_limit
+     *  - motor.PID_current_q.limit
+     *  - motor.PID_current_d.limit
+     *  - motor.PID_velocity.limit (if voltage control)
+     */
+    void updateVoltageLimit(float new_voltage_limit);
+
+    /**
+     * Update torque control type and related controller limit values
+     * @param new_torque_controller - new torque control type
+     * 
+     * @note Updates motor.torque_controller and motor.PID_velocity.limit
+     */
+    void updateTorqueControlType(TorqueControlType new_torque_controller);
+    /**
+     * Update motion control type and related target values
+     * @param new_motion_controller - new motion control type
+     * 
+     * @note Updates the target value based on the new controller type
+     * - if velocity control: target is set to 0rad/s
+     * - if angle control: target is set to the current shaft_angle
+     * - if torque control: target is set to 0V or 0A depending on torque control type
+     */
+    void updateMotionControlType(MotionControlType new_motion_controller);
+
+    // Open loop motion control    
+    /**
+     * Function (iterative) generating open loop movement for target velocity
+     * it uses voltage_limit variable
+     * 
+     * @param target_velocity - rad/s
+     */
+    float velocityOpenloop(float target_velocity);
+    /**
+     * Function (iterative) generating open loop movement towards the target angle
+     * it uses voltage_limit and velocity_limit variables
+     * 
+     * @param target_angle - rad
+     */
+    float angleOpenloop(float target_angle);
+    // open loop variables
+    uint32_t open_loop_timestamp;
+    
   private:
     // monitor counting variable
     unsigned int monitor_cnt = 0 ; //!< counting variable
+
+    uint32_t last_loop_timestamp_us = 0; //!< timestamp of the last loopFOC execution in microseconds
+    uint32_t last_loop_time_us = 0; //!< time between two loopFOC executions in microseconds
+    
+    
 };
 
 

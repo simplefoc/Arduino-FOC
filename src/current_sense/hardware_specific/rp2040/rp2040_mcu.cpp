@@ -1,5 +1,5 @@
 
-#if defined(TARGET_RP2040)
+#if defined(TARGET_RP2040) || defined(TARGET_RP2350)
 
 
 #include "../../hardware_api.h"
@@ -86,7 +86,7 @@ void* _configureADCInline(const void *driver_params, const int pinA, const int p
 // };
 
 
-// void _driverSyncLowSide(void* driver_params, void* cs_params) {
+// void* _driverSyncLowSide(void* driver_params, void* cs_params) {
 //     // nothing to do
 // };
 

@@ -778,7 +778,7 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_
 
 
 
-#ifdef SIMPLEFOC_SAMD_DEBUG
+#if defined(SIMPLEFOC_SAMD_DEBUG) && !defined(SIMPLEFOC_DISABLE_DEBUG)
 
 /**
  * Prints a table of pin assignments for your SAMD MCU. Very useful since the

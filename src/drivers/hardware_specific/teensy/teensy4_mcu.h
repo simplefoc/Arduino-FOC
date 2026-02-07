@@ -1,3 +1,6 @@
+#ifndef TEENSY4_MCU_DRIVER_H
+#define TEENSY4_MCU_DRIVER_H
+
 #include "teensy_mcu.h"
 
 // if defined 
@@ -9,7 +12,7 @@
 typedef struct Teensy4DriverParams {
   IMXRT_FLEXPWM_t* flextimers[3] = {NULL};
   int submodules[3];
-  long pwm_frequency;
+  int channels[6];
   float dead_zone;
 } Teensy4DriverParams;
 
@@ -105,6 +108,18 @@ const struct pwm_pin_info_struct pwm_pin_info[] = {
 #endif
 };
 
+// function finding the flexpwm instance given the submodule
+int flexpwm_to_index(IMXRT_FLEXPWM_t* flexpwm);
+// find the trigger TRG0 for the given timer and submodule
+int flexpwm_submodule_to_trig(IMXRT_FLEXPWM_t* flexpwm, int submodule);
+// find the external trigger for the given timer and submodule
+int flexpwm_submodule_to_ext_sync(IMXRT_FLEXPWM_t* flexpwm, int submodule);
+// function to connecting the triggers
+void xbar_connect(unsigned int input, unsigned int output);
+// function to initialize the xbar
+void xbar_init();
+
 #endif
 
+#endif
 #endif

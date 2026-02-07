@@ -6,20 +6,23 @@
 #include "./rp2040_mcu.h"
 
 
-#if defined(TARGET_RP2040)
+#if defined(TARGET_RP2040) || defined(TARGET_RP2350)
 
 
 #pragma message("")
-#pragma message("SimpleFOC: compiling for RP2040")
+#pragma message("SimpleFOC: compiling for RP2040/RP2350")
 #pragma message("")
 
-
+#if !defined(SIMPLEFOC_DEBUG_RP2040)
 #define SIMPLEFOC_DEBUG_RP2040
+#endif
 
 #include "../../hardware_api.h"
 #include "hardware/pwm.h"
 #include "hardware/clocks.h"
+#if defined(USE_ARDUINO_PINOUT)
 #include <pinDefinitions.h>
+#endif
 
 #define _PWM_FREQUENCY 24000
 #define _PWM_FREQUENCY_MAX 66000
@@ -35,7 +38,11 @@ uint16_t wrapvalues[NUM_PWM_SLICES];
 // TODO add checks which channels are already used...
 
 void setupPWM(int pin_nr, long pwm_frequency, bool invert, RP2040DriverParams* params, uint8_t index) {
+	#if defined(USE_ARDUINO_PINOUT)
 	uint pin = (uint)digitalPinToPinName(pin_nr);		// we could check for -DBOARD_HAS_PIN_REMAP ?
+	#else
+	uint pin = (uint)pin_nr;
+	#endif
 	gpio_set_function(pin, GPIO_FUNC_PWM);
 	uint slice = pwm_gpio_to_slice_num(pin);
 	uint chan = pwm_gpio_to_channel(pin);
@@ -48,7 +55,7 @@ void setupPWM(int pin_nr, long pwm_frequency, bool invert, RP2040DriverParams* p
 	if (sysclock_hz % factor !=0) div+=1;
 	if (div < 16) div = 16;
 	uint32_t wrapvalue = (sysclock_hz * 8) / div / pwm_frequency - 1;
-#ifdef SIMPLEFOC_DEBUG_RP2040
+#if defined(SIMPLEFOC_DEBUG_RP2040) && !defined(SIMPLEFOC_DISABLE_DEBUG)
 	SimpleFOCDebug::print("Configuring pin ");
 	SimpleFOCDebug::print((int)pin);
 	SimpleFOCDebug::print(" slice ");
@@ -63,9 +70,9 @@ void setupPWM(int pin_nr, long pwm_frequency, bool invert, RP2040DriverParams* p
 	SimpleFOCDebug::print((int)(div&0xF));
 	SimpleFOCDebug::print(" top value ");
 	SimpleFOCDebug::println((int)wrapvalue);
-#endif
 	if (wrapvalue < 999)
 		SimpleFOCDebug::println("Warning: PWM resolution is low.");
+#endif
 	pwm_set_clkdiv_int_frac(slice, div>>4, div&0xF);
 	pwm_set_phase_correct(slice, true);
 	pwm_set_wrap(slice, wrapvalue);
@@ -86,7 +93,7 @@ void syncSlices() {
 		pwm_set_counter(i, 0);
 	}
 	// enable all slices
-	pwm_set_mask_enabled(0xFF);
+	pwm_set_mask_enabled(0xFFF);
 }
 
 

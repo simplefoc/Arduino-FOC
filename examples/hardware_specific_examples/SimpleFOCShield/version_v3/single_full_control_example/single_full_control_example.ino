@@ -13,7 +13,7 @@ void doB(){encoder.handleB();}
 
 // inline current sensor instance
 // ACS712-05B has the resolution of 0.185mV per Amp
-InlineCurrentSense current_sense = InlineCurrentSense(1.0f, 0.185f, A0, A2);
+InlineCurrentSense current_sense = InlineCurrentSense(185.0f, A0, A2);
 
 // commander communication instance
 Commander command = Commander(Serial);
@@ -21,6 +21,12 @@ void doMotion(char* cmd){ command.motion(&motor, cmd); }
 // void doMotor(char* cmd){ command.motor(&motor, cmd); }
 
 void setup() {
+
+  // use monitoring with serial 
+  Serial.begin(115200);
+  // enable more verbose output for debugging
+  // comment out if not needed
+  SimpleFOCDebug::enable(&Serial);
 
   // initialize encoder sensor hardware
   encoder.init();
@@ -55,9 +61,6 @@ void setup() {
   // angle loop velocity limit
   motor.velocity_limit = 20;
 
-  // use monitoring with serial for motor init
-  // monitoring port
-  Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
   motor.monitor_downsample = 0; // disable intially

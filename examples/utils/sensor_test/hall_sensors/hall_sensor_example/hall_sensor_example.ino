@@ -13,13 +13,6 @@
 //  - pp                     - pole pairs
 HallSensor sensor = HallSensor(2, 3, 4, 14);
 
-// Interrupt routine intialisation
-// channel A and B callbacks
-void doA(){sensor.handleA();}
-void doB(){sensor.handleB();}
-void doC(){sensor.handleC();}
-
-
 void setup() {
   // monitoring port
   Serial.begin(115200);
@@ -29,8 +22,6 @@ void setup() {
   
   // initialise encoder hardware
   sensor.init();
-  // hardware interrupt enable
-  sensor.enableInterrupts(doA, doB, doC);
 
   Serial.println("Sensor ready");
   _delay(1000);
