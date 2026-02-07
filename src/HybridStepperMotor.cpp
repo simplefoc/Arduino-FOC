@@ -172,6 +172,17 @@ void HybridStepperMotor::setPhaseVoltage(float Uq, float Ud, float angle_el)
     Ub = Ub + Vo;
     Uc = Vo;
   }
+  
+  // compensate for voltage drop on the driver gate resistance 
+  if(_isset(driver->gate_resistance) && current_sense){
+    // compensate for voltage drop on the driver gate resistance
+    // this is especially important for hybrid steppers
+    PhaseCurrent_s currents = current_sense->getPhaseCurrents();
+    Ua += currents.a * driver->gate_resistance;
+    Ub += currents.b * driver->gate_resistance;
+    Uc += -(currents.a + currents.b) * driver->gate_resistance;
+  }
+
   driver->setPwm(Ua, Ub, Uc);
   
 }

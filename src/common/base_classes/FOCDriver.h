@@ -2,7 +2,7 @@
 #define FOCDRIVER_H
 
 #include "Arduino.h"
-
+#include "../foc_utils.h"
 
 enum PhaseState : uint8_t {
   PHASE_OFF = 0, // both sides of the phase are off
@@ -35,6 +35,9 @@ class FOCDriver{
         long pwm_frequency; //!< pwm frequency value in hertz
         float voltage_power_supply; //!< power supply voltage
         float voltage_limit; //!< limiting voltage set to the motor
+
+        // optional but very useful for hybrid stepper motor 
+        float gate_resistance = NOT_SET; //!< phase resistance of the driver 
 
         bool initialized = false; //!< true if driver was successfully initialized
         void* params = 0; //!< pointer to hardware specific parameters of driver
