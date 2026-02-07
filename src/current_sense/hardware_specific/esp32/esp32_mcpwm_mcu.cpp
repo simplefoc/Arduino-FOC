@@ -186,7 +186,8 @@ void* IRAM_ATTR _driverSyncLowSide(void* driver_params, void* cs_params){
   // if comparator creation failed, fall back to on_full callback
   if (cs->pretrig_comparator){
     // Calculate pwm duty cycle ticks for pre-trigger channel
-    uint32_t pwm_duty_cycle  = p->mcpwm_period * (0.75 - ((float)p->pwm_frequency*SIMPLEFOC_CS_PRETRIGGER_US)/1e6/2.0);
+    // TODO: verify the timing it seems to be correct between 15 and 20kHz (but needs better testing)
+    uint32_t pwm_duty_cycle  = p->mcpwm_period * (0.75 - ((float)p->pwm_frequency*SIMPLEFOC_CS_PRETRIGGER_US)/1e6/2.0); 
     // set up the comparator duty cycle
     CHECK_CS_ERR(mcpwm_comparator_set_compare_value((mcpwm_cmpr_handle_t)cs->pretrig_comparator, pwm_duty_cycle),
                 "Failed to set pretrigger compare value");
