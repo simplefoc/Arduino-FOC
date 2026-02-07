@@ -28,8 +28,9 @@ enum MotionControlType : uint8_t {
   torque            = 0x00,     //!< Torque control
   velocity          = 0x01,     //!< Velocity motion control
   angle             = 0x02,     //!< Position/angle motion control
-  velocity_openloop = 0x03,     //!< Open loop velocity control
-  angle_openloop    = 0x04      //!< Open loop position/angle control
+  velocity_openloop = 0x03,
+  angle_openloop    = 0x04,
+  angle_nocascade   = 0x05      //!< Position/angle motion control without velocity cascade
 };
 
 /**

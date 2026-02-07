@@ -442,6 +442,15 @@ void BLDCMotor::move(float new_target) {
     case MotionControlType::torque:
         current_sp =  target;
         break;
+     case MotionControlType::angle_nocascade:
+      // TODO sensor precision: this calculation is not numerically precise. The target value cannot express precise positions when
+      //                        the angles are large. This results in not being able to command small changes at high position values.
+      //                        to solve this, the delta-angle has to be calculated in a numerically precise way.
+      // angle set point
+      shaft_angle_sp = target;
+      // calculate the torque command - no velocity loop
+      current_sp = P_angle( shaft_angle_sp - shaft_angle );
+      break;
     case MotionControlType::angle:
       // TODO sensor precision: this calculation is not numerically precise. The target value cannot express precise positions when
       //                        the angles are large. This results in not being able to command small changes at high position values.
