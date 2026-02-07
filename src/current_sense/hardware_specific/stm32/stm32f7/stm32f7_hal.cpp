@@ -9,21 +9,21 @@
 // pointer to the ADC handles used in the project
 ADC_HandleTypeDef hadc[ADC_COUNT] = {0};
 
+ADC_HandleTypeDef* _get_adc_handles(){
+  return hadc;
+}
+
+
+
 /**
- * Function initializing the ADC and the injected channels for the low-side current sensing
+ * Function initializing the ADC for the regular channels for the low-side current sensing
  * 
- * @param cs_params - current sense parameters
- * @param driver_params - driver parameters
+ * @param adc_instance - ADC instance to initialize
  * 
  * @return int - 0 if success 
  */
-int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* driver_params)
+int _adc_init_regular(ADC_TypeDef* adc_instance)
 {
-  ADC_InjectionConfTypeDef sConfigInjected;
-
-  /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
-  */
-  auto adc_instance = _findBestADCForPins(3, cs_params->pins, hadc);
 
   if(adc_instance == ADC1) __HAL_RCC_ADC1_CLK_ENABLE();
 #ifdef ADC2  // if defined ADC2
@@ -63,6 +63,40 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
 #endif
     return -1;
   }
+  return 0;
+}
+
+/**
+ * Function initializing the ADC and the injected channels for the low-side current sensing
+ * 
+ * @param cs_params - current sense parameters
+ * @param driver_params - driver parameters
+ * 
+ * @return int - 0 if success 
+ */
+int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* driver_params)
+{
+
+  /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
+  */
+  auto adc_instance = _findBestADCForInjectedPins(3, cs_params->pins, hadc);
+  if(adc_instance == NP){
+#ifdef SIMPLEFOC_STM32_DEBUG
+    SIMPLEFOC_DEBUG("STM32-CS: ERR: Pin does not belong to any ADC!");
+#endif
+    return -1; // error not a valid ADC instance
+  }
+  if( _adc_init_regular(adc_instance) != 0){
+    return -1;
+  }
+  int adc_num = _adcToIndex(adc_instance);
+  
+#ifdef SIMPLEFOC_STM32_DEBUG
+    SIMPLEFOC_DEBUG("STM32-CS: Using ADC: ", adc_num+1);
+#endif
+
+
+  ADC_InjectionConfTypeDef sConfigInjected;
     
   /**Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time 
     */
@@ -127,6 +161,9 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
     
     sConfigInjected.InjectedRank = _getADCInjectedRank(channel_no++);
     sConfigInjected.InjectedChannel = _getADCChannel(analogInputToPinName(cs_params->pins[i]), hadc[adc_num].Instance);
+#ifdef SIMPLEFOC_STM32_DEBUG
+    SIMPLEFOC_DEBUG("STM32-CS: ADC channel: ", (int)STM_PIN_CHANNEL(pinmap_function(PinMap_ADC[i].pin, PinMap_ADC)));
+#endif
     if (HAL_ADCEx_InjectedConfigChannel(&hadc[adc_num], &sConfigInjected) != HAL_OK){
   #ifdef SIMPLEFOC_STM32_DEBUG
       SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init injected channel: ", (int)_getADCChannel(analogInputToPinName(cs_params->pins[i]) , hadc[adc_num].Instance));
