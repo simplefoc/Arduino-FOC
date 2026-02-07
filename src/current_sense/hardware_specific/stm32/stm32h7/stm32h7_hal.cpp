@@ -243,7 +243,7 @@ extern "C" {
   void ADC3_IRQHandler(void)
   { 
     if (hadc[2].Instance != NP)
-      HAL_ADC_IRQHandler(&hadc);
+      HAL_ADC_IRQHandler(&hadc[2]);
   }
 }
 #endif
