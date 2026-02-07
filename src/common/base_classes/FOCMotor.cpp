@@ -445,15 +445,20 @@ float FOCMotor::angleOpenloop(float target_angle){
 // Update limit values in controllers when changed
 void FOCMotor::updateVelocityLimit(float new_velocity_limit) {
   velocity_limit = new_velocity_limit;
-  P_angle.limit = abs(velocity_limit);
+  if(controller != MotionControlType::angle_nocascade) 
+    P_angle.limit = abs(velocity_limit); // if angle control but no velocity cascade, limit the angle controller by the velocity limit
 }
 
 // Update limit values in controllers when changed
 void FOCMotor::updateCurrentLimit(float new_current_limit) {
   current_limit = new_current_limit;
-  if(torque_controller != TorqueControlType::voltage) 
+  if(torque_controller != TorqueControlType::voltage) {
     // if current control
     PID_velocity.limit = new_current_limit;
+    if(controller == MotionControlType::angle_nocascade) 
+      // if angle control but no velocity cascade, limit the angle controller by the current limit
+      P_angle.limit = new_current_limit;
+  }
 }
 
 // Update limit values in controllers when changed
@@ -462,21 +467,25 @@ void FOCMotor::updateVoltageLimit(float new_voltage_limit) {
   voltage_limit = new_voltage_limit;
   PID_current_q.limit = new_voltage_limit;
   PID_current_d.limit = new_voltage_limit;
-  if(torque_controller == TorqueControlType::voltage) 
+  if(torque_controller == TorqueControlType::voltage) {
     // if voltage control
     PID_velocity.limit = new_voltage_limit;
+    if(controller == MotionControlType::angle_nocascade) 
+      // if angle control but no velocity cascade, limit the angle controller by the voltage limit
+      P_angle.limit = new_voltage_limit;
+  }
 }
 
 // Update torque control type and related controller limit values
 void FOCMotor::updateTorqueControlType(TorqueControlType new_torque_controller) {
   torque_controller = new_torque_controller;
-  if (torque_controller == TorqueControlType::voltage) {
+  // update the 
+  if (torque_controller == TorqueControlType::voltage)
     // voltage control
-    PID_velocity.limit = voltage_limit;
-  } else {
+    updateVoltageLimit(voltage_limit);
+  else 
     // current control
-    PID_velocity.limit = current_limit;
-  }
+    updateCurrentLimit(current_limit);
 }
 
 // Update motion control type and related target values
@@ -484,35 +493,43 @@ void FOCMotor::updateTorqueControlType(TorqueControlType new_torque_controller) 
 // - if changing to velocity control set target to zero
 // - if changing to torque control set target to zero
 void FOCMotor::updateMotionControlType(MotionControlType new_motion_controller) {
+ 
   if (controller == new_motion_controller) return; // no change
-
-  switch(new_motion_controller){
-    case MotionControlType::angle:
-      if(controller == MotionControlType::angle_openloop) break;
-    case MotionControlType::angle_openloop:
-      if(controller == MotionControlType::angle) break;
-      // if the previous controller was not angle control
-      // set target to current angle
-      target = shaft_angle;
-      break;
-    case MotionControlType::velocity:
-      if(controller == MotionControlType::velocity_openloop) break;
-    case MotionControlType::velocity_openloop:
-      if(controller == MotionControlType::velocity) break;
-      // if the previous controller was not velocity control
-      // stop the motor
-      target = 0;
-      break;
-    case MotionControlType::torque:
-      // if torque control set target to zero
-      target = 0;
-      break;
-    default:
-      break;
+  
+  switch(new_motion_controller)
+  {
+  case(MotionControlType::angle_nocascade):
+    if(controller != MotionControlType::angle && controller != MotionControlType::angle_openloop) break;
+  case MotionControlType::angle:
+    if(controller != MotionControlType::angle_openloop && controller != MotionControlType::angle_nocascade) break; 
+  case MotionControlType::angle_openloop:
+    if(controller != MotionControlType::angle && controller != MotionControlType::angle_nocascade) break;
+    // if the previous controller was not angle control
+    // set target to current angle
+    target = shaft_angle;
+    break;
+  case MotionControlType::velocity:
+    if(controller != MotionControlType::velocity_openloop) break; // nothing to do if we are already in velocity control
+  case MotionControlType::velocity_openloop:
+    if(controller != MotionControlType::velocity) break;
+    // if the previous controller was not velocity control
+    // stop the motor
+    target = 0;
+    break;
+  case MotionControlType::torque:
+    // if torque control set target to zero
+    target = 0;
+    break;
+  default:
+    break;
   }
 
   // finally set the new controller
-  controller = new_motion_controller; 
+  controller = new_motion_controller;  
+  // update limits in case they need to be changed for the new controller 
+  updateVelocityLimit(velocity_limit); 
+  updateCurrentLimit(current_limit);
+  updateVoltageLimit(voltage_limit);
 }
 
 
@@ -682,6 +699,15 @@ void FOCMotor::move(float new_target) {
     case MotionControlType::torque:
         current_sp =  target;
         break;
+    case MotionControlType::angle_nocascade:
+      // TODO sensor precision: this calculation is not numerically precise. The target value cannot express precise positions when
+      //                        the angles are large. This results in not being able to command small changes at high position values.
+      //                        to solve this, the delta-angle has to be calculated in a numerically precise way.
+      // angle set point
+      shaft_angle_sp = target;
+      // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
+      current_sp = P_angle(shaft_angle_sp - shaft_angle); // if current/foc_current torque control
+      break;
     case MotionControlType::angle:
       // TODO sensor precision: this calculation is not numerically precise. The target value cannot express precise positions when
       //                        the angles are large. This results in not being able to command small changes at high position values.
@@ -692,13 +718,13 @@ void FOCMotor::move(float new_target) {
       shaft_velocity_sp = feed_forward_velocity + P_angle( shaft_angle_sp - shaft_angle );
       shaft_velocity_sp = _constrain(shaft_velocity_sp, -velocity_limit, velocity_limit);
       // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
-      current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
+      current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); 
       break;
     case MotionControlType::velocity:
       // velocity set point - sensor precision: this calculation is numerically precise.
       shaft_velocity_sp = target;
       // calculate the torque command
-      current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if current/foc_current torque control
+      current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); 
       break;
     case MotionControlType::velocity_openloop:
       // velocity control in open loop - sensor precision: this calculation is numerically precise.
