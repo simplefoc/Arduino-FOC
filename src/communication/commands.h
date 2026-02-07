@@ -53,6 +53,7 @@
  #define SCMD_MOVE_TIME     'M' //!< move time between executions (filtered)
  #define SCMD_REINIT_FOC    'R' //!< reinitialize FOC
  #define SCMD_TUNE_CURR     'C' //!< tune current controller
+ #define SCMD_MEAS_PARAMS   'P' //!< measure motor parameters (resistance and inductance)
 
  #define SCMD_INDUCT_D     'D' //!< inductance d axis
  #define SCMD_INDUCT_Q     'Q' //!< inductance q axis

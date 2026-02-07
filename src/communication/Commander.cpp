@@ -293,8 +293,22 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
           break;
         case SCMD_REINIT_FOC:
           printVerbose(F("Reinit!"));
+          motor->sensor_direction = Direction::UNKNOWN; // reset sensor direction estimation
+          motor->zero_electric_angle = NOT_SET; // reset zero electric angle
           motor->initFOC();
           println(F("done"));
+          break;
+        case SCMD_MEAS_PARAMS:
+          printVerbose(F("Meas motor params!"));
+          {
+            int res = motor->characteriseMotor(value, 1.5f);
+            if(res == 0){
+              println(F("done"));
+            } else {
+              printVerbose(F("failed, err code: "));
+              println(res);
+            }
+          }
           break;
         case SCMD_TUNE_CURR:
           printVerbose(F("PI tune curr.| "));
