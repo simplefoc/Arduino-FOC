@@ -499,19 +499,19 @@ void FOCMotor::updateMotionControlType(MotionControlType new_motion_controller) 
   switch(new_motion_controller)
   {
   case(MotionControlType::angle_nocascade):
-    if(controller != MotionControlType::angle && controller != MotionControlType::angle_openloop) break;
+    if(controller == MotionControlType::angle || controller == MotionControlType::angle_openloop) break;
   case MotionControlType::angle:
-    if(controller != MotionControlType::angle_openloop && controller != MotionControlType::angle_nocascade) break; 
+    if(controller == MotionControlType::angle_openloop || controller == MotionControlType::angle_nocascade) break; 
   case MotionControlType::angle_openloop:
-    if(controller != MotionControlType::angle && controller != MotionControlType::angle_nocascade) break;
+    if(controller == MotionControlType::angle || controller == MotionControlType::angle_nocascade) break;
     // if the previous controller was not angle control
     // set target to current angle
     target = shaft_angle;
     break;
   case MotionControlType::velocity:
-    if(controller != MotionControlType::velocity_openloop) break; // nothing to do if we are already in velocity control
+    if(controller == MotionControlType::velocity_openloop) break; // nothing to do if we are already in velocity control
   case MotionControlType::velocity_openloop:
-    if(controller != MotionControlType::velocity) break;
+    if(controller == MotionControlType::velocity) break;
     // if the previous controller was not velocity control
     // stop the motor
     target = 0;
@@ -764,23 +764,6 @@ int  FOCMotor::initFOC() {
     // added the shaft_angle update
     sensor->update();
     shaft_angle = shaftAngle();
-
-    // aligning the current sensor - can be skipped
-    // checks if driver phases are the same as current sense phases
-    // and checks the direction of measuremnt.
-    if(exit_flag){
-      if(current_sense){ 
-        if (!current_sense->initialized) {
-          motor_status = FOCMotorStatus::motor_calib_failed;
-          SIMPLEFOC_MOTOR_ERROR("Init FOC error, current sense not init");
-          exit_flag = 0;
-        }else{
-          exit_flag *= alignCurrentSense();
-        }
-      }
-      else { SIMPLEFOC_MOTOR_ERROR("No current sense"); }
-    }
-
   } else {
     SIMPLEFOC_MOTOR_DEBUG("No sensor.");
     if ((controller == MotionControlType::angle_openloop || controller == MotionControlType::velocity_openloop)){
@@ -789,6 +772,22 @@ int  FOCMotor::initFOC() {
     }else{
       exit_flag = 0; // no FOC without sensor
     }
+  }
+  
+  // aligning the current sensor - can be skipped
+  // checks if driver phases are the same as current sense phases
+  // and checks the direction of measuremnt.
+  if(exit_flag){
+    if(current_sense){ 
+      if (!current_sense->initialized) {
+        motor_status = FOCMotorStatus::motor_calib_failed;
+        SIMPLEFOC_MOTOR_ERROR("Init FOC error, current sense not init");
+        exit_flag = 0;
+      }else{
+        exit_flag *= alignCurrentSense();
+      }
+    }
+    else { SIMPLEFOC_MOTOR_ERROR("No current sense"); }
   }
 
   if(exit_flag){
