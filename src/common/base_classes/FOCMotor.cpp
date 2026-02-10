@@ -616,8 +616,8 @@ void FOCMotor::loopFOC() {
       voltage.q = current.q * phase_resistance + voltage_bemf;
       // constrain voltage within limits
       voltage.q = _constrain(voltage.q, -voltage_limit, voltage_limit) + feed_forward_voltage.q;
-      // d voltage  - lag compensation
-      if(_isset(phase_inductance_dq.d)) voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance_dq.d, -voltage_limit, voltage_limit) + feed_forward_voltage.d;
+      // d voltage  - lag compensation 
+      if(_isset(phase_inductance_dq.q)) voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance_dq.q, -voltage_limit, voltage_limit) + feed_forward_voltage.d;
       else voltage.d = feed_forward_voltage.d;
       break;
     case TorqueControlType::dc_current:
@@ -631,7 +631,7 @@ void FOCMotor::loopFOC() {
       // calculate the phase voltage
       voltage.q = PID_current_q(current_sp - current.q) + feed_forward_voltage.q;
       // d voltage  - lag compensation
-      if(_isset(phase_inductance_dq.d)) voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance_dq.d, -voltage_limit, voltage_limit) + feed_forward_voltage.d;
+      if(_isset(phase_inductance_dq.q)) voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance_dq.q, -voltage_limit, voltage_limit) + feed_forward_voltage.d;
       else voltage.d = feed_forward_voltage.d;
       break;
     case TorqueControlType::foc_current:
@@ -647,7 +647,9 @@ void FOCMotor::loopFOC() {
       voltage.q = PID_current_q(current_sp - current.q) + feed_forward_voltage.q;
       voltage.d = PID_current_d(feed_forward_current.d - current.d) + feed_forward_voltage.d;
       // d voltage - lag compensation - TODO verify
-      // if(_isset(phase_inductance_dq.d)) voltage.d = _constrain( voltage.d - current_sp*shaft_velocity*pole_pairs*phase_inductance_dq.d, -voltage_limit, voltage_limit);
+      if(_isset(phase_inductance_dq.q)) voltage.d = _constrain( voltage.d - current.q*shaft_velocity*pole_pairs*phase_inductance_dq.q, -voltage_limit, voltage_limit);
+      // q voltage - cross coupling compensation - TODO verify
+      if(_isset(phase_inductance_dq.d)) voltage.q = _constrain( voltage.q + current.d*shaft_velocity*pole_pairs*phase_inductance_dq.d, -voltage_limit, voltage_limit);
       break;
     default:
       // no torque control selected
