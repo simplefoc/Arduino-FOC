@@ -25,7 +25,7 @@ public:
      * @note Sampling time can be changed dynamically as well by modifying the 
      *       variable Ts in runtime.
      */
-    PIDController(float P, float I, float D, float ramp, float limit, float sampling_time = NOT_SET);
+    PIDController(float P, float I, float D, float ramp = NOT_SET, float limit = NOT_SET, float sampling_time = NOT_SET);
     ~PIDController() = default;
 
     float operator() (float error);

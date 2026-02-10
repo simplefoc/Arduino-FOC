@@ -48,7 +48,8 @@ enum MotionControlType : uint8_t {
   angle             = 0x02,     //!< Position/angle motion control
   velocity_openloop = 0x03,
   angle_openloop    = 0x04,
-  angle_nocascade   = 0x05      //!< Position/angle motion control without velocity cascade
+  angle_nocascade   = 0x05,     //!< Position/angle motion control without velocity cascade
+  custom            = 0x06      //!< Custom control method - control method added by user
 };
 
 /**
@@ -367,6 +368,16 @@ class FOCMotor
      */
     float angleOpenloop(float target_angle);
   
+
+    /**
+     * Function setting a custom motion control method defined by the user
+     * @note the custom control method has to be defined by the user and should follow the signature: float controlMethod(FOCMotor* motor, float target)
+     * @param controlMethod - pointer to the custom control method function defined by the user
+     */
+    void linkCustomMotionControl(float (*controlMethod)(FOCMotor* motor, float target)){
+      customMotionControlCallback = controlMethod;
+    }
+
   protected:
 
     /**
@@ -410,6 +421,8 @@ class FOCMotor
     // open loop variables
     uint32_t open_loop_timestamp;
     
+    // function pointer for custom control method
+    float (*customMotionControlCallback)(FOCMotor* motor, float target) = nullptr;
     
 };
 

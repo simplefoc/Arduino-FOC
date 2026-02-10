@@ -37,7 +37,7 @@ float PIDController::operator() (float error){
     // u_ik = u_ik_1  + I*Ts/2*(ek + ek_1)
     float integral = integral_prev + I*dt*0.5f*(error + error_prev);
     // antiwindup - limit the output
-    integral = _constrain(integral, -limit, limit);
+    if(_isset(limit)) integral = _constrain(integral, -limit, limit);
     // Discrete derivation
     // u_dk = D(ek - ek_1)/Ts
     float derivative = D*(error - error_prev)/dt;
@@ -45,10 +45,10 @@ float PIDController::operator() (float error){
     // sum all the components
     float output = proportional + integral + derivative;
     // antiwindup - limit the output variable
-    output = _constrain(output, -limit, limit);
+    if(_isset(limit)) output = _constrain(output, -limit, limit);
 
     // if output ramp defined
-    if(output_ramp > 0){
+    if(_isset(output_ramp) && output_ramp > 0){
         // limit the acceleration by ramping the output
         float output_rate = (output - output_prev)/dt;
         if (output_rate > output_ramp)
