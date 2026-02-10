@@ -374,7 +374,7 @@ class FOCMotor
      * @note the custom control method has to be defined by the user and should follow the signature: float controlMethod(FOCMotor* motor, float target)
      * @param controlMethod - pointer to the custom control method function defined by the user
      */
-    void setCustomMotionControlMethod(float (*controlMethod)(FOCMotor* motor, float target)){
+    void linkCustomMotionControl(float (*controlMethod)(FOCMotor* motor, float target)){
       customMotionControlCallback = controlMethod;
     }
 

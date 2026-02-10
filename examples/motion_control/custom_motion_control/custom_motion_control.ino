@@ -57,7 +57,7 @@ void setup() {
   current_sense.linkDriver(&driver);
 
   // set the custom control method
-  motor.setCustomMotionControlMethod(positionPControl); 
+  motor.linkCustomMotionControl(positionPControl); 
   // set control loop type to be used
   motor.controller = MotionControlType::custom;
   // set the torque control type to voltage control (default is voltage control)
