@@ -44,7 +44,7 @@ void setup() {
   SimpleFOCDebug::enable(&Serial);
 
   // initialize sensor hardware
-  sensor.init(&SPI);
+  sensor.init();
   motor.linkSensor(&sensor);
 
   // driver config
@@ -56,26 +56,22 @@ void setup() {
   // link current sense and the driver
   current_sense.linkDriver(&driver);
 
-  // set the custom control method as the position P control
+  // set the custom control method
   motor.setCustomMotionControlMethod(positionPControl); 
   // set control loop type to be used
   motor.controller = MotionControlType::custom;
   // set the torque control type to voltage control (default is voltage control)
   motor.torque_controller = TorqueControlType::foc_current; 
 
-  // velocity low pass filtering time constant
-  motor.LPF_velocity.Tf = 0.01f;
-
-  // angle loop controller
-  motor.P_angle.P = 20;
-  // angle loop velocity limit
-  motor.velocity_limit = 20;
-  motor.voltage_sensor_align = 1.0f;
-
   // comment out if not needed
   motor.useMonitoring(Serial);
   motor.monitor_downsample = 0; // disable intially
   motor.monitor_variables = _MON_TARGET | _MON_VEL | _MON_ANGLE; // monitor target velocity and angle
+
+  // subscribe motor to the commander
+  //command.add('T', doMotion, "motion control"); // a bit less resouce intensive
+  command.add('M', doMotor, "motor");
+  command.add('C', doPID, "custom PID");
 
   // current sense init and linking
   current_sense.init();
@@ -85,11 +81,6 @@ void setup() {
   motor.init();
   // align encoder and start FOC
   motor.initFOC();
-
-  // subscribe motor to the commander
-  //command.add('T', doMotion, "motion control"); // a bit less resouce intensive
-  command.add('M', doMotor, "motor");
-  command.add('C', doPID, "custom PID");
 
   _delay(1000);
 }
