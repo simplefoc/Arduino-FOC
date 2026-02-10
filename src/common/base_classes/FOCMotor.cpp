@@ -584,7 +584,8 @@ void FOCMotor::loopFOC() {
   if (sensor) sensor->update();
 
   // if disabled do nothing
-  if(!enabled) return;
+  // or if the motor is not ready (e.g. failed to calibrate or not calibrated yet) do nothing
+  if(!enabled || motor_status != FOCMotorStatus::motor_ready) return;
 
   // if open-loop do nothing
   if( controller==MotionControlType::angle_openloop || controller==MotionControlType::velocity_openloop ) 
@@ -691,7 +692,8 @@ void FOCMotor::move(float new_target) {
   }
 
   // if disabled do nothing
-  if(!enabled) return;
+  // and if 
+  if(!enabled || motor_status != FOCMotorStatus::motor_ready) return;
   
 
   // upgrade the current based voltage limit
@@ -745,6 +747,12 @@ void FOCMotor::move(float new_target) {
       // returned values correspond to the voltage_limit and current_limit
       current_sp = angleOpenloop(shaft_angle_sp); 
       break;
+    case MotionControlType::custom:
+      // custom control - user provides the function that calculates the current_sp 
+      // based on the target value and the motor state
+      // user makes sure to use it with appropriate torque control mode 
+      if(customMotionControlCallback) 
+        current_sp = customMotionControlCallback(this, target);
   }
 }
 
@@ -768,8 +776,8 @@ int  FOCMotor::initFOC() {
     SIMPLEFOC_MOTOR_DEBUG("No sensor.");
     if ((controller == MotionControlType::angle_openloop || controller == MotionControlType::velocity_openloop)){
       exit_flag = 1;    
-      SIMPLEFOC_MOTOR_ERROR("Openloop only!");
     }else{
+      SIMPLEFOC_MOTOR_ERROR("Only openloop allowed!");
       exit_flag = 0; // no FOC without sensor
     }
   }
@@ -781,13 +789,13 @@ int  FOCMotor::initFOC() {
     if(current_sense){ 
       if (!current_sense->initialized) {
         motor_status = FOCMotorStatus::motor_calib_failed;
-        SIMPLEFOC_MOTOR_ERROR("Init FOC error, current sense not init");
+        SIMPLEFOC_MOTOR_ERROR("Current sense not init!");
         exit_flag = 0;
       }else{
         exit_flag *= alignCurrentSense();
       }
     }
-    else { SIMPLEFOC_MOTOR_ERROR("No current sense"); }
+    else { SIMPLEFOC_MOTOR_ERROR("No current sense."); }
   }
 
   if(exit_flag){
