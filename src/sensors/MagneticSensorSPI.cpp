@@ -50,7 +50,7 @@ MagneticSensorSPIConfig_s MA730_SPI = {
 //  cs              - SPI chip select pin
 //  _bit_resolution   sensor resolution bit number
 // _angle_register  - (optional) angle read register - default 0x3FFF
-MagneticSensorSPI::MagneticSensorSPI(int cs, int _bit_resolution, int _angle_register){
+MagneticSensorSPI::MagneticSensorSPI(int cs, int _bit_resolution, int _angle_register, long _clock_speed){
 
   chip_select_pin = cs;
   // angle read register of the magnetic sensor
@@ -58,7 +58,7 @@ MagneticSensorSPI::MagneticSensorSPI(int cs, int _bit_resolution, int _angle_reg
   // register maximum value (counts per revolution)
   cpr = _powtwo(_bit_resolution);
   spi_mode = SPI_MODE1;
-  clock_speed = 1000000;
+  clock_speed = _isset(_clock_speed) ? _clock_speed : 1000000; 
   bit_resolution = _bit_resolution;
 
   command_parity_bit = 15; // for backwards compatibilty
@@ -66,14 +66,16 @@ MagneticSensorSPI::MagneticSensorSPI(int cs, int _bit_resolution, int _angle_reg
   data_start_bit = 13; // for backwards compatibilty
 }
 
-MagneticSensorSPI::MagneticSensorSPI(MagneticSensorSPIConfig_s config, int cs){
+MagneticSensorSPI::MagneticSensorSPI(MagneticSensorSPIConfig_s config, int cs, long _clock_speed){
   chip_select_pin = cs;
   // angle read register of the magnetic sensor
   angle_register = config.angle_register ? config.angle_register : DEF_ANGLE_REGISTER;
   // register maximum value (counts per revolution)
   cpr = _powtwo(config.bit_resolution);
   spi_mode = config.spi_mode;
-  clock_speed = config.clock_speed;
+  // allow to override clock speed from config with the one provided as argument
+  // if the argument clock speed is not provided (i.e. is NOT_SET), use the clock speed from the config
+  clock_speed = _isset(_clock_speed) ? _clock_speed : config.clock_speed;
   bit_resolution = config.bit_resolution;
 
   command_parity_bit = config.command_parity_bit; // for backwards compatibilty
