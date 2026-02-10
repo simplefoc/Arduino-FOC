@@ -521,6 +521,8 @@ void FOCMotor::updateMotionControlType(MotionControlType new_motion_controller) 
     target = 0;
     break;
   default:
+    // if torque control set target to zero
+    target = 0;
     break;
   }
 
@@ -753,6 +755,7 @@ void FOCMotor::move(float new_target) {
       // user makes sure to use it with appropriate torque control mode 
       if(customMotionControlCallback) 
         current_sp = customMotionControlCallback(this, target);
+      break;
   }
 }
 

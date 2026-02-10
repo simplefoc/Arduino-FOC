@@ -33,7 +33,8 @@ jobs:
               esp32_current_control_low_side, stm32_spi_alt_example, esp32_spi_alt_example, 
               B_G431B_ESC1, odrive_example_spi, odrive_example_encoder, single_full_control_example, 
               double_full_control_example, stm32_current_control_low_side, open_loop_velocity_6pwm,
-              efr32_hall_sensor_velocity_6pwm, efr32_open_loop_velocity_6pwm, efr32_torque_velocity_6pwm
+              efr32_hall_sensor_velocity_6pwm, efr32_open_loop_velocity_6pwm, efr32_torque_velocity_6pwm, 
+              custom_motion_control
 
           - arduino-boards-fqbn: arduino:sam:arduino_due_x # arduino due - one full example
             sketch-names: single_full_control_example.ino
