@@ -228,25 +228,25 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
         case SCMD_INDUCT_D:
           printVerbose(F("d: "));
           if(!GET){
-            motor->phase_inductance_dq.d = value;
+            motor->axis_inductance.d = value;
             motor->phase_inductance = value;
           }
-          if(_isset(motor->phase_inductance_dq.d)) println(motor->phase_inductance_dq.d);
+          if(_isset(motor->axis_inductance.d)) println(motor->axis_inductance.d);
           else println(0);
           break;
         case SCMD_INDUCT_Q:
           printVerbose(F("q: "));
           if(!GET){
-            motor->phase_inductance_dq.q = value;
+            motor->axis_inductance.q = value;
           }
-          if(_isset(motor->phase_inductance_dq.q)) println(motor->phase_inductance_dq.q);
+          if(_isset(motor->axis_inductance.q)) println(motor->axis_inductance.q);
           else println(0);
           break;
         default:
           if(!GET){
             motor->phase_inductance = value;
-            motor->phase_inductance_dq.d = value;
-            motor->phase_inductance_dq.q = value;
+            motor->axis_inductance.d = value;
+            motor->axis_inductance.q = value;
           }
           if(_isset(motor->phase_inductance)) println(motor->phase_inductance);
           else println(0);

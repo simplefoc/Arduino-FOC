@@ -228,7 +228,7 @@ class FOCMotor
     int pole_pairs;//!< motor pole pairs number
     float KV_rating; //!< motor KV rating
     float	phase_inductance; //!< motor phase inductance q axis - FOR BACKWARDS COMPATIBILITY
-    DQ_s	phase_inductance_dq{NOT_SET, NOT_SET}; //!< motor direct axis phase inductance
+    DQ_s	axis_inductance{NOT_SET, NOT_SET}; //!< motor direct axis phase inductance
 
     // limiting variables
     float voltage_limit; //!< Voltage limiting variable - global limit

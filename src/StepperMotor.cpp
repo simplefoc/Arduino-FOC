@@ -19,7 +19,7 @@ StepperMotor::StepperMotor(int pp, float _R, float _KV, float _Lq, float _Ld)
   // usually used rms
   KV_rating = _KV;
   // save phase inductance
-  phase_inductance_dq = {_Ld, _Lq};
+  axis_inductance = {_Ld, _Lq};
   phase_inductance = _Lq;  // FOR BACKWARDS COMPATIBILITY
 
   // torque control type is voltage by default
@@ -54,9 +54,9 @@ int StepperMotor::init() {
   updateVoltageLimit(voltage_limit);
   updateVelocityLimit(velocity_limit);
 
-  if(_isset(phase_inductance) && !(_isset(phase_inductance_dq.q))) {
+  if(_isset(phase_inductance) && !(_isset(axis_inductance.q))) {
     // if only single inductance value is set, use it for both d and q axis
-    phase_inductance_dq = {phase_inductance, phase_inductance};
+    axis_inductance = {phase_inductance, phase_inductance};
   } 
 
   

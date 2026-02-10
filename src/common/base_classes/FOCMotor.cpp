@@ -310,7 +310,7 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
 
     // store the measured values
     phase_resistance = 2.0f * resistance;
-    phase_inductance_dq = {Ld, Lq};
+    axis_inductance = {Ld, Lq};
     phase_inductance = (Ld + Lq) / 2.0f; // FOR BACKWARDS COMPATIBILITY
     return 0;
     
@@ -546,20 +546,20 @@ int FOCMotor::tuneCurrentController(float bandwidth) {
     SIMPLEFOC_MOTOR_ERROR("Fail. BW too high, current loop freq:" , (1e6f / loopfoc_time_us));
     return 2;
   }
-  if (!_isset(phase_resistance) || (!_isset(phase_inductance) && !_isset(phase_inductance_dq.q))) {
+  if (!_isset(phase_resistance) || (!_isset(phase_inductance) && !_isset(axis_inductance.q))) {
     // need motor parameters to tune the controller
     SIMPLEFOC_MOTOR_WARN("Motor params missing!");
     if(characteriseMotor( voltage_sensor_align )) { 
       return 3;
     }
-  }else if (_isset(phase_inductance) && !(_isset(phase_inductance_dq.q))) {
+  }else if (_isset(phase_inductance) && !(_isset(axis_inductance.q))) {
     // if only single inductance value is set, use it for both d and q axis
-    phase_inductance_dq = {phase_inductance, phase_inductance};
+    axis_inductance = {phase_inductance, phase_inductance};
   }
 
-  PID_current_q.P = phase_inductance_dq.q * (_2PI * bandwidth);
+  PID_current_q.P = axis_inductance.q * (_2PI * bandwidth);
   PID_current_q.I = phase_resistance * (_2PI * bandwidth);
-  PID_current_d.P = phase_inductance_dq.d * (_2PI * bandwidth);
+  PID_current_d.P = axis_inductance.d * (_2PI * bandwidth);
   PID_current_d.I = phase_resistance * (_2PI * bandwidth);
   LPF_current_d.Tf = 1.0f / (_2PI * bandwidth * 5.0f); // filter cutoff at 5x bandwidth
   LPF_current_q.Tf = 1.0f / (_2PI * bandwidth * 5.0f); // filter cutoff at 5x bandwidth
@@ -617,7 +617,7 @@ void FOCMotor::loopFOC() {
       // constrain voltage within limits
       voltage.q = _constrain(voltage.q, -voltage_limit, voltage_limit) + feed_forward_voltage.q;
       // d voltage  - lag compensation 
-      if(_isset(phase_inductance_dq.q)) voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance_dq.q, -voltage_limit, voltage_limit) + feed_forward_voltage.d;
+      if(_isset(axis_inductance.q)) voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*axis_inductance.q, -voltage_limit, voltage_limit) + feed_forward_voltage.d;
       else voltage.d = feed_forward_voltage.d;
       break;
     case TorqueControlType::dc_current:
@@ -631,7 +631,7 @@ void FOCMotor::loopFOC() {
       // calculate the phase voltage
       voltage.q = PID_current_q(current_sp - current.q) + feed_forward_voltage.q;
       // d voltage  - lag compensation
-      if(_isset(phase_inductance_dq.q)) voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*phase_inductance_dq.q, -voltage_limit, voltage_limit) + feed_forward_voltage.d;
+      if(_isset(axis_inductance.q)) voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*axis_inductance.q, -voltage_limit, voltage_limit) + feed_forward_voltage.d;
       else voltage.d = feed_forward_voltage.d;
       break;
     case TorqueControlType::foc_current:
@@ -647,9 +647,9 @@ void FOCMotor::loopFOC() {
       voltage.q = PID_current_q(current_sp - current.q) + feed_forward_voltage.q;
       voltage.d = PID_current_d(feed_forward_current.d - current.d) + feed_forward_voltage.d;
       // d voltage - lag compensation
-      if(_isset(phase_inductance_dq.q)) voltage.d = _constrain( voltage.d - current_sp*shaft_velocity*pole_pairs*phase_inductance_dq.q, -voltage_limit, voltage_limit);
+      if(_isset(axis_inductance.q)) voltage.d = _constrain( voltage.d - current_sp*shaft_velocity*pole_pairs*axis_inductance.q, -voltage_limit, voltage_limit);
       // q voltage - cross coupling compensation - TODO verify
-      if(_isset(phase_inductance_dq.d)) voltage.q = _constrain( voltage.q + current.d*shaft_velocity*pole_pairs*phase_inductance_dq.d, -voltage_limit, voltage_limit);
+      if(_isset(axis_inductance.d)) voltage.q = _constrain( voltage.q + current.d*shaft_velocity*pole_pairs*axis_inductance.d, -voltage_limit, voltage_limit);
       break;
     default:
       // no torque control selected
