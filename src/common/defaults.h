@@ -6,7 +6,7 @@
 #define DEF_PID_VEL_P 0.5f //!< default PID controller P value
 #define DEF_PID_VEL_I 10.0f //!<  default PID controller I value
 #define DEF_PID_VEL_D 0.0f //!<  default PID controller D value
-#define DEF_PID_VEL_RAMP 1000.0f //!< default PID controller voltage ramp value
+#define DEF_PID_VEL_RAMP NOT_SET //!< default PID controller voltage ramp value
 #define DEF_PID_VEL_LIMIT (DEF_POWER_SUPPLY) //!< default PID controller voltage limit
 
 // current sensing PID values

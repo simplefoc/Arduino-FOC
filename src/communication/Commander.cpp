@@ -281,16 +281,8 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
       }
       break;
     case CMD_FOC_PARAMS:
-      printVerbose(F("FOC | "));
+      printVerbose(F("MOT | "));
       switch (sub_cmd){
-        case SCMD_LOOPFOC_TIME:      // loopFOC execution time
-          printVerbose(F("loop time: "));
-          println((int)motor->loopfoc_time_us);
-          break;
-        case SCMD_MOVE_TIME:      // loopFOC execution time
-          printVerbose(F("move time: "));
-          println((int)motor->move_time_us);
-          break;
         case SCMD_REINIT_FOC:
           printVerbose(F("Reinit!"));
           motor->sensor_direction = Direction::UNKNOWN; // reset sensor direction estimation
@@ -432,6 +424,10 @@ void Commander::motion(FOCMotor* motor, char* user_cmd, char* separator){
     case CMD_MOTION_TYPE:
       printVerbose(F("Motion:"));
       switch(sub_cmd){
+        case SCMD_TIME:
+          printVerbose(F(" time: "));
+          println((int)motor->move_time_us);
+          break;
         case SCMD_DOWNSAMPLE:
             printVerbose(F(" downsample: "));
             if(!GET) motor->motion_downsample = value;
@@ -470,24 +466,32 @@ void Commander::motion(FOCMotor* motor, char* user_cmd, char* separator){
     case CMD_TORQUE_TYPE:
       // change control type
       printVerbose(F("Torque: "));
-      if(!GET && (int8_t)value >= 0 && (int8_t)value < 4) // if set command
-        motor->updateTorqueControlType((TorqueControlType)value); // update torque control type
-      switch(motor->torque_controller){
-        case TorqueControlType::voltage:
-          println(F("volt"));
-          break;
-        case TorqueControlType::dc_current:
-          println(F("dc curr"));
-          break;
-        case TorqueControlType::foc_current:
-          println(F("foc curr"));
-          break;
-        case TorqueControlType::estimated_current:
-          println(F("est. curr"));
+      switch(sub_cmd){
+        case SCMD_TIME:
+          printVerbose(F(" time: "));
+          println((int)motor->move_time_us);
           break;
         default:
-          printError();
-      }
+          if(!GET && (int8_t)value >= 0 && (int8_t)value < 4) // if set command
+            motor->updateTorqueControlType((TorqueControlType)value); // update torque control type
+          switch(motor->torque_controller){
+            case TorqueControlType::voltage:
+              println(F("volt"));
+              break;
+            case TorqueControlType::dc_current:
+              println(F("dc curr"));
+              break;
+            case TorqueControlType::foc_current:
+              println(F("foc curr"));
+              break;
+            case TorqueControlType::estimated_current:
+              println(F("est. curr"));
+              break;
+            default:
+              printError();
+          }
+          break;
+        }
       break;
     case CMD_STATUS:
       // enable/disable

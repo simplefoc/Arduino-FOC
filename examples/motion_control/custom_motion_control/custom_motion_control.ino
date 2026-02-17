@@ -1,7 +1,6 @@
 
 #include <Arduino.h>
 #include <SimpleFOC.h>
-#include "current_sense/hardware_specific/stm32/stm32_mcu.h"
 
 
 // BLDC motor & driver instance
@@ -25,9 +24,9 @@ void doMotor(char* cmd){ command.motor(&motor, cmd); }
 // P controller with gain of 1.0f, no integral or derivative gain
 PIDController custom_PID = PIDController(1.0f, 0, 0);
 // custom motion control method
-float positionPControl(FOCMotor* motor, float target){
+float positionPControl(FOCMotor* motor){
   // simple proportional position control
-  float error = target - motor->shaft_angle;
+  float error = motor->target - motor->shaft_angle;
   // set the PID output limit to the motor current limit
   custom_PID.limit = motor->current_limit; 
   return custom_PID(error); // return current command based on the error
@@ -60,7 +59,7 @@ void setup() {
   motor.linkCustomMotionControl(positionPControl); 
   // set control loop type to be used
   motor.controller = MotionControlType::custom;
-  // set the torque control type to voltage control (default is voltage control)
+  // set the torque control type to current control (default is voltage control)
   motor.torque_controller = TorqueControlType::foc_current; 
 
   // comment out if not needed

@@ -11,17 +11,21 @@
 #include "../pid.h"
 #include "../lowpass_filter.h"
 
+#define MOT_ERR "ERR-MOT:"
+#define MOT_WARN "WARN-MOT:"
+#define MOT_DEBUG "MOT:"
+
 #ifndef SIMPLEFOC_DISABLE_DEBUG
 #define SIMPLEFOC_MOTOR_WARN(msg, ...)  \
-      SimpleFOCDebug::print("WARN-MOT: "); \
+      SimpleFOCDebug::print(MOT_WARN); \
       SIMPLEFOC_DEBUG(msg, ##__VA_ARGS__)
 
 #define SIMPLEFOC_MOTOR_ERROR(msg, ...)  \
-      SimpleFOCDebug::print("ERR-MOT: "); \
+      SimpleFOCDebug::print(MOT_ERR); \
       SIMPLEFOC_DEBUG(msg, ##__VA_ARGS__)
 
 #define SIMPLEFOC_MOTOR_DEBUG(msg, ...)  \
-      SimpleFOCDebug::print("MOT: "); \
+      SimpleFOCDebug::print(MOT_DEBUG); \
       SIMPLEFOC_DEBUG(msg, ##__VA_ARGS__)
       
 #else
@@ -371,10 +375,10 @@ class FOCMotor
 
     /**
      * Function setting a custom motion control method defined by the user
-     * @note the custom control method has to be defined by the user and should follow the signature: float controlMethod(FOCMotor* motor, float target)
+     * @note the custom control method has to be defined by the user and should follow the signature: float controlMethod(FOCMotor* motor)
      * @param controlMethod - pointer to the custom control method function defined by the user
      */
-    void linkCustomMotionControl(float (*controlMethod)(FOCMotor* motor, float target)){
+    void linkCustomMotionControl(float (*controlMethod)(FOCMotor* motor)){
       customMotionControlCallback = controlMethod;
     }
 

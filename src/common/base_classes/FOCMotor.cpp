@@ -65,7 +65,7 @@ void FOCMotor::linkCurrentSense(CurrentSense* _current_sense) {
 float FOCMotor::shaftAngle() {
   // if no sensor linked return previous value ( for open loop )
   if(!sensor) return shaft_angle;
-  return sensor_direction*LPF_angle(sensor->getAngle()) - sensor_offset;
+  return sensor_direction*sensor->getAngle() - sensor_offset;
 }
 // shaft velocity calculation
 float FOCMotor::shaftVelocity() {
@@ -644,12 +644,15 @@ void FOCMotor::loopFOC() {
       current.q = LPF_current_q(current.q);
       current.d = LPF_current_d(current.d); 
       // calculate the phase voltages
-      voltage.q = PID_current_q(current_sp - current.q) + feed_forward_voltage.q;
-      voltage.d = PID_current_d(feed_forward_current.d - current.d) + feed_forward_voltage.d;
+      voltage.q = PID_current_q(current_sp - current.q);
+      voltage.d = PID_current_d(feed_forward_current.d - current.d);
       // d voltage - lag compensation
       if(_isset(axis_inductance.q)) voltage.d = _constrain( voltage.d - current_sp*shaft_velocity*pole_pairs*axis_inductance.q, -voltage_limit, voltage_limit);
       // q voltage - cross coupling compensation - TODO verify
       if(_isset(axis_inductance.d)) voltage.q = _constrain( voltage.q + current.d*shaft_velocity*pole_pairs*axis_inductance.d, -voltage_limit, voltage_limit);
+      // add feed forward
+      voltage.q += feed_forward_voltage.q;
+      voltage.d += feed_forward_voltage.d;
       break;
     default:
       // no torque control selected
@@ -712,7 +715,7 @@ void FOCMotor::move(float new_target) {
       // angle set point
       shaft_angle_sp = target;
       // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
-      current_sp = P_angle(shaft_angle_sp - shaft_angle);
+      current_sp = P_angle(shaft_angle_sp - LPF_angle(shaft_angle));
       break;
     case MotionControlType::angle:
       // TODO sensor precision: this calculation is not numerically precise. The target value cannot express precise positions when
@@ -721,7 +724,7 @@ void FOCMotor::move(float new_target) {
       // angle set point
       shaft_angle_sp = target;
       // calculate velocity set point
-      shaft_velocity_sp = feed_forward_velocity + P_angle( shaft_angle_sp - shaft_angle );
+      shaft_velocity_sp = feed_forward_velocity + P_angle( shaft_angle_sp - LPF_angle(shaft_angle) );
       shaft_velocity_sp = _constrain(shaft_velocity_sp, -velocity_limit, velocity_limit);
       // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
       current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); 
