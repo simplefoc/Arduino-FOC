@@ -426,7 +426,7 @@ class FOCMotor
     uint32_t open_loop_timestamp;
     
     // function pointer for custom control method
-    float (*customMotionControlCallback)(FOCMotor* motor, float target) = nullptr;
+    float (*customMotionControlCallback)(FOCMotor* motor) = nullptr;
     
 };
 
