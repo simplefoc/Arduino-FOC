@@ -759,7 +759,7 @@ void FOCMotor::move(float new_target) {
       // based on the target value and the motor state
       // user makes sure to use it with appropriate torque control mode 
       if(customMotionControlCallback) 
-        current_sp = customMotionControlCallback(this, target);
+        current_sp = customMotionControlCallback(this);
       break;
   }
 }
