@@ -56,7 +56,6 @@ Therefore this is an attempt to:
 >   - Torque control - [docs](https://docs.simplefoc.com/torque_control)
 >      - Added `estimated_current` torque control mode for model-based current estimation without current sensing - see in [docs](https://docs.simplefoc.com/estimated_current_mode) 
 >      - Now we can easily switch between voltage and estimated current control
->
 > - Docs updates - see [docs](https://docs.simplefoc.com/)
 >     - Write the code page updated - see [docs](https://docs.simplefoc.com/code)
 >     - Better step-by-step setup guides - see [docs](https://docs.simplefoc.com/example_from_scratch)
@@ -67,10 +66,8 @@ Therefore this is an attempt to:
 >     - Practical guides updated and extended - see [docs](https://docs.simplefoc.com/practical_guides)
 >       - Motor parameter measurement guide - see [docs](https://docs.simplefoc.com/practical_guides#motor-parameters-and-characterization)
 >       - PID tuning guides - see [docs](https://docs.simplefoc.com/practical_guides#pid-tuning)
->
 > - Examples
 >   - `align_current_sense.ino` example added to the `examples/utils/current_sense_test` allowing to verify the alignment between the driver and the current sense phases 
->
 > - Changelog
 >    - See the release notes for more details: [see release](https://github.com/simplefoc/Arduino-FOC/releases)
 >    - See the milestones: [v2.3.6 (unreleased)](https://github.com/simplefoc/Arduino-FOC/milestone/14) and [v2.4.0](https://github.com/simplefoc/Arduino-FOC/milestone/13)
