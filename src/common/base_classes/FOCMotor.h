@@ -11,6 +11,28 @@
 #include "../pid.h"
 #include "../lowpass_filter.h"
 
+#define MOT_ERR "ERR-MOT:"
+#define MOT_WARN "WARN-MOT:"
+#define MOT_DEBUG "MOT:"
+
+#ifndef SIMPLEFOC_DISABLE_DEBUG
+#define SIMPLEFOC_MOTOR_WARN(msg, ...)  \
+      SimpleFOCDebug::print(MOT_WARN); \
+      SIMPLEFOC_DEBUG(msg, ##__VA_ARGS__)
+
+#define SIMPLEFOC_MOTOR_ERROR(msg, ...)  \
+      SimpleFOCDebug::print(MOT_ERR); \
+      SIMPLEFOC_DEBUG(msg, ##__VA_ARGS__)
+
+#define SIMPLEFOC_MOTOR_DEBUG(msg, ...)  \
+      SimpleFOCDebug::print(MOT_DEBUG); \
+      SIMPLEFOC_DEBUG(msg, ##__VA_ARGS__)
+      
+#else
+#define SIMPLEFOC_MOTOR_DEBUG(msg, ...)
+#define SIMPLEFOC_MOTOR_ERROR(msg, ...)
+#define SIMPLEFOC_MOTOR_WARN(msg, ...)
+#endif
 
 // monitoring bitmap
 #define _MON_TARGET 0b1000000 // monitor target value
@@ -22,14 +44,16 @@
 #define _MON_ANGLE  0b0000001 // monitor angle value
 
 /**
- *  Motiron control type
+ *  Motion control type
  */
 enum MotionControlType : uint8_t {
   torque            = 0x00,     //!< Torque control
   velocity          = 0x01,     //!< Velocity motion control
   angle             = 0x02,     //!< Position/angle motion control
   velocity_openloop = 0x03,
-  angle_openloop    = 0x04
+  angle_openloop    = 0x04,
+  angle_nocascade   = 0x05,     //!< Position/angle motion control without velocity cascade
+  custom            = 0x06      //!< Custom control method - control method added by user
 };
 
 /**
@@ -39,6 +63,7 @@ enum TorqueControlType : uint8_t {
   voltage            = 0x00,     //!< Torque control using voltage
   dc_current         = 0x01,     //!< Torque control using DC current (one current magnitude)
   foc_current        = 0x02,     //!< torque control using dq currents
+  estimated_current  = 0x03      //!< torque control using estimated current (provided motor parameters)
 };
 
 /**
@@ -77,12 +102,60 @@ class FOCMotor
      */
     FOCMotor();
 
+
+    // Methods that need to be implemented, defining the FOCMotor interface
+
     /**  Motor hardware init function */
-  	virtual int init()=0;
+  	virtual int init() = 0;
     /** Motor disable function */
   	virtual void disable()=0;
     /** Motor enable function */
     virtual void enable()=0;
+
+    /**
+    * Method using FOC to set Uq to the motor at the optimal angle
+    * Heart of the FOC algorithm
+    * 
+    * @param Uq Current voltage in q axis to set to the motor
+    * @param Ud Current voltage in d axis to set to the motor
+    * @param angle_el current electrical angle of the motor
+    */
+    virtual void setPhaseVoltage(float Uq, float Ud, float angle_el)=0;
+    
+    /**
+     * Estimation of the Back EMF voltage
+     * 
+     * @param velocity - current shaft velocity
+     */
+    virtual float estimateBEMF(float velocity){return 0.0f;};
+
+    // Methods that have a default behavior but can be overriden if needed
+
+    /**
+     * Function initializing FOC algorithm
+     * and aligning sensor's and motors' zero position 
+     * 
+     * - If zero_electric_offset parameter is set the alignment procedure is skipped
+     */  
+    virtual int initFOC();
+
+    /**
+     * Function running FOC algorithm in real-time
+     * it calculates the gets motor angle and sets the appropriate voltages 
+     * to the phase pwm signals
+     * - the faster you can run it the better Arduino UNO ~1ms, Bluepill ~ 100us
+     */ 
+    virtual void loopFOC();
+
+    /**
+     * Function executing the control loops set by the controller.
+     * 
+     * @param target  Either voltage, angle or velocity based on the motor.controller
+     *                If it is not set the motor will use the target set in its variable motor.target
+     * 
+     * This function doesn't need to be run upon each loop execution - depends of the use case
+     */
+    virtual void move(float target = NOT_SET);
 
     /**
      * Function linking a motor and a sensor 
@@ -99,40 +172,6 @@ class FOCMotor
     void linkCurrentSense(CurrentSense* current_sense);
 
 
-    /**
-     * Function initializing FOC algorithm
-     * and aligning sensor's and motors' zero position 
-     * 
-     * - If zero_electric_offset parameter is set the alignment procedure is skipped
-     */  
-    virtual int initFOC()=0;
-    /**
-     * Function running FOC algorithm in real-time
-     * it calculates the gets motor angle and sets the appropriate voltages 
-     * to the phase pwm signals
-     * - the faster you can run it the better Arduino UNO ~1ms, Bluepill ~ 100us
-     */ 
-    virtual void loopFOC()=0;
-    /**
-     * Function executing the control loops set by the controller parameter of the BLDCMotor.
-     * 
-     * @param target  Either voltage, angle or velocity based on the motor.controller
-     *                If it is not set the motor will use the target set in its variable motor.target
-     * 
-     * This function doesn't need to be run upon each loop execution - depends of the use case
-     */
-    virtual void move(float target = NOT_SET)=0;
-
-    /**
-    * Method using FOC to set Uq to the motor at the optimal angle
-    * Heart of the FOC algorithm
-    * 
-    * @param Uq Current voltage in q axis to set to the motor
-    * @param Ud Current voltage in d axis to set to the motor
-    * @param angle_el current electrical angle of the motor
-    */
-    virtual void setPhaseVoltage(float Uq, float Ud, float angle_el)=0;
-    
     // State calculation methods 
     /** Shaft angle calculation in radians [rad] */
     float shaftAngle();
@@ -142,12 +181,11 @@ class FOCMotor
      */
     float shaftVelocity();
 
-
-
     /** 
      * Electrical angle calculation  
      */
     float electricalAngle();
+
 
     /**
      * Measure resistance and inductance of a motor and print results to debug.
@@ -157,6 +195,16 @@ class FOCMotor
      * @returns 0 for success, >0 for failure
      */
     int characteriseMotor(float voltage, float correction_factor);
+
+    /**
+     * Auto-tune the current controller PID parameters based on desired bandwidth.
+     * Uses a simple method that assumes a first order system and requires knowledge of
+     * the motor phase resistance and inductance (if not set, the characteriseMotor function can be used).
+     * 
+     * @param bandwidth Desired closed-loop bandwidth in Hz.
+     * @returns returns 0 for success, >0 for failure
+     */
+    int tuneCurrentController(float bandwidth);
 
     // state variables
     float target; //!< current target value - depends of the controller
@@ -172,6 +220,8 @@ class FOCMotor
     float voltage_bemf; //!< estimated backemf voltage (if provided KV constant)
     float	Ualpha, Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
 
+    DQCurrent_s feed_forward_current;//!< current d and q current measured
+    DQVoltage_s feed_forward_voltage;//!< current d and q voltage set to the motor
 
     // motor configuration parameters
     float voltage_sensor_align;//!< sensor and motor align voltage parameter
@@ -181,7 +231,8 @@ class FOCMotor
     float	phase_resistance; //!< motor phase resistance
     int pole_pairs;//!< motor pole pairs number
     float KV_rating; //!< motor KV rating
-    float	phase_inductance; //!< motor phase inductance
+    float	phase_inductance; //!< motor phase inductance q axis - FOR BACKWARDS COMPATIBILITY
+    DQ_s	axis_inductance{NOT_SET, NOT_SET}; //!< motor direct axis phase inductance
 
     // limiting variables
     float voltage_limit; //!< Voltage limiting variable - global limit
@@ -247,16 +298,136 @@ class FOCMotor
       * - HallSensor
     */
     Sensor* sensor; 
-    /** 
-      * CurrentSense link
-    */
+    //!< CurrentSense link
     CurrentSense* current_sense; 
 
     // monitoring functions
     Print* monitor_port; //!< Serial terminal variable if provided
+
+    //!< time between two loopFOC executions in microseconds
+    uint32_t loopfoc_time_us = 0; //!< filtered loop times
+    uint32_t move_time_us = 0; // filtered motion control times
+
+    /**
+     * Update limit values in controllers when changed
+     * @param new_velocity_limit - new velocity limit value
+     * 
+     * @note Updates velocity limit in:
+     *  - motor.velocity_limit
+     *  - motor.P_angle.limit
+     */
+    void updateVelocityLimit(float new_velocity_limit);
+    /**
+     * Update limit values in controllers when changed
+     * @param new_current_limit - new current limit value
+     * 
+     * @note Updates current limit in:
+     *  - motor.current_limit
+     *  - motor.PID_velocity.limit (if current control)
+     */
+    void updateCurrentLimit(float new_current_limit);
+    /**
+     * Update limit values in controllers when changed
+     * @param new_voltage_limit - new voltage limit value
+     * 
+     * @note Updates voltage limit in:
+     *  - motor.voltage_limit
+     *  - motor.PID_current_q.limit
+     *  - motor.PID_current_d.limit
+     *  - motor.PID_velocity.limit (if voltage control)
+     */
+    void updateVoltageLimit(float new_voltage_limit);
+
+    /**
+     * Update torque control type and related controller limit values
+     * @param new_torque_controller - new torque control type
+     * 
+     * @note Updates motor.torque_controller and motor.PID_velocity.limit
+     */
+    void updateTorqueControlType(TorqueControlType new_torque_controller);
+    /**
+     * Update motion control type and related target values
+     * @param new_motion_controller - new motion control type
+     * 
+     * @note Updates the target value based on the new controller type
+     * - if velocity control: target is set to 0rad/s
+     * - if angle control: target is set to the current shaft_angle
+     * - if torque control: target is set to 0V or 0A depending on torque control type
+     */
+    void updateMotionControlType(MotionControlType new_motion_controller);
+
+    // Open loop motion control    
+    /**
+     * Function (iterative) generating open loop movement for target velocity
+     * it uses voltage_limit variable
+     * 
+     * @param target_velocity - rad/s
+     */
+    float velocityOpenloop(float target_velocity);
+    /**
+     * Function (iterative) generating open loop movement towards the target angle
+     * it uses voltage_limit and velocity_limit variables
+     * 
+     * @param target_angle - rad
+     */
+    float angleOpenloop(float target_angle);
+  
+
+    /**
+     * Function setting a custom motion control method defined by the user
+     * @note the custom control method has to be defined by the user and should follow the signature: float controlMethod(FOCMotor* motor)
+     * @param controlMethod - pointer to the custom control method function defined by the user
+     */
+    void linkCustomMotionControl(float (*controlMethod)(FOCMotor* motor)){
+      customMotionControlCallback = controlMethod;
+    }
+
+  protected:
+
+    /**
+     * Function udating loop time measurement
+     * time between two loopFOC executions in microseconds
+     * It filters the value using low pass filtering alpha = 0.1
+     * @note - using _micros() function - be aware of its overflow every ~70 minutes
+     */
+    void updateLoopFOCTime(){
+      updateTime(loopfoc_time_us, last_loopfoc_time_us, last_loopfoc_timestamp_us);
+    }
+
+    void updateMotionControlTime(){
+      updateTime(move_time_us, last_move_time_us, last_move_timestamp_us);
+    }
+
+    /** Sensor alignment to electrical 0 angle of the motor */
+    int alignSensor();
+    /** Current sense and motor phase alignment */
+    int alignCurrentSense();
+    /** Motor and sensor alignment to the sensors absolute 0 angle  */
+    int absoluteZeroSearch();
+    
+    uint32_t last_loopfoc_timestamp_us = 0; //!< timestamp of the last loopFOC execution in microseconds
+    uint32_t last_loopfoc_time_us = 0; //!< last elapsed time of loopFOC in microseconds
+    uint32_t last_move_timestamp_us = 0; //!< timestamp of the last move execution in microseconds
+    uint32_t last_move_time_us = 0; //!< last elapsed time of move in microseconds
   private:
     // monitor counting variable
     unsigned int monitor_cnt = 0 ; //!< counting variable
+
+    // time measuring function 
+    // It filters the value using low pass filtering alpha = 0.1
+    void updateTime(uint32_t& elapsed_time_filetered, uint32_t& elapsed_time, uint32_t& last_timestamp_us, float alpha = 0.1f){
+      uint32_t now = _micros();
+      elapsed_time = now - last_timestamp_us;
+      elapsed_time_filetered = (1-alpha) * elapsed_time_filetered + alpha * elapsed_time;
+      last_timestamp_us = now;
+    }
+
+    // open loop variables
+    uint32_t open_loop_timestamp;
+    
+    // function pointer for custom control method
+    float (*customMotionControlCallback)(FOCMotor* motor) = nullptr;
+    
 };
 
 

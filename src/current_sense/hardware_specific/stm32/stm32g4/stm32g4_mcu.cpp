@@ -112,6 +112,7 @@ void* _driverSyncLowSide(void* _driver_params, void* _cs_params){
     HAL_ADCEx_InjectedStart_IT(cs_params->adc_handle);
   }else{
     HAL_ADCEx_InjectedStart(cs_params->adc_handle);
+    
   }
   
   // restart all the timers of the driver
@@ -133,8 +134,7 @@ float _readADCVoltageLowSide(const int pin, const void* cs_params){
 extern "C" {
   void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef *AdcHandle){
     uint8_t adc_index = (uint8_t)_adcToIndex(AdcHandle);
-    _handleInjectedConvCpltCallback(AdcHandle, adc_interrupt_config[adc_index], adc_val[adc_index]);
+   _handleInjectedConvCpltCallback(AdcHandle, adc_interrupt_config[adc_index], adc_val[adc_index]);
   }
 }
-
 #endif

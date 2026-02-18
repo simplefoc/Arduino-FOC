@@ -104,7 +104,7 @@ int MagneticSensorI2C::getRawCount() {
 	wire->write(_conf.angle_register);
   currWireError = wire->endTransmission(false);
   // read the data msb and lsb
-	wire->requestFrom(_conf.chip_address, 2);
+	wire->requestFrom(_conf.chip_address, (uint8_t)2);
 	for (byte i=0; i < 2; i++) {
 		readArray[i] = wire->read();
 	}

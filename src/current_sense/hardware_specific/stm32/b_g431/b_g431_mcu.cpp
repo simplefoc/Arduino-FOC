@@ -7,11 +7,17 @@
 #include "../stm32_mcu.h"
 #include "../../../../drivers/hardware_specific/stm32/stm32_mcu.h"
 #include "communication/SimpleFOCDebug.h"
+#include "../stm32_adc_utils.h"
 
 #define _ADC_VOLTAGE 3.3f
 #define _ADC_RESOLUTION 4096.0f
+#ifdef OPAMP_USE_INTERNAL_CHANNEL
+#define ADC_BUF_LEN_1 4
+#define ADC_BUF_LEN_2 2
+#else
 #define ADC_BUF_LEN_1 5
 #define ADC_BUF_LEN_2 1
+#endif
 
 static ADC_HandleTypeDef hadc1;
 static ADC_HandleTypeDef hadc2;
@@ -25,26 +31,59 @@ static DMA_HandleTypeDef hdma_adc2;
 volatile uint16_t adcBuffer1[ADC_BUF_LEN_1] = {0}; // Buffer for store the results of the ADC conversion
 volatile uint16_t adcBuffer2[ADC_BUF_LEN_2] = {0}; // Buffer for store the results of the ADC conversion
 
+
+// structure containing the configuration of the adc interrupt
+Stm32AdcInterruptConfig adc_interrupt_config[5] = {
+  {0, 0, 0}, // ADC1
+  {0, 0, 0}, // ADC2
+  {0, 0, 0}, // ADC3
+  {0, 0, 0}, // ADC4
+  {0, 0, 0}  // ADC5
+};
+
 // function reading an ADC value and returning the read voltage
 // As DMA is being used just return the DMA result
 float _readADCVoltageLowSide(const int pin, const void* cs_params){
-  uint32_t raw_adc = 0;
-  if(pin == PA2)  // = ADC1_IN3 = phase U (OP1_OUT) on B-G431B-ESC1
-    raw_adc = adcBuffer1[1];
-  else if(pin == PA6) // = ADC2_IN3 = phase V (OP2_OUT) on B-G431B-ESC1
+  uint32_t raw_adc;
+  #ifdef OPAMP_USE_INTERNAL_CHANNEL
+  #define ADC1_OFFSET 0
+  #else 
+  #define ADC1_OFFSET 1
+  #endif 
+  
+  switch (pin)
+  {
+  case A_OP1_OUT:
+  case -1:
+    raw_adc = adcBuffer1[0+ADC1_OFFSET];
+    break;
+  case A_OP2_OUT:
+  case -2:
     raw_adc = adcBuffer2[0];
-#ifdef PB1
-  else if(pin == PB1) // = ADC1_IN12 = phase W (OP3_OUT) on B-G431B-ESC1
+    break;
+  #ifdef A_OP3_OUT
+  case A_OP3_OUT:
+  #endif
+  case -3:
+  #ifdef OPAMP_USE_INTERNAL_CHANNEL
+    raw_adc = adcBuffer2[1];
+  #else
     raw_adc = adcBuffer1[0];
-#endif
-
-  else if (pin == A_POTENTIOMETER)
-    raw_adc = adcBuffer1[2];
-  else if (pin == A_TEMPERATURE)
-    raw_adc = adcBuffer1[3];
-  else if (pin == A_VBUS)
-    raw_adc = adcBuffer1[4];
-
+  #endif
+    break;
+  case A_POTENTIOMETER:
+    raw_adc = adcBuffer1[1+ADC1_OFFSET];
+    break;
+  case A_TEMPERATURE:
+    raw_adc = adcBuffer1[2+ADC1_OFFSET];
+    break;
+  case A_VBUS:
+    raw_adc = adcBuffer1[3+ADC1_OFFSET];
+    break;
+  default:
+    raw_adc = 0;
+    break;
+  }
   return raw_adc * ((Stm32CurrentSenseParams*)cs_params)->adc_voltage_conv;
 }
 
@@ -54,7 +93,7 @@ void _configureOPAMP(OPAMP_HandleTypeDef *hopamp, OPAMP_TypeDef *OPAMPx_Def){
   hopamp->Init.PowerMode = OPAMP_POWERMODE_HIGHSPEED;
   hopamp->Init.Mode = OPAMP_PGA_MODE;
   hopamp->Init.NonInvertingInput = OPAMP_NONINVERTINGINPUT_IO0;
-  hopamp->Init.InternalOutput = DISABLE;
+  hopamp->Init.InternalOutput = OPAMP_USE_INTERNAL_CHANNEL ? ENABLE : DISABLE;
   hopamp->Init.TimerControlledMuxmode = OPAMP_TIMERCONTROLLEDMUXMODE_DISABLE;
   hopamp->Init.PgaConnect = OPAMP_PGA_CONNECT_INVERTINGINPUT_IO0_BIAS;
   hopamp->Init.PgaGain = OPAMP_PGA_GAIN_16_OR_MINUS_15;
@@ -155,14 +194,16 @@ void* _driverSyncLowSide(void* _driver_params, void* _cs_params){
   // stop all the timers for the driver
   stm32_pause(driver_params);
 
-  // if timer has repetition counter - it will downsample using it
-  // and it does not need the software downsample
-  if( IS_TIM_REPETITION_COUNTER_INSTANCE(cs_params->timer_handle->Instance) ){
-    // adjust the initial timer state such that the trigger for DMA transfer aligns with the pwm peaks instead of throughs.
-    // only necessary for the timers that have repetition counters
-    cs_params->timer_handle->Instance->CR1 |= TIM_CR1_DIR;
-    cs_params->timer_handle->Instance->CNT =  cs_params->timer_handle->Instance->ARR;
+  // get the index of the adc
+  int adc_index = _adcToIndex(cs_params->adc_handle);
+
+  bool tim_interrupt = _initTimerInterruptDownsampling(cs_params, driver_params, adc_interrupt_config[adc_index]);
+  if(tim_interrupt) {
+  // error in the timer interrupt initialization
+    SIMPLEFOC_DEBUG("STM32-CS: timer has no repetition counter, ADC interrupt not supported for B-G431");
+    return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
   }
+
   // set the trigger output event
   LL_TIM_SetTriggerOutput(cs_params->timer_handle->Instance, LL_TIM_TRGO_UPDATE);
 

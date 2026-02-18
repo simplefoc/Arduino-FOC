@@ -510,7 +510,7 @@ TIM_HandleTypeDef* stm32_alignTimers(TIM_HandleTypeDef *timers_in[], uint8_t num
   }
 
 
-  #ifdef SIMPLEFOC_STM32_DEBUG
+  #if defined(SIMPLEFOC_STM32_DEBUG) && !defined(SIMPLEFOC_DISABLE_DEBUG) 
     SimpleFOCDebug::print("STM32-DRV: Synchronising ");
     SimpleFOCDebug::print(numTimers);
     SimpleFOCDebug::println(" timers");
@@ -946,7 +946,7 @@ uint8_t getTimerClkSrc(TIM_TypeDef *tim) {
 
 
 
-#ifdef SIMPLEFOC_STM32_DEBUG
+#if defined(SIMPLEFOC_STM32_DEBUG) && !defined(SIMPLEFOC_DISABLE_DEBUG) 
 
 /*
     some utility functions to print out the timer combinations

@@ -18,8 +18,14 @@ public:
      * @param D - Derivative gain 
      * @param ramp - Maximum speed of change of the output value
      * @param limit - Maximum output value
+     * @param sampling_time - sampling time
+     * 
+     * @note If sampling time is not set the filter will measure the 
+     *       elapsed time between each call. If yes it will consider it fixed. 
+     * @note Sampling time can be changed dynamically as well by modifying the 
+     *       variable Ts in runtime.
      */
-    PIDController(float P, float I, float D, float ramp, float limit);
+    PIDController(float P, float I, float D, float ramp = NOT_SET, float limit = NOT_SET, float sampling_time = NOT_SET);
     ~PIDController() = default;
 
     float operator() (float error);
@@ -30,6 +36,7 @@ public:
     float D; //!< Derivative gain 
     float output_ramp; //!< Maximum speed of change of the output value
     float limit; //!< Maximum output value
+    float Ts; //!< Fixed sampling time (optional default NOT_SET)
 
 protected:
     float error_prev; //!< last tracking error value

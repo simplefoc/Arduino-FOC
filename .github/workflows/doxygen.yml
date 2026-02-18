@@ -1,0 +1,67 @@
+name: Generate and Deploy Doxygen Documentation
+
+on:
+  push:
+    branches:
+      - master
+      - main
+      - dev
+  release:
+    types: [published]
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build-doxygen:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+      
+      - name: Install Doxygen and GraphViz
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz
+          doxygen --version
+          dot -V
+      
+      - name: Generate Doxygen Documentation
+        run: |
+          cd ${{ github.workspace }}
+          doxygen Doxyfile
+      
+      - name: Check generated documentation
+        run: |
+          ls -la docs/html/
+          echo "Documentation generated successfully!"
+          echo "Total files: $(find docs/html -type f | wc -l)"
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'docs/html'
+
+  deploy:
+    needs: build-doxygen
+    runs-on: ubuntu-latest
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

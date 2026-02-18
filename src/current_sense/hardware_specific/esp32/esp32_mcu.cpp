@@ -3,16 +3,16 @@
 #if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32)
 
 /**
- *  Inline adc reading implementation 
+ *  Inline adc reading implementation
 */
 // function reading an ADC value and returning the read voltage
-float _readADCVoltageInline(const int pinA, const void* cs_params){
+float IRAM_ATTR _readADCVoltageInline(const int pinA, const void* cs_params){
   uint32_t raw_adc = adcRead(pinA);
   return raw_adc * ((ESP32CurrentSenseParams*)cs_params)->adc_voltage_conv;
 }
 
 // function reading an ADC value and returning the read voltage
-void* _configureADCInline(const void* driver_params, const int pinA, const int pinB, const int pinC){
+void* IRAM_ATTR _configureADCInline(const void* driver_params, const int pinA, const int pinB, const int pinC){
 
   ESP32CurrentSenseParams* params = new ESP32CurrentSenseParams {
     .pins = { pinA, pinB, pinC },

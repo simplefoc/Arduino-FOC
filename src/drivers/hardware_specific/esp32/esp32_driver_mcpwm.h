@@ -32,8 +32,12 @@ typedef struct ESP32MCPWMDriverParams {
 } ESP32MCPWMDriverParams; 
 
 
+#ifndef SIMPLEFOC_DISABLE_DEBUG
 #define SIMPLEFOC_ESP32_DEBUG(tag, str)\
     SimpleFOCDebug::println( "ESP32-"+String(tag)+ ": "+ String(str));
+#else
+#define SIMPLEFOC_ESP32_DEBUG(tag, str) 
+#endif
 
 #define SIMPLEFOC_ESP32_DRV_DEBUG(str)\
    SIMPLEFOC_ESP32_DEBUG("DRV", str);\
@@ -153,6 +157,12 @@ void _setDutyCycle(mcpwm_cmpr_handle_t cmpr, uint32_t mcpwm_period, float duty_c
  * @param phase_state - phase state
  */
 void _forcePhaseState(mcpwm_gen_handle_t generator_high, mcpwm_gen_handle_t generator_low, PhaseState phase_state);
+
+/**
+ * function notifying the driver that low side is used with comparator
+ * @param group_id - mcpwm group id
+ */
+void _notifyLowSideUsingComparator(int group_id);
 
 #endif
 #endif
