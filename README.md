@@ -34,16 +34,52 @@ Therefore this is an attempt to:
 
 > NEXT RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.4.0
 >
-> - STM32 bugfix 
->   - BG341 low-side current sense sync was lost in v2.3.5 - fixed [#482](https://github.com/simplefoc/Arduino-FOC/pull/482)
-> - ESP32 bugfix 
->   - Now compiles for all v3.x arduino-esp32 versions (v2.3.5 was compatible with v3.2.x) 
->   - `adcRead` small refactor - no more magic numbers
-> - New functionality
->    - Add current and voltage feed forward terms to motor classes by @Copper280z in https://github.com/simplefoc/Arduino-FOC/pull/454
->    - Velocity Calculation rework by @Copper280z in https://github.com/simplefoc/Arduino-FOC/pull/45
+> - STM32
+>   - New features
+>     - Added support for ADC reads in addition to Lowside current sense [#506](https://github.com/simplefoc/Arduino-FOC/pull/506)
+>     - Added support for multiple motors low-side CS (one per ADC) with ADC current sensing [#503](https://github.com/simplefoc/Arduino-FOC/pull/503)
+>   - bugfix 
+>     - BG341 low-side current sense sync was lost in v2.3.5 - fixed [#482](https://github.com/simplefoc/Arduino-FOC/pull/482)
+> - ESP32 
+>    - New features
+>      - Many ESP32 safety optimisations by [@uLipe](https://github.com/uLipe): [#490](https://github.com/simplefoc/Arduino-FOC/pull/490),[#491](https://github.com/simplefoc/Arduino-FOC/pull/491),[#492](https://github.com/simplefoc/Arduino-FOC/pull/492),[#493](https://github.com/simplefoc/Arduino-FOC/pull/493),[#495](https://github.com/simplefoc/Arduino-FOC/pull/495)
+>      - Better ADC-Timer alignement for more stable current sensing [See this commit](https://github.com/simplefoc/Arduino-FOC/commit/877699b4db4e6e3ecc16b16cc4337af928e746f4)
+>    - bugfix 
+>      - Now compiles for all v3.x arduino-esp32 versions (v2.3.5 was compatible with v3.2.x) 
+>      - `adcRead` small refactor - no more magic numbers
+> - Teensy4
+>   - support for phase state setting [#498](https://github.com/simplefoc/Arduino-FOC/pull/498) by [@Ragiton](https://github.com/Ragiton)
+> - Silabs - Arduino Nano Matter
+>   - Added support for Arduino Nano Matter board by [@silabs-szabog](https://github.com/silabs-szabog) : [#485](https://github.com/simplefoc/Arduino-FOC/pull/484)
+> - New features
+>    - Add current and voltage feed forward terms to motor classes by [@Copper280z](https://github.com/Copper280z) in [#454](https://github.com/simplefoc/Arduino-FOC/pull/454)
+>    - Velocity Calculation rework by [@Copper280z](https://github.com/Copper280z) in [#45](https://github.com/simplefoc/Arduino-FOC/pull/45)
+>    - Motion control - [docs](https://docs.simplefoc.com/motion_control)
+>       - Added `Custom` motion control mode - see in [docs](https://docs.simplefoc.com/custom_control) and in [examples](https://github.com/simplefoc/Arduino-FOC/tree/master/examples/motion_control)
+>       - Added `angle_nocascade` control mode for position control without velocity cascade - see in [docs](https://docs.simplefoc.com/angle_loop)  - [#384](https://github.com/simplefoc/Arduino-FOC/pull/384)
+>       - **Now all the closed and open loop modes can be used with any torque control modes (voltage and current)** 
+>           - Ex. `velocity_openloop` with `foc_current` torque control
+>   - Torque control - [docs](https://docs.simplefoc.com/torque_control)
+>      - Added `estimated_current` torque control mode for model-based current estimation without current sensing - see in [docs](https://docs.simplefoc.com/estimated_current_mode) 
+>      - Now we can easily switch between voltage and estimated current control
+>
+> - Docs updates - see [docs](https://docs.simplefoc.com/)
+>     - Write the code page updated - see [docs](https://docs.simplefoc.com/code)
+>     - Better step-by-step setup guides - see [docs](https://docs.simplefoc.com/example_from_scratch)
+>     - New motion control documentation - see [docs](https://docs.simplefoc.com/motion_control)
+>     - New torque/FOC control documentation - see [docs](https://docs.simplefoc.com/torque_control)
+>     - Theory corner updated and extended - see [docs](https://docs.simplefoc.com/theory_corner)
+>     - Library source updated and extended - see [docs](https://docs.simplefoc.com/source_code)
+>     - Practical guides updated and extended - see [docs](https://docs.simplefoc.com/practical_guides)
+>       - Motor parameter measurement guide - see [docs](https://docs.simplefoc.com/practical_guides#motor-parameters-and-characterization)
+>       - PID tuning guides - see [docs](https://docs.simplefoc.com/practical_guides#pid-tuning)
+>
 > - Examples
->   - `align_current_sense.ino` example added to the `examples/utls/current_sense_test` allowing to verify the alignment between the driver and the current sense phases
+>   - `align_current_sense.ino` example added to the `examples/utils/current_sense_test` allowing to verify the alignment between the driver and the current sense phases 
+>
+> - Changelog
+>    - See the release notes for more details: [see release](https://github.com/simplefoc/Arduino-FOC/releases)
+>    - See the milestones: [v2.3.6 (unreleased)](https://github.com/simplefoc/Arduino-FOC/milestone/14) and [v2.4.0](https://github.com/simplefoc/Arduino-FOC/milestone/13)
 
 
 
