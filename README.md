@@ -20,15 +20,17 @@
 [![status](https://joss.theoj.org/papers/4382445f249e064e9f0a7f6c1bb06b1d/status.svg)](https://joss.theoj.org/papers/4382445f249e064e9f0a7f6c1bb06b1d)
 
 
-We live in very exciting times 😃! BLDC motors are entering the hobby community more and more and many great projects have already emerged leveraging their far superior dynamics and power capabilities. BLDC motors have numerous advantages over regular DC motors but they have one big disadvantage, the complexity of control. Even though it has become relatively easy to design and manufacture PCBs and create our own hardware solutions for driving BLDC motors the proper low-cost solutions are yet to come. One of the reasons for this is the apparent complexity of writing the BLDC driving algorithms, Field oriented control (FOC) being an example of one of the most efficient ones.
-The solutions that can be found on-line are almost exclusively very specific for certain hardware configuration and the microcontroller architecture used.
-Additionally, most of the efforts at this moment are still channeled towards the high-power applications of the BLDC motors and proper low-cost and low-power FOC supporting boards are very hard to find today and even may not exist. <br>
+We live in very exciting times 😃! BLDC motors are entering the hobby community more and more and many great projects have already emerged leveraging their far superior dynamics and power capabilities. These motors have numerous advantages over regular DC motors but they have one big disadvantage, the complexity of control. Even though it has become relatively easy to design and manufacture PCBs and create our own hardware solutions for driving BLDC motors, the proper low-cost solutions have been challenging to develop. One of the reasons for this is the apparent complexity of writing the driving algorithms, Field Oriented Control (FOC) being one of the most efficient ones.
+The solutions that can be found online are almost exclusively very specific for certain hardware configurations and microcontroller architectures. Similar to BLDCs, Stepper motors can hugely benefit from FOC control, but the solutions for FOC controlled stepper motors are even more scarce.
+<br>
 Therefore this is an attempt to: 
-- 🎯 Demystify FOC algorithm and make a robust but simple Arduino library: [Arduino *SimpleFOClibrary*](https://docs.simplefoc.com/arduino_simplefoc_library_showcase)
+- 🎯 Demystify FOC algorithm and make a robust but simple Arduino library: [Arduino <span class="simple">Simple<span class="foc">FOC</span>library</span>](https://docs.simplefoc.com/arduino_simplefoc_library_showcase)
   - <i>Support as many <b>motor + sensor + driver + mcu</b> combinations out there</i>
-- 🎯 Develop modular and easy to use FOC supporting BLDC driver boards
+  - Make transitioning from one hardware combination to another as seamless as possible
+- 🎯 Develop modular and easy to use FOC supporting driver boards
    - For official driver boards see [<span class="simple">Simple<span class="foc">FOC</span>Boards</span>](https://docs.simplefoc.com/boards)
-   - Many many more boards developed by the community members, see [<span class="simple">Simple<span class="foc">FOC</span>Community</span>](https://community.simplefoc.com/)
+   - Many many more boards developed by the community members, see [<span class="simple">Simple<span class="foc">FOC</span> Community</span>](https://community.simplefoc.com/)
+
 
 > NEXT RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.4.0
 >
@@ -37,7 +39,7 @@ Therefore this is an attempt to:
 > - ESP32 bugfix 
 >   - Now compiles for all v3.x arduino-esp32 versions (v2.3.5 was compatible with v3.2.x) 
 >   - `adcRead` small refactor - no more magic numbers
-> - New fuctionality
+> - New functionality
 >    - Add current and voltage feed forward terms to motor classes by @Copper280z in https://github.com/simplefoc/Arduino-FOC/pull/454
 >    - Velocity Calculation rework by @Copper280z in https://github.com/simplefoc/Arduino-FOC/pull/45
 > - Examples
@@ -45,7 +47,7 @@ Therefore this is an attempt to:
 
 
 
-## Arduino *SimpleFOClibrary* v2.3.6
+## Arduino *SimpleFOClibrary* ![GitHub release (latest by date)](https://img.shields.io/github/v/release/simplefoc/arduino-foc)
 
 <p align="">
 <a href="https://youtu.be/Y5kLeqTc6Zk">
@@ -53,7 +55,7 @@ Therefore this is an attempt to:
 </a>
 </p>
 
-This video demonstrates the *Simple**FOC**library* basic usage, electronic connections and shows its capabilities.
+This video is a bit outdated but it demonstrates the *Simple**FOC**library* basic usage, electronic connections and shows its capabilities.
 
 ### Features
 - **Easy install**: 
@@ -61,24 +63,29 @@ This video demonstrates the *Simple**FOC**library* basic usage, electronic conne
    - PlatformIO
 - **Open-Source**: Full code and documentation available on github
 - **Goal**: 
-   - Support as many [sensor](https://docs.simplefoc.com/position_sensors) + [motor](https://docs.simplefoc.com/motors) + [driver](https://docs.simplefoc.com/drivers) + [current sense](https://docs.simplefoc.com/current_sense)   combination as possible.
-   - Provide the up-to-date and in-depth documentation with API references and the examples
+   - Support as many [sensor](position_sensors) + [motor](motors) + [driver](drivers) + [current sense](current_sense) combinations as possible
+   - Make transitioning from one hardware combination to another as seamless as possible
+   - Provide up-to-date and in-depth documentation with API references and examples
 - **Easy to setup and configure**: 
    - Easy hardware configuration 
    - Each hardware component is a C++ object (easy to understand) 
-   - Easy [tuning the control loops](https://docs.simplefoc.com/motion_control)
-   - [*Simple**FOC**Studio*](https://docs.simplefoc.com/studio) configuration GUI tool
-   - Built-in communication and monitoring
+   - Easy [tuning the control loops](motion_control)
+   - Advanced control features: velocity and current feed-forward, improved velocity calculation
+   - [*Simple**FOC**Studio*](studio) configuration GUI tool for real-time tuning and monitoring
+   - Built-in communication and monitoring via Serial, I2C, or custom protocols
 - **Cross-platform**:
    - Seamless code transfer from one microcontroller family to another 
-   - Supports multiple [MCU architectures](https://docs.simplefoc.com/microcontrollers):
-      - Arduino: UNO R4, UNO, MEGA, DUE, Leonardo, Nano, Nano33 ....
-      - STM32
-      - ESP32
-      - Teensy
+   - Supports multiple [MCU architectures](microcontrollers):
+      - Arduino: UNO R4, UNO, MEGA, DUE, Leonardo, Nano, Nano33, MKR ....
+      - STM32 (Nucleo, Bluepill, B-G431B-ESC1, H7 family, etc.)
+      - ESP32 (ESP32, ESP32-S2, ESP32-S3, ESP32-C3, ESP32-C6)
+      - Teensy (3.x, 4.x)
+      - RP2040/RP2350 (Raspberry Pi Pico)
+      - SAMD (Arduino Zero, MKR boards)
+      - MBED (Portenta, Nano 33 BLE)
+      - Silabs
       - many more ...
 
-<p align=""> <img src="https://docs.simplefoc.com/extras/Images/uno_l6234.jpg"  height="170px">  <img src="https://docs.simplefoc.com/extras/Images/hmbgc_v22.jpg" height="170px">  <img src="https://docs.simplefoc.com/extras/Images/foc_shield_v13.jpg"  height="170px"></p>
 
 
 ## Documentation
