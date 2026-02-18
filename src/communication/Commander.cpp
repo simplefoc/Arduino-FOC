@@ -287,6 +287,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
           printVerbose(F("Reinit!"));
           motor->sensor_direction = Direction::UNKNOWN; // reset sensor direction estimation
           motor->zero_electric_angle = NOT_SET; // reset zero electric angle
+          motor->target = 0; // reset target
           motor->initFOC();
           println(F("done"));
           break;
