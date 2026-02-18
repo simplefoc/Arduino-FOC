@@ -32,7 +32,7 @@ Therefore this is an attempt to:
    - Many many more boards developed by the community members, see [<span class="simple">Simple<span class="foc">FOC</span> Community</span>](https://community.simplefoc.com/)
 
 
-> NEXT RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.4.0
+> NEW RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.4.0
 > - STM32
 >   - Added support for ADC reads in addition to Lowside current sense [#506](https://github.com/simplefoc/Arduino-FOC/pull/506)
 >   - Added support for multiple motors low-side CS (one per ADC) with ADC current sensing [#503](https://github.com/simplefoc/Arduino-FOC/pull/503)
