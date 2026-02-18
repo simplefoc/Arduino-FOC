@@ -1,13 +1,9 @@
 name: Generate and Deploy Doxygen Documentation
 
 on:
-  push:
-    branches:
-      - master
-      - main
-      - dev
   release:
     types: [published]
+    
   workflow_dispatch:  # Allow manual trigger
 
 permissions:
