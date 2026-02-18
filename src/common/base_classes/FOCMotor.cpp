@@ -581,13 +581,15 @@ void FOCMotor::loopFOC() {
   // update loop time measurement
   updateLoopFOCTime();
   
+  // if initFOC is being executed at the moment, do nothing
+  if(motor_status == FOCMotorStatus::motor_calibrating) return;
+
   // update sensor - do this even in open-loop mode, as user may be switching between modes and we could lose track
   //                 of full rotations otherwise.
   if (sensor) sensor->update();
 
   // if disabled do nothing
-  // or if the motor is not ready (e.g. failed to calibrate or not calibrated yet) do nothing
-  if(!enabled || motor_status != FOCMotorStatus::motor_ready) return;
+  if(!enabled) return;
 
   // if open-loop do nothing
   if( controller==MotionControlType::angle_openloop || controller==MotionControlType::velocity_openloop ) 
@@ -677,6 +679,9 @@ void FOCMotor::move(float new_target) {
   if(motion_cnt++ < motion_downsample) return;
   motion_cnt = 0;
 
+  // if initFOC is being executed at the moment, do nothing
+  if(motor_status == FOCMotorStatus::motor_calibrating) return;
+  
   // calculate the elapsed time between the calls
   // TODO replace downsample by runnind the code at 
   // a specific frequency (or almost)
@@ -700,7 +705,7 @@ void FOCMotor::move(float new_target) {
 
   // if disabled do nothing
   // and if 
-  if(!enabled || motor_status != FOCMotorStatus::motor_ready) return;
+  if(!enabled) return;
   
 
   // upgrade the current based voltage limit
