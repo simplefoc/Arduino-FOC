@@ -95,7 +95,7 @@ This video is a bit outdated but it demonstrates the *Simple**FOC**library* basi
 - **Easy to setup and configure**: 
    - Easy hardware configuration 
    - Each hardware component is a C++ object (easy to understand) 
-   - Easy [tuning the control loops](motion_control)
+   - Easy [tuning the control loops](https://docs.simplefoc.com/motion_control)
    - Advanced control features: velocity and current feed-forward, improved velocity calculation
    - [*Simple**FOC**Studio*](https://docs.simplefoc.com/studio) configuration GUI tool for real-time tuning and monitoring
    - Built-in communication and monitoring via Serial, I2C, or custom protocols
