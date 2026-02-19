@@ -109,15 +109,14 @@ class Sensor{
         float min_elapsed_time = 0.000100; // default is 100 microseconds, or 10kHz
 
     protected:
-        /** 
-         * Get current shaft angle from the sensor hardware, and 
+        /** Get current shaft angle from the sensor hardware, and
          * return it as a float in radians, in the range 0 to 2PI.
-         * 
+         *
          * This method is pure virtual and must be implemented in subclasses.
          * Calling this method directly does not update the base-class internal fields.
          * Use update() when calling from outside code.
          */
-        virtual float getSensorAngle()=0;
+        virtual float getSensorAngle() = 0;
         /**
          * Call Sensor::init() from your sensor subclass's init method if you want smoother startup
          * The base class init() method calls getSensorAngle() several times to initialize the internal fields
@@ -126,14 +125,37 @@ class Sensor{
          */
         virtual void init();
 
-        // velocity calculation variables
-        float velocity=0.0f;
-        float angle_prev=0.0f; // result of last call to getSensorAngle(), used for full rotations and velocity
-        long angle_prev_ts=0; // timestamp of last call to getAngle, used for velocity
-        float vel_angle_prev=0.0f; // angle at last call to getVelocity, used for velocity
-        long vel_angle_prev_ts=0; // last velocity calculation timestamp
-        int32_t full_rotations=0; // full rotation tracking
-        int32_t vel_full_rotations=0; // previous full rotation value for velocity calculation
+        /** Last calculated velocity in rad/s */
+        float velocity = 0.0f;
+
+        /** Previously determined angle from getSensorAngle()
+         *
+         *  Always in the range of 0 to 2PI
+         */
+        float angle_prev = 0.0f;
+
+        /** Timestamp of last call to update() in micro seconds.
+         */
+        long angle_prev_ts = 0;
+
+        /** Angle at last call to getVelocity 0 to 2PI.
+         *
+         *  Used for velocity
+         */
+        float vel_angle_prev = 0.0f;
+
+        /** Timestamp of last call to getVelocity() in micro seconds.
+         */
+        long vel_angle_prev_ts = 0; // last velocity calculation timestamp
+
+        /** Previously determined number of full rotations.
+         *
+         *  Updated in update()
+         */
+        int32_t full_rotations = 0;
+
+        /** Velocity in 2PI/sec */
+        int32_t vel_full_rotations = 0;
 };
 
 #endif
