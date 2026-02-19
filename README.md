@@ -89,7 +89,7 @@ This video is a bit outdated but it demonstrates the *Simple**FOC**library* basi
    - PlatformIO
 - **Open-Source**: Full code and documentation available on github
 - **Goal**: 
-   - Support as many [sensor](position_sensors) + [motor](motors) + [driver](drivers) + [current sense](current_sense) combinations as possible
+   - Support as many [sensor](https://docs.simplefoc.com/position_sensors) + [motor](https://docs.simplefoc.com/motors) + [driver](https://docs.simplefoc.com/drivers) + [current sense](https://docs.simplefoc.com/current_sense) combinations as possible
    - Make transitioning from one hardware combination to another as seamless as possible
    - Provide up-to-date and in-depth documentation with API references and examples
 - **Easy to setup and configure**: 
@@ -97,11 +97,11 @@ This video is a bit outdated but it demonstrates the *Simple**FOC**library* basi
    - Each hardware component is a C++ object (easy to understand) 
    - Easy [tuning the control loops](motion_control)
    - Advanced control features: velocity and current feed-forward, improved velocity calculation
-   - [*Simple**FOC**Studio*](studio) configuration GUI tool for real-time tuning and monitoring
+   - [*Simple**FOC**Studio*](https://docs.simplefoc.com/studio) configuration GUI tool for real-time tuning and monitoring
    - Built-in communication and monitoring via Serial, I2C, or custom protocols
 - **Cross-platform**:
    - Seamless code transfer from one microcontroller family to another 
-   - Supports multiple [MCU architectures](microcontrollers):
+   - Supports multiple [MCU architectures](https://docs.simplefoc.commicrocontrollers):
       - Arduino: UNO R4, UNO, MEGA, DUE, Leonardo, Nano, Nano33, MKR ....
       - STM32 (Nucleo, Bluepill, B-G431B-ESC1, H7 family, etc.)
       - ESP32 (ESP32, ESP32-S2, ESP32-S3, ESP32-C3, ESP32-C6)
