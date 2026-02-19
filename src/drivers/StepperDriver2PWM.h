@@ -36,11 +36,11 @@ class StepperDriver2PWM: public StepperDriver
     StepperDriver2PWM(int pwm1, int dir1, int pwm2, int dir2, int en1 = NOT_SET, int en2 = NOT_SET);
 
     /**  Motor hardware init function */
-  	int init() override;
+  	virtual int init() override;
     /** Motor disable function */
-  	void disable() override;
+  	virtual void disable() override;
     /** Motor enable function */
-    void enable() override;
+    virtual void enable() override;
 
     // hardware variables
     int pwm1; //!< phase 1 pwm pin number
@@ -58,7 +58,7 @@ class StepperDriver2PWM: public StepperDriver
      * @param Ua phase A voltage
      * @param Ub phase B voltage
     */
-    void setPwm(float Ua, float Ub) override;
+    virtual void setPwm(float Ua, float Ub) override;
 
     /** 
      * Set phase voltages to the hardware
