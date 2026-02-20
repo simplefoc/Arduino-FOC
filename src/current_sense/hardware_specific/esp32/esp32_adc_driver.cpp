@@ -98,29 +98,6 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
 
 #include "soc/sens_reg.h"
 
-
-// configure the ADCs in RTC mode
-// no real gain - see if we do something with it later
-// void __configFastADCs(){
-
-//     SET_PERI_REG_MASK(SENS_SAR_READER1_CTRL_REG, SENS_SAR1_DATA_INV);
-//     SET_PERI_REG_MASK(SENS_SAR_READER2_CTRL_REG, SENS_SAR2_DATA_INV);
-
-//     SET_PERI_REG_MASK(SENS_SAR_MEAS1_CTRL2_REG, SENS_MEAS1_START_FORCE_M); //SAR ADC1 controller (in RTC) is started by SW
-//     SET_PERI_REG_MASK(SENS_SAR_MEAS1_CTRL2_REG, SENS_SAR1_EN_PAD_FORCE_M); //SAR ADC1 pad enable bitmap is controlled by SW
-//     SET_PERI_REG_MASK(SENS_SAR_MEAS2_CTRL2_REG, SENS_MEAS2_START_FORCE_M); //SAR ADC2 controller (in RTC) is started by SW
-//     SET_PERI_REG_MASK(SENS_SAR_MEAS2_CTRL2_REG, SENS_SAR2_EN_PAD_FORCE_M); //SAR ADC2 pad enable bitmap is controlled by SW
-
-//     CLEAR_PERI_REG_MASK(SENS_SAR_POWER_XPD_SAR_REG, SENS_FORCE_XPD_SAR_M); //force XPD_SAR=0, use XPD_FSM
-//     SET_PERI_REG_BITS(SENS_SAR_POWER_XPD_SAR_REG, SENS_FORCE_XPD_AMP, 0x2, SENS_FORCE_XPD_AMP_S); //force XPD_AMP=0
-
-//     CLEAR_PERI_REG_MASK(SENS_SAR_AMP_CTRL3_REG, 0xfff << SENS_AMP_RST_FB_FSM_S);  //clear FSM
-//     SET_PERI_REG_BITS(SENS_SAR_AMP_CTRL1_REG, SENS_SAR_AMP_WAIT1, 0x1, SENS_SAR_AMP_WAIT1_S);
-//     SET_PERI_REG_BITS(SENS_SAR_AMP_CTRL1_REG, SENS_SAR_AMP_WAIT2, 0x1, SENS_SAR_AMP_WAIT2_S);
-//     SET_PERI_REG_BITS(SENS_SAR_POWER_XPD_SAR_REG, SENS_SAR_AMP_WAIT3, 0x1, SENS_SAR_AMP_WAIT3_S);
-//     while (GET_PERI_REG_BITS2(SENS_SAR_SLAVE_ADDR1_REG, 0x7, SENS_SARADC_MEAS_STATUS_S) != 0); //wait det_fsm==
-// }
-
 uint16_t IRAM_ATTR adcRead(uint8_t pin)
 {
     int8_t channel = digitalPinToAnalogChannel(pin);
@@ -171,6 +148,60 @@ uint16_t IRAM_ATTR adcRead(uint8_t pin)
     return value;
 }
 
+#elif CONFIG_IDF_TARGET_ESP32C6 // if esp32 c6 variant
+
+#include "hal/adc_ll.h"
+#include "hal/adc_oneshot_hal.h"
+
+static adc_oneshot_hal_ctx_t adc1_oneshot_hal;
+static bool adc1_oneshot_hal_initialized = false;
+
+void IRAM_ATTR __configFastADCs(){
+    if (adc1_oneshot_hal_initialized) return;
+
+    adc_oneshot_hal_cfg_t config;
+    config.unit = ADC_UNIT_1;
+    config.work_mode = ADC_HAL_SINGLE_READ_MODE;
+    config.clk_src = ADC_DIGI_CLK_SRC_DEFAULT;
+    config.clk_src_freq_hz = 0;
+
+    adc_oneshot_hal_init(&adc1_oneshot_hal, &config);
+    adc1_oneshot_hal_initialized = true;
+}
+
+uint16_t IRAM_ATTR adcRead(uint8_t pin)
+{
+    int8_t channel = digitalPinToAnalogChannel(pin);
+    if(channel < 0){
+        SIMPLEFOC_ESP32_CS_DEBUG("ERROR: Not ADC pin: "+String(pin));
+        return false; //not adc pin
+    }
+
+    if (channel >= SOC_ADC_MAX_CHANNEL_NUM) {
+        SIMPLEFOC_ESP32_CS_DEBUG("ERROR: ESP32C6 supports only ADC1 channels. Pin: "+String(pin));
+        return false;
+    }
+
+    if (!adc1_oneshot_hal_initialized) {
+        __configFastADCs();
+    }
+
+    uint16_t value = 0;
+    int raw = 0;
+
+    // Protects against core migration, on single core chips this is noop.
+    portENTER_CRITICAL(&spinlock);
+
+    adc_oneshot_hal_setup(&adc1_oneshot_hal, (adc_channel_t)channel);
+    if (adc_oneshot_hal_convert(&adc1_oneshot_hal, &raw)) {
+        value = (uint16_t)raw;
+    }
+
+    portEXIT_CRITICAL(&spinlock);
+
+    return value;
+}
+
 #else // if others just use analogRead
 
 #pragma message("SimpleFOC: Using analogRead for ADC reading, no fast ADC configuration available!")
@@ -205,7 +236,7 @@ bool IRAM_ATTR adcInit(uint8_t pin){
     analogRead(pin);
     analogSetPinAttenuation(pin, SIMPLEFOC_ADC_ATTEN);
 
-#if CONFIG_IDF_TARGET_ESP32 // if esp32 variant
+#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32C6 // if esp32 / esp32c6 variant
     __configFastADCs();
 #endif
 
