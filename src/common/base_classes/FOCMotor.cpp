@@ -937,11 +937,14 @@ int FOCMotor::absoluteZeroSearch() {
   velocity_limit = velocity_index_search;
   voltage_limit = voltage_sensor_align;
   shaft_angle = 0;
-  while(sensor->needsSearch() && shaft_angle < _2PI){
-    angleOpenloop(1.5f*_2PI);
+  // TODO: Try the dedicated method for converting mec and elec angles
+  while(sensor->needsSearch() && shaft_angle < pole_pairs*_2PI){
+    angleOpenloop(pole_pairs*1.5f*_2PI);
     // call important for some sensors not to loose count
     // not needed for the search
     sensor->update();
+    // set the voltage to the motor
+    setPhaseVoltage(voltage_limit, 0, shaft_angle);
   }
   // disable motor
   setPhaseVoltage(0, 0, 0);
