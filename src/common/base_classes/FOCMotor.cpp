@@ -937,8 +937,8 @@ int FOCMotor::absoluteZeroSearch() {
   velocity_limit = velocity_index_search;
   voltage_limit = voltage_sensor_align;
   shaft_angle = 0;
-  // TODO: Try the dedicated method for converting mec and elec angles
-  float search_rotation_target = _electricalAngle(1.5f*_2PI, pole_pairs)
+  // calculting elctrical angle equivalent for a 1.5 mechanical rotation
+  float search_rotation_target = _electricalAngle(1.5f*_2PI, pole_pairs);
   while(sensor->needsSearch() && shaft_angle < search_rotation_target){
     angleOpenloop(search_rotation_target);
     // call important for some sensors not to loose count
