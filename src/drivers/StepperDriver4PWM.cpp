@@ -70,21 +70,23 @@ void StepperDriver4PWM::setPhaseState(PhaseState sa, PhaseState sb) {
 
 
 // Set voltage to the pwm pin
-void StepperDriver4PWM::setPwm(float Ualpha, float Ubeta) {
+void StepperDriver4PWM::setPwm(float Ua_, float Ub_) {
+  Ua = Ua_;
+  Ub = Ub_;
   float duty_cycle1A(0.0f),duty_cycle1B(0.0f),duty_cycle2A(0.0f),duty_cycle2B(0.0f);
   // limit the voltage in driver
-  Ualpha = _constrain(Ualpha, -voltage_limit, voltage_limit);
-  Ubeta = _constrain(Ubeta, -voltage_limit, voltage_limit);
+  Ua = _constrain(Ua, -voltage_limit, voltage_limit);
+  Ub = _constrain(Ub, -voltage_limit, voltage_limit);
   // hardware specific writing
-  if( Ualpha > 0 )
-    duty_cycle1B = _constrain(abs(Ualpha)/voltage_power_supply,0.0f,1.0f);
+  if( Ua > 0 )
+    duty_cycle1B = _constrain(abs(Ua)/voltage_power_supply,0.0f,1.0f);
   else
-    duty_cycle1A = _constrain(abs(Ualpha)/voltage_power_supply,0.0f,1.0f);
+    duty_cycle1A = _constrain(abs(Ua)/voltage_power_supply,0.0f,1.0f);
 
-  if( Ubeta > 0 )
-    duty_cycle2B = _constrain(abs(Ubeta)/voltage_power_supply,0.0f,1.0f);
+  if( Ub > 0 )
+    duty_cycle2B = _constrain(abs(Ub)/voltage_power_supply,0.0f,1.0f);
   else
-    duty_cycle2A = _constrain(abs(Ubeta)/voltage_power_supply,0.0f,1.0f);
+    duty_cycle2A = _constrain(abs(Ub)/voltage_power_supply,0.0f,1.0f);
   // write to hardware
   _writeDutyCycle4PWM(duty_cycle1A, duty_cycle1B, duty_cycle2A, duty_cycle2B, params);
 }
