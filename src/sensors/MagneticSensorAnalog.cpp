@@ -33,7 +33,7 @@ void MagneticSensorAnalog::init(){
 float MagneticSensorAnalog::getSensorAngle(){
   // raw data from the sensor
   raw_count = getRawCount();   
-  return ( (float) (raw_count) / (float)cpr) * _2PI;
+  return ( (float) (raw_count - min_raw_count) / (float)cpr) * _2PI;
 }
 
 // function reading the raw counter of the magnetic sensor
