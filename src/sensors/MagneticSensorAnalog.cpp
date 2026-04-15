@@ -9,7 +9,7 @@ MagneticSensorAnalog::MagneticSensorAnalog(uint8_t _pinAnalog, int _min_raw_coun
 
   pinAnalog = _pinAnalog;
 
-  cpr = _max_raw_count - _min_raw_count;
+  cpr = _max_raw_count - _min_raw_count + 1;
   min_raw_count = _min_raw_count;
   max_raw_count = _max_raw_count;
 
