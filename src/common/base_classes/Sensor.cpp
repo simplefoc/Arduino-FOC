@@ -29,18 +29,9 @@ float Sensor::getVelocity() {
     }
     if (Ts < min_elapsed_time) return velocity; // don't update velocity if deltaT is too small
 
-    float current_angle = 0.0f;
-    float prev_angle = 0.0f;
-    // Avoid floating point precision loss for large full_rotations
-    // this is likely optional
-    if (full_rotations == vel_full_rotations) {
-        current_angle = angle_prev;
-        prev_angle = vel_angle_prev;
-    } else {
-        current_angle = (float) full_rotations * _2PI + angle_prev;
-        prev_angle = (float) vel_full_rotations * _2PI + vel_angle_prev;
-    }
-    const float delta_angle = current_angle - prev_angle;
+    const float delta_angle =
+        (int32_t)(full_rotations - vel_full_rotations) * _2PI
+        + (angle_prev - vel_angle_prev);
 
     // floating point equality checks are bad, so instead we check that the angle change is very small
     if (fabsf(delta_angle) > 1e-8f) {
