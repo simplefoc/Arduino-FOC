@@ -29,6 +29,8 @@ float Sensor::getVelocity() {
     }
     if (Ts < min_elapsed_time) return velocity; // don't update velocity if deltaT is too small
 
+    // Calculate change in angle. Handles `full_rotations` integer wrap-arounds,
+    // and avoids float precision loss issues by keeping numbers small.
     float delta_angle = angle_prev - vel_angle_prev;
     const int32_t delta_full_rotations = full_rotations - vel_full_rotations;
     if (delta_full_rotations) {
