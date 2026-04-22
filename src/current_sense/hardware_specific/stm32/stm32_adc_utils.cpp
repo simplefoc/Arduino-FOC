@@ -417,29 +417,24 @@ uint32_t _getADCChannel(PinName pin, ADC_TypeDef *AdcHandle )
 
 uint32_t _getADCInjectedRank(uint8_t ind){
   switch (ind) {
-  #ifdef ADC_INJECTED_RANK_1
+#ifdef ADC_INJECTED_RANK_1
     case 0:
       return ADC_INJECTED_RANK_1;
-      break;
 #endif
 #ifdef ADC_INJECTED_RANK_2
     case 1:
       return ADC_INJECTED_RANK_2;
-      break;
 #endif
 #ifdef ADC_INJECTED_RANK_3
     case 2:
       return ADC_INJECTED_RANK_3;
-      break;
 #endif
 #ifdef ADC_INJECTED_RANK_4
     case 3:
       return ADC_INJECTED_RANK_4;
-      break;
 #endif
     default:
       return 0;
-      break;
   }
 }
 

@@ -1,6 +1,6 @@
 #include "../../../hardware_api.h"
 
-#if defined(STM32G4xx) && !defined(ARDUINO_B_G431B_ESC1)
+#if defined(STM32G4xx) && !defined(ARDUINO_B_G431B_ESC1) && !defined(SIMPLEFOC_HAL_OVERRIDE)
 
 #include "../../../../common/foc_utils.h"
 #include "../../../../drivers/hardware_api.h"

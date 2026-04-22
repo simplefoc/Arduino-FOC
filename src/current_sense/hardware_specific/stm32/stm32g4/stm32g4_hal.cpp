@@ -1,6 +1,6 @@
 #include "stm32g4_hal.h"
 
-#if defined(STM32G4xx) && !defined(ARDUINO_B_G431B_ESC1)
+#if defined(STM32G4xx) && !defined(ARDUINO_B_G431B_ESC1) && !defined(SIMPLEFOC_HAL_OVERRIDE)
 
 #include "../../../../communication/SimpleFOCDebug.h"
 

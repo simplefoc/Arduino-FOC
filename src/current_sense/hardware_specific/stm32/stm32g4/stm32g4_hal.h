@@ -3,7 +3,7 @@
 
 #include "Arduino.h"
 
-#if defined(STM32G4xx) && !defined(ARDUINO_B_G431B_ESC1)
+#if defined(STM32G4xx) && !defined(ARDUINO_B_G431B_ESC1) && !defined(SIMPLEFOC_HAL_OVERRIDE)
 
 #include "stm32g4xx_hal.h"
 #include "../stm32_mcu.h"
