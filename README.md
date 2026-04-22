@@ -32,19 +32,45 @@ Therefore this is an attempt to:
    - Many many more boards developed by the community members, see [<span class="simple">Simple<span class="foc">FOC</span> Community</span>](https://community.simplefoc.com/)
 
 
-> NEXT RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.4.0
->
-> - STM32 bugfix 
+> NEW RELEASE 📢 : <span class="simple">Simple<span class="foc">FOC</span>library</span> v2.4.0
+> - STM32
+>   - Added support for ADC reads in addition to Lowside current sense [#506](https://github.com/simplefoc/Arduino-FOC/pull/506)
+>   - Added support for multiple motors low-side CS (one per ADC) with ADC current sensing [#503](https://github.com/simplefoc/Arduino-FOC/pull/503)
 >   - BG341 low-side current sense sync was lost in v2.3.5 - fixed [#482](https://github.com/simplefoc/Arduino-FOC/pull/482)
-> - ESP32 bugfix 
+> - ESP32 
+>   - Many ESP32 safety optimisations by [@uLipe](https://github.com/uLipe): [#490](https://github.com/simplefoc/Arduino-FOC/pull/490),[#491](https://github.com/simplefoc/Arduino-FOC/pull/491),[#492](https://github.com/simplefoc/Arduino-FOC/pull/492),[#493](https://github.com/simplefoc/Arduino-FOC/pull/493),[#495](https://github.com/simplefoc/Arduino-FOC/pull/495)
+>   - Better ADC-Timer alignement for more stable current sensing [See this commit](https://github.com/simplefoc/Arduino-FOC/commit/877699b4db4e6e3ecc16b16cc4337af928e746f4)
 >   - Now compiles for all v3.x arduino-esp32 versions (v2.3.5 was compatible with v3.2.x) 
 >   - `adcRead` small refactor - no more magic numbers
-> - New functionality
->    - Add current and voltage feed forward terms to motor classes by @Copper280z in https://github.com/simplefoc/Arduino-FOC/pull/454
->    - Velocity Calculation rework by @Copper280z in https://github.com/simplefoc/Arduino-FOC/pull/45
+> - Others
+>   - Teensy4 support for phase state setting [#498](https://github.com/simplefoc/Arduino-FOC/pull/498) by [@Ragiton](https://github.com/Ragiton)
+>   - Added support for Arduino Nano Matter board by [@silabs-szabog](https://github.com/silabs-szabog) : [#485](https://github.com/simplefoc/Arduino-FOC/pull/484)
+> - **Major New features**
+>    - Add current and voltage feed forward terms to motor classes by [@Copper280z](https://github.com/Copper280z) in [#454](https://github.com/simplefoc/Arduino-FOC/pull/454)
+>    - Velocity Calculation rework by [@Copper280z](https://github.com/Copper280z) in [#45](https://github.com/simplefoc/Arduino-FOC/pull/45)
+>    - Motion control - [docs](https://docs.simplefoc.com/motion_control)
+>       - Added `custom` motion control mode - see in [docs](https://docs.simplefoc.com/custom_control) and in [examples](https://github.com/simplefoc/Arduino-FOC/tree/master/examples/motion_control)
+>       - Added `angle_nocascade` control mode for position control without velocity cascade - see in [docs](https://docs.simplefoc.com/angle_loop)  - [#384](https://github.com/simplefoc/Arduino-FOC/pull/384)
+>       - **Now all the closed and open loop modes can be used with any torque control modes (voltage and current)** 
+>           - Ex. `velocity_openloop` with `foc_current` torque control
+>   - Torque control - [docs](https://docs.simplefoc.com/torque_control)
+>      - Added `estimated_current` torque control mode for model-based current estimation without current sensing - see in [docs](https://docs.simplefoc.com/estimated_current_mode) 
+>      - Now we can easily switch between voltage and estimated current control
+> - Docs updates - see [docs](https://docs.simplefoc.com/)
+>     - Write the code page updated - see [docs](https://docs.simplefoc.com/code)
+>     - Better step-by-step setup guides - see [docs](https://docs.simplefoc.com/example_from_scratch)
+>     - New motion control documentation - see [docs](https://docs.simplefoc.com/motion_control)
+>     - New torque/FOC control documentation - see [docs](https://docs.simplefoc.com/torque_control)
+>     - Theory corner updated and extended - see [docs](https://docs.simplefoc.com/theory_corner)
+>     - Library source updated and extended - see [docs](https://docs.simplefoc.com/source_code)
+>     - Practical guides updated and extended - see [docs](https://docs.simplefoc.com/practical_guides)
+>       - Motor parameter measurement guide - see [docs](https://docs.simplefoc.com/practical_guides#motor-parameters-and-characterization)
+>       - PID tuning guides - see [docs](https://docs.simplefoc.com/practical_guides#pid-tuning)
 > - Examples
->   - `align_current_sense.ino` example added to the `examples/utls/current_sense_test` allowing to verify the alignment between the driver and the current sense phases
-
+>   - `align_current_sense.ino` example added to the `examples/utils/current_sense_test` allowing to verify the alignment between the driver and the current sense phases 
+> - Changelog
+>    - See the release notes for more details: [see release](https://github.com/simplefoc/Arduino-FOC/releases)
+>    - See the milestones: [v2.3.6 (unreleased)](https://github.com/simplefoc/Arduino-FOC/milestone/14) and [v2.4.0](https://github.com/simplefoc/Arduino-FOC/milestone/13)
 
 
 ## Arduino *SimpleFOClibrary* ![GitHub release (latest by date)](https://img.shields.io/github/v/release/simplefoc/arduino-foc)
@@ -63,19 +89,19 @@ This video is a bit outdated but it demonstrates the *Simple**FOC**library* basi
    - PlatformIO
 - **Open-Source**: Full code and documentation available on github
 - **Goal**: 
-   - Support as many [sensor](position_sensors) + [motor](motors) + [driver](drivers) + [current sense](current_sense) combinations as possible
+   - Support as many [sensor](https://docs.simplefoc.com/position_sensors) + [motor](https://docs.simplefoc.com/motors) + [driver](https://docs.simplefoc.com/drivers) + [current sense](https://docs.simplefoc.com/current_sense) combinations as possible
    - Make transitioning from one hardware combination to another as seamless as possible
    - Provide up-to-date and in-depth documentation with API references and examples
 - **Easy to setup and configure**: 
    - Easy hardware configuration 
    - Each hardware component is a C++ object (easy to understand) 
-   - Easy [tuning the control loops](motion_control)
+   - Easy [tuning the control loops](https://docs.simplefoc.com/motion_control)
    - Advanced control features: velocity and current feed-forward, improved velocity calculation
-   - [*Simple**FOC**Studio*](studio) configuration GUI tool for real-time tuning and monitoring
+   - [*Simple**FOC**Studio*](https://docs.simplefoc.com/studio) configuration GUI tool for real-time tuning and monitoring
    - Built-in communication and monitoring via Serial, I2C, or custom protocols
 - **Cross-platform**:
    - Seamless code transfer from one microcontroller family to another 
-   - Supports multiple [MCU architectures](microcontrollers):
+   - Supports multiple [MCU architectures](https://docs.simplefoc.commicrocontrollers):
       - Arduino: UNO R4, UNO, MEGA, DUE, Leonardo, Nano, Nano33, MKR ....
       - STM32 (Nucleo, Bluepill, B-G431B-ESC1, H7 family, etc.)
       - ESP32 (ESP32, ESP32-S2, ESP32-S3, ESP32-C3, ESP32-C6)

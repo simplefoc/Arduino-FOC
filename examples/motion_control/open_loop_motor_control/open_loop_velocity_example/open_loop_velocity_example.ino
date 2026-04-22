@@ -68,7 +68,10 @@ void setup() {
 }
 
 void loop() {
-
+  
+  //torque control 
+  // should be called as frequently as possible
+  motor.loopFOC();
   // open loop velocity movement
   // using motor.voltage_limit and motor.velocity_limit
   // to turn the motor "backwards", just set a negative target_velocity
