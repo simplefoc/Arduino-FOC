@@ -94,14 +94,20 @@ void FOCMotor::useMonitoring(Print &print){
 
 // Measure resistance and inductance of a motor
 int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
+
+    auto old_status = motor_status;
+    motor_status = FOCMotorStatus::motor_calibrating;
+    
     if (!this->current_sense || !this->current_sense->initialized)
     {
       SIMPLEFOC_MOTOR_ERROR("Fail. CS not init.");
+      motor_status = old_status;
       return 1;
     }
 
     if (voltage <= 0.0f){
       SIMPLEFOC_MOTOR_ERROR("Fail. Volt. <= 0");
+      motor_status = old_status;
       return 2;
     }
     voltage = _constrain(voltage, 0.0f, voltage_limit);
@@ -136,6 +142,7 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
     if (fabsf(r_currents.d - zerocurrent.d) < 0.2f)
     {
       SIMPLEFOC_MOTOR_ERROR("Fail. current too low");
+      motor_status = old_status;
       return 3;
     }
     
@@ -143,6 +150,7 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
     if (resistance <= 0.0f)
     {
       SIMPLEFOC_MOTOR_ERROR("Fail. Est. R<= 0");
+      motor_status = old_status;
       return 4;
     }
     
@@ -312,6 +320,7 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
     phase_resistance = 2.0f * resistance;
     axis_inductance = {Ld, Lq};
     phase_inductance = (Ld + Lq) / 2.0f; // FOR BACKWARDS COMPATIBILITY
+    motor_status = old_status;
     return 0;
     
 }
@@ -536,6 +545,9 @@ void FOCMotor::updateMotionControlType(MotionControlType new_motion_controller) 
 
 
 int FOCMotor::tuneCurrentController(float bandwidth) {
+  auto old_status = motor_status;
+  motor_status = FOCMotorStatus::motor_calibrating;
+
   if (bandwidth <= 0.0f) {
     // check bandwidth is positive
     SIMPLEFOC_MOTOR_ERROR("Fail. BW <= 0");
@@ -559,7 +571,7 @@ int FOCMotor::tuneCurrentController(float bandwidth) {
 
   PID_current_q.P = axis_inductance.q * (_2PI * bandwidth);
   PID_current_q.I = phase_resistance * (_2PI * bandwidth);
-  PID_current_d.P = axis_inductance.d * (_2PI * bandwidth);
+  PID_current_d.P = _isset(axis_inductance.d) ? axis_inductance.d * (_2PI * bandwidth) : phase_inductance * (_2PI * bandwidth);
   PID_current_d.I = phase_resistance * (_2PI * bandwidth);
   LPF_current_d.Tf = 1.0f / (_2PI * bandwidth * 5.0f); // filter cutoff at 5x bandwidth
   LPF_current_q.Tf = 1.0f / (_2PI * bandwidth * 5.0f); // filter cutoff at 5x bandwidth
@@ -570,6 +582,7 @@ int FOCMotor::tuneCurrentController(float bandwidth) {
   SIMPLEFOC_MOTOR_DEBUG("Pd: ", PID_current_d.P);
   SIMPLEFOC_MOTOR_DEBUG("Id: ", PID_current_d.I);
 
+  motor_status = old_status;
   return 0;
 }
 

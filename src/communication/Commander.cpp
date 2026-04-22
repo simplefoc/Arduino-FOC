@@ -275,6 +275,11 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
           if(!GET) motor->zero_electric_angle = value;
           println(motor->zero_electric_angle);
           break;
+        case SCMD_SENS_VEL_DT:
+          printVerbose(F("vel dt: "));
+          if(!GET) motor->sensor->min_elapsed_time = value;
+          println(motor->sensor->min_elapsed_time);
+          break;
         default:
           printError();
           break;
@@ -470,7 +475,7 @@ void Commander::motion(FOCMotor* motor, char* user_cmd, char* separator){
       switch(sub_cmd){
         case SCMD_TIME:
           printVerbose(F(" time: "));
-          println((int)motor->move_time_us);
+          println((int)motor->loopfoc_time_us);
           break;
         default:
           if(!GET && (int8_t)value >= 0 && (int8_t)value < 4) // if set command
