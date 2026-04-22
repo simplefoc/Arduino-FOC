@@ -662,9 +662,9 @@ void FOCMotor::loopFOC() {
       voltage.q = PID_current_q(current_sp - current.q);
       voltage.d = PID_current_d(feed_forward_current.d - current.d);
       // d voltage - lag compensation
-      if(_isset(axis_inductance.q)) voltage.d = _constrain( voltage.d - current_sp*shaft_velocity*pole_pairs*axis_inductance.q, -voltage_limit, voltage_limit);
+      //if(_isset(axis_inductance.q)) voltage.d = _constrain( voltage.d - current_sp*shaft_velocity*pole_pairs*axis_inductance.q, -voltage_limit, voltage_limit);
       // q voltage - cross coupling compensation - TODO verify
-      if(_isset(axis_inductance.d)) voltage.q = _constrain( voltage.q + current.d*shaft_velocity*pole_pairs*axis_inductance.d, -voltage_limit, voltage_limit);
+      //if(_isset(axis_inductance.d)) voltage.q = _constrain( voltage.q + current.d*shaft_velocity*pole_pairs*axis_inductance.d, -voltage_limit, voltage_limit);
       // add feed forward
       voltage.q += feed_forward_voltage.q;
       voltage.d += feed_forward_voltage.d;
