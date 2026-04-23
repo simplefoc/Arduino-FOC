@@ -6,12 +6,22 @@
 
 void Sensor::update() {
     float val = getSensorAngle();
-    if (val<0) // sensor angles are strictly non-negative. Negative values are used to signal errors.
+
+    // sensor angles are strictly non-negative. Negative values are used to signal errors.
+    if (val < 0) {
         return; // TODO signal error, e.g. via a flag and counter
+    }
+
     angle_prev_ts = _micros();
     float d_angle = val - angle_prev;
-    // if overflow happened track it as full rotation
-    if(abs(d_angle) > (0.8f*_2PI) ) full_rotations += ( d_angle > 0 ) ? -1 : 1; 
+
+    // if wrap-around happened. track full rotation
+    if (d_angle > (0.5f *_2PI)) {
+        full_rotations--;
+    } else if (d_angle < -(0.5f *_2PI)) {
+        full_rotations++;
+    }
+
     angle_prev = val;
 }
 
