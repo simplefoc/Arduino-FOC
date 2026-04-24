@@ -4,11 +4,24 @@
 #include "Arduino.h"
 
 // sign function
-#define _sign(a) ( ( (a) < 0 )  ?  -1   : ( (a) > 0 ) )
+template<typename T>
+inline int _sign(T val) {
+  return (val < 0) ? -1 : (val > 0);
+}
+
 #ifndef _round
-#define _round(x) ((x)>=0?(long)((x)+0.5f):(long)((x)-0.5f))
+template<typename T>
+inline long _round(T x) {
+  return (x >= 0) ? (long)(x + 0.5f) : (long)(x - 0.5f);
+}
 #endif
-#define _constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+
+template<typename T, typename L, typename H>
+inline T _constrain(T amt, L low, H high) {
+  if (amt < low) return low;
+  if (amt > high) return high;
+  return amt;
+}
 #define _sqrt(a) (_sqrtApprox(a))
 #define _isset(a) ( (a) != (NOT_SET) )
 #define _UNUSED(v) (void) (v)
