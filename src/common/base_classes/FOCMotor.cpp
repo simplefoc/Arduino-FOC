@@ -1,5 +1,6 @@
 #include "FOCMotor.h"
 #include "../../communication/SimpleFOCDebug.h"
+#include "common/foc_utils.h"
 
 /**
  * Default constructor - setting all variabels to default values
@@ -431,6 +432,9 @@ float FOCMotor::angleOpenloop(float target_angle){
     shaft_angle = target_angle;
     shaft_velocity = 0;
   }
+  // Normalize the shaft angle after each iteration to prevent it growing indefinitely
+  // and eventually losing precision.
+  shaft_angle = _normalizeAngle(shaft_angle);
 
   // save timestamp for next call
   open_loop_timestamp = now_us;
@@ -864,7 +868,7 @@ int FOCMotor::alignSensor() {
     // move one electrical revolution forward
     for (int i = 0; i <=500; i++ ) {
       float angle = _3PI_2 + _2PI * i / 500.0f;
-      setPhaseVoltage(voltage_align, 0,  angle);
+      setPhaseVoltage(voltage_align, 0, _normalizeAngle(angle));
 	    sensor->update();
       _delay(2);
     }
@@ -874,7 +878,7 @@ int FOCMotor::alignSensor() {
     // move one electrical revolution backwards
     for (int i = 500; i >=0; i-- ) {
       float angle = _3PI_2 + _2PI * i / 500.0f ;
-      setPhaseVoltage(voltage_align, 0,  angle);
+      setPhaseVoltage(voltage_align, 0, _normalizeAngle(angle));
 	    sensor->update();
       _delay(2);
     }
@@ -914,7 +918,7 @@ int FOCMotor::alignSensor() {
     sensor->update();
     // get the current zero electric angle
     zero_electric_angle = 0;
-    zero_electric_angle = electricalAngle();
+      zero_electric_angle = _normalizeAngle(electricalAngle());
     _delay(20);
     SIMPLEFOC_MOTOR_DEBUG("Zero elec. angle: ", zero_electric_angle);
     // stop everything
