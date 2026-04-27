@@ -452,7 +452,7 @@ void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int
     shared_timer = true;
   }
 
-  uint8_t no_operators = ceil(no_pins / 2.0);
+  uint8_t no_operators = ceil(no_pins / 2.0f);
   SIMPLEFOC_ESP32_DRV_DEBUG("Configuring " + String(no_operators) + " operators.");
   mcpwm_operator_config_t operator_config = { .group_id = mcpwm_group };
   operator_config.intr_priority = 0;
@@ -510,7 +510,7 @@ void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int
 
 // function setting the duty cycle to the MCPWM pin
 void IRAM_ATTR _setDutyCycle(mcpwm_cmpr_handle_t cmpr, uint32_t mcpwm_period, float duty_cycle){
-  float duty = _constrain(duty_cycle, 0.0, 1.0);
+  float duty = _constrain(duty_cycle, 0.0f, 1.0f);
   mcpwm_comparator_set_compare_value(cmpr, (uint32_t)(mcpwm_period*duty));
 }
 

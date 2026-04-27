@@ -122,7 +122,7 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
     // 300 ms of ramping
     current_electric_angle = electricalAngle();
     for(int i=0; i < 100; i++){
-        setPhaseVoltage(0, voltage/100.0*((float)i), current_electric_angle);
+        setPhaseVoltage(0, voltage/100.0f*((float)i), current_electric_angle);
         _delay(3);
     }
     _delay(10);
@@ -205,7 +205,7 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
             continue;
           }
           
-          inductanced += fabsf(- (resistance * dt) / log((voltage - resistance * (l_currents.d - zerocurrent.d)) / voltage))/correction_factor;
+          inductanced += fabsf(- (resistance * dt) / logf((voltage - resistance * (l_currents.d - zerocurrent.d)) / voltage))/correction_factor;
           
           qcurrent+= l_currents.q - zerocurrent.q; // average the measured currents
           dcurrent+= l_currents.d - zerocurrent.d;
@@ -217,7 +217,7 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
 
 
         inductanced /= cycles;
-        Ltemp = i < 2 ? inductanced : Ltemp * 0.6 + inductanced * 0.4;
+        Ltemp = i < 2 ? inductanced : Ltemp * 0.6f + inductanced * 0.4f;
         
         float timeconstant = fabsf(Ltemp / resistance); // Timeconstant of an RL circuit (L/R) 
         // SIMPLEFOC_MOTOR_DEBUG("Estimated time constant in us: ", 1000000.0f * timeconstant);
@@ -254,7 +254,7 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
         // Average the d-axis angle further for calculating the electrical zero later
         if (axis)
         {
-          d_electrical_angle = i < 2 ? current_electric_angle : d_electrical_angle * 0.9 + current_electric_angle * 0.1;
+          d_electrical_angle = i < 2 ? current_electric_angle : d_electrical_angle * 0.9f + current_electric_angle * 0.1f;
         }
         
       }
@@ -883,7 +883,7 @@ int FOCMotor::alignSensor() {
     // setPhaseVoltage(0, 0, 0);
     _delay(200);
     // determine the direction the sensor moved
-    float moved =  fabs(mid_angle - end_angle);
+    float moved =  fabsf(mid_angle - end_angle);
     if (moved<MIN_ANGLE_DETECT_MOVEMENT) { // minimum angle to detect movement
       SIMPLEFOC_MOTOR_ERROR("Failed to notice movement");
       return 0; // failed calibration
@@ -895,7 +895,7 @@ int FOCMotor::alignSensor() {
       sensor_direction = Direction::CW;
     }
     // check pole pair number
-    pp_check_result = !(fabs(moved*pole_pairs - _2PI) > 0.5f);  // 0.5f is arbitrary number it can be lower or higher!
+    pp_check_result = !(fabsf(moved*pole_pairs - _2PI) > 0.5f);  // 0.5f is arbitrary number it can be lower or higher!
     if( pp_check_result==false ) {
       SIMPLEFOC_MOTOR_WARN("PP check: fail - est. pp: ", _2PI/moved);
     } else {

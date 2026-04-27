@@ -245,7 +245,7 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 			tcc->WAVE.reg |= TCC_WAVE_POL(0xF)|TCC_WAVEB_WAVEGENB_DSBOTH;   // Set wave form configuration
 			while ( tcc->SYNCBUSY.bit.WAVE == 1 ); // wait for sync
 
-			if (hw6pwm>0.0) {
+			if (hw6pwm>0.0f) {
 				tcc->WEXCTRL.vec.DTIEN |= (1<<tccConfig.tcc.chan);
 				tcc->WEXCTRL.bit.DTLS = hw6pwm*(pwm_resolution-1);
 				tcc->WEXCTRL.bit.DTHS = hw6pwm*(pwm_resolution-1);
@@ -292,7 +292,7 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 		tcc->DRVCTRL.vec.INVEN = (tcc->DRVCTRL.vec.INVEN&invenMask)|invenVal;
 		syncTCC(tcc); // wait for sync
 
-		if (hw6pwm>0.0) {
+		if (hw6pwm>0.0f) {
 			tcc->WEXCTRL.vec.DTIEN |= (1<<tccConfig.tcc.chan);
 			tcc->WEXCTRL.bit.DTLS = hw6pwm*(pwm_resolution-1);
 			tcc->WEXCTRL.bit.DTHS = hw6pwm*(pwm_resolution-1);
