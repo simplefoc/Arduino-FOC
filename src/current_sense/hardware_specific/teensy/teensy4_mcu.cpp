@@ -143,7 +143,7 @@ void adc_etc_init(int pin1, int pin2, int pin3=NOT_SET) {
 // function reading an ADC value and returning the read voltage
 float _readADCVoltageLowSide(const int pinA, const void* cs_params){
 
-    if(!_isset(pinA)) return 0.0; // if the pin is not set return 0
+    if(!_isset(pinA)) return 0.0f; // if the pin is not set return 0
     GenericCurrentSenseParams* params = (GenericCurrentSenseParams*) cs_params;
     float adc_voltage_conv = params->adc_voltage_conv;
     if (pinA == params->pins[0]) {
@@ -153,7 +153,7 @@ float _readADCVoltageLowSide(const int pinA, const void* cs_params){
     }else if (pinA == params->pins[2]) {
         return val2 * adc_voltage_conv;
     }
-    return 0.0;
+    return 0.0f;
 }
 
 // Configure low side for generic mcu

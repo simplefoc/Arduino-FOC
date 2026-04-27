@@ -17,7 +17,7 @@ void _pinHighFrequency(const int pin, const long frequency){
   bool high_fq = false;
   // set 32kHz frequency if requested freq is higher than the middle of the range (14kHz)
   // else set the 4kHz
-  if(frequency >= 0.5*(_PWM_FREQUENCY_MAX-_PWM_FREQUENCY_MIN))  high_fq=true; 
+  if(frequency >= 0.5f*(_PWM_FREQUENCY_MAX-_PWM_FREQUENCY_MIN))  high_fq=true; 
   //  High PWM frequency
   //  https://sites.google.com/site/qeewiki/books/avr-guide/timers-on-the-ATmega2560
   //  https://forum.arduino.cc/index.php?topic=72092.0
@@ -170,7 +170,7 @@ int _configureComplementaryPair(const int pinH,const int pinL, long frequency) {
   bool high_fq = false;
   // set 32kHz frequency if requested freq is higher than the middle of the range (14kHz)
   // else set the 4kHz
-  if(frequency >= 0.5*(_PWM_FREQUENCY_MAX-_PWM_FREQUENCY_MIN))  high_fq=true; 
+  if(frequency >= 0.5f*(_PWM_FREQUENCY_MAX-_PWM_FREQUENCY_MIN))  high_fq=true; 
 
   // configure pin pairs
   if( (pinH == 4 && pinL == 13 ) || (pinH == 13 && pinL == 4 ) ){
@@ -274,9 +274,9 @@ void _setPwmPair(int pinH, int pinL, float val, int dead_time, PhaseState ps)
 //  - hardware specific
 // supports Arduino/ATmega328
 void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params){
-  _setPwmPair(((GenericDriverParams*)params)->pins[0], ((GenericDriverParams*)params)->pins[1], dc_a*255.0, ((GenericDriverParams*)params)->dead_zone*255.0, phase_state[0]);
-  _setPwmPair(((GenericDriverParams*)params)->pins[2], ((GenericDriverParams*)params)->pins[3], dc_b*255.0, ((GenericDriverParams*)params)->dead_zone*255.0, phase_state[1]);
-  _setPwmPair(((GenericDriverParams*)params)->pins[4], ((GenericDriverParams*)params)->pins[5], dc_c*255.0, ((GenericDriverParams*)params)->dead_zone*255.0, phase_state[2]);
+  _setPwmPair(((GenericDriverParams*)params)->pins[0], ((GenericDriverParams*)params)->pins[1], dc_a*255.0f, ((GenericDriverParams*)params)->dead_zone*255.0f, phase_state[0]);
+  _setPwmPair(((GenericDriverParams*)params)->pins[2], ((GenericDriverParams*)params)->pins[3], dc_b*255.0f, ((GenericDriverParams*)params)->dead_zone*255.0f, phase_state[1]);
+  _setPwmPair(((GenericDriverParams*)params)->pins[4], ((GenericDriverParams*)params)->pins[5], dc_c*255.0f, ((GenericDriverParams*)params)->dead_zone*255.0f, phase_state[2]);
 }
 
 #endif

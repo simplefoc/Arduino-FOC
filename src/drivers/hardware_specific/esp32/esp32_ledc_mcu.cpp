@@ -303,7 +303,7 @@ void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const in
 
 
 void IRAM_ATTR _writeDutyCycle(float dc, void* params, int index){
-  ledc_set_duty_with_hpoint(((ESP32LEDCDriverParams*)params)->groups[index],((ESP32LEDCDriverParams*)params)->channels[index], _PWM_RES*dc, _PWM_RES/2.0*(1.0-dc));
+  ledc_set_duty_with_hpoint(((ESP32LEDCDriverParams*)params)->groups[index],((ESP32LEDCDriverParams*)params)->channels[index], _PWM_RES*dc, _PWM_RES/2.0f*(1.0f-dc));
   ledc_update_duty(((ESP32LEDCDriverParams*)params)->groups[index],((ESP32LEDCDriverParams*)params)->channels[index]);
 }
 
@@ -390,8 +390,8 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 }
 
 void IRAM_ATTR _setPwmPairDutyCycle( void* params, int ind_h, int ind_l, float val, float dead_time, PhaseState ps){
-  float pwm_h = _constrain(val - (dead_time * 0.5), 0, 1.0);
-  float pwm_l = _constrain(val + (dead_time * 0.5), 0, 1.0);
+  float pwm_h = _constrain(val - (dead_time * 0.5f), 0, 1.0f);
+  float pwm_l = _constrain(val + (dead_time * 0.5f), 0, 1.0f);
 
   // determine the phase state and set the pwm accordingly
   // deactivate phases if needed
