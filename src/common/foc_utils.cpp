@@ -75,13 +75,14 @@ __attribute__((weak)) float _atan2(float y, float x) {
 
 // normalizing radian angle to [0,2PI]
 __attribute__((weak)) float _normalizeAngle(float angle){
-  float a = fmod(angle, _2PI);
-  return a >= 0 ? a : (a + _2PI);
+  constexpr float INV_2PI = 1.f / _2PI;
+  float rotations = floorf(angle * INV_2PI);
+  return angle - (rotations * _2PI);
 }
 
 // Electrical angle calculation
 float _electricalAngle(float shaft_angle, int pole_pairs) {
-  return (shaft_angle * pole_pairs);
+  return _normalizeAngle(shaft_angle * pole_pairs);
 }
 
 // square root approximation function using
