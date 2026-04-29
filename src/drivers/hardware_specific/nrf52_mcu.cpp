@@ -13,7 +13,7 @@
 #define PWM_RESOLUTION (PWM_CLK/PWM_FREQ)
 #define PWM_MAX_FREQ (62500)
 #define DEAD_ZONE (250) // in ns
-#define DEAD_TIME (DEAD_ZONE  / (PWM_RESOLUTION * 0.25 * 62.5)) // 62.5ns resolution of PWM
+#define DEAD_TIME (DEAD_ZONE  / (PWM_RESOLUTION * 0.25f * 62.5f)) // 62.5ns resolution of PWM
 
 #ifdef NRF_PWM3
 #define PWM_COUNT 4

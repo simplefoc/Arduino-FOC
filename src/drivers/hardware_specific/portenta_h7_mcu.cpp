@@ -118,7 +118,7 @@ int _pwm_init(pwmout_t *obj, uint32_t pin, long frequency){
 #endif
     }
 
-    long period_us = 500000.0/((float)frequency);
+    long period_us = 500000.0f/((float)frequency);
     /* By default use, 1us as SW pre-scaler */
     obj->prescaler = 1;
     // TIMxCLK = PCLKx when the APB prescaler = 1 else TIMxCLK = 2 * PCLKx
@@ -212,13 +212,13 @@ void _pwm_write(pwmout_t *obj, float value){
 
   TimHandle.Instance = (TIM_TypeDef *)(obj->pwm);
   
-  if (value < (float)0.0) {
-      value = 0.0;
-  } else if (value > (float)1.0) {
-      value = 1.0;
+  if (value < (float)0.0f) {
+      value = 0.0f;
+  } else if (value > (float)1.0f) {
+      value = 1.0f;
   }
 
-  obj->pulse = (uint32_t)((float)obj->period * value + 0.5);
+  obj->pulse = (uint32_t)((float)obj->period * value + 0.5f);
 
   switch (obj->channel) {
       case 1:

@@ -26,7 +26,7 @@ __attribute__((weak))  void* _configureADCInline(const void* driver_params, cons
 // function reading an ADC value and returning the read voltage
 __attribute__((weak))  float _readADCVoltageLowSide(const int pinA, const void* cs_params){
   SIMPLEFOC_DEBUG("ERR: Low-side cs not supported!");
-  return 0.0;
+  return 0.0f;
 }
 
 // Configure low side for generic mcu

@@ -617,13 +617,13 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
 	// configure the TCC(s)
 	configureTCC(pinAh, pwm_frequency, false, (pinAh.tcc.chaninfo==pinAl.tcc.chaninfo)?dead_zone:-1);
 	if ((pinAh.tcc.chaninfo!=pinAl.tcc.chaninfo))
-		configureTCC(pinAl, pwm_frequency, true, -1.0);
+		configureTCC(pinAl, pwm_frequency, true, -1.0f);
 	configureTCC(pinBh, pwm_frequency, false, (pinBh.tcc.chaninfo==pinBl.tcc.chaninfo)?dead_zone:-1);
 	if ((pinBh.tcc.chaninfo!=pinBl.tcc.chaninfo))
-		configureTCC(pinBl, pwm_frequency, true, -1.0);
+		configureTCC(pinBl, pwm_frequency, true, -1.0f);
 	configureTCC(pinCh, pwm_frequency, false, (pinCh.tcc.chaninfo==pinCl.tcc.chaninfo)?dead_zone:-1);
 	if ((pinCh.tcc.chaninfo!=pinCl.tcc.chaninfo))
-		configureTCC(pinCl, pwm_frequency, true, -1.0);
+		configureTCC(pinCl, pwm_frequency, true, -1.0f);
 	getTccPinConfiguration(pinA_h)->pwm_res = pinAh.pwm_res;
 	getTccPinConfiguration(pinA_l)->pwm_res = pinAh.pwm_res; // use the high phase resolution, in case we didn't set it
 	getTccPinConfiguration(pinB_h)->pwm_res = pinBh.pwm_res;
@@ -742,7 +742,7 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
 		// low-side on a different pin of same TCC - do dead-time in software...
 		float ls = dc_a+(p->dead_zone * (pwm_res-1)); // TODO resolution!!!
-		if (ls>1.0) ls = 1.0f; // no off-time is better than too-short dead-time
+		if (ls>1.0f) ls = 1.0f; // no off-time is better than too-short dead-time
 		writeSAMDDutyCycle(tcc1, dc_a);
 		writeSAMDDutyCycle(tcc2, ls);
 	}
@@ -753,7 +753,7 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_
 	tcc2 = p->tccPinConfigurations[3];
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
 		float ls = dc_b+(p->dead_zone * (pwm_res-1));
-		if (ls>1.0) ls = 1.0f; // no off-time is better than too-short dead-time
+		if (ls>1.0f) ls = 1.0f; // no off-time is better than too-short dead-time
 		writeSAMDDutyCycle(tcc1, dc_b);
 		writeSAMDDutyCycle(tcc2, ls);
 	}
@@ -764,7 +764,7 @@ void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_
 	tcc2 = p->tccPinConfigurations[5];
 	if (tcc1->tcc.chaninfo!=tcc2->tcc.chaninfo) {
 		float ls = dc_c+(p->dead_zone * (pwm_res-1));
-		if (ls>1.0) ls = 1.0f; // no off-time is better than too-short dead-time
+		if (ls>1.0f) ls = 1.0f; // no off-time is better than too-short dead-time
 		writeSAMDDutyCycle(tcc1, dc_c);
 		writeSAMDDutyCycle(tcc2, ls);
 	}

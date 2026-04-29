@@ -202,12 +202,12 @@ int CurrentSense::alignBLDCDriver(float voltage, BLDCDriver* bldc_driver, bool m
     bool phases_inverted = 0;
     
     float zero = 0;
-    if(modulation_centered) zero = driver->voltage_limit/2.0;
+    if(modulation_centered) zero = driver->voltage_limit/2.0f;
 
     // set phase A active and phases B and C down
     // 300 ms of ramping
     for(int i=0; i < 100; i++){
-        bldc_driver->setPwm(voltage/100.0*((float)i)+zero , zero, zero);
+        bldc_driver->setPwm(voltage/100.0f*((float)i)+zero , zero, zero);
         _delay(3);
     }
     _delay(500);
@@ -318,7 +318,7 @@ int CurrentSense::alignBLDCDriver(float voltage, BLDCDriver* bldc_driver, bool m
     // set phase B active and phases A and C down
     // 300 ms of ramping
     for(int i=0; i < 100; i++){
-        bldc_driver->setPwm(zero, voltage/100.0*((float)i)+zero, zero);
+        bldc_driver->setPwm(zero, voltage/100.0f*((float)i)+zero, zero);
         _delay(3);
     }
     _delay(500);
@@ -430,7 +430,7 @@ int CurrentSense::alignStepperDriver(float voltage, StepperDriver* stepper_drive
     // set phase A active and phases B down
     // ramp 300ms
     for(int i=0; i < 100; i++){
-        stepper_driver->setPwm(voltage/100.0*((float)i), 0);
+        stepper_driver->setPwm(voltage/100.0f*((float)i), 0);
         _delay(3);
     }
     _delay(500);
@@ -465,7 +465,7 @@ int CurrentSense::alignStepperDriver(float voltage, StepperDriver* stepper_drive
     // set phase B active and phases A down
     // ramp 300ms
     for(int i=0; i < 100; i++){
-        stepper_driver->setPwm(0, voltage/100.0*((float)i));
+        stepper_driver->setPwm(0, voltage/100.0f*((float)i));
         _delay(3);
     }
     _delay(500);
@@ -511,7 +511,7 @@ int CurrentSense::alignHybridDriver(float voltage, BLDCDriver* bldc_driver, bool
     // set phase A active and phases B active, and C down
     // ramp 300ms
     for(int i=0; i < 100; i++){
-        bldc_driver->setPwm(voltage/100.0*((float)i), voltage/100.0*((float)i), 0);
+        bldc_driver->setPwm(voltage/100.0f*((float)i), voltage/100.0f*((float)i), 0);
         _delay(3);
     }
     _delay(500);
@@ -601,7 +601,7 @@ int CurrentSense::alignHybridDriver(float voltage, BLDCDriver* bldc_driver, bool
     // set phase A active and phases B down
     // ramp 300ms
     for(int i=0; i < 100; i++){
-        bldc_driver->setPwm(voltage/100.0*((float)i), 0, 0);
+        bldc_driver->setPwm(voltage/100.0f*((float)i), 0, 0);
         _delay(3);
     }
     _delay(500);
@@ -682,7 +682,7 @@ int CurrentSense::alignHybridDriver(float voltage, BLDCDriver* bldc_driver, bool
     // set phase B active and phases A down
     // ramp 300ms
     for(int i=0; i < 100; i++){
-        bldc_driver->setPwm(0, voltage/100.0*((float)i), 0);
+        bldc_driver->setPwm(0, voltage/100.0f*((float)i), 0);
         _delay(3);
     }
     _delay(500);
