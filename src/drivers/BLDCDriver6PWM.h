@@ -26,11 +26,11 @@ class BLDCDriver6PWM: public BLDCDriver
     BLDCDriver6PWM(int phA_h,int phA_l,int phB_h,int phB_l,int phC_h,int phC_l, int en = NOT_SET);
     
     /**  Motor hardware init function */
-  	int init() override;
+  	virtual int init() override;
     /** Motor disable function */
-  	void disable() override;
+  	virtual void disable() override;
     /** Motor enable function */
-    void enable() override;
+    virtual void enable() override;
 
     // hardware variables
   	int pwmA_h,pwmA_l; //!< phase A pwm pin number
@@ -50,7 +50,7 @@ class BLDCDriver6PWM: public BLDCDriver
      * @param Ub - phase B voltage
      * @param Uc - phase C voltage
     */
-    void setPwm(float Ua, float Ub, float Uc) override;
+    virtual void setPwm(float Ua, float Ub, float Uc) override;
 
     /** 
      * Set phase voltages to the harware 
