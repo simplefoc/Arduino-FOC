@@ -1,5 +1,10 @@
 # SimpleFOClibrary — 简单磁场定向控制 (FOC) 库
 
+> ⚠️ 这是社区翻译，以 [英文版](README.md) 为准。
+> This is a community translation. The [English version](README.md) is authoritative.
+
+---
+
 ### 基于 Arduino IDE 和 PlatformIO 的跨平台 FOC 实现
 ### 适用于 BLDC 无刷电机和步进电机
 
