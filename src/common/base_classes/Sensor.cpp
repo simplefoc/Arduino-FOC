@@ -44,6 +44,8 @@ float Sensor::getVelocity() {
         vel_angle_prev = angle_prev;
         vel_full_rotations = full_rotations;
         vel_angle_prev_ts = angle_prev_ts;
+    }else{
+        velocity = 0;
     }
     
     return velocity;
