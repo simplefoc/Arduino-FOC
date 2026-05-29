@@ -714,7 +714,8 @@ void FOCMotor::move(float new_target) {
   updateMotionControlTime();
 
   // update the additional sensor values
-  if (position_loop_sensor) position_loop_sensor->update();
+  // if the position loop sensor is different from the main sensor
+  if (position_loop_sensor != sensor) position_loop_sensor->update();
 
   // read value even if motor is disabled to keep the monitoring updated
   // except for the open loop modes where the values are updated within angle/velocityOpenLoop functions
@@ -813,10 +814,7 @@ int  FOCMotor::initFOC() {
     exit_flag *= alignSensor();
     // added the shaft_angle update
     sensor->update();
-    //if(position_loop_sensor_direction == Direction::UNKNOWN) position_loop_sensor_direction = sensor_direction;
-    SIMPLEFOC_MOTOR_DEBUG("Sensor aligned.");
     position_loop_sensor->update();
-    SIMPLEFOC_MOTOR_DEBUG("Sensor aligned1.");
     shaft_angle = shaftAngle();
   } else {
     SIMPLEFOC_MOTOR_DEBUG("No sensor.");
@@ -890,8 +888,9 @@ int FOCMotor::alignSensor() {
   // TODO figure out why this works
   float voltage_align = voltage_sensor_align;
 
-  // if unknown natural direction
-  if(sensor_direction == Direction::UNKNOWN){
+  // if unknown natural direction for FOC sensor or position loop sensor, do the direction search
+  if(sensor_direction == Direction::UNKNOWN || 
+    (position_loop_sensor != sensor && position_loop_sensor_direction == Direction::UNKNOWN) ) {
 
     // find natural direction
     // move one electrical revolution forward
@@ -899,20 +898,30 @@ int FOCMotor::alignSensor() {
       float angle = _3PI_2 + _2PI * i / 500.0f;
       setPhaseVoltage(voltage_align, 0,  angle);
 	    sensor->update();
+      if(position_loop_sensor != sensor) position_loop_sensor->update();
       _delay(2);
     }
-    // take and angle in the middle
+    // take and angle in the middle for FOC
     sensor->update();
     float mid_angle = sensor->getAngle();
+    // take the same position for additional position loop sensor if it is different from the main sensor
+    if(position_loop_sensor != sensor) position_loop_sensor->update();
+    float mid_angle_position_loop = position_loop_sensor->getAngle();
+
     // move one electrical revolution backwards
     for (int i = 500; i >=0; i-- ) {
       float angle = _3PI_2 + _2PI * i / 500.0f ;
       setPhaseVoltage(voltage_align, 0,  angle);
 	    sensor->update();
+      if(position_loop_sensor != sensor) position_loop_sensor->update();
       _delay(2);
     }
+    // for FOC
     sensor->update();
     float end_angle = sensor->getAngle();
+    // take the same position for additional position loop sensor if it is different from the main sensor
+    if(position_loop_sensor != sensor) position_loop_sensor->update();
+    float end_angle_position_loop = position_loop_sensor->getAngle();
     // setPhaseVoltage(0, 0, 0);
     _delay(200);
     // determine the direction the sensor moved
@@ -926,6 +935,20 @@ int FOCMotor::alignSensor() {
     } else{
       SIMPLEFOC_MOTOR_DEBUG("sensor dir: CW");
       sensor_direction = Direction::CW;
+    }
+    // additional position loop sensor if available
+    // and needs direction check
+    if (position_loop_sensor != sensor && position_loop_sensor_direction == Direction::UNKNOWN) {
+      // check if the additional position loop sensor moved in the same direction
+      if (fabsf(mid_angle_position_loop - end_angle_position_loop) < 1e-5) { // minimum angle to detect movement
+        SIMPLEFOC_MOTOR_WARN("Failed to notice movement in position loop sensor");
+      } else if (mid_angle_position_loop < end_angle_position_loop) {
+        SIMPLEFOC_MOTOR_DEBUG("pos sensor dir: CCW");
+        position_loop_sensor_direction = Direction::CCW;
+      } else{
+        SIMPLEFOC_MOTOR_DEBUG("pos sensor dir: CW");
+        position_loop_sensor_direction = Direction::CW;
+      }
     }
     // check pole pair number
     pp_check_result = !(fabsf(moved*pole_pairs - _2PI) > 0.5f);  // 0.5f is arbitrary number it can be lower or higher!

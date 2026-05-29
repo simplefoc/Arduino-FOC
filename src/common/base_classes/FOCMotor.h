@@ -172,7 +172,7 @@ class FOCMotor
      * 
      * @param sensor Sensor class  wrapper for the FOC algorithm to read the motor angle and velocity
      */
-    void linkPositionLoopSensor(Sensor* sensor, Direction direction = Direction::CW);
+    void linkPositionLoopSensor(Sensor* sensor, Direction direction = Direction::UNKNOWN);
 
     /**
      * Function linking a motor and current sensing 
