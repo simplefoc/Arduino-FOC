@@ -220,169 +220,10 @@ ADC_TypeDef* _findBestADCForInjectedPins(int numPins, int pins[], ADC_HandleType
 uint32_t _getADCChannelFromPinMap(PinName pin)
 {
   uint32_t function = pinmap_function(pin, PinMap_ADC);
-  uint32_t channel = 0;
-  switch (STM_PIN_CHANNEL(function)) {
-#ifdef ADC_CHANNEL_0
-    case 0:
-      channel = ADC_CHANNEL_0;
-      break;
-#endif
-#ifdef ADC_CHANNEL_1
-    case 1:
-      channel = ADC_CHANNEL_1;
-      break;
-#endif
-#ifdef ADC_CHANNEL_2
-    case 2:
-      channel = ADC_CHANNEL_2;
-      break;
-#endif
-#ifdef ADC_CHANNEL_3
-    case 3:
-      channel = ADC_CHANNEL_3;
-      break;
-#endif
-#ifdef ADC_CHANNEL_4
-    case 4:
-      channel = ADC_CHANNEL_4;
-      break;
-#endif
-#ifdef ADC_CHANNEL_5
-    case 5:
-      channel = ADC_CHANNEL_5;
-      break;
-#endif
-#ifdef ADC_CHANNEL_6
-    case 6:
-      channel = ADC_CHANNEL_6;
-      break;
-#endif
-#ifdef ADC_CHANNEL_7
-    case 7:
-      channel = ADC_CHANNEL_7;
-      break;
-#endif
-#ifdef ADC_CHANNEL_8
-    case 8:
-      channel = ADC_CHANNEL_8;
-      break;
-#endif
-#ifdef ADC_CHANNEL_9
-    case 9:
-      channel = ADC_CHANNEL_9;
-      break;
-#endif
-#ifdef ADC_CHANNEL_10
-    case 10:
-      channel = ADC_CHANNEL_10;
-      break;
-#endif
-#ifdef ADC_CHANNEL_11
-    case 11:
-      channel = ADC_CHANNEL_11;
-      break;
-#endif
-#ifdef ADC_CHANNEL_12
-    case 12:
-      channel = ADC_CHANNEL_12;
-      break;
-#endif
-#ifdef ADC_CHANNEL_13
-    case 13:
-      channel = ADC_CHANNEL_13;
-      break;
-#endif
-#ifdef ADC_CHANNEL_14
-    case 14:
-      channel = ADC_CHANNEL_14;
-      break;
-#endif
-#ifdef ADC_CHANNEL_15
-    case 15:
-      channel = ADC_CHANNEL_15;
-      break;
-#ifdef ADC_CHANNEL_16
-    case 16:
-      channel = ADC_CHANNEL_16;
-      break;
-#endif
-    case 17:
-      channel = ADC_CHANNEL_17;
-      break;
-#ifdef ADC_CHANNEL_18
-    case 18:
-      channel = ADC_CHANNEL_18;
-      break;
-#endif
-#ifdef ADC_CHANNEL_19
-    case 19:
-      channel = ADC_CHANNEL_19;
-      break;
-#endif
-#ifdef ADC_CHANNEL_20
-    case 20:
-      channel = ADC_CHANNEL_20;
-      break;
-#endif
-#ifdef ADC_CHANNEL_21
-    case 21:
-      channel = ADC_CHANNEL_21;
-      break;
-#endif
-#ifdef ADC_CHANNEL_22
-    case 22:
-      channel = ADC_CHANNEL_22;
-      break;
-#endif
-#ifdef ADC_CHANNEL_23
-    case 23:
-      channel = ADC_CHANNEL_23;
-      break;
-#ifdef ADC_CHANNEL_24
-    case 24:
-      channel = ADC_CHANNEL_24;
-      break;
-#endif
-#ifdef ADC_CHANNEL_25
-    case 25:
-      channel = ADC_CHANNEL_25;
-      break;
-#endif
-#ifdef ADC_CHANNEL_26
-    case 26:
-      channel = ADC_CHANNEL_26;
-      break;
-#ifdef ADC_CHANNEL_27
-    case 27:
-      channel = ADC_CHANNEL_27;
-      break;
-#endif
-#ifdef ADC_CHANNEL_28
-    case 28:
-      channel = ADC_CHANNEL_28;
-      break;
-#endif
-#ifdef ADC_CHANNEL_29
-    case 29:
-      channel = ADC_CHANNEL_29;
-      break;
-#endif
-#ifdef ADC_CHANNEL_30
-    case 30:
-      channel = ADC_CHANNEL_30;
-      break;
-#endif
-#ifdef ADC_CHANNEL_31
-    case 31:
-      channel = ADC_CHANNEL_31;
-      break;
-#endif
-#endif
-#endif
-#endif
-    default:
-      _Error_Handler("ADC: Unknown adc channel", (int)(STM_PIN_CHANNEL(function)));
-      break;
+  uint32_t channel = _getADCChannel(STM_PIN_CHANNEL(function));
+  if (!channel)
+  {
+    _Error_Handler("ADC: Unknown adc channel", (int)(STM_PIN_CHANNEL(function)));
   }
   return channel;
 }
@@ -417,31 +258,236 @@ uint32_t _getADCChannel(PinName pin, ADC_TypeDef *AdcHandle )
 
 uint32_t _getADCInjectedRank(uint8_t ind){
   switch (ind) {
-  #ifdef ADC_INJECTED_RANK_1
+#ifdef ADC_INJECTED_RANK_1
     case 0:
       return ADC_INJECTED_RANK_1;
-      break;
 #endif
 #ifdef ADC_INJECTED_RANK_2
     case 1:
       return ADC_INJECTED_RANK_2;
-      break;
 #endif
 #ifdef ADC_INJECTED_RANK_3
     case 2:
       return ADC_INJECTED_RANK_3;
-      break;
 #endif
 #ifdef ADC_INJECTED_RANK_4
     case 3:
       return ADC_INJECTED_RANK_4;
-      break;
 #endif
     default:
       return 0;
-      break;
   }
 }
+
+uint32_t _getADCRegularRank(uint8_t ind)
+{
+  switch (ind) {
+#ifdef ADC_REGULAR_RANK_1
+    case 0:
+      return ADC_REGULAR_RANK_1;
+#endif
+#ifdef ADC_REGULAR_RANK_2
+    case 1:
+      return ADC_REGULAR_RANK_2;
+#endif
+#ifdef ADC_REGULAR_RANK_3
+    case 2:
+      return ADC_REGULAR_RANK_3;
+#endif
+#ifdef ADC_REGULAR_RANK_4
+    case 3:
+      return ADC_REGULAR_RANK_4;
+#endif
+#ifdef ADC_REGULAR_RANK_5
+    case 4:
+      return ADC_REGULAR_RANK_5;
+#endif
+#ifdef ADC_REGULAR_RANK_6
+    case 5:
+      return ADC_REGULAR_RANK_6;
+#endif
+#ifdef ADC_REGULAR_RANK_7
+    case 6:
+      return ADC_REGULAR_RANK_7;
+#endif
+#ifdef ADC_REGULAR_RANK_8
+    case 7:
+      return ADC_REGULAR_RANK_8;
+#endif
+#ifdef ADC_REGULAR_RANK_9
+    case 8:
+      return ADC_REGULAR_RANK_9;
+#endif
+#ifdef ADC_REGULAR_RANK_10
+    case 9:
+      return ADC_REGULAR_RANK_10;
+#endif
+#ifdef ADC_REGULAR_RANK_11
+    case 10:
+      return ADC_REGULAR_RANK_11;
+#endif
+#ifdef ADC_REGULAR_RANK_12
+    case 11:
+      return ADC_REGULAR_RANK_12;
+#endif
+#ifdef ADC_REGULAR_RANK_13
+    case 12:
+      return ADC_REGULAR_RANK_13;
+#endif
+#ifdef ADC_REGULAR_RANK_14
+    case 13:
+      return ADC_REGULAR_RANK_14;
+#endif
+#ifdef ADC_REGULAR_RANK_15
+    case 14:
+      return ADC_REGULAR_RANK_15;
+#endif
+#ifdef ADC_REGULAR_RANK_16
+    case 15:
+      return ADC_REGULAR_RANK_16;
+#endif
+    default:
+      return 0;
+  }
+}
+
+uint32_t _getADCChannel(uint8_t ind)
+{
+  switch (ind)
+  {
+#ifdef ADC_CHANNEL_0
+    case 0:
+      return ADC_CHANNEL_0;
+#endif
+#ifdef ADC_CHANNEL_1
+    case 1:
+      return ADC_CHANNEL_1;
+#endif
+#ifdef ADC_CHANNEL_2
+    case 2:
+      return ADC_CHANNEL_2;
+#endif
+#ifdef ADC_CHANNEL_3
+    case 3:
+      return ADC_CHANNEL_3;
+#endif
+#ifdef ADC_CHANNEL_4
+    case 4:
+      return ADC_CHANNEL_4;
+#endif
+#ifdef ADC_CHANNEL_5
+    case 5:
+      return ADC_CHANNEL_5;
+#endif
+#ifdef ADC_CHANNEL_6
+    case 6:
+      return ADC_CHANNEL_6;
+#endif
+#ifdef ADC_CHANNEL_7
+    case 7:
+      return ADC_CHANNEL_7;
+#endif
+#ifdef ADC_CHANNEL_8
+    case 8:
+      return ADC_CHANNEL_8;
+#endif
+#ifdef ADC_CHANNEL_9
+    case 9:
+      return ADC_CHANNEL_9;
+#endif
+#ifdef ADC_CHANNEL_10
+    case 10:
+      return ADC_CHANNEL_10;
+#endif
+#ifdef ADC_CHANNEL_11
+    case 11:
+      return ADC_CHANNEL_11;
+#endif
+#ifdef ADC_CHANNEL_12
+    case 12:
+      return ADC_CHANNEL_12;
+#endif
+#ifdef ADC_CHANNEL_13
+    case 13:
+      return ADC_CHANNEL_13;
+#endif
+#ifdef ADC_CHANNEL_14
+    case 14:
+      return ADC_CHANNEL_14;
+#endif
+#ifdef ADC_CHANNEL_15
+    case 15:
+      return ADC_CHANNEL_15;
+#endif
+#ifdef ADC_CHANNEL_16
+    case 16:
+      return ADC_CHANNEL_16;
+#endif
+#ifdef ADC_CHANNEL_17
+    case 17:
+      return ADC_CHANNEL_17;
+#endif
+#ifdef ADC_CHANNEL_18
+    case 18:
+      return ADC_CHANNEL_18;
+#endif
+#ifdef ADC_CHANNEL_19
+    case 19:
+      return ADC_CHANNEL_19;
+#endif
+#ifdef ADC_CHANNEL_20
+    case 20:
+      return ADC_CHANNEL_20;
+#endif
+#ifdef ADC_CHANNEL_21
+    case 21:
+      return ADC_CHANNEL_21;
+#endif
+#ifdef ADC_CHANNEL_22
+    case 22:
+      return ADC_CHANNEL_22;
+#endif
+#ifdef ADC_CHANNEL_23
+    case 23:
+      return ADC_CHANNEL_23;
+#endif
+#ifdef ADC_CHANNEL_24
+    case 24:
+      return ADC_CHANNEL_24;
+#endif
+#ifdef ADC_CHANNEL_25
+    case 25:
+      return ADC_CHANNEL_25;
+#endif
+#ifdef ADC_CHANNEL_26
+    case 26:
+      return ADC_CHANNEL_26;
+#endif
+#ifdef ADC_CHANNEL_27
+    case 27:
+      return ADC_CHANNEL_27;
+#endif
+#ifdef ADC_CHANNEL_28
+    case 28:
+      return ADC_CHANNEL_28;
+#endif
+#ifdef ADC_CHANNEL_29
+    case 29:
+      return ADC_CHANNEL_29;
+#endif
+#ifdef ADC_CHANNEL_30
+    case 30:
+      return ADC_CHANNEL_30;
+#endif
+#ifdef ADC_CHANNEL_31
+    case 31:
+      return ADC_CHANNEL_31;
+#endif
+    default:
+      return 0;
+  }
+}
+
 
 // returns 0 if no interrupt is needed, 1 if interrupt is needed
 uint32_t _initTimerInterruptDownsampling(Stm32CurrentSenseParams* cs_params, STM32DriverParams* driver_params, Stm32AdcInterruptConfig& adc_interrupt_config){

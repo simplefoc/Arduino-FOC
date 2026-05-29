@@ -272,7 +272,7 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 		// store for later use
 		tccConfig.pwm_res = pwm_resolution;
 
-		if (hw6pwm>0.0) {
+		if (hw6pwm>0.0f) {
 			tcc->WEXCTRL.vec.DTIEN |= (1<<tccConfig.tcc.chan);
 			tcc->WEXCTRL.bit.DTLS = hw6pwm*(pwm_resolution-1);
 			tcc->WEXCTRL.bit.DTHS = hw6pwm*(pwm_resolution-1);

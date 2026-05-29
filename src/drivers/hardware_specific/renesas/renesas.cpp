@@ -76,48 +76,48 @@ ClockDivAndRange getClockDivAndRange(uint32_t pwm_frequency, uint8_t timer_chann
   uint32_t max_count = (timer_channel < GTP32_HOWMANY)? 4294967295 : 65535;
   uint32_t freq_hz = R_FSP_SystemClockHzGet(FSP_PRIV_CLOCK_PCLKD);
   float range = (float) freq_hz / ((float) pwm_frequency * 2.0f);
-  if(range / 1.0 < max_count) {
-      result.range = (uint32_t) (range / 1.0);
+  if(range / 1.0f < max_count) {
+      result.range = (uint32_t) (range / 1.0f);
       result.clk_div = TIMER_SOURCE_DIV_1;
   }
-  else if (range / 2.0 < max_count) {
-      result.range = (uint32_t) (range / 2.0);
+  else if (range / 2.0f < max_count) {
+      result.range = (uint32_t) (range / 2.0f);
       result.clk_div = TIMER_SOURCE_DIV_2;
   }
-  else if(range / 4.0 < max_count) {
-      result.range = (uint32_t) (range / 4.0);
+  else if(range / 4.0f < max_count) {
+      result.range = (uint32_t) (range / 4.0f);
       result.clk_div = TIMER_SOURCE_DIV_4;
   }
-  else if(range / 8.0 < max_count) {
-      result.range = (uint32_t) (range / 8.0 );
+  else if(range / 8.0f < max_count) {
+      result.range = (uint32_t) (range / 8.0f );
       result.clk_div = TIMER_SOURCE_DIV_8;
   }
-  else if(range / 16.0 < max_count) {
-      result.range = (uint32_t) (range / 16.0 );
+  else if(range / 16.0f < max_count) {
+      result.range = (uint32_t) (range / 16.0f );
       result.clk_div = TIMER_SOURCE_DIV_16;
   }
-  else if (range / 32.0 < max_count) {
-      result.range = (uint32_t) (range / 32.0 );
+  else if (range / 32.0f < max_count) {
+      result.range = (uint32_t) (range / 32.0f );
       result.clk_div = TIMER_SOURCE_DIV_32;
   }
-  else if(range / 64.0 < max_count) {
-      result.range = (uint32_t) (range / 64.0 );
+  else if(range / 64.0f < max_count) {
+      result.range = (uint32_t) (range / 64.0f );
       result.clk_div = TIMER_SOURCE_DIV_64;
   }
-  else if(range / 128.0 < max_count) {
-      result.range = (uint32_t) (range / 128.0 );
+  else if(range / 128.0f < max_count) {
+      result.range = (uint32_t) (range / 128.0f );
       result.clk_div = TIMER_SOURCE_DIV_128;
   }
-  else if(range / 256.0 < max_count) {
-      result.range = (uint32_t) (range / 256.0 );
+  else if(range / 256.0f < max_count) {
+      result.range = (uint32_t) (range / 256.0f );
       result.clk_div = TIMER_SOURCE_DIV_256;
   }
-  else if(range / 512.0 < max_count) {
-      result.range = (uint32_t) (range / 512.0 );
+  else if(range / 512.0f < max_count) {
+      result.range = (uint32_t) (range / 512.0f );
       result.clk_div = TIMER_SOURCE_DIV_512;
   }
-  else if(range / 1024.0 < max_count) {
-      result.range = (uint32_t) (range / 1024.0 );
+  else if(range / 1024.0f < max_count) {
+      result.range = (uint32_t) (range / 1024.0f );
       result.clk_div = TIMER_SOURCE_DIV_1024;
   }
   else {

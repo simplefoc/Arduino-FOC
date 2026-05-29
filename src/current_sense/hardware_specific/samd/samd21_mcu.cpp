@@ -161,7 +161,7 @@ float _readADCVoltageLowSide(const int pin, const void* cs_params) {
     i++;
   }
 
-  return 0.0; // pin not available
+  return 0.0f; // pin not available
 }
 
 void* _driverSyncLowSide(void* driver_params, void* cs_params) {
