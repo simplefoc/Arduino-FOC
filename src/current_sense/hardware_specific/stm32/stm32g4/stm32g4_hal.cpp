@@ -5,6 +5,9 @@
 #include "../../../../communication/SimpleFOCDebug.h"
 
 #define SIMPLEFOC_STM32_DEBUG
+#define SIMPLEFOC_STM32G4_CS_SAMPLING_TIME ADC_SAMPLETIME_24CYCLES_5
+#define SIMPLEFOC_STM32G4_CS_OVERSAMPLING_RATIO ADC_OVERSAMPLING_RATIO_8
+#define SIMPLEFOC_STM32G4_CS_OVERSAMPLING_SHIFT ADC_RIGHTBITSHIFT_3
 
 
 // pointer to the ADC handles used in the project
@@ -105,6 +108,7 @@ int _adc_init_regular(ADC_TypeDef* adc_instance){
   hadc[adc_num].Init.DMAContinuousRequests = DISABLE;
   hadc[adc_num].Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc[adc_num].Init.Overrun = ADC_OVR_DATA_PRESERVED;
+  hadc[adc_num].Init.OversamplingMode = DISABLE;
   if ( HAL_ADC_Init(&hadc[adc_num]) != HAL_OK){
 #ifdef SIMPLEFOC_STM32_DEBUG
     SIMPLEFOC_DEBUG("STM32-CS: ERR: cannot init ADC!");
@@ -149,14 +153,16 @@ int _adc_init(Stm32CurrentSenseParams* cs_params, const STM32DriverParams* drive
       sConfigInjected.InjectedNbrOfConversion++;
     }
   }
-  sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+  sConfigInjected.InjectedSamplingTime = SIMPLEFOC_STM32G4_CS_SAMPLING_TIME;
   sConfigInjected.ExternalTrigInjecConvEdge = ADC_EXTERNALTRIGINJECCONV_EDGE_RISING;  
   sConfigInjected.AutoInjectedConv = DISABLE;
   sConfigInjected.InjectedSingleDiff = ADC_SINGLE_ENDED;
   sConfigInjected.InjectedDiscontinuousConvMode = DISABLE;
   sConfigInjected.InjectedOffsetNumber = ADC_OFFSET_NONE;
   sConfigInjected.InjectedOffset = 0;
-  sConfigInjected.InjecOversamplingMode = DISABLE;
+  sConfigInjected.InjecOversamplingMode = ENABLE;
+  sConfigInjected.InjecOversampling.Ratio = SIMPLEFOC_STM32G4_CS_OVERSAMPLING_RATIO;
+  sConfigInjected.InjecOversampling.RightBitShift = SIMPLEFOC_STM32G4_CS_OVERSAMPLING_SHIFT;
   sConfigInjected.QueueInjectedContext = DISABLE;
 
   // automating TRGO flag finding - hardware specific

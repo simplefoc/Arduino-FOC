@@ -160,9 +160,19 @@ class FOCMotor
     /**
      * Function linking a motor and a sensor 
      * 
-     * @param sensor Sensor class  wrapper for the FOC algorihtm to read the motor angle and velocity
+     * @param sensor Sensor class  wrapper for the FOC algorithm to read the motor angle and velocity
      */
     void linkSensor(Sensor* sensor);
+
+
+
+    /**
+     * Function linking a motor and a second sensor used only for position control
+     * If not provided, the motor will use the sensor linked with the linkSensor function for position control as well
+     * 
+     * @param sensor Sensor class  wrapper for the FOC algorithm to read the motor angle and velocity
+     */
+    void linkPositionLoopSensor(Sensor* sensor, Direction direction = Direction::CW);
 
     /**
      * Function linking a motor and current sensing 
@@ -265,11 +275,14 @@ class FOCMotor
     unsigned int motion_downsample = DEF_MOTION_DOWNSMAPLE; //!< parameter defining the ratio of downsampling for move commad
     unsigned int motion_cnt = 0; //!< counting variable for downsampling for move commad
 
-    // sensor related variabels
+    // sensor related variables
     float sensor_offset; //!< user defined sensor zero offset
+    float position_loop_sensor_direction = Direction::UNKNOWN; //!< direction of the position loop sensor compared to the sensor linked with linkSensor function - default is 1, if set to -1 the direction will be flipped
     float zero_electric_angle = NOT_SET;//!< absolute zero electric angle - if available
     Direction sensor_direction = Direction::UNKNOWN; //!< default is CW. if sensor_direction == Direction::CCW then direction will be flipped compared to CW. Set to UNKNOWN to set by calibration
     bool pp_check_result = false; //!< the result of the PP check, if run during loopFOC
+
+
 
     /**
      * Function providing BLDCMotor class with the 
@@ -299,6 +312,8 @@ class FOCMotor
       * - HallSensor
     */
     Sensor* sensor; 
+    Sensor* position_loop_sensor; //!< optional second sensor used only for position control - if not provided the sensor linked with linkSensor will be used for position control as well
+    
     //!< CurrentSense link
     CurrentSense* current_sense; 
 

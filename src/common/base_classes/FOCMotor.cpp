@@ -42,6 +42,7 @@ FOCMotor::FOCMotor()
   //sensor 
   sensor_offset = 0.0f;
   sensor = nullptr;
+  position_loop_sensor = nullptr;
   //current sensor 
   current_sense = nullptr;
 }
@@ -52,7 +53,18 @@ FOCMotor::FOCMotor()
 */
 void FOCMotor::linkSensor(Sensor* _sensor) {
   sensor = _sensor;
+  if (!position_loop_sensor) position_loop_sensor = _sensor; // if position sensor not linked use the same sensor for position control as well
 }
+
+
+/**
+	Sensor linking method
+*/
+void FOCMotor::linkPositionLoopSensor(Sensor* _sensor, Direction direction) {
+  position_loop_sensor = _sensor;
+  position_loop_sensor_direction = direction;
+}
+
 
 /**
 	CurrentSense linking method
@@ -64,8 +76,8 @@ void FOCMotor::linkCurrentSense(CurrentSense* _current_sense) {
 // shaft angle calculation
 float FOCMotor::shaftAngle() {
   // if no sensor linked return previous value ( for open loop )
-  if(!sensor) return shaft_angle;
-  return sensor_direction*sensor->getAngle() - sensor_offset;
+  if(!position_loop_sensor) return shaft_angle;
+  return position_loop_sensor_direction*position_loop_sensor->getAngle();
 }
 // shaft velocity calculation
 float FOCMotor::shaftVelocity() {
@@ -355,8 +367,8 @@ void FOCMotor::monitor() {
     DQCurrent_s c = current;
     if( current_sense && torque_controller != TorqueControlType::foc_current ){
       c = current_sense->getFOCCurrents(electrical_angle);
-      c.q = LPF_current_q(c.q);
-      c.d = LPF_current_d(c.d);
+      // c.q = LPF_current_q(c.q);
+      // c.d = LPF_current_d(c.d);
     }
     if(monitor_variables & _MON_CURR_Q) {
       if(!printed && monitor_start_char) monitor_port->print(monitor_start_char);
@@ -381,7 +393,7 @@ void FOCMotor::monitor() {
   if(monitor_variables & _MON_ANGLE) {
     if(!printed && monitor_start_char) monitor_port->print(monitor_start_char);
     else if(printed) monitor_port->print(monitor_separator);
-    monitor_port->print(shaft_angle,monitor_decimals);
+    monitor_port->print(shaft_angle, monitor_decimals);
     printed= true;
   }
   if(printed){
@@ -624,7 +636,8 @@ void FOCMotor::loopFOC() {
       // constrain current setpoint
       current_sp = _constrain(current_sp, -current_limit, current_limit)  + feed_forward_current.q; // desired current is the setpoint
       // calculate the back-emf voltage if KV_rating available U_bemf = vel*(1/KV)
-      if (_isset(KV_rating)) voltage_bemf = estimateBEMF(shaft_velocity);
+      if (KV_rating &&_isset(KV_rating)) voltage_bemf = estimateBEMF(shaft_velocity);
+      else voltage_bemf = 0;
       // filter the value values
       current.q = LPF_current_q(current_sp);
       // calculate the phase voltage
@@ -700,6 +713,9 @@ void FOCMotor::move(float new_target) {
   // a specific frequency (or almost)
   updateMotionControlTime();
 
+  // update the additional sensor values
+  if (position_loop_sensor) position_loop_sensor->update();
+
   // read value even if motor is disabled to keep the monitoring updated
   // except for the open loop modes where the values are updated within angle/velocityOpenLoop functions
   
@@ -712,7 +728,7 @@ void FOCMotor::move(float new_target) {
   if( controller!=MotionControlType::angle_openloop && controller!=MotionControlType::velocity_openloop ){
     // read the values only if the motor is not in open loop
     // because in open loop the shaft angle/velocity is updated within angle/velocityOpenLoop functions
-    shaft_angle = shaftAngle(); 
+    shaft_angle = shaftAngle() - sensor_offset;
     shaft_velocity = shaftVelocity(); 
   }
 
@@ -797,6 +813,10 @@ int  FOCMotor::initFOC() {
     exit_flag *= alignSensor();
     // added the shaft_angle update
     sensor->update();
+    //if(position_loop_sensor_direction == Direction::UNKNOWN) position_loop_sensor_direction = sensor_direction;
+    SIMPLEFOC_MOTOR_DEBUG("Sensor aligned.");
+    position_loop_sensor->update();
+    SIMPLEFOC_MOTOR_DEBUG("Sensor aligned1.");
     shaft_angle = shaftAngle();
   } else {
     SIMPLEFOC_MOTOR_DEBUG("No sensor.");
