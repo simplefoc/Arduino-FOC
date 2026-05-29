@@ -40,13 +40,14 @@ float Sensor::getVelocity() {
     // floating point equality checks are bad, so instead we check that the angle change is very small
     if (fabsf(delta_angle) > 1e-8f) {
         velocity = delta_angle / Ts;
-
-        vel_angle_prev = angle_prev;
-        vel_full_rotations = full_rotations;
-        vel_angle_prev_ts = angle_prev_ts;
-    }else{
-        velocity = 0;
+    } else {
+        velocity = 0.0f;
     }
+
+    // Always advance the velocity reference sample to avoid stale deltas/time windows.
+    vel_angle_prev = angle_prev;
+    vel_full_rotations = full_rotations;
+    vel_angle_prev_ts = angle_prev_ts;
     
     return velocity;
 }
