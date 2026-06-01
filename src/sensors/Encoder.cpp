@@ -19,6 +19,9 @@ Encoder::Encoder(int _encA, int _encB , float _ppr, int _index){
   pulse_timestamp = 0;
 
   cpr = _ppr;
+  #ifdef INTEGER_ANGLE
+  steps_per_revolution = cpr;
+  #endif
   A_active = 0;
   B_active = 0;
   I_active = 0;
@@ -106,16 +109,25 @@ void Encoder::update() {
   angle_prev_ts = pulse_timestamp;
   long copy_pulse_counter = pulse_counter;
   interrupts();
+  #ifdef INTEGER_ANGLE
+  setAngleContinuous(copy_pulse_counter%steps_per_revolution);
+  #else
   // TODO: numerical precision issue here if the pulse_counter overflows the angle will be lost
   full_rotations = copy_pulse_counter / (int)cpr;
   angle_prev = _2PI * ((copy_pulse_counter) % ((int)cpr)) / ((float)cpr);
+  #endif
+
 }
 
 /*
 	Shaft angle calculation
 */
-float Encoder::getSensorAngle(){
+angle_type Encoder::getSensorAngle(){
+  #ifdef INTEGER_ANGLE
+  return angle_prev % steps_per_revolution;
+  #else
   return _2PI * (pulse_counter) / ((float)cpr);
+  #endif
 }
 
 

@@ -77,7 +77,11 @@ float FOCMotor::shaftVelocity() {
 float FOCMotor::electricalAngle(){
   // if no sensor linked return previous value ( for open loop )
   if(!sensor) return electrical_angle;
-  return  _normalizeAngle( (float)(sensor_direction * pole_pairs) * sensor->getMechanicalAngle()  - zero_electric_angle );
+  return  _normalizeAngle( (float)(sensor_direction * pole_pairs) * sensor->getMechanicalAngle() 
+    #ifdef INTEGER_ANGLE
+    * _2PI / sensor->getStepsPerRevolution()
+    #endif
+    - zero_electric_angle );
 }
 
 /**
@@ -289,8 +293,16 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
        * We then report the one closest to the actual value. This could be useful if the zero search method is not reliable enough (eg. high pole count).
       */
 
-      float estimated_zero_electric_angle_A = _normalizeAngle(  (float)(sensor_direction * pole_pairs) * sensor->getMechanicalAngle() - d_electrical_angle);
-      float estimated_zero_electric_angle_B = _normalizeAngle(  (float)(sensor_direction * pole_pairs) * sensor->getMechanicalAngle() - d_electrical_angle + _PI);
+      float estimated_zero_electric_angle_A = _normalizeAngle(  (float)(sensor_direction * pole_pairs) * sensor->getMechanicalAngle()
+        #ifdef INTEGER_ANGLE
+        * _2PI / sensor->getStepsPerRevolution()
+        #endif
+        - d_electrical_angle);
+      float estimated_zero_electric_angle_B = _normalizeAngle(  (float)(sensor_direction * pole_pairs) * sensor->getMechanicalAngle()
+        #ifdef INTEGER_ANGLE
+        * _2PI / sensor->getStepsPerRevolution()
+        #endif
+        - d_electrical_angle + _PI);
       float estimated_zero_electric_angle = 0.0f;
       if (fabsf(estimated_zero_electric_angle_A - zero_electric_angle) < fabsf(estimated_zero_electric_angle_B - zero_electric_angle))
       {

@@ -53,6 +53,9 @@ MagneticSensorI2C::MagneticSensorI2C(uint8_t _chip_address, int _bit_resolution,
     _conf.lsb_shift = 0;
   _conf.msb_shift = lsb_used;
 
+  #ifdef INTEGER_ANGLE
+  steps_per_revolution = _powtwo(_bit_resolution);
+  #endif
   cpr = _powtwo(_bit_resolution);
 
   wire = &Wire;
@@ -84,9 +87,13 @@ void MagneticSensorI2C::init(TwoWire* _wire){
 
 //  Shaft angle calculation
 //  angle is in radians [rad]
-float MagneticSensorI2C::getSensorAngle(){
+angle_type MagneticSensorI2C::getSensorAngle(){
   // (number of full rotations)*2PI + current sensor angle 
+  #ifdef INTEGER_ANGLE
+  return getRawCount();
+  #else
   return  ( getRawCount() / (float)cpr) * _2PI ;
+  #endif
 }
 
 
