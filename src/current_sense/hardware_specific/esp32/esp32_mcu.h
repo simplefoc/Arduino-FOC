@@ -2,6 +2,7 @@
 #define ESP32_MCU_CURRENT_SENSING_H
 
 #include "../../hardware_api.h"
+#include <stdint.h>
 
 #if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) 
 
@@ -10,6 +11,18 @@
 #include "esp32_adc_driver.h"
 
 
+/*
+ * Low-side ADC backend (set during LowsideCurrentSense::init):
+ *   LEGACY   — MCPWM ISR + adcRead(), one phase per interrupt.
+ *   DIGI_SW  — digi controller + DMA; ISR only starts conversion (ESP32, S2, …).
+ *   DIGI_ETM — same hardware as DIGI_SW; MCPWM TEZ starts ADC via ETM (S3+).
+ */
+enum ESP32AdcLowsidePath : uint8_t {
+  ESP32_ADC_LOWSIDE_LEGACY = 0,
+  ESP32_ADC_LOWSIDE_DIGI_SW,
+  ESP32_ADC_LOWSIDE_DIGI_ETM,
+};
+
 // esp32 current sense parameters
 typedef struct ESP32CurrentSenseParams {
   int pins[3];
@@ -17,7 +30,8 @@ typedef struct ESP32CurrentSenseParams {
   int adc_buffer[3] = {};
   int buffer_index = 0;
   int no_adc_channels = 0;
-  void* pretrig_comparator = nullptr; // MCPWM comparator handle for ADC pre-trigger
+  void* pretrig_comparator = nullptr;
+  ESP32AdcLowsidePath adc_lowside_path = ESP32_ADC_LOWSIDE_LEGACY;
 } ESP32CurrentSenseParams;
 
 // macros for debugging wuing the simplefoc debug system
