@@ -14,8 +14,10 @@
 #include "soc/mcpwm_reg.h"
 #include "soc/mcpwm_struct.h"
 
+#include "esp32_adc_digi_internal.h"
 #if SIMPLEFOC_ESP32_ADC_DIGI_SUPPORTED
 #include "esp32_adc_digi_lowside.h"
+#include "esp_heap_caps.h"
 #endif
 
 // #define SIMPLEFOC_ESP32_INTERRUPT_DEBUG
@@ -38,9 +40,9 @@
  * Low-side current sense on ESP32 MCPWM.
  *
  * ADC path (see esp32_adc_digi_internal.h):
- *   - LEGACY:     MCPWM ISR calls adcRead() one phase per interrupt (~10 us each).
+ *   - ADC_READ:   default; MCPWM ISR + adcRead(), one phase per interrupt (~10 us each).
  *   - DIGI_SW:    ESP32 / S2 — digi+DMA; ISR only calls esp32_adc_digi_trigger_software().
- *   - DIGI_ETM:   S3+ — same digi+DMA; MCPWM TEZ starts ADC via ETM (no ADC ISR).
+ *   - DIGI_ETM:   S3 / C6+ — digi+DMA; MCPWM TEZ starts ADC via ETM (no ADC ISR).
  */
 
 float IRAM_ATTR _readADCVoltageLowSide(const int pin, const void *cs_params)
@@ -52,6 +54,9 @@ float IRAM_ATTR _readADCVoltageLowSide(const int pin, const void *cs_params)
             continue;
         }
         if (pin == p->pins[i]) {
+            if (p->adc_lowside_path != ESP32_ADC_LOWSIDE_ADC_READ) {
+                return esp32_adc_digi_raw_at(p->adc_buffer, no_channel) * p->adc_voltage_conv;
+            }
             return p->adc_buffer[no_channel] * p->adc_voltage_conv;
         }
         no_channel++;
@@ -71,7 +76,16 @@ void *IRAM_ATTR _configureADCLowSide(const void *driver_params, const int pinA, 
         return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
     }
 
+#if SIMPLEFOC_ESP32_ADC_DIGI_SUPPORTED
+    ESP32CurrentSenseParams *params = (ESP32CurrentSenseParams *)heap_caps_calloc(
+        1, sizeof(ESP32CurrentSenseParams), MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
+    if (params == NULL) {
+        SIMPLEFOC_ESP32_CS_DEBUG("ERROR: DMA-capable current sense alloc failed");
+        return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
+    }
+#else
     ESP32CurrentSenseParams *params = new ESP32CurrentSenseParams{};
+#endif
     int no_adc_channels = 0;
 
     int adc_pins[3] = { pinA, pinB, pinC };
@@ -90,7 +104,7 @@ void *IRAM_ATTR _configureADCLowSide(const void *driver_params, const int pinA, 
     params->no_adc_channels = no_adc_channels;
 
 #if SIMPLEFOC_ESP32_ADC_DIGI_SUPPORTED
-    if (esp32_adc_lowside_configure(params) != ESP32_ADC_LOWSIDE_LEGACY) {
+    if (esp32_adc_lowside_configure(params) != ESP32_ADC_LOWSIDE_ADC_READ) {
         t->user_data = params;
         return params;
     }
@@ -100,8 +114,8 @@ void *IRAM_ATTR _configureADCLowSide(const void *driver_params, const int pinA, 
     return params;
 }
 
-static bool IRAM_ATTR _mcpwm_legacy_adc_callback(mcpwm_timer_handle_t tim, const mcpwm_timer_event_data_t *edata,
-                                                 void *user_data)
+static bool IRAM_ATTR _mcpwm_adc_read_timer_callback(mcpwm_timer_handle_t tim, const mcpwm_timer_event_data_t *edata,
+                                                     void *user_data)
 {
     (void)tim;
     (void)edata;
@@ -120,8 +134,8 @@ static bool IRAM_ATTR _mcpwm_legacy_adc_callback(mcpwm_timer_handle_t tim, const
     return true;
 }
 
-static bool IRAM_ATTR _mcpwm_legacy_comparator_adc_callback(mcpwm_cmpr_handle_t cmpr,
-                                                            const mcpwm_compare_event_data_t *edata, void *user_data)
+static bool IRAM_ATTR _mcpwm_adc_read_comparator_callback(mcpwm_cmpr_handle_t cmpr,
+                                                         const mcpwm_compare_event_data_t *edata, void *user_data)
 {
     if (edata->direction != MCPWM_TIMER_DIRECTION_UP) {
         return true;
@@ -148,13 +162,13 @@ void IRAM_ATTR _startADC3PinConversionLowSide()
 #endif
 }
 
-static void *esp32_mcpwm_sync_legacy_lowside(void *driver_params, ESP32CurrentSenseParams *cs)
+static void *esp32_mcpwm_sync_adc_read_lowside(void *driver_params, ESP32CurrentSenseParams *cs)
 {
     ESP32MCPWMDriverParams *p = (ESP32MCPWMDriverParams *)driver_params;
     mcpwm_timer_t *t = (mcpwm_timer_t *)p->timers[0];
     int group_id = p->group_id;
 
-    SIMPLEFOC_ESP32_CS_DEBUG("Legacy path: MCPWM ISR + adcRead() (one phase per interrupt)");
+    SIMPLEFOC_ESP32_CS_DEBUG("ADC_READ: MCPWM ISR + adcRead() (one phase per interrupt)");
 
 #ifndef SIMPLEFOC_CS_PRETRIGGER_US
 #define SIMPLEFOC_CS_PRETRIGGER_US 5
@@ -178,7 +192,7 @@ static void *esp32_mcpwm_sync_legacy_lowside(void *driver_params, ESP32CurrentSe
                      "Failed to set pretrigger compare value");
 
         mcpwm_comparator_event_callbacks_t cmp_cbs = {
-            .on_reach = _mcpwm_legacy_comparator_adc_callback,
+            .on_reach = _mcpwm_adc_read_comparator_callback,
         };
         CHECK_CS_ERR(mcpwm_comparator_register_event_callbacks((mcpwm_cmpr_handle_t)cs->pretrig_comparator, &cmp_cbs,
                                                                cs),
@@ -195,7 +209,7 @@ static void *esp32_mcpwm_sync_legacy_lowside(void *driver_params, ESP32CurrentSe
     }
 
     auto cbs = mcpwm_timer_event_callbacks_t{
-        .on_full = _mcpwm_legacy_adc_callback,
+        .on_full = _mcpwm_adc_read_timer_callback,
     };
     t->fsm = MCPWM_TIMER_FSM_INIT;
     CHECK_CS_ERR(mcpwm_timer_register_event_callbacks(t, &cbs, cs), "Failed to set low side callback");
@@ -217,7 +231,7 @@ void *IRAM_ATTR _driverSyncLowSide(void *driver_params, void *cs_params)
     }
 
 #if SIMPLEFOC_ESP32_ADC_DIGI_SUPPORTED
-    if (cs->adc_lowside_path != ESP32_ADC_LOWSIDE_LEGACY) {
+    if (cs->adc_lowside_path != ESP32_ADC_LOWSIDE_ADC_READ) {
         void *r = esp32_adc_lowside_sync_mcpwm(driver_params, cs);
         if (r == SIMPLEFOC_CURRENT_SENSE_INIT_FAILED) {
             return r;
@@ -226,7 +240,7 @@ void *IRAM_ATTR _driverSyncLowSide(void *driver_params, void *cs_params)
     }
 #endif
 
-    return esp32_mcpwm_sync_legacy_lowside(driver_params, cs);
+    return esp32_mcpwm_sync_adc_read_lowside(driver_params, cs);
 }
 
 #endif

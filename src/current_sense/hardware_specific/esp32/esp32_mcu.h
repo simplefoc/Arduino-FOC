@@ -13,12 +13,12 @@
 
 /*
  * Low-side ADC backend (set during LowsideCurrentSense::init):
- *   LEGACY   — MCPWM ISR + adcRead(), one phase per interrupt.
+ *   ADC_READ — default; MCPWM ISR + adcRead(), one phase per interrupt.
  *   DIGI_SW  — digi controller + DMA; ISR only starts conversion (ESP32, S2, …).
- *   DIGI_ETM — same hardware as DIGI_SW; MCPWM TEZ starts ADC via ETM (S3+).
+ *   DIGI_ETM — digi + DMA; MCPWM TEZ starts ADC via ETM (S3, C6, …).
  */
 enum ESP32AdcLowsidePath : uint8_t {
-  ESP32_ADC_LOWSIDE_LEGACY = 0,
+  ESP32_ADC_LOWSIDE_ADC_READ = 0,
   ESP32_ADC_LOWSIDE_DIGI_SW,
   ESP32_ADC_LOWSIDE_DIGI_ETM,
 };
@@ -27,11 +27,12 @@ enum ESP32AdcLowsidePath : uint8_t {
 typedef struct ESP32CurrentSenseParams {
   int pins[3];
   float adc_voltage_conv;
+  /* ADC_READ: plain counts; DIGI_*: DMA lands adc_digi_output_data_t[0..N] here (zero-copy) */
   int adc_buffer[3] = {};
   int buffer_index = 0;
   int no_adc_channels = 0;
   void* pretrig_comparator = nullptr;
-  ESP32AdcLowsidePath adc_lowside_path = ESP32_ADC_LOWSIDE_LEGACY;
+  ESP32AdcLowsidePath adc_lowside_path = ESP32_ADC_LOWSIDE_ADC_READ;
 } ESP32CurrentSenseParams;
 
 // macros for debugging wuing the simplefoc debug system

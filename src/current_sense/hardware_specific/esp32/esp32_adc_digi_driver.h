@@ -15,6 +15,10 @@
 
 #if SIMPLEFOC_ESP32_ADC_DIGI_SUPPORTED
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
     adc_channel_t channels[SIMPLEFOC_ESP32_ADC_NUM_CHANNELS];
     adc_unit_t unit;
@@ -34,11 +38,17 @@ esp_err_t esp32_adc_digi_deinit(void);
 esp_err_t esp32_adc_digi_set_trigger(esp32_adc_digi_trigger_t mode);
 esp_err_t esp32_adc_digi_trigger_software(void);
 
+int esp32_adc_digi_read_raw(const void *adc_buffer, int index);
+
 bool esp32_adc_digi_supported(void);
 
 #if SIMPLEFOC_ESP32_ADC_ETM_SUPPORTED
 esp_err_t esp32_adc_digi_set_etm_source(const esp32_adc_digi_etm_config_t *cfg);
 bool esp32_adc_digi_etm_supported(void);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* SIMPLEFOC_ESP32_ADC_DIGI_SUPPORTED */

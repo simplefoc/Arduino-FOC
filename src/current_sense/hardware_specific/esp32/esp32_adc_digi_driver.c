@@ -20,6 +20,7 @@
 #include "esp_log.h"
 #include "esp_check.h"
 #include "esp_heap_caps.h"
+#include "esp_memory_utils.h"
 #include "esp_clk_tree.h"
 #include "esp_private/regi2c_ctrl.h"
 #include "esp_private/sar_periph_ctrl.h"
@@ -36,16 +37,7 @@
 #include "esp_cache.h"
 #endif
 
-#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2
-#define ADC_GET_CHANNEL(p_data)     ((p_data)->type1.channel)
-#define ADC_GET_DATA(p_data)        ((p_data)->type1.data)
-#else
-#define ADC_GET_CHANNEL(p_data)     ((p_data)->type2.channel)
-#define ADC_GET_DATA(p_data)        ((p_data)->type2.data)
-#endif
-
 #define ESP32_ADC_DMA_DESC_ALIGN  4
-#define ESP32_ADC_FRAME_BYTES     (SIMPLEFOC_ESP32_ADC_NUM_CHANNELS * SOC_ADC_DIGI_RESULT_BYTES)
 
 typedef enum {
     ESP32_ADC_STATE_IDLE = 0,
@@ -58,7 +50,6 @@ typedef struct {
     adc_hal_dma_ctx_t hal;
     adc_hal_digi_ctrlr_cfg_t hal_cfg;
     adc_digi_pattern_config_t patterns[SIMPLEFOC_ESP32_ADC_NUM_CHANNELS];
-    uint8_t *rx_buf;
     uint32_t rx_desc_size;
     esp32_adc_digi_dma_ctx_t dma_ctx;
     adc_channel_t channels[SIMPLEFOC_ESP32_ADC_NUM_CHANNELS];
@@ -146,7 +137,7 @@ static void esp32_adc_rearm(esp32_adc_digi_ctx_t *adc)
 {
     esp32_adc_digi_dma_reset(&adc->dma_ctx);
     adc_hal_digi_reset();
-    adc_hal_digi_dma_link(&adc->hal, adc->rx_buf);
+    adc_hal_digi_dma_link(&adc->hal, (uint8_t *)adc->adc_buffer);
 #if SOC_CACHE_INTERNAL_MEM_VIA_L1CACHE
     esp_cache_msync(adc->hal.rx_desc, adc->rx_desc_size, ESP_CACHE_MSYNC_FLAG_DIR_C2M);
 #endif
@@ -199,42 +190,14 @@ static esp_err_t esp32_adc_gpio_init(adc_unit_t unit, uint32_t chan_mask)
     return ESP_OK;
 }
 
-static void IRAM_ATTR esp32_adc_process_frame(esp32_adc_digi_ctx_t *adc, const uint8_t *frame, uint32_t size)
-{
-    if (frame == NULL || size < ESP32_ADC_FRAME_BYTES || adc->adc_buffer == NULL) {
-        return;
-    }
-
-    adc_digi_output_data_t *p = (adc_digi_output_data_t *)frame;
-    const int n = adc->no_adc_channels < SIMPLEFOC_ESP32_ADC_NUM_CHANNELS
-                      ? adc->no_adc_channels
-                      : SIMPLEFOC_ESP32_ADC_NUM_CHANNELS;
-    for (int i = 0; i < n; i++) {
-        adc->adc_buffer[i] = (int)ADC_GET_DATA(p);
-        p++;
-    }
-}
-
 static void IRAM_ATTR esp32_adc_dma_done(void *arg)
 {
     esp32_adc_digi_ctx_t *adc = (esp32_adc_digi_ctx_t *)arg;
-    adc_hal_dma_desc_status_t status;
-    uint8_t *finished_buffer = NULL;
-    uint32_t finished_size = 0;
 
-    while (1) {
-        status = adc_hal_get_reading_result(&adc->hal, adc->dma_ctx.eof_desc_addr,
-                                            &finished_buffer, &finished_size);
-        if (status != ADC_HAL_DMA_DESC_VALID) {
-            break;
-        }
 #if SOC_CACHE_INTERNAL_MEM_VIA_L1CACHE
-        esp_cache_msync(finished_buffer, finished_size, ESP_CACHE_MSYNC_FLAG_DIR_M2C);
-#endif
-        esp32_adc_process_frame(adc, finished_buffer, finished_size);
+    if (adc->adc_buffer != NULL) {
+        esp_cache_msync((void *)adc->adc_buffer, ESP32_ADC_DIGI_FRAME_BYTES, ESP_CACHE_MSYNC_FLAG_DIR_M2C);
     }
-
-#if SOC_CACHE_INTERNAL_MEM_VIA_L1CACHE
     esp_cache_msync(adc->hal.rx_desc, adc->rx_desc_size,
                     ESP_CACHE_MSYNC_FLAG_DIR_C2M | ESP_CACHE_MSYNC_FLAG_INVALIDATE);
 #endif
@@ -242,13 +205,12 @@ static void IRAM_ATTR esp32_adc_dma_done(void *arg)
 #if SIMPLEFOC_ESP32_ADC_ETM_SUPPORTED
     if (adc->trigger == SIMPLEFOC_ESP32_ADC_TRIG_ETM) {
         esp32_adc_rearm(adc);
-    } else
-#endif
-    {
-        adc_hal_digi_enable(false);
-        adc_hal_digi_connect(false);
-        adc->state = ESP32_ADC_STATE_IDLE;
+        return;
     }
+#endif
+    adc_hal_digi_enable(false);
+    adc_hal_digi_connect(false);
+    adc->state = ESP32_ADC_STATE_IDLE;
 }
 
 static esp_err_t esp32_adc_hw_start(esp32_adc_digi_ctx_t *adc)
@@ -315,12 +277,6 @@ static esp_err_t esp32_adc_setup_hal(esp32_adc_digi_ctx_t *adc)
     };
     adc_hal_dma_ctx_config(&adc->hal, &dma_cfg);
 
-    adc->rx_buf = heap_caps_calloc(1, ESP32_ADC_FRAME_BYTES,
-                                   MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA | MALLOC_CAP_8BIT);
-    if (adc->rx_buf == NULL) {
-        return ESP_ERR_NO_MEM;
-    }
-
     adc->hal.rx_desc = heap_caps_aligned_calloc(ESP32_ADC_DMA_DESC_ALIGN, 1,
                                                 sizeof(dma_descriptor_t),
                                                 MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA | MALLOC_CAP_8BIT);
@@ -339,6 +295,11 @@ static esp_err_t esp32_adc_setup_hal(esp32_adc_digi_ctx_t *adc)
     ESP_RETURN_ON_ERROR(esp32_adc_digi_dma_init(&adc->dma_ctx, esp32_adc_dma_done, adc),
                         TAG, "dma init failed");
     return ESP_OK;
+}
+
+int esp32_adc_digi_read_raw(const void *adc_buffer, int index)
+{
+    return esp32_adc_digi_raw_at(adc_buffer, index);
 }
 
 bool esp32_adc_digi_supported(void)
@@ -364,6 +325,11 @@ esp_err_t esp32_adc_digi_init(const esp32_adc_digi_config_t *cfg)
     }
     if (cfg->no_adc_channels < 1 || cfg->no_adc_channels > SIMPLEFOC_ESP32_ADC_NUM_CHANNELS) {
         ESP_LOGE(TAG, "need 1..%d ADC channels for hw trigger", SIMPLEFOC_ESP32_ADC_NUM_CHANNELS);
+        return ESP_ERR_INVALID_ARG;
+    }
+    if (!esp_ptr_dma_capable(cfg->adc_buffer) ||
+        !esp_ptr_internal(cfg->adc_buffer)) {
+        ESP_LOGE(TAG, "adc_buffer must be INTERNAL|DMA capable (heap_caps_calloc)");
         return ESP_ERR_INVALID_ARG;
     }
     if (s_adc_initialized) {
@@ -409,13 +375,9 @@ esp_err_t esp32_adc_digi_deinit(void)
     esp32_adc_digi_set_trigger(SIMPLEFOC_ESP32_ADC_TRIG_SOFTWARE);
     esp32_adc_digi_dma_stop(&s_adc.dma_ctx);
     esp32_adc_digi_dma_deinit(&s_adc.dma_ctx);
-    adc_hal_digi_deinit(&s_adc.hal);
+    adc_hal_digi_deinit();
     adc_lock_release(s_adc.unit);
     sar_periph_ctrl_adc_continuous_power_release();
-    if (s_adc.rx_buf) {
-        heap_caps_free(s_adc.rx_buf);
-        s_adc.rx_buf = NULL;
-    }
     if (s_adc.hal.rx_desc) {
         heap_caps_free(s_adc.hal.rx_desc);
         s_adc.hal.rx_desc = NULL;
