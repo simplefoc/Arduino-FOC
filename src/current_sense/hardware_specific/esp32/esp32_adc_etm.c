@@ -6,7 +6,8 @@
  * ETM wiring: MCPWM timer event -> ADC digi START task.
  */
 
-#include "sdkconfig.h"
+#if defined(ARDUINO_ARCH_ESP32)
+
 #include "esp32_adc_digi_internal.h"
 
 #if SIMPLEFOC_ESP32_ADC_ETM_SUPPORTED
@@ -19,8 +20,6 @@
 #include "esp_private/etm_interface.h"
 #include "soc/soc_caps.h"
 #include "soc/soc_etm_source.h"
-#include "esp32_adc_digi_internal.h"
-
 static const char *TAG = "esp32_adc_etm";
 
 typedef struct {
@@ -157,3 +156,4 @@ void esp32_adc_digi_etm_disconnect(void)
 }
 
 #endif /* SIMPLEFOC_ESP32_ADC_ETM_SUPPORTED */
+#endif /* ARDUINO_ARCH_ESP32 */

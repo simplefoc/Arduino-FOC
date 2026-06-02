@@ -6,9 +6,11 @@
  * I2S DMA backend for ADC digi on ESP32 (i2s_ll only).
  */
 
-#include "sdkconfig.h"
+#if defined(ARDUINO_ARCH_ESP32)
 
-#if CONFIG_IDF_TARGET_ESP32
+#include "esp32_adc_digi_internal.h"
+
+#if defined(SIMPLEFOC_ESP32_ADC_USE_I2S_DMA) && SIMPLEFOC_ESP32_ADC_USE_I2S_DMA
 
 #include "esp_err.h"
 #include "esp_intr_alloc.h"
@@ -17,7 +19,6 @@
 #include "hal/adc_hal.h"
 #include "soc/i2s_periph.h"
 #include "esp_private/i2s_platform.h"
-#include "esp32_adc_digi_internal.h"
 
 #define ADC_DMA_I2S_HOST    ADC_HAL_DMA_I2S_HOST
 #define ADC_DMA_INTR_MASK   BIT(9)
@@ -128,4 +129,5 @@ esp_err_t esp32_adc_digi_dma_reset(esp32_adc_digi_dma_ctx_t *ctx)
     return ESP_OK;
 }
 
-#endif
+#endif /* SIMPLEFOC_ESP32_ADC_USE_I2S_DMA */
+#endif /* ARDUINO_ARCH_ESP32 */

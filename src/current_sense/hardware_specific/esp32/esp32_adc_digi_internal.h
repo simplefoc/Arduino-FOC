@@ -5,6 +5,13 @@
  */
 #pragma once
 
+#if !defined(ARDUINO_ARCH_ESP32)
+
+#define SIMPLEFOC_ESP32_ADC_DIGI_SUPPORTED 0
+#define SIMPLEFOC_ESP32_ADC_ETM_SUPPORTED 0
+
+#else
+
 #include <stdbool.h>
 #include <stdint.h>
 #include "sdkconfig.h"
@@ -29,25 +36,22 @@
  *   - ESP32-S3+: GDMA  (esp32_adc_dma_gdma.c)
  */
 
-#if defined(ARDUINO_ARCH_ESP32)
-
 #define SIMPLEFOC_ESP32_ADC_DIGI_SUPPORTED 1
 
-/* ETM is not available on original ESP32 or ESP32-S2. */
-#if SOC_ETM_SUPPORTED && !CONFIG_IDF_TARGET_ESP32 && !CONFIG_IDF_TARGET_ESP32S2
+#if CONFIG_IDF_TARGET_ESP32
+#define SIMPLEFOC_ESP32_ADC_USE_I2S_DMA 1
+#elif CONFIG_IDF_TARGET_ESP32S2
+#define SIMPLEFOC_ESP32_ADC_USE_SPI3_DMA 1
+#elif SOC_GDMA_SUPPORTED
+#define SIMPLEFOC_ESP32_ADC_USE_GDMA_DMA 1
+#endif
+
+#if SOC_ETM_SUPPORTED && defined(SIMPLEFOC_ESP32_ADC_USE_GDMA_DMA)
 #define SIMPLEFOC_ESP32_ADC_ETM_SUPPORTED 1
 #else
 #define SIMPLEFOC_ESP32_ADC_ETM_SUPPORTED 0
 #endif
 
-#else
-
-#define SIMPLEFOC_ESP32_ADC_DIGI_SUPPORTED 0
-#define SIMPLEFOC_ESP32_ADC_ETM_SUPPORTED 0
-
-#endif
-
-/* Pattern / DMA sizing — kept aligned with espFoC isensor_adc_internal.h */
 #define SIMPLEFOC_ESP32_ADC_PATTERN_HZ      80000
 #define SIMPLEFOC_ESP32_ADC_NUM_CHANNELS    2
 #define SIMPLEFOC_ESP32_ADC_CONVERT_LIMIT   2
@@ -55,10 +59,6 @@
 #define ESP32_ADC_DIGI_FRAME_BYTES \
     (SIMPLEFOC_ESP32_ADC_NUM_CHANNELS * SOC_ADC_DIGI_RESULT_BYTES)
 
-/*
- * DMA writes adc_digi_output_data_t[N] into adc_buffer (zero-copy).
- * int adc_buffer[3] must be DMA-capable and >= ESP32_ADC_DIGI_FRAME_BYTES used bytes.
- */
 #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2
 #define ESP32_ADC_DIGI_SAMPLE_RAW(p)  ((int32_t)((p)->type1.data))
 #else
@@ -106,3 +106,5 @@ esp_err_t esp32_adc_digi_etm_enable(bool enable);
 void esp32_adc_digi_etm_disconnect(void);
 
 #endif /* SIMPLEFOC_ESP32_ADC_ETM_SUPPORTED */
+
+#endif /* ARDUINO_ARCH_ESP32 */

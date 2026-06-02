@@ -10,7 +10,8 @@
  *   - ETM:        ESP32-S3 and newer only; see esp32_adc_etm.c.
  */
 
-#include "sdkconfig.h"
+#if defined(ARDUINO_ARCH_ESP32)
+
 #include "esp32_adc_digi_internal.h"
 
 #if SIMPLEFOC_ESP32_ADC_DIGI_SUPPORTED
@@ -118,13 +119,25 @@ static void esp32_adc_apply_max_clock(esp32_adc_digi_ctx_t *adc)
     adc_ll_digi_set_clk_div(1);
     adc_ll_set_sample_cycle(ADC_LL_SAMPLE_CYCLE_DEFAULT);
 #else
+#if defined(ADC_DIGI_CLK_SRC_PLL_F80M)
     const soc_module_clk_t fast_src = SOC_MOD_CLK_PLL_F80M;
+    const soc_periph_adc_digi_clk_src_t adc_clk = ADC_DIGI_CLK_SRC_PLL_F80M;
+#elif defined(ADC_DIGI_CLK_SRC_PLL_F96M)
+    const soc_module_clk_t fast_src = SOC_MOD_CLK_PLL_F96M;
+    const soc_periph_adc_digi_clk_src_t adc_clk = ADC_DIGI_CLK_SRC_PLL_F96M;
+#elif defined(ADC_DIGI_CLK_SRC_APB)
+    const soc_module_clk_t fast_src = SOC_MOD_CLK_APB;
+    const soc_periph_adc_digi_clk_src_t adc_clk = ADC_DIGI_CLK_SRC_APB;
+#else
+    const soc_module_clk_t fast_src = (soc_module_clk_t)ADC_DIGI_CLK_SRC_DEFAULT;
+    const soc_periph_adc_digi_clk_src_t adc_clk = ADC_DIGI_CLK_SRC_DEFAULT;
+#endif
     ESP_ERROR_CHECK(esp_clk_tree_enable_src(fast_src, true));
     uint32_t clk_hz = 0;
     ESP_ERROR_CHECK(esp_clk_tree_src_get_freq_hz(fast_src, ESP_CLK_TREE_SRC_FREQ_PRECISION_CACHED, &clk_hz));
-    adc->hal_cfg.clk_src = ADC_DIGI_CLK_SRC_PLL_F80M;
+    adc->hal_cfg.clk_src = adc_clk;
     adc->hal_cfg.clk_src_freq_hz = clk_hz;
-    adc_ll_digi_clk_sel(ADC_DIGI_CLK_SRC_PLL_F80M);
+    adc_ll_digi_clk_sel(adc_clk);
     adc_ll_digi_controller_clk_div(0, 1, 0);
     adc_ll_digi_set_clk_div(1);
     adc_ll_set_sample_cycle(ADC_LL_SAMPLE_CYCLE_DEFAULT);
@@ -443,4 +456,5 @@ esp_err_t esp32_adc_digi_trigger_software(void)
     return ESP_OK;
 }
 
-#endif
+#endif /* SIMPLEFOC_ESP32_ADC_DIGI_SUPPORTED */
+#endif /* ARDUINO_ARCH_ESP32 */

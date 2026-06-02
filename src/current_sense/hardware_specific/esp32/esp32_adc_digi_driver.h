@@ -8,7 +8,8 @@
  */
 #pragma once
 
-#include "sdkconfig.h"
+#if defined(ARDUINO_ARCH_ESP32)
+
 #include "esp_err.h"
 #include "hal/adc_types.h"
 #include "esp32_adc_digi_internal.h"
@@ -52,3 +53,4 @@ bool esp32_adc_digi_etm_supported(void);
 #endif
 
 #endif /* SIMPLEFOC_ESP32_ADC_DIGI_SUPPORTED */
+#endif /* ARDUINO_ARCH_ESP32 */

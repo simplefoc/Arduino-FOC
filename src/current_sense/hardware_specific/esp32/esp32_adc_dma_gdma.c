@@ -6,9 +6,11 @@
  * GDMA RX backend for ADC digi (ESP32-S3, C3, C6, …) using gdma_hal + gdma_ll only.
  */
 
-#include "sdkconfig.h"
+#if defined(ARDUINO_ARCH_ESP32)
 
-#if !CONFIG_IDF_TARGET_ESP32 && !CONFIG_IDF_TARGET_ESP32S2
+#include "esp32_adc_digi_internal.h"
+
+#if defined(SIMPLEFOC_ESP32_ADC_USE_GDMA_DMA) && SIMPLEFOC_ESP32_ADC_USE_GDMA_DMA
 
 #include "esp_err.h"
 #include "esp_intr_alloc.h"
@@ -18,7 +20,6 @@
 #include "hal/gdma_ll.h"
 #include "hal/gdma_types.h"
 #include "soc/gdma_periph.h"
-#include "esp32_adc_digi_internal.h"
 
 #define ESP32_ADC_GDMA_GROUP   0
 #define ESP32_ADC_GDMA_PAIR    2
@@ -143,4 +144,5 @@ esp_err_t esp32_adc_digi_dma_reset(esp32_adc_digi_dma_ctx_t *ctx)
     return ESP_OK;
 }
 
-#endif
+#endif /* SIMPLEFOC_ESP32_ADC_USE_GDMA_DMA */
+#endif /* ARDUINO_ARCH_ESP32 */

@@ -1,6 +1,9 @@
-#include "esp32_adc_digi_lowside.h"
+#include "esp32_mcu.h"
 
-#if SIMPLEFOC_ESP32_ADC_DIGI_SUPPORTED && defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC)
+#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) \
+    && !defined(SIMPLEFOC_ESP32_USELEDC)
+
+#include "esp32_adc_digi_lowside.h"
 
 #include "esp32_adc_digi_driver.h"
 #include "../../../drivers/hardware_specific/esp32/esp32_driver_mcpwm.h"
@@ -47,12 +50,12 @@ static esp_err_t esp32_adc_digi_bind_params(ESP32CurrentSenseParams *params)
 ESP32AdcLowsidePath esp32_adc_lowside_configure(ESP32CurrentSenseParams *params)
 {
     if (params == NULL || !esp32_adc_digi_supported()) {
-        return ESP32_ADC_LOWSIDE_LEGACY;
+        return ESP32_ADC_LOWSIDE_ADC_READ;
     }
 
     if (esp32_adc_digi_bind_params(params) != ESP_OK) {
-        SIMPLEFOC_ESP32_CS_DEBUG("WARN: ADC digi+DMA init failed, using legacy adcRead path");
-        return ESP32_ADC_LOWSIDE_LEGACY;
+        SIMPLEFOC_ESP32_CS_DEBUG("WARN: ADC digi+DMA init failed, using ADC_READ (adcRead) path");
+        return ESP32_ADC_LOWSIDE_ADC_READ;
     }
 
     params->adc_lowside_path = ESP32_ADC_LOWSIDE_DIGI_SW;
@@ -191,7 +194,7 @@ void *esp32_adc_lowside_sync_mcpwm(void *driver_params, ESP32CurrentSenseParams 
     }
 
 #if SIMPLEFOC_ESP32_ADC_ETM_SUPPORTED
-    if (esp32_adc_digi_etm_supported() && cs->adc_lowside_path != ESP32_ADC_LOWSIDE_LEGACY) {
+    if (esp32_adc_digi_etm_supported() && cs->adc_lowside_path != ESP32_ADC_LOWSIDE_ADC_READ) {
         return esp32_adc_lowside_sync_etm(driver_params, cs);
     }
 #endif

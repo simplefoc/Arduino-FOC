@@ -6,16 +6,17 @@
  * SPI3 DMA backend for ADC digi on ESP32-S2 (spi_ll + spicommon).
  */
 
-#include "sdkconfig.h"
+#if defined(ARDUINO_ARCH_ESP32)
 
-#if CONFIG_IDF_TARGET_ESP32S2
+#include "esp32_adc_digi_internal.h"
+
+#if defined(SIMPLEFOC_ESP32_ADC_USE_SPI3_DMA) && SIMPLEFOC_ESP32_ADC_USE_SPI3_DMA
 
 #include "esp_err.h"
 #include "esp_intr_alloc.h"
 #include "esp_attr.h"
 #include "hal/spi_ll.h"
 #include "esp_private/spi_common_internal.h"
-#include "esp32_adc_digi_internal.h"
 
 #define ADC_DMA_SPI_HOST    SPI3_HOST
 #define ADC_DMA_INTR_MASK   SPI_LL_INTR_IN_SUC_EOF
@@ -133,4 +134,5 @@ esp_err_t esp32_adc_digi_dma_reset(esp32_adc_digi_dma_ctx_t *ctx)
     return ESP_OK;
 }
 
-#endif
+#endif /* SIMPLEFOC_ESP32_ADC_USE_SPI3_DMA */
+#endif /* ARDUINO_ARCH_ESP32 */
