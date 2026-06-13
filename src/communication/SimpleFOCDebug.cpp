@@ -122,4 +122,14 @@ void SimpleFOCDebug::println() {
     }
 }
 
+void SimpleFOCDebug::printf(const char* msg, ...)
+{
+    va_list ap;
+    va_start(ap, msg);
+    if (_debugPrint != NULL) {
+        _debugPrint->vprintf(msg, ap);
+    }
+    va_end(ap);
+}
+
 #endif

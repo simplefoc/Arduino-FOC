@@ -56,6 +56,8 @@ public:
     inline static void print(const StringSumHelper msg){}
     inline static void print(int val){}
     inline static void print(float val){}
+
+    static void printf(const char* msg, ...){}
 };
 
 #define SIMPLEFOC_DEBUG(msg, ...)
@@ -83,6 +85,8 @@ public:
     static void print(const StringSumHelper msg);
     static void print(int val);
     static void print(float val);
+
+    static void printf(const char* msg, ...);
 
 protected:
     static Print* _debugPrint;
