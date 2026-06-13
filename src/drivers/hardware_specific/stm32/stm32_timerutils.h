@@ -5,6 +5,11 @@
 
 #if defined(_STM32_DEF_) || defined(TARGET_STM32H7)
 
+#if defined(HAL_TIM_MODULE_ONLY)
+extern "C" void enableTimerClock(TIM_HandleTypeDef *htim);
+extern "C" uint8_t getTimerClkSrc(TIM_TypeDef *tim);
+#endif
+
 void stm32_pauseTimer(TIM_HandleTypeDef* handle);
 void stm32_resumeTimer(TIM_HandleTypeDef* handle);
 void stm32_refreshTimer(TIM_HandleTypeDef* handle);
