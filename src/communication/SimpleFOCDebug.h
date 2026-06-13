@@ -34,7 +34,35 @@
 
 // #define SIMPLEFOC_DISABLE_DEBUG
 
-#ifndef SIMPLEFOC_DISABLE_DEBUG 
+#ifdef SIMPLEFOC_DISABLE_DEBUG 
+class SimpleFOCDebug {
+public:
+    inline static void enable(Print* debugPrint){}
+
+    inline static void println(const __FlashStringHelper* msg){}
+    inline static void println(const StringSumHelper msg){}
+    inline static void println(const char* msg){}
+    inline static void println(const __FlashStringHelper* msg, float val){}
+    inline static void println(const char* msg, float val){}
+    inline static void println(const __FlashStringHelper* msg, int val){}
+    inline static void println(const char* msg, int val){}
+    inline static void println(const char* msg, char val){}
+    inline static void println(){}
+    inline static void println(int val){}
+    inline static void println(float val){}
+
+    inline static void print(const char* msg){}
+    inline static void print(const __FlashStringHelper* msg){}
+    inline static void print(const StringSumHelper msg){}
+    inline static void print(int val){}
+    inline static void print(float val){}
+
+    static void printf(const char* msg, ...){}
+};
+
+#define SIMPLEFOC_DEBUG(msg, ...)
+
+#else
 
 class SimpleFOCDebug {
 public:
@@ -58,18 +86,14 @@ public:
     static void print(int val);
     static void print(float val);
 
+    static void printf(const char* msg, ...);
+
 protected:
     static Print* _debugPrint;
 };
 
-
 #define SIMPLEFOC_DEBUG(msg, ...) \
     SimpleFOCDebug::println(F(msg), ##__VA_ARGS__)
-
-#else  //ifndef SIMPLEFOC_DISABLE_DEBUG
- 
-#define SIMPLEFOC_DEBUG(msg, ...)
-
 
 #endif //ifndef SIMPLEFOC_DISABLE_DEBUG
 #endif
