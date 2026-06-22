@@ -37,6 +37,8 @@
 #define SCMD_LIM_CURR  'C' //!< Limit current
 #define SCMD_LIM_VOLT  'U' //!< Limit voltage
 #define SCMD_LIM_VEL   'V' //!< Limit velocity
+#define SCMD_LIM_ACC   'A' //!< Limit acceleration
+
 //sensor
 #define SCMD_SENS_MECH_OFFSET 'M' //!< Sensor offset
 #define SCMD_SENS_ELEC_OFFSET 'E' //!< Sensor electrical zero offset

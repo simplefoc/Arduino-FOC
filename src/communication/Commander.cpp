@@ -172,6 +172,13 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
           }
           println(motor->velocity_limit);
           break;
+        case SCMD_LIM_ACC:      // acceleration limit
+          printVerbose(F("acc: "));
+          if(!GET){
+            motor->acceleration_limit = value;
+          }
+          println(motor->acceleration_limit);
+          break;
         default:
           printError();
           break;
@@ -441,7 +448,7 @@ void Commander::motion(FOCMotor* motor, char* user_cmd, char* separator){
           break;
         default:
           // change control type
-          if(!GET && value >= 0 && (int)value < 7) // if set command
+          if(!GET && value >= 0 && (int)value < 8) // if set command
             motor->updateMotionControlType((MotionControlType)value); // update motion control type
           switch(motor->controller){
             case MotionControlType::torque:
@@ -464,6 +471,9 @@ void Commander::motion(FOCMotor* motor, char* user_cmd, char* separator){
               break;
             case MotionControlType::custom:
               println(F("custom"));
+              break;
+            case MotionControlType::angle_profile:
+              println(F("angle profile"));
               break;
           }
             break;
@@ -603,6 +613,7 @@ void Commander::target(FOCMotor* motor,  char* user_cmd, char* separator){
       }
       break;
     case MotionControlType::angle: // setting angle target + torque, velocity limit
+    case MotionControlType::angle_profile: // setting angle target + torque, velocity limit
       // setting the target position
       pos= atof(strtok (user_cmd, separator));
       motor->target = pos;

@@ -39,6 +39,7 @@
 // angle P params
 #define DEF_P_ANGLE_P 20.0f //!< default P controller P value
 #define DEF_VEL_LIM 20.0f //!< angle velocity limit default
+#define DEF_ACCEL_LIM 100.0f //!< default acceleration limit [rad/s^2]
 
 // index search
 #define DEF_INDEX_SEARCH_TARGET_VELOCITY 1.0f //!< default index search velocity

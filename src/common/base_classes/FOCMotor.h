@@ -53,7 +53,8 @@ enum MotionControlType : uint8_t {
   velocity_openloop = 0x03,
   angle_openloop    = 0x04,
   angle_nocascade   = 0x05,     //!< Position/angle motion control without velocity cascade
-  custom            = 0x06      //!< Custom control method - control method added by user
+  custom            = 0x06,     //!< Custom control method - control method added by user
+  angle_profile     = 0x07      //!< Position/angle motion control with trapezoidal profile
 };
 
 /**
@@ -249,6 +250,7 @@ class FOCMotor
     float voltage_limit; //!< Voltage limiting variable - global limit
     float current_limit; //!< Current limiting variable - global limit
     float velocity_limit; //!< Velocity limiting variable - global limit
+    float acceleration_limit; //!< Acceleration limiting variable [rad/s^2]
 
     // motor status vairables
     int8_t enabled = 0;//!< enabled or disabled motor flag
@@ -440,6 +442,14 @@ class FOCMotor
 
     // open loop variables
     uint32_t open_loop_timestamp;
+    float open_loop_velocity = 0.0f;
+
+    // angle profile state
+    float profile_angle = 0.0f;
+    float profile_velocity = 0.0f;
+    float profile_acceleration = 0.0f;
+    float profile_target = 0.0f;
+    bool profile_initialized = false;
     
     // function pointer for custom control method
     float (*customMotionControlCallback)(FOCMotor* motor) = nullptr;
