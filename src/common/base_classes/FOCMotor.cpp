@@ -25,11 +25,11 @@ FOCMotor::FOCMotor()
 
   // default target value
   target = 0;
-  profile_angle = 0;
-  profile_velocity = 0;
-  profile_acceleration = 0;
-  profile_target = 0;
-  profile_initialized = false;
+  profile_state.position = 0;
+  profile_state.velocity = 0;
+  profile_state.acceleration = 0;
+  profile_state.target = 0;
+  profile_state.initialized = false;
   open_loop_velocity = 0;
   voltage.d = 0;
   voltage.q = 0;
@@ -411,7 +411,6 @@ void FOCMotor::monitor() {
 }   
 
 
-
 // Function (iterative) generating open loop movement for target velocity
 // - target_velocity - rad/s
 // it uses voltage_limit variable
@@ -423,18 +422,18 @@ float FOCMotor::velocityOpenloop(float target_velocity){
   // quick fix for strange cases (micros overflow + timestamp not defined)
   if(Ts <= 0 || Ts > 0.5f) Ts = 1e-3f;
 
-  float accel = fabsf(acceleration_limit);
-  if (_isset(accel) && accel > 0.0f) {
-    float dv_max = accel * Ts;
-    float dv = target_velocity - open_loop_velocity;
-    if (dv > dv_max) dv = dv_max;
-    else if (dv < -dv_max) dv = -dv_max;
+  // if acceleration limit is set, use it to calculate the target velocity
+  if (_isset(acceleration_limit) && acceleration_limit > 0.0f) {
+    // limit the change in velocity to the acceleration limit
+    float dv_max = acceleration_limit * Ts;
+    float dv = _constrain(target_velocity - open_loop_velocity, -dv_max, dv_max);
     open_loop_velocity += dv;
   } else {
     open_loop_velocity = target_velocity;
   }
 
   // calculate the necessary angle to achieve target velocity
+  // integrate the open loop velocity to get the new shaft angle
   shaft_angle = _normalizeAngle(shaft_angle + open_loop_velocity*Ts);
   // for display purposes
   shaft_velocity = open_loop_velocity;
@@ -459,22 +458,23 @@ float FOCMotor::angleOpenloop(float target_angle){
   // quick fix for strange cases (micros overflow + timestamp not defined)
   if(Ts <= 0 || Ts > 0.5f) Ts = 1e-3f;
 
-  float accel = fabsf(acceleration_limit);
-  bool accel_enabled = _isset(accel) && accel > 0.0f;
-
   float err = target_angle - shaft_angle;
   float target_velocity = 0.0f;
-  if (accel_enabled) {
-    float vel_lim = fabsf(velocity_limit);
-    float stop_vel = sqrtf(2.0f * accel * fabsf(err));
-    target_velocity = _sign(err) * _constrain(stop_vel, 0.0f, vel_lim);
+  // if acceleration limit is set, use it to calculate the target velocity
+  if (acceleration_limit > 0.0f) { 
+    // calculate the necessary velocity to stop at the target angle with the given acceleration limit
+    float stop_vel = sqrtf(2.0f * acceleration_limit * fabsf(err));
+    // limit the target velocity to the velocity limit
+    target_velocity = _sign(err) * _constrain(stop_vel, 0.0f, velocity_limit);
 
-    float dv_max = accel * Ts;
-    float dv = target_velocity - open_loop_velocity;
-    if (dv > dv_max) dv = dv_max;
-    else if (dv < -dv_max) dv = -dv_max;
+    // limit the change in velocity to the acceleration limit
+    float dv_max = acceleration_limit * Ts;
+    float dv = _constrain(target_velocity - open_loop_velocity, -dv_max, dv_max);
+    
+    // update the open loop velocity
     open_loop_velocity += dv;
 
+    // integrate the open loop velocity to get the new shaft angle
     float step = open_loop_velocity * Ts;
     if ((fabsf(err) <= fabsf(step)) || (fabsf(err) < 1e-6f && fabsf(open_loop_velocity) <= dv_max)) {
       shaft_angle = target_angle;
@@ -484,20 +484,20 @@ float FOCMotor::angleOpenloop(float target_angle){
     }
     shaft_velocity = open_loop_velocity;
   } else {
-
-  // calculate the necessary angle to move from current position towards target angle
-  // with maximal velocity (velocity_limit)
-  // TODO sensor precision: this calculation is not numerically precise. The angle can grow to the point
-  //                        where small position changes are no longer captured by the precision of floats
-  //                        when the total position is large.
-  if(abs( target_angle - shaft_angle ) > abs(velocity_limit*Ts)){
-    shaft_angle += _sign(target_angle - shaft_angle) * abs( velocity_limit )*Ts;
-    shaft_velocity = velocity_limit;
-  }else{
-    shaft_angle = target_angle;
-    shaft_velocity = 0;
-  }
-    open_loop_velocity = shaft_velocity;
+    // if no acceleration limit is set, use the velocity limit to calculate the target velocity
+    // calculate the necessary angle to move from current position towards target angle
+    // with maximal velocity (velocity_limit)
+    // TODO sensor precision: this calculation is not numerically precise. The angle can grow to the point
+    //                        where small position changes are no longer captured by the precision of floats
+    //                        when the total position is large.
+    if(abs( target_angle - shaft_angle ) > abs(velocity_limit*Ts)){
+      shaft_angle += _sign(target_angle - shaft_angle) * abs( velocity_limit )*Ts;
+      shaft_velocity = velocity_limit;
+    }else{
+      shaft_angle = target_angle;
+      shaft_velocity = 0;
+    }
+      open_loop_velocity = shaft_velocity;
   }
 
   // save timestamp for next call
@@ -508,6 +508,11 @@ float FOCMotor::angleOpenloop(float target_angle){
     return voltage_limit;
   else
     return current_limit;
+}
+
+// Update acceleration limit value in controllers when changed
+void FOCMotor::updateAccelerationLimit(float new_acceleration_limit) {
+  acceleration_limit = new_acceleration_limit;
 }
 
 // Update limit values in controllers when changed
@@ -597,15 +602,12 @@ void FOCMotor::updateMotionControlType(MotionControlType new_motion_controller) 
   }
 
   if (new_motion_controller == MotionControlType::angle_profile) {
-    profile_angle = shaft_angle;
-    profile_velocity = 0.0f;
-    profile_acceleration = 0.0f;
-    profile_target = target;
-    profile_initialized = false;
+    trajectoryResetTrapezoidal(profile_state, shaft_angle, 0.0f, target);
+    profile_state.initialized = false;
   } else if (controller == MotionControlType::angle_profile) {
-    profile_velocity = 0.0f;
-    profile_acceleration = 0.0f;
-    profile_initialized = false;
+    profile_state.velocity = 0.0f;
+    profile_state.acceleration = 0.0f;
+    profile_state.initialized = false;
   }
 
   if (new_motion_controller == MotionControlType::angle_openloop || new_motion_controller == MotionControlType::velocity_openloop) {
@@ -803,109 +805,70 @@ void FOCMotor::move(float new_target) {
   // and if 
   if(!enabled) return;
   
-
   // upgrade the current based voltage limit
   switch (controller) {
-    case MotionControlType::torque:
-        current_sp =  target;
-        break;
-    case MotionControlType::angle_nocascade:
-      // TODO sensor precision: this calculation is not numerically precise. The target value cannot express precise positions when
-      //                        the angles are large. This results in not being able to command small changes at high position values.
-      //                        to solve this, the delta-angle has to be calculated in a numerically precise way.
-      // angle set point
-      shaft_angle_sp = target;
+    case MotionControlType::torque: {
+      current_sp =  target;
+      break;
+    }
+    case MotionControlType::angle_nocascade: {
       // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
       current_sp = P_angle(shaft_angle_sp - LPF_angle(shaft_angle));
       break;
-    case MotionControlType::angle:
+    }
+    case MotionControlType::angle_profile: {
       // TODO sensor precision: this calculation is not numerically precise. The target value cannot express precise positions when
       //                        the angles are large. This results in not being able to command small changes at high position values.
       //                        to solve this, the delta-angle has to be calculated in a numerically precise way.
       // angle set point
       shaft_angle_sp = target;
+      // save the velocity feed forward value
+      float velocity_ff = feed_forward_velocity; 
+
+      // filter the measured angle to reduce noise and improve stability
+      float measured_angle = LPF_angle(shaft_angle);
+
+      // if acceleration limit is set, use trapezoidal profile to 
+      // generate the angle and velocity set points
+      if (acceleration_limit > 0.0f) {
+        // calculate the time step in seconds
+        float dt = move_time_us * 1e-6f;
+        if (dt <= 0.0f || dt > 0.5f) dt = 1e-3f;
+        
+        TrapezoidalProfileOutput prof = trajectoryStepTrapezoidal(profile_state,
+                                                                  measured_angle,
+                                                                  shaft_velocity,
+                                                                  dt,
+                                                                  target,
+                                                                  velocity_limit,
+                                                                  acceleration_limit);
+
+        // update the angle set point with the value from the trapezoidal profile                           
+        shaft_angle_sp = prof.position;
+        // update the feed forward velocity with the value from the trapezoidal profile
+        velocity_ff += prof.velocity; 
+      }
+
+      // calculate velocity set point
+      shaft_velocity_sp = velocity_ff + P_angle( shaft_angle_sp - measured_angle );
+      shaft_velocity_sp = _constrain(shaft_velocity_sp, -velocity_limit, velocity_limit);
+      // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
+      current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); 
+      break;
+    }
+    case MotionControlType::angle: 
+      // TODO sensor precision: this calculation is not numerically precise. The target value cannot express precise positions when
+      //                        the angles are large. This results in not being able to command small changes at high position values.
+      //                        to solve this, the delta-angle has to be calculated in a numerically precise way.
+      // angle set point
+      shaft_angle_sp = target;
+
       // calculate velocity set point
       shaft_velocity_sp = feed_forward_velocity + P_angle( shaft_angle_sp - LPF_angle(shaft_angle) );
       shaft_velocity_sp = _constrain(shaft_velocity_sp, -velocity_limit, velocity_limit);
       // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
       current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); 
       break;
-    case MotionControlType::angle_profile: {
-      float dt = move_time_us * 1e-6f;
-      if (dt <= 0.0f || dt > 0.5f) dt = 1e-3f;
-
-      float accel = fabsf(acceleration_limit);
-      if (!_isset(accel) || accel <= 0.0f) {
-        // Fall back to standard angle mode if acceleration limit is disabled.
-        shaft_angle_sp = target;
-        shaft_velocity_sp = feed_forward_velocity + P_angle(shaft_angle_sp - LPF_angle(shaft_angle));
-        shaft_velocity_sp = _constrain(shaft_velocity_sp, -velocity_limit, velocity_limit);
-        current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity);
-        break;
-      }
-
-      float measured_angle = LPF_angle(shaft_angle);
-      float vel_lim = fabsf(velocity_limit);
-      if (!profile_initialized) {
-        profile_angle = measured_angle;
-        profile_velocity = shaft_velocity;
-        profile_acceleration = 0.0f;
-        profile_target = target;
-        profile_initialized = true;
-      }
-      profile_target = target;
-
-      float err_profile = profile_target - profile_angle;
-      float dir = _sign(err_profile);
-      float desired_accel = 0.0f;
-      float distance_remaining = fabsf(err_profile);
-      float speed_along_path = profile_velocity * dir;
-      float speed_mag = fabsf(profile_velocity);
-      float stop_dist = (speed_mag * speed_mag) / (2.0f * accel);
-
-      if (distance_remaining < 1e-6f && speed_mag < (accel * dt)) {
-        profile_angle = profile_target;
-        profile_velocity = 0.0f;
-        desired_accel = 0.0f;
-      } else {
-        if (speed_along_path < 0.0f) {
-          // Recover from reverse motion first, then follow trapezoid phases.
-          desired_accel = dir * accel;
-        } else if (stop_dist >= distance_remaining) {
-          // Deceleration phase.
-          desired_accel = -dir * accel;
-        } else if (speed_mag < vel_lim) {
-          // Acceleration phase.
-          desired_accel = dir * accel;
-        } else {
-          // Cruise phase.
-          desired_accel = 0.0f;
-        }
-
-        profile_velocity += desired_accel * dt;
-        profile_velocity = _constrain(profile_velocity, -vel_lim, vel_lim);
-
-        float step = profile_velocity * dt;
-        if (fabsf(err_profile) <= fabsf(step)) {
-          profile_angle = profile_target;
-          profile_velocity = 0.0f;
-          desired_accel = 0.0f;
-        } else {
-          profile_angle += step;
-        }
-      }
-
-      profile_acceleration = desired_accel;
-      shaft_angle_sp = profile_angle;
-
-      // Tracking law: trajectory feed-forward plus position feedback correction.
-      float tracking_error = profile_angle - measured_angle;
-      float velocity_ff = profile_velocity + (0.5f * profile_acceleration * dt) + feed_forward_velocity;
-      float velocity_fb = P_angle(tracking_error);
-      shaft_velocity_sp = _constrain(velocity_ff + velocity_fb, -vel_lim, vel_lim);
-      current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity);
-      break;
-    }
     case MotionControlType::velocity:
       // velocity set point - sensor precision: this calculation is numerically precise.
       shaft_velocity_sp = target;

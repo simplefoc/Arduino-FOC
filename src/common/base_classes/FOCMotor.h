@@ -10,6 +10,7 @@
 #include "../defaults.h"
 #include "../pid.h"
 #include "../lowpass_filter.h"
+#include "../trajectory.h"
 
 #define MOT_ERR "ERR-MOT:"
 #define MOT_WARN "WARN-MOT:"
@@ -357,6 +358,13 @@ class FOCMotor
     void updateVoltageLimit(float new_voltage_limit);
 
     /**
+     *  Update acceleration limit value in controllers when changed
+     * @param new_acceleration_limit - new acceleration limit value
+     * 
+     */
+    void updateAccelerationLimit(float new_acceleration_limit);
+
+    /**
      * Update torque control type and related controller limit values
      * @param new_torque_controller - new torque control type
      * 
@@ -445,11 +453,7 @@ class FOCMotor
     float open_loop_velocity = 0.0f;
 
     // angle profile state
-    float profile_angle = 0.0f;
-    float profile_velocity = 0.0f;
-    float profile_acceleration = 0.0f;
-    float profile_target = 0.0f;
-    bool profile_initialized = false;
+    TrapezoidalProfileState profile_state;
     
     // function pointer for custom control method
     float (*customMotionControlCallback)(FOCMotor* motor) = nullptr;
