@@ -12,7 +12,7 @@ void setup() {
   Serial.begin(115200);
   // enable more verbose output for debugging
   // comment out if not needed
-  SimpleFOCDebug::enable(&Serial);
+  SIMPLEFOC_DEBUG_ENABLE(&Serial);
   
   // pwm frequency to be used [Hz]
   // for atmega328 fixed to 32kHz

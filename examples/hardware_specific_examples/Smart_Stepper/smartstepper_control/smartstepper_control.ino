@@ -22,7 +22,7 @@ void setup() {
   SerialUSB.begin(115200);
   // enable more verbose output for debugging
   // comment out if not needed
-  SimpleFOCDebug::enable(&SerialUSB);
+  SIMPLEFOC_DEBUG_ENABLE(&SerialUSB);
 
   // initialise magnetic sensor hardware
   sensor.init();

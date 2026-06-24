@@ -12,7 +12,7 @@ void setup() {
   Serial.begin(115200);
   // Enable debugging
   // Driver init will show debugging output
-  SimpleFOCDebug::enable(&Serial);
+  SIMPLEFOC_DEBUG_ENABLE(&Serial);
 
   // pwm frequency to be used [Hz]
   driver.pwm_frequency = 30000;

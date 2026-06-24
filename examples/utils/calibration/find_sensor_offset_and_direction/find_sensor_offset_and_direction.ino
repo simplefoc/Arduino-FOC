@@ -33,7 +33,7 @@ void setup() {
   Serial.begin(115200);
   // enable more verbose output for debugging
   // comment out if not needed
-  SimpleFOCDebug::enable(&Serial);
+  SIMPLEFOC_DEBUG_ENABLE(&Serial);
   
   // power supply voltage
   driver.voltage_power_supply = 12;

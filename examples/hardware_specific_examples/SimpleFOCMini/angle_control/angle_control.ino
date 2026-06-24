@@ -42,7 +42,7 @@ void setup() {
   Serial.begin(115200);
   // enable more verbose output for debugging
   // comment out if not needed
-  SimpleFOCDebug::enable(&Serial);
+  SIMPLEFOC_DEBUG_ENABLE(&Serial);
 
   // if SimpleFOCMini is stacked in arduino headers
   // on pins 12,11,10,9,8 
