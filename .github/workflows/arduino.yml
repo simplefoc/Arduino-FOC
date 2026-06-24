@@ -40,7 +40,7 @@ jobs:
             sketch-names: single_full_control_example.ino
             
           - arduino-boards-fqbn: arduino:avr:leonardo # arduino leonardo - one full example
-            sketch-names: open_loop_position_example.ino
+            sketch-names: open_loop_velocity_example.ino
             build-properties:
               All:
                 -DSIMPLEFOC_DISABLE_DEBUG
