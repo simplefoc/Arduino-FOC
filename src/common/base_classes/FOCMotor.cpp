@@ -1052,6 +1052,7 @@ int FOCMotor::alignSensor() {
         position_loop_sensor_direction = Direction::CW;
       }
     }
+    if(position_loop_sensor == sensor) position_loop_sensor_direction = sensor_direction;
     // check pole pair number
     pp_check_result = !(fabsf(moved*pole_pairs - _2PI) > 0.5f);  // 0.5f is arbitrary number it can be lower or higher!
     if( pp_check_result==false ) {

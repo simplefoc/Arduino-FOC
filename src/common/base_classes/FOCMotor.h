@@ -315,7 +315,7 @@ class FOCMotor
       * - HallSensor
     */
     Sensor* sensor; 
-    Sensor* position_loop_sensor; //!< optional second sensor used only for position control - if not provided the sensor linked with linkSensor will be used for position control as well
+    Sensor* position_loop_sensor = nullptr; //!< optional second sensor used only for position control - if not provided the sensor linked with linkSensor will be used for position control as well
     
     //!< CurrentSense link
     CurrentSense* current_sense; 
