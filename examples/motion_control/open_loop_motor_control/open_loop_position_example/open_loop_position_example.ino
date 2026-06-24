@@ -37,7 +37,7 @@ void setup() {
   // this value is fixed on startup
   driver.voltage_limit = 6;
   if(!driver.init()){
-    Serial.println("Driver init failed!");
+    SIMPLEFOC_DEBUG("Driver init failed!");
     return;
   }
   // link the motor and the driver
@@ -56,7 +56,7 @@ void setup() {
 
   // init motor hardware
   if(!motor.init()){
-    Serial.println("Motor init failed!");
+    SIMPLEFOC_DEBUG("Motor init failed!");
     return;
   }
 
@@ -65,8 +65,8 @@ void setup() {
   command.add('L', doLimit, "voltage limit");
   command.add('V', doLimit, "movement velocity");
 
-  Serial.println("Motor ready!");
-  Serial.println("Set target position [rad]");
+  SIMPLEFOC_DEBUG("Motor ready!");
+  SIMPLEFOC_DEBUG("Set target position [rad]");
   _delay(1000);
 }
 
