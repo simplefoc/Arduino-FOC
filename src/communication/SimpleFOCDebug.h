@@ -67,7 +67,7 @@ protected:
     SimpleFOCDebug::println(F(msg), ##__VA_ARGS__)
 
 #define SIMPLEFOC_DEBUG_ENABLE(printer) \
-    SIMPLEFOC_DEBUG_ENABLE(printer)
+    SimpleFOCDebug::enable(printer)
 
 #else  //ifndef SIMPLEFOC_DISABLE_DEBUG
  
