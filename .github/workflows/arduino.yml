@@ -41,8 +41,9 @@ jobs:
             
           - arduino-boards-fqbn: arduino:avr:leonardo # arduino leonardo - one full example
             sketch-names: open_loop_position_example.ino
-            build-properties: 
-              build.extra_flags: -D SIMPLEFOC_DISABLE_DEBUG
+            build-properties:
+              All:
+                -DSIMPLEFOC_DISABLE_DEBUG
             
           - arduino-boards-fqbn: arduino:avr:mega # arduino mega2660 - one full example
             sketch-names: single_full_control_example.ino
