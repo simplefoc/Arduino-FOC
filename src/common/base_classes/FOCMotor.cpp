@@ -27,8 +27,6 @@ FOCMotor::FOCMotor()
   target = 0;
   profile_state.position = 0;
   profile_state.velocity = 0;
-  profile_state.acceleration = 0;
-  profile_state.target = 0;
   profile_state.initialized = false;
   open_loop_velocity = 0;
   voltage.d = 0;
@@ -606,7 +604,6 @@ void FOCMotor::updateMotionControlType(MotionControlType new_motion_controller) 
     profile_state.initialized = false;
   } else if (controller == MotionControlType::angle_profile) {
     profile_state.velocity = 0.0f;
-    profile_state.acceleration = 0.0f;
     profile_state.initialized = false;
   }
 

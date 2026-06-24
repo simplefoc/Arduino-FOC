@@ -9,8 +9,8 @@
 struct TrapezoidalProfileState {
   float position = 0.0f;
   float velocity = 0.0f;
-  float acceleration = 0.0f;
-  float target = 0.0f;
+  // float acceleration = 0.0f; // not used so commented to save memory
+  // float target = 0.0f;
   bool initialized = false;
 };
 

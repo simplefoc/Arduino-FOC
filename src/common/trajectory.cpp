@@ -10,8 +10,6 @@ void trajectoryResetTrapezoidal(TrapezoidalProfileState& state,
                                 float target_position) {
   state.position = current_position;
   state.velocity = current_velocity;
-  state.acceleration = 0.0f;
-  state.target = target_position;
   state.initialized = true;
 }
 // Bang-bang acceleration control with trapezoidal velocity profile
@@ -36,20 +34,18 @@ TrapezoidalProfileOutput trajectoryStepTrapezoidal(TrapezoidalProfileState& stat
   if (!state.initialized) {
     trajectoryResetTrapezoidal(state, current_position, current_velocity, target_position);
   }
-  state.target = target_position;
 
   // Disabled acceleration limit means direct target snap.
   if (!_isset(acceleration_abs_limit) || acceleration_abs_limit <= 0.0f) {
-    state.position = state.target;
+    state.position = target_position;
     state.velocity = 0.0f;
-    state.acceleration = 0.0f;
     out.position = state.position;
     out.velocity = state.velocity;
-    out.acceleration = state.acceleration;
+    out.acceleration = 0.0f;
     return out;
   }
 
-  float position_error = state.target - state.position;
+  float position_error = target_position - state.position;
   float direction_to_target = _sign(position_error);
   float commanded_accel = 0.0f;
   float distance_remaining = fabsf(position_error);
@@ -63,7 +59,7 @@ TrapezoidalProfileOutput trajectoryStepTrapezoidal(TrapezoidalProfileState& stat
 
   // If nearly at target and almost stopped, finalize immediately.
   if (distance_remaining < 1e-6f && speed_magnitude < (acceleration_abs_limit * dt)) {
-    state.position = state.target;
+    state.position = target_position;
     state.velocity = 0.0f;
     commanded_accel = 0.0f;
   } else {
@@ -92,7 +88,7 @@ TrapezoidalProfileOutput trajectoryStepTrapezoidal(TrapezoidalProfileState& stat
     float position_step = state.velocity * dt;
     if (fabsf(position_error) <= fabsf(position_step)) {
       // Clamp final step to avoid overshoot around the endpoint.
-      state.position = state.target;
+      state.position = target_position;
       state.velocity = 0.0f;
       commanded_accel = 0.0f;
     } else {
@@ -100,9 +96,8 @@ TrapezoidalProfileOutput trajectoryStepTrapezoidal(TrapezoidalProfileState& stat
     }
   }
 
-  state.acceleration = commanded_accel;
+  out.acceleration = commanded_accel;
   out.position = state.position;
   out.velocity = state.velocity;
-  out.acceleration = state.acceleration;
   return out;
 }
