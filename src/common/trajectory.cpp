@@ -1,6 +1,7 @@
 #include "trajectory.h"
 
-// for more information about the trapezoidal profile, see https://en.wikipedia.org/wiki/Trapezoidal_velocity_profile
+// for more information about the trapezoidal profile, see https://mechatronics.studio/blog/bang-bang-motion-profile/
+// and the main motivation :D - https://www.youtube.com/watch?v=qYJpl7SNow
 
 // Resets the trapezoidal profile state to the current position and velocity, 
 // and sets the target position.

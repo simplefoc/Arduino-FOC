@@ -34,8 +34,8 @@
 
 // #define SIMPLEFOC_DISABLE_DEBUG
 
-#ifndef SIMPLEFOC_DISABLE_DEBUG 
 
+#ifndef SIMPLEFOC_DISABLE_DEBUG 
 class SimpleFOCDebug {
 public:
     static void enable(Print* debugPrint = &Serial);
@@ -66,9 +66,14 @@ protected:
 #define SIMPLEFOC_DEBUG(msg, ...) \
     SimpleFOCDebug::println(F(msg), ##__VA_ARGS__)
 
+#define SIMPLEFOC_DEBUG_ENABLE(printer) \
+    SIMPLEFOC_DEBUG_ENABLE(printer)
+
 #else  //ifndef SIMPLEFOC_DISABLE_DEBUG
  
 #define SIMPLEFOC_DEBUG(msg, ...)
+
+#define SIMPLEFOC_DEBUG_ENABLE(printer)
 
 
 #endif //ifndef SIMPLEFOC_DISABLE_DEBUG

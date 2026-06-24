@@ -7,7 +7,7 @@
 Print* SimpleFOCDebug::_debugPrint = NULL;
 
 
-void SimpleFOCDebug::enable(Print* debugPrint) {
+void SIMPLEFOC_DEBUG_ENABLE(Print* debugPrint) {
     _debugPrint = debugPrint;
 }
 
