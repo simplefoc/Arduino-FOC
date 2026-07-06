@@ -127,7 +127,7 @@ class FOCMotor
      * 
      * @param velocity - current shaft velocity
      */
-    virtual float estimateBEMF(float velocity){return 0.0f;};
+    virtual float estimateBEMF([[maybe_unused]] float velocity){ return 0.0f; };
 
     // Methods that have a default behavior but can be overriden if needed
 
