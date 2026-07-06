@@ -10,209 +10,124 @@
 
 void enableTimerClock(TIM_HandleTypeDef *htim)
 {
-  // Enable TIM clock
-#if defined(TIM1_BASE)
-  if (htim->Instance == TIM1) {
-    __HAL_RCC_TIM1_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM2_BASE)
-  if (htim->Instance == TIM2) {
-    __HAL_RCC_TIM2_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM3_BASE)
-  if (htim->Instance == TIM3) {
-    __HAL_RCC_TIM3_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM4_BASE)
-  if (htim->Instance == TIM4) {
-    __HAL_RCC_TIM4_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM5_BASE)
-  if (htim->Instance == TIM5) {
-    __HAL_RCC_TIM5_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM6_BASE)
-  if (htim->Instance == TIM6) {
-    __HAL_RCC_TIM6_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM7_BASE)
-  if (htim->Instance == TIM7) {
-    __HAL_RCC_TIM7_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM8_BASE)
-  if (htim->Instance == TIM8) {
-    __HAL_RCC_TIM8_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM9_BASE)
-  if (htim->Instance == TIM9) {
-    __HAL_RCC_TIM9_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM10_BASE)
-  if (htim->Instance == TIM10) {
-    __HAL_RCC_TIM10_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM11_BASE)
-  if (htim->Instance == TIM11) {
-    __HAL_RCC_TIM11_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM12_BASE)
-  if (htim->Instance == TIM12) {
-    __HAL_RCC_TIM12_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM13_BASE)
-  if (htim->Instance == TIM13) {
-    __HAL_RCC_TIM13_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM14_BASE)
-  if (htim->Instance == TIM14) {
-    __HAL_RCC_TIM14_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM15_BASE)
-  if (htim->Instance == TIM15) {
-    __HAL_RCC_TIM15_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM16_BASE)
-  if (htim->Instance == TIM16) {
-    __HAL_RCC_TIM16_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM17_BASE)
-  if (htim->Instance == TIM17) {
-    __HAL_RCC_TIM17_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM18_BASE)
-  if (htim->Instance == TIM18) {
-    __HAL_RCC_TIM18_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM19_BASE)
-  if (htim->Instance == TIM19) {
-    __HAL_RCC_TIM19_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM20_BASE)
-  if (htim->Instance == TIM20) {
-    __HAL_RCC_TIM20_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM21_BASE)
-  if (htim->Instance == TIM21) {
-    __HAL_RCC_TIM21_CLK_ENABLE();
-  }
-#endif
-#if defined(TIM22_BASE)
-  if (htim->Instance == TIM22) {
-    __HAL_RCC_TIM22_CLK_ENABLE();
-  }
-#endif
-}
-
-uint8_t getTimerClkSrc(TIM_TypeDef *tim)
-{
-  uint8_t clkSrc = 0;
-
-  if (tim != (TIM_TypeDef *)NC)
-#if defined(STM32C0xx) || defined(STM32F0xx) || defined(STM32G0xx)
-    /* TIMx source CLK is PCKL1 */
-    clkSrc = 1;
-#else
+  switch ((uintptr_t)htim->Instance)
   {
-    /* Get source clock depending on TIM instance */
-    switch ((uint32_t)tim) {
+#if defined(TIM1_BASE)
+  case TIM1_BASE:
+    __HAL_RCC_TIM1_CLK_ENABLE();
+    return;
+#endif
 #if defined(TIM2_BASE)
-      case (uint32_t)TIM2_BASE:
+  case TIM2_BASE:
+    __HAL_RCC_TIM2_CLK_ENABLE();
+    return;
 #endif
 #if defined(TIM3_BASE)
-      case (uint32_t)TIM3_BASE:
+  case TIM3_BASE:
+    __HAL_RCC_TIM3_CLK_ENABLE();
+    return;
 #endif
 #if defined(TIM4_BASE)
-      case (uint32_t)TIM4_BASE:
+  case TIM4_BASE:
+    __HAL_RCC_TIM4_CLK_ENABLE();
+    return;
 #endif
 #if defined(TIM5_BASE)
-      case (uint32_t)TIM5_BASE:
+  case TIM5_BASE:
+    __HAL_RCC_TIM5_CLK_ENABLE();
+    return;
 #endif
 #if defined(TIM6_BASE)
-      case (uint32_t)TIM6_BASE:
+  case TIM6_BASE:
+    __HAL_RCC_TIM6_CLK_ENABLE();
+    return;
 #endif
 #if defined(TIM7_BASE)
-      case (uint32_t)TIM7_BASE:
-#endif
-#if defined(TIM12_BASE)
-      case (uint32_t)TIM12_BASE:
-#endif
-#if defined(TIM13_BASE)
-      case (uint32_t)TIM13_BASE:
-#endif
-#if defined(TIM14_BASE)
-      case (uint32_t)TIM14_BASE:
-#endif
-#if defined(TIM18_BASE)
-      case (uint32_t)TIM18_BASE:
-#endif
-        clkSrc = 1;
-        break;
-#if defined(TIM1_BASE)
-      case (uint32_t)TIM1_BASE:
+  case TIM7_BASE:
+    __HAL_RCC_TIM7_CLK_ENABLE();
+    return;
 #endif
 #if defined(TIM8_BASE)
-      case (uint32_t)TIM8_BASE:
+  case TIM8_BASE:
+    __HAL_RCC_TIM8_CLK_ENABLE();
+    return;
 #endif
 #if defined(TIM9_BASE)
-      case (uint32_t)TIM9_BASE:
+  case TIM9_BASE:
+    __HAL_RCC_TIM9_CLK_ENABLE();
+    return;
 #endif
 #if defined(TIM10_BASE)
-      case (uint32_t)TIM10_BASE:
+  case TIM10_BASE:
+    __HAL_RCC_TIM10_CLK_ENABLE();
+    return;
 #endif
 #if defined(TIM11_BASE)
-      case (uint32_t)TIM11_BASE:
+  case TIM11_BASE:
+    __HAL_RCC_TIM11_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM12_BASE)
+  case TIM12_BASE:
+    __HAL_RCC_TIM12_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM13_BASE)
+  case TIM13_BASE:
+    __HAL_RCC_TIM13_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM14_BASE)
+  case TIM14_BASE:
+    __HAL_RCC_TIM14_CLK_ENABLE();
+    return;
 #endif
 #if defined(TIM15_BASE)
-      case (uint32_t)TIM15_BASE:
+  case TIM15_BASE:
+    __HAL_RCC_TIM15_CLK_ENABLE();
+    return;
 #endif
 #if defined(TIM16_BASE)
-      case (uint32_t)TIM16_BASE:
+  case TIM16_BASE:
+    __HAL_RCC_TIM16_CLK_ENABLE();
+    return;
 #endif
 #if defined(TIM17_BASE)
-      case (uint32_t)TIM17_BASE:
+  case TIM17_BASE:
+    __HAL_RCC_TIM17_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM18_BASE)
+  case TIM18_BASE:
+    __HAL_RCC_TIM18_CLK_ENABLE();
+    return;
 #endif
 #if defined(TIM19_BASE)
-      case (uint32_t)TIM19_BASE:
+  case TIM19_BASE:
+    __HAL_RCC_TIM19_CLK_ENABLE();
+    return;
 #endif
 #if defined(TIM20_BASE)
-      case (uint32_t)TIM20_BASE:
+  case TIM20_BASE:
+    __HAL_RCC_TIM20_CLK_ENABLE();
+    return;
 #endif
 #if defined(TIM21_BASE)
-      case (uint32_t)TIM21_BASE:
+  case TIM21_BASE:
+    __HAL_RCC_TIM21_CLK_ENABLE();
+    return;
 #endif
 #if defined(TIM22_BASE)
-      case (uint32_t)TIM22_BASE:
+  case TIM22_BASE:
+    __HAL_RCC_TIM22_CLK_ENABLE();
+    return;
 #endif
-        clkSrc = 2;
-        break;
-      default:
-        _Error_Handler("TIM: Unknown timer instance", (int)tim);
-        break;
-    }
+  
+  default:
+    break;
   }
-#endif
-  return clkSrc;
 }
+
 #endif
 
 void stm32_pauseTimer(TIM_HandleTypeDef* handle){
