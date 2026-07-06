@@ -698,7 +698,7 @@ int CurrentSense::alignHybridDriver(float voltage, BLDCDriver* bldc_driver, bool
     // check the phase B
     // find the highest magnitude in c
     // and make sure it's around the same as the C current (if the phase C is measured)
-    float cb[3] = {fabs(c.a), fabs(c.b), fabs(c.c)};
+    // float cb[3] = {fabs(c.a), fabs(c.b), fabs(c.c)};
     if(c.b && c.c){
         // if b and mid-phase c measured
         // verify that they have almost the same magnitude
