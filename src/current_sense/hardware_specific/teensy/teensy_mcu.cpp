@@ -3,7 +3,7 @@
 #if defined(__arm__) && defined(CORE_TEENSY)
 
 #define _ADC_VOLTAGE 3.3f
-#define _ADC_RESOLUTION 1024.0f
+#define _ADC_RESOLUTION 4096.0f
 
 // function reading an ADC value and returning the read voltage
 void* _configureADCInline(const void* driver_params, const int pinA,const int pinB,const int pinC){
