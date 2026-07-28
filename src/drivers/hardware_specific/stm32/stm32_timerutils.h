@@ -9,6 +9,7 @@
 
 #if defined(HAL_TIM_MODULE_ONLY)
 void enableTimerClock(TIM_HandleTypeDef *htim);
+void enableTimerClock(TIM_TypeDef *tim);
 
 constexpr uint8_t getTimerClkSrc(TIM_TypeDef *tim)
 {

@@ -7,10 +7,14 @@
 #if defined(HAL_TIM_MODULE_ONLY)
 
 //Functions copied over and modified from HardwareTimer to allow disabling HardwareTimer
-
 void enableTimerClock(TIM_HandleTypeDef *htim)
 {
-  switch ((uintptr_t)htim->Instance)
+  enableTimerClock(htim->Instance);
+}
+
+void enableTimerClock(TIM_TypeDef *tim)
+{
+  switch ((uintptr_t)tim)
   {
 #if defined(TIM1_BASE)
   case TIM1_BASE:
