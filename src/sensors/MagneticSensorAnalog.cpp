@@ -10,6 +10,9 @@ MagneticSensorAnalog::MagneticSensorAnalog(uint8_t _pinAnalog, int _min_raw_coun
   pinAnalog = _pinAnalog;
 
   cpr = _max_raw_count - _min_raw_count + 1;
+  #ifdef INTEGER_ANGLE
+  steps_per_revolution = cpr;
+  #endif
   min_raw_count = _min_raw_count;
   max_raw_count = _max_raw_count;
 
@@ -30,10 +33,14 @@ void MagneticSensorAnalog::init(){
 
 //  Shaft angle calculation
 //  angle is in radians [rad]
-float MagneticSensorAnalog::getSensorAngle(){
+angle_type MagneticSensorAnalog::getSensorAngle(){
   // raw data from the sensor
-  raw_count = getRawCount();   
+  raw_count = getRawCount();
+  #ifdef INTEGER_ANGLE
+  return raw_count - min_raw_count;
+  #else
   return ( (float) (raw_count - min_raw_count) / (float)cpr) * _2PI;
+  #endif
 }
 
 // function reading the raw counter of the magnetic sensor

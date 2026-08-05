@@ -29,7 +29,7 @@ class MagneticSensorAnalog: public Sensor{
     
     // implementation of abstract functions of the Sensor class
     /** get current angle (rad) */
-    float getSensorAngle() override;
+    angle_type getSensorAngle() override;
     /** raw count (typically in range of 0-1023), useful for debugging resolution issues */
     int raw_count;
 

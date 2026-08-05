@@ -46,7 +46,7 @@ class MagneticSensorSPI: public Sensor{
 
     // implementation of abstract functions of the Sensor class
     /** get current angle (rad) */
-    float getSensorAngle() override;
+    angle_type getSensorAngle() override;
 
     // returns the spi mode (phase/polarity of read/writes) i.e one of SPI_MODE0 | SPI_MODE1 | SPI_MODE2 | SPI_MODE3
     int spi_mode;

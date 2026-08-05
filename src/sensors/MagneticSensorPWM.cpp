@@ -11,6 +11,9 @@ MagneticSensorPWM::MagneticSensorPWM(uint8_t _pinPWM, int _min_raw_count, int _m
     pinPWM = _pinPWM;
 
     cpr = _max_raw_count - _min_raw_count + 1;
+    #ifdef INTEGER_ANGLE
+    steps_per_revolution = cpr;
+    #endif
     min_raw_count = _min_raw_count;
     max_raw_count = _max_raw_count;
 
@@ -39,6 +42,9 @@ MagneticSensorPWM::MagneticSensorPWM(uint8_t _pinPWM, int freqHz, int _total_pwm
     min_raw_count = lroundf(1000000.0f/freqHz/_total_pwm_clocks*_min_pwm_clocks);
     max_raw_count = lroundf(1000000.0f/freqHz/_total_pwm_clocks*_max_pwm_clocks);
     cpr = max_raw_count - min_raw_count + 1;
+    #ifdef INTEGER_ANGLE
+    steps_per_revolution = cpr;
+    #endif
 
     // define if the sensor uses interrupts
     is_interrupt_based = false;
@@ -72,12 +78,16 @@ void MagneticSensorPWM::update() {
 }
 
 // get current angle (rad)
-float MagneticSensorPWM::getSensorAngle(){
+angle_type MagneticSensorPWM::getSensorAngle(){
     // raw data from sensor
     raw_count = getRawCount();
     if (raw_count > max_raw_count) raw_count = max_raw_count;
     if (raw_count < min_raw_count) raw_count = min_raw_count;
+    #ifdef INTEGER_ANGLE
+    return raw_count-min_raw_count;
+    #else
     return( (float) (raw_count - min_raw_count) / (float)cpr) * _2PI;
+    #endif
 }
 
 

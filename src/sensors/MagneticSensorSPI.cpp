@@ -56,6 +56,9 @@ MagneticSensorSPI::MagneticSensorSPI(int cs, int _bit_resolution, int _angle_reg
   // angle read register of the magnetic sensor
   angle_register = _angle_register ? _angle_register : DEF_ANGLE_REGISTER;
   // register maximum value (counts per revolution)
+  #ifdef INTEGER_ANGLE
+  steps_per_revolution = _powtwo(_bit_resolution);
+  #endif
   cpr = _powtwo(_bit_resolution);
   spi_mode = SPI_MODE1;
   clock_speed = _isset(_clock_speed) ? _clock_speed : 1000000; 
@@ -100,8 +103,12 @@ void MagneticSensorSPI::init(SPIClass* _spi){
 
 //  Shaft angle calculation
 //  angle is in radians [rad]
-float MagneticSensorSPI::getSensorAngle(){
+angle_type MagneticSensorSPI::getSensorAngle(){
+  #ifdef INTEGER_ANGLE
+  return getRawCount();
+  #else
   return (getRawCount() / (float)cpr) * _2PI;
+  #endif
 }
 
 // function reading the raw counter of the magnetic sensor

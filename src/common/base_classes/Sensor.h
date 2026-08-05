@@ -21,6 +21,14 @@ enum Pullup : uint8_t {
     USE_EXTERN = 0x01  //!< Use external pullups
 };
 
+#define INTEGER_ANGLE
+
+#ifdef INTEGER_ANGLE
+using angle_type = int;
+#else
+using angle_type = float;
+#endif
+
 /**
  * Sensor abstract class defintion
  * 
@@ -43,13 +51,15 @@ enum Pullup : uint8_t {
  */
 class Sensor{
 	friend class SmoothingSensor;
+    friend class CalibratedSensor;
+    friend class HysteresisSensor;
     public:
         /**
          * Get mechanical shaft angle in the range 0 to 2PI. This value will be as precise as possible with
          * the hardware. Base implementation uses the values returned by update() so that 
          * the same values are returned until update() is called again.
          */
-        virtual float getMechanicalAngle();
+        virtual angle_type getMechanicalAngle();
 
         /**
          * Get current position (in rad) including full rotations and shaft angle.
@@ -108,6 +118,10 @@ class Sensor{
          */
         float min_elapsed_time = 0.000100f; // default is 100 microseconds, or 10kHz
 
+        #ifdef INTEGER_ANGLE
+        int getStepsPerRevolution() const {return steps_per_revolution;};
+        #endif
+
     protected:
         /** 
          * Get current shaft angle from the sensor hardware, and 
@@ -117,7 +131,8 @@ class Sensor{
          * Calling this method directly does not update the base-class internal fields.
          * Use update() when calling from outside code.
          */
-        virtual float getSensorAngle()=0;
+        virtual angle_type getSensorAngle()=0;
+
         /**
          * Call Sensor::init() from your sensor subclass's init method if you want smoother startup
          * The base class init() method calls getSensorAngle() several times to initialize the internal fields
@@ -126,14 +141,26 @@ class Sensor{
          */
         virtual void init();
 
+        /**
+         * Set angle_prev and full_rotations from a sensor angle, handling sensor overflows as revolutions
+         */
+        void setAngleContinuous(angle_type sensor_angle);
+
         // velocity calculation variables
         float velocity=0.0f;
-        float angle_prev=0.0f; // result of last call to getSensorAngle(), used for full rotations and velocity
-        long angle_prev_ts=0; // timestamp of last call to getAngle, used for velocity
+        angle_type angle_prev=0.0f; // result of last call to getSensorAngle(), used for full rotations and velocity
+        unsigned long angle_prev_ts=0; // timestamp of last call to getAngle, used for velocity
         float vel_angle_prev=0.0f; // angle at last call to getVelocity, used for velocity
-        long vel_angle_prev_ts=0; // last velocity calculation timestamp
+        unsigned long vel_angle_prev_ts=0; // last velocity calculation timestamp
+        #ifdef INTEGER_ANGLE
+    private:
+        angle_type sensor_angle_prev = 0;
+    protected:
+        angle_type steps_per_revolution = 2;
+        #else
         int32_t full_rotations=0; // full rotation tracking
         int32_t vel_full_rotations=0; // previous full rotation value for velocity calculation
+        #endif
 };
 
 #endif
