@@ -227,7 +227,7 @@ int _adc_gpio_init(Stm32CurrentSenseParams* cs_params, const int pinA, const int
   return 0;
 }
 
-
+#ifdef SIMPLEFOC_STM32_ADC_INTERRUPT
 extern "C" {
   void ADC_IRQHandler(void)
   {
@@ -246,6 +246,7 @@ extern "C" {
       HAL_ADC_IRQHandler(&hadc[2]);
   }
 }
+#endif
 #endif
 
 #endif
