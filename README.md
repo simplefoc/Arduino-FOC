@@ -262,3 +262,8 @@ If you are interested in citing  *Simple**FOC**library* or some other component 
 }
 
 ```
+
+
+---
+
+📖 [中文文档](README_CN.md)
