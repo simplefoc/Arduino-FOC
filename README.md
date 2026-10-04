@@ -101,7 +101,7 @@ This video is a bit outdated but it demonstrates the *Simple**FOC**library* basi
    - Built-in communication and monitoring via Serial, I2C, or custom protocols
 - **Cross-platform**:
    - Seamless code transfer from one microcontroller family to another 
-   - Supports multiple [MCU architectures](https://docs.simplefoc.commicrocontrollers):
+   - Supports multiple [MCU architectures](https://docs.simplefoc.com/microcontrollers):
       - Arduino: UNO R4, UNO, MEGA, DUE, Leonardo, Nano, Nano33, MKR ....
       - STM32 (Nucleo, Bluepill, B-G431B-ESC1, H7 family, etc.)
       - ESP32 (ESP32, ESP32-S2, ESP32-S3, ESP32-C3, ESP32-C6)
