@@ -127,7 +127,7 @@ class FOCMotor
      * 
      * @param velocity - current shaft velocity
      */
-    virtual float estimateBEMF(float velocity){return 0.0f;};
+    virtual float estimateBEMF([[maybe_unused]] float velocity){ return 0.0f; };
 
     // Methods that have a default behavior but can be overriden if needed
 
@@ -220,8 +220,8 @@ class FOCMotor
     float voltage_bemf; //!< estimated backemf voltage (if provided KV constant)
     float	Ualpha, Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
 
-    DQCurrent_s feed_forward_current;//!< current d and q current measured
-    DQVoltage_s feed_forward_voltage;//!< current d and q voltage set to the motor
+    DQCurrent_s feed_forward_current = {0.0f, 0.0f};//!< current d and q current measured
+    DQVoltage_s feed_forward_voltage = {0.0f, 0.0f};//!< current d and q voltage set to the motor
 
     // motor configuration parameters
     float voltage_sensor_align;//!< sensor and motor align voltage parameter

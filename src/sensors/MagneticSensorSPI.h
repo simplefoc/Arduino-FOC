@@ -33,8 +33,6 @@ class MagneticSensorSPI: public Sensor{
      */
     MagneticSensorSPI(int cs, int bit_resolution, int angle_register = 0, long clock_speed = NOT_SET);
 
-     /**
-     *  MagneticSensorSPI class constructor
     /**
      *  MagneticSensorSPI class constructor
      * @param config   SPI config
