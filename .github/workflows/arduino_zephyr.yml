@@ -1,0 +1,29 @@
+name: Zephyr
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Compile open-loop velocity for Arduino UNO Q
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: arduino/setup-arduino-cli@v2
+
+      - name: Install Arduino Zephyr core
+        run: |
+          arduino-cli core update-index --additional-urls https://downloads.arduino.cc/packages/package_zephyr_index.json
+          arduino-cli core install arduino:zephyr --additional-urls https://downloads.arduino.cc/packages/package_zephyr_index.json
+
+      - name: Compile open-loop velocity example
+        run: |
+          mkdir -p "$RUNNER_TEMP/arduino-libraries"
+          ln -s "$GITHUB_WORKSPACE" "$RUNNER_TEMP/arduino-libraries/SimpleFOC"
+          arduino-cli compile \
+            --fqbn arduino:zephyr:unoq \
+            --libraries "$RUNNER_TEMP/arduino-libraries" \
+            examples/motion_control/open_loop_motor_control/open_loop_velocity_example
