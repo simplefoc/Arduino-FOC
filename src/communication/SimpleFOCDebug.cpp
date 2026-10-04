@@ -121,5 +121,4 @@ void SimpleFOCDebug::println() {
         _debugPrint->println();
     }
 }
-
 #endif
