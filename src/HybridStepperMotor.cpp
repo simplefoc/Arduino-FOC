@@ -134,7 +134,7 @@ float HybridStepperMotor::estimateBEMF(float vel){
 // Function implementing Sine PWM and SVPWM algorithms
 void HybridStepperMotor::setPhaseVoltage(float Uq, float Ud, float angle_el)
 {
-  const float center = fminf(driver->voltage_power_supply, driver->voltage_limit) / 2;
+  const float center = driver->voltage_limit / 2;
   float _sa, _ca;
 
   _sincos(angle_el, &_sa, &_ca);
