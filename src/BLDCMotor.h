@@ -65,6 +65,8 @@ class BLDCMotor: public FOCMotor
     float estimateBEMF(float velocity) override;
 
 
+
+
     // Methods overriding the FOCMotor default behavior
 
     /**
@@ -77,6 +79,16 @@ class BLDCMotor: public FOCMotor
       return FOCMotor::characteriseMotor(voltage, 1.5f);
     }
     
+    /** 
+     * Update voltage limit considering the driver constraints 
+     * @param voltage The new voltage limit to set [V]
+    */
+    void updateVoltageLimit(float voltage){
+      float new_voltage_limit = voltage;
+      // volage_limit /2 for sine pwm and / SQRT3 for space vector modulation
+      if(driver) new_voltage_limit = _constrain(new_voltage_limit, 0, driver->voltage_limit/ _SQRT3); 
+      FOCMotor::updateVoltageLimit(new_voltage_limit);
+    }
 
 };
 
