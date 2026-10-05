@@ -45,6 +45,11 @@ MagneticSensorPWM::MagneticSensorPWM(uint8_t _pinPWM, int freqHz, int _total_pwm
 
     min_elapsed_time = 1.0f/freqHz; // set the minimum time between two readings
 
+    // scale the blocking read timeout with the PWM frequency: the high pulse can
+    // be almost a full period long (e.g. ~8.4ms at 115Hz) while the 1200us
+    // default only covers the fastest supported frequency (920Hz)
+    timeout_us = (unsigned int)(1.2f * 1000000.0f / freqHz);
+
     // define as not set
     last_call_us = _micros();
 }
