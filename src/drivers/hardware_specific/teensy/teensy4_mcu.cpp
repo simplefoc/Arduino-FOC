@@ -616,8 +616,8 @@ void write_pwm_on_pin(IMXRT_FLEXPWM_t *p, unsigned int submodule, uint8_t channe
 
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
-// - hardware speciffic
-// in generic case dont do anything
+// - hardware specific
+// in generic case don't do anything
  void* _configureCenterAligned3PMW(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
 
   if(!pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz

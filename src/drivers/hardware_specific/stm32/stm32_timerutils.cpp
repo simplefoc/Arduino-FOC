@@ -219,7 +219,7 @@ int stm32_getInternalSourceTrigger(TIM_HandleTypeDef* master, TIM_HandleTypeDef*
 // returns -1 if no trigger source is found
 // currently supports the master timers to be from
 // 
-//   fammilies     | timers
+//   families     | timers
 //   --------------| --------------------------------
 //   f1,f4,f7      | TIM1 to TIM4 and TIM8
 //   l4            | TIM1 to TIM4, TIM8 and TIM15
@@ -342,7 +342,7 @@ int stm32_getInternalSourceTrigger(TIM_HandleTypeDef* master, TIM_HandleTypeDef*
   #endif 
   #if defined(TIM5) 
     else if (TIM_master == TIM5){
-      #if defined(STM32F4xx) || defined(STM32F1xx) || defined(STM32F7xx) // f1, f4 adn f7 have tim5 sycned with tim1 and tim3 while others (l4, h7) have tim15
+      #if defined(STM32F4xx) || defined(STM32F1xx) || defined(STM32F7xx) // f1, f4 adn f7 have tim5 synced with tim1 and tim3 while others (l4, h7) have tim15
       #if defined(TIM1)
       if(TIM_slave == TIM1) return LL_TIM_TS_ITR0;
       #endif

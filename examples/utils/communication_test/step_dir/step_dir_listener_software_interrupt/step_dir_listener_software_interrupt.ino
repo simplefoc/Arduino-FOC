@@ -17,7 +17,7 @@ float received_angle = 0;
 StepDirListener step_dir = StepDirListener(4, 5, 2.0f*_PI/200.0); // receive the angle in radians
 void onStep() { step_dir.handle(); }
 
-// If no available hadware interrupt pins use the software interrupt
+// If no available hardware interrupt pins use the software interrupt
 PciListenerImp listenStep(step_dir.pin_step, onStep);
 
 void setup() {
@@ -29,10 +29,10 @@ void setup() {
   // enable software interrupts
   PciManager.registerListener(&listenStep);
   // attach the variable to be updated on each step (optional)
-  // the same can be done asynchronously by caling step_dir.getValue();
+  // the same can be done asynchronously by calling step_dir.getValue();
   step_dir.attach(&received_angle);
 
-  Serial.println(F("Step/Dir listenning."));
+  Serial.println(F("Step/Dir listening."));
   _delay(1000);
 }
 

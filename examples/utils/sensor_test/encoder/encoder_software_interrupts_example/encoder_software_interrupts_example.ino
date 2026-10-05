@@ -16,7 +16,7 @@
 
 // encoder instance
 Encoder encoder = Encoder(A0, A1, 2048);
-// interrupt routine intialisation
+// interrupt routine initialization
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 

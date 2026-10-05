@@ -101,7 +101,7 @@ void MagneticSensorPWM::handlePWM() {
         pulse_timestamp = last_call_us; // angle was sampled at the rising edge of the pulse, so use that timestamp
     }
 
-    // save the currrent timestamp for the next call
+    // save the current timestamp for the next call
     last_call_us = now_us;
     is_interrupt_based = true; // set the flag to true
 }

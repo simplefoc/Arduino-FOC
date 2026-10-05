@@ -64,11 +64,11 @@ void setup() {
 
   // comment out if not needed
   motor.useMonitoring(Serial);
-  motor.monitor_downsample = 0; // disable intially
+  motor.monitor_downsample = 0; // disable initially
   motor.monitor_variables = _MON_TARGET | _MON_VEL | _MON_ANGLE; // monitor target velocity and angle
 
   // subscribe motor to the commander
-  //command.add('T', doMotion, "motion control"); // a bit less resouce intensive
+  //command.add('T', doMotion, "motion control"); // a bit less resource intensive
   command.add('M', doMotor, "motor");
   command.add('C', doPID, "custom PID");
 

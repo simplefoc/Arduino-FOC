@@ -10,7 +10,7 @@ FOCMotor::FOCMotor()
   velocity_limit = DEF_VEL_LIM;
   // maximum voltage to be set to the motor
   voltage_limit = DEF_POWER_SUPPLY;
-  // not set on the begining
+  // not set on the beginning
   current_limit = DEF_CURRENT_LIM;
 
   // index search velocity
@@ -593,7 +593,7 @@ void FOCMotor::loopFOC() {
 
   // if open-loop do nothing
   if( controller==MotionControlType::angle_openloop || controller==MotionControlType::velocity_openloop ) 
-    // calculate the open loop electirical angle
+    // calculate the open loop electrical angle
     electrical_angle = _electricalAngle((shaft_angle), pole_pairs);
   else
     // Needs the update() to be called first
@@ -683,7 +683,7 @@ void FOCMotor::move(float new_target) {
   if(motor_status == FOCMotorStatus::motor_calibrating) return;
   
   // calculate the elapsed time between the calls
-  // TODO replace downsample by runnind the code at 
+  // TODO replace downsample by running the code at 
   // a specific frequency (or almost)
   updateMotionControlTime();
 
@@ -797,7 +797,7 @@ int  FOCMotor::initFOC() {
   
   // aligning the current sensor - can be skipped
   // checks if driver phases are the same as current sense phases
-  // and checks the direction of measuremnt.
+  // and checks the direction of measurement.
   if(exit_flag){
     if(current_sense){ 
       if (!current_sense->initialized) {

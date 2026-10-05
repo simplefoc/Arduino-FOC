@@ -57,7 +57,7 @@ void setup() {
   // set control loop type to be used
   motor.controller = MotionControlType::torque;
 
-  // contoller configuration based on the control type
+  // controller configuration based on the control type
   motor.PID_velocity.P = 0.2f;
   motor.PID_velocity.I = 20;
   motor.PID_velocity.D = 0;
@@ -80,7 +80,7 @@ void setup() {
   // align encoder and start FOC
   motor.initFOC();
 
-  // set the inital target value
+  // set the initial target value
   motor.target = 2;
 
   // define the motor id
@@ -99,7 +99,7 @@ void loop() {
 
   // iterative function setting the outter loop target
   // velocity, position or voltage
-  // if tatget not set in parameter uses motor.target variable
+  // if target not set in parameter uses motor.target variable
   motor.move();
 
   // user communication

@@ -20,7 +20,7 @@ enum VerboseMode : uint8_t {
 };
 
 
-// callback function pointer definiton
+// callback function pointer definition
 typedef void (* CommandCallback)(char*); //!< command callback function pointer
 
 /**
@@ -94,7 +94,7 @@ class Commander
     void add(char id , CommandCallback onCommand, const char* label = nullptr);
 
     // printing variables
-    VerboseMode verbose = VerboseMode::user_friendly; //!< flag signaling that the commands should output user understanable text
+    VerboseMode verbose = VerboseMode::user_friendly; //!< flag signaling that the commands should output user understandable text
     uint8_t decimal_places = 3; //!< number of decimal places to be used when displaying numbers
 
     // monitoring functions

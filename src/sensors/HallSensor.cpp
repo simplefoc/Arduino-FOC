@@ -67,7 +67,7 @@ void HallSensor::updateState() {
 
   // glitch avoidance #2 changes in direction can cause velocity spikes.  Possible improvements needed in this area
   if (direction == old_direction) {
-    // not oscilating or just changed direction
+    // not oscillating or just changed direction
     pulse_diff = new_pulse_timestamp - pulse_timestamp;
   } else {
     pulse_diff = 0;

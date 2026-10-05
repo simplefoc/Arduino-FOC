@@ -131,7 +131,7 @@ void _configureHwPwm(NRF_PWM_Type* mcpwm1,  NRF_PWM_Type* mcpwm2){
 
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
-// - hardware speciffic
+// - hardware specific
 void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
 
   if( !pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = PWM_FREQ; // default frequency 20khz for a resolution of 800
@@ -193,7 +193,7 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
 
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 4PWM setting
-// - hardware speciffic
+// - hardware specific
 void* _configure4PWM(long pwm_frequency, const int pinA, const int pinB, const int pinC, const int pinD) {
 
   if( !pwm_frequency || pwm_frequency == NOT_SET) pwm_frequency = PWM_FREQ; // default frequency 20khz for a resolution of 800
@@ -257,7 +257,7 @@ void* _configure4PWM(long pwm_frequency, const int pinA, const int pinB, const i
 
 // function setting the pwm duty cycle to the hardware
 // - BLDC motor - 3PWM setting
-// - hardware speciffic
+// - hardware specific
 void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* params){
   // transform duty cycle from [0,1] to [0,range]
   bldc_3pwm_motor_slots_t* p = ((NRF52DriverParams*)params)->slot.slot3pwm;
@@ -273,7 +273,7 @@ void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* params){
 
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 4PWM setting
-// - hardware speciffic
+// - hardware specific
 void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, void* params){
 
   stepper_motor_slots_t* p = ((NRF52DriverParams*)params)->slot.slotstep;

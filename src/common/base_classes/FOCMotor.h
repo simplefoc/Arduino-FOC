@@ -129,7 +129,7 @@ class FOCMotor
      */
     virtual float estimateBEMF(float velocity){return 0.0f;};
 
-    // Methods that have a default behavior but can be overriden if needed
+    // Methods that have a default behavior but can be overridden if needed
 
     /**
      * Function initializing FOC algorithm
@@ -239,7 +239,7 @@ class FOCMotor
     float current_limit; //!< Current limiting variable - global limit
     float velocity_limit; //!< Velocity limiting variable - global limit
 
-    // motor status vairables
+    // motor status variables
     int8_t enabled = 0;//!< enabled or disabled motor flag
     FOCMotorStatus motor_status = FOCMotorStatus::motor_uninitialized; //!< motor status
     
@@ -261,10 +261,10 @@ class FOCMotor
     PIDController P_angle{DEF_P_ANGLE_P,0,0,0,DEF_VEL_LIM};	//!< parameter determining the position PID configuration 
     LowPassFilter LPF_velocity{DEF_VEL_FILTER_Tf};//!<  parameter determining the velocity Low pass filter configuration 
     LowPassFilter LPF_angle{0.0};//!<  parameter determining the angle low pass filter configuration 
-    unsigned int motion_downsample = DEF_MOTION_DOWNSMAPLE; //!< parameter defining the ratio of downsampling for move commad
-    unsigned int motion_cnt = 0; //!< counting variable for downsampling for move commad
+    unsigned int motion_downsample = DEF_MOTION_DOWNSMAPLE; //!< parameter defining the ratio of downsampling for move command
+    unsigned int motion_cnt = 0; //!< counting variable for downsampling for move command
 
-    // sensor related variabels
+    // sensor related variables
     float sensor_offset; //!< user defined sensor zero offset
     float zero_electric_angle = NOT_SET;//!< absolute zero electric angle - if available
     Direction sensor_direction = Direction::UNKNOWN; //!< default is Direction::UNKNOWN; it is set during calibration. Direction::CCW flips the direction compared to CW.

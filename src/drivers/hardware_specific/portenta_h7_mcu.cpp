@@ -385,7 +385,7 @@ void _alignPWMTimers(pwmout_t *t1, pwmout_t *t2, pwmout_t *t3, pwmout_t *t4){
 
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 2PWM setting
-// - hardware speciffic
+// - hardware specific
 void* _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
   if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
@@ -396,7 +396,7 @@ void* _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
   core_util_critical_section_enter();
   _pwm_init(&(params->pins[0]), pinA, (long)pwm_frequency);
   _pwm_init(&(params->pins[1]), pinB, (long)pwm_frequency);
-  // allign the timers
+  // align the timers
   _alignPWMTimers(&(params->pins[0]), &(params->pins[1]));
   core_util_critical_section_exit();
   return params;
@@ -405,7 +405,7 @@ void* _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
 
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
-// - hardware speciffic
+// - hardware specific
 void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
   if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
@@ -417,7 +417,7 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
   _pwm_init(&(params->pins[0]), pinA, (long)pwm_frequency);
   _pwm_init(&(params->pins[1]), pinB, (long)pwm_frequency);
   _pwm_init(&(params->pins[2]), pinC, (long)pwm_frequency);
-  // allign the timers
+  // align the timers
   _alignPWMTimers(&(params->pins[0]), &(params->pins[1]), &(params->pins[2]));
   core_util_critical_section_exit();
 
@@ -428,7 +428,7 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
 
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 4PWM setting
-// - hardware speciffic
+// - hardware specific
 void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
   if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
@@ -441,7 +441,7 @@ void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const in
   _pwm_init(&(params->pins[1]), pinB, (long)pwm_frequency);
   _pwm_init(&(params->pins[2]), pinC, (long)pwm_frequency);
   _pwm_init(&(params->pins[3]), pinD, (long)pwm_frequency);
-  // allign the timers
+  // align the timers
   _alignPWMTimers(&(params->pins[0]), &(params->pins[1]), &(params->pins[2]), &(params->pins[3]));
   core_util_critical_section_exit();
 
@@ -452,7 +452,7 @@ void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const in
 
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 2PWM setting
-//- hardware speciffic
+//- hardware specific
 void _writeDutyCycle2PWM(float dc_a,  float dc_b, void* params){
     core_util_critical_section_enter();
     _pwm_write(&(((PortentaDriverParams*)params)->pins[0]), (float)dc_a);
@@ -462,7 +462,7 @@ void _writeDutyCycle2PWM(float dc_a,  float dc_b, void* params){
 
 // function setting the pwm duty cycle to the hardware
 // - BLDC motor - 3PWM setting
-//- hardware speciffic
+//- hardware specific
 void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* params){
     core_util_critical_section_enter();
     _pwm_write(&(((PortentaDriverParams*)params)->pins[0]), (float)dc_a);
@@ -474,7 +474,7 @@ void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* params){
 
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 4PWM setting
-//- hardware speciffic
+//- hardware specific
 void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, void* params){
     core_util_critical_section_enter();
     _pwm_write(&(((PortentaDriverParams*)params)->pins[0]), (float)dc_1a);

@@ -26,7 +26,7 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 
 //  Encoder(int encA, int encB , int cpr, int index)
 Encoder encoder = Encoder(2, 3, 2048);
-// interrupt routine intialisation
+// interrupt routine initialization
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 

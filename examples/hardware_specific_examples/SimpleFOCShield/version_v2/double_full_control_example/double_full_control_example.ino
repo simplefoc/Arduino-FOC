@@ -77,13 +77,13 @@ void setup() {
   motor1.controller = MotionControlType::torque;
   motor2.controller = MotionControlType::torque;
 
-  // contoller configuration based on the controll type
+  // controller configuration based on the control type
   motor1.PID_velocity.P = 0.05f;
   motor1.PID_velocity.I = 1;
   motor1.PID_velocity.D = 0;
   // default voltage_power_supply
   motor1.voltage_limit = 12;
-  // contoller configuration based on the controll type
+  // controller configuration based on the control type
   motor2.PID_velocity.P = 0.05f;
   motor2.PID_velocity.I = 1;
   motor2.PID_velocity.D = 0;
@@ -116,7 +116,7 @@ void setup() {
   // align encoder and start FOC
   motor2.initFOC();
 
-  // set the inital target value
+  // set the initial target value
   motor1.target = 2;
   motor2.target = 2;
 

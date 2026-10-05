@@ -14,7 +14,7 @@ LowsideCurrentSense currentSense = LowsideCurrentSense(0.003f, -64.0f/7.0f, A_OP
 // encoder instance
 Encoder encoder = Encoder(A_HALL2, A_HALL3, 2048, A_HALL1);
 
-// Interrupt routine intialisation
+// Interrupt routine initialization
 // channel A and B callbacks
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
@@ -62,7 +62,7 @@ void setup() {
   // set motion control loop to be used
   motor.controller = MotionControlType::velocity;
 
-  // contoller configuration 
+  // controller configuration 
   // default parameters in defaults.h
 
   // velocity PI controller parameters

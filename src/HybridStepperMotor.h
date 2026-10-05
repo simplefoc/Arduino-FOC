@@ -80,7 +80,7 @@ public:
      */
     int characteriseMotor(float voltage){
       // correction factor is not correct here, 
-      // we need to add the driver reistance to compensate for the voltage drop on it, but it is a good starting point for now
+      // we need to add the driver resistance to compensate for the voltage drop on it, but it is a good starting point for now
       return FOCMotor::characteriseMotor(voltage, 1.0f); 
     };
     

@@ -14,12 +14,12 @@ float readSensor(){
   return analogRead(A0)*_2PI/1024.0;
 }
 
-// sensor intialising function
+// sensor initializing function
 void initSensor(){
   pinMode(A0,INPUT);
 }
 
-// generic sensor class contructor
+// generic sensor class constructor
 // - read sensor callback 
 // - init sensor callback (optional)
 GenericSensor sensor = GenericSensor(readSensor, initSensor);

@@ -25,12 +25,12 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 // hall sensor instance
 HallSensor sensor = HallSensor(2, 3, 4, 11);
 
-// Interrupt routine intialisation
+// Interrupt routine initialization
 // channel A, B and C callbacks
 void doA(){sensor.handleA();}
 void doB(){sensor.handleB();}
 void doC(){sensor.handleC();}
-// If no available hadware interrupt pins use the software interrupt
+// If no available hardware interrupt pins use the software interrupt
 PciListenerImp listenC(sensor.pinC, doC);
 
 
@@ -67,7 +67,7 @@ void setup() {
   motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
   // set control loop type to be used
   motor.controller = MotionControlType::torque;
-  // contoller configuration based on the controll type
+  // controller configuration based on the control type
   motor.PID_velocity.P = 0.2f;
   motor.PID_velocity.I = 20;
   motor.PID_velocity.D = 0;
@@ -90,7 +90,7 @@ void setup() {
   // align encoder and start FOC
   motor.initFOC();
 
-  // set the inital target value
+  // set the initial target value
   motor.target = 2;
 
   // define the motor id
@@ -109,7 +109,7 @@ void loop() {
 
   // iterative function setting the outter loop target
   // velocity, position or voltage
-  // if tatget not set in parameter uses motor.target variable
+  // if target not set in parameter uses motor.target variable
   motor.move();
 
   // user communication

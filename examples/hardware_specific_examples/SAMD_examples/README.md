@@ -41,7 +41,7 @@ Note: in all of the above note that you *cannot* set the timers or WOs used - th
 So it is matter of choosing the right pins, nothing else.
 
 Note also: Unfortunately you can't set the PWM frequency. It is currently fixed at 24KHz. This is a tradeoff between limiting PWM resolution vs
-increasing frequency, and also due to keeping the pin assignemts flexible, which would not be possible if we ran the timers at different rates.
+increasing frequency, and also due to keeping the pin assignments flexible, which would not be possible if we ran the timers at different rates.
 
 ## Status
 

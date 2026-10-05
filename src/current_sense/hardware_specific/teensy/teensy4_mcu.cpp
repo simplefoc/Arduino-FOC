@@ -176,7 +176,7 @@ void* _configureADCLowSide(const void* driver_params, const int pinA,const int p
   if( _isset(pinC) ) pinMode(pinC, INPUT);
 
   // check if either of the pins are not set
-  // and dont use it if it isn't
+  // and don't use it if it isn't
   int pin_count = 0;
   int pins[3] = {NOT_SET, NOT_SET, NOT_SET};
   if(_isset(pinA)) pins[pin_count++] = pinA;
@@ -219,7 +219,7 @@ void* _driverSyncLowSide(void* driver_params, void* cs_params){
     flexpwm->SM[submodule].TCTRL = FLEXPWM_SMTCTRL_OUT_TRIG_EN(1<<1); 
 
 
-    // if needed the interrupt can be moved to some other point in the PWM cycle by using an addional val register example: VAL4
+    // if needed the interrupt can be moved to some other point in the PWM cycle by using an additional val register example: VAL4
     // setup the ADC_ETC trigger to be triggered by the FlexPWM channel 4 (val4)
     // flexpwm->SM[submodule].TCTRL = FLEXPWM_SMTCTRL_OUT_TRIG_EN(1<<4);
     // setup this val4 for interrupt on match for ADC sync

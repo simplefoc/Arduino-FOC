@@ -587,7 +587,7 @@ void Commander::target(FOCMotor* motor,  char* user_cmd, char* separator){
       vel= atof(strtok (user_cmd, separator));
       motor->target = vel;
 
-      // allow for setting only the target velocity without chaning the torque limit
+      // allow for setting only the target velocity without changing the torque limit
       next_value = strtok (NULL, separator);
       if (next_value){
         torque = atof(next_value);
@@ -601,7 +601,7 @@ void Commander::target(FOCMotor* motor,  char* user_cmd, char* separator){
       pos= atof(strtok (user_cmd, separator));
       motor->target = pos;
 
-      // allow for setting only the target position without chaning the velocity/torque limits 
+      // allow for setting only the target position without changing the velocity/torque limits 
       next_value = strtok (NULL, separator);
       if( next_value ){
         vel = atof(next_value);
@@ -621,7 +621,7 @@ void Commander::target(FOCMotor* motor,  char* user_cmd, char* separator){
       // set the target
       vel= atof(strtok (user_cmd, separator));
       motor->target = vel;
-      // allow for setting only the target velocity without chaning the torque limit
+      // allow for setting only the target velocity without changing the torque limit
       next_value = strtok (NULL, separator);
       if (next_value ){
         torque = atof(next_value);
@@ -635,12 +635,12 @@ void Commander::target(FOCMotor* motor,  char* user_cmd, char* separator){
       pos= atof(strtok (user_cmd, separator));
       motor->target = pos; 
       
-      // allow for setting only the target position without chaning the velocity/torque limits 
+      // allow for setting only the target position without changing the velocity/torque limits 
       next_value = strtok (NULL, separator);
       if( next_value ){
         vel = atof(next_value);
         motor->updateVelocityLimit(vel);
-        // allow for setting only the target velocity without chaning the torque limit
+        // allow for setting only the target velocity without changing the torque limit
         next_value = strtok (NULL, separator);
         if (next_value ){
           torque = atof(next_value);

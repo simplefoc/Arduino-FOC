@@ -317,7 +317,7 @@ STM32DriverParams* _stm32_initHardware6PWMPair(long PWM_freq, float dead_zone, P
   // sanity check
   if (pinH==NULL || pinL==NULL)
     return (STM32DriverParams*)SIMPLEFOC_DRIVER_INIT_FAILED;
-#if defined(STM32L0xx) // L0 boards dont have hardware 6pwm interface 
+#if defined(STM32L0xx) // L0 boards don't have hardware 6pwm interface 
   return SIMPLEFOC_DRIVER_INIT_FAILED; // return nothing
 #endif
 
@@ -422,7 +422,7 @@ void* _configure1PWM(long pwm_frequency, const int pinA) {
 
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 2PWM setting
-// - hardware speciffic
+// - hardware specific
 void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
   if (numMotorsUsed+1 > SIMPLEFOC_STM32_MAX_MOTORSUSED) {
     SIMPLEFOC_DEBUG("STM32-DRV: ERR: too many drivers used");
@@ -463,7 +463,7 @@ void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
-// - hardware speciffic
+// - hardware specific
 void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
   if (numMotorsUsed+1 > SIMPLEFOC_STM32_MAX_MOTORSUSED) {
     SIMPLEFOC_DEBUG("STM32-DRV: ERR: too many drivers used");
@@ -504,7 +504,7 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
 
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 4PWM setting
-// - hardware speciffic
+// - hardware specific
 void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
   if (numMotorsUsed+1 > SIMPLEFOC_STM32_MAX_MOTORSUSED) {
     SIMPLEFOC_DEBUG("STM32-DRV: ERR: too many drivers used");

@@ -23,10 +23,10 @@
 uint32_t _getADCChannel(PinName pin, ADC_TypeDef* adc = NP);
 uint32_t _getADCInjectedRank(uint8_t ind);
 
-// timer to injected TRGO - architecure specific
+// timer to injected TRGO - architecture specific
 uint32_t _timerToInjectedTRGO(TIM_HandleTypeDef* timer);
 
-// timer to regular TRGO - architecure specific
+// timer to regular TRGO - architecture specific
 uint32_t _timerToRegularTRGO(TIM_HandleTypeDef* timer);
 
 // function returning index of the ADC instance
