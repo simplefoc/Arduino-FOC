@@ -143,11 +143,12 @@ float HallSensor::getVelocity(){
   noInterrupts();
   long last_pulse_timestamp = pulse_timestamp;
   long last_pulse_diff = pulse_diff;
+  Direction last_direction = direction;
   interrupts();
   if (last_pulse_diff == 0 || ((long)(_micros() - last_pulse_timestamp) > last_pulse_diff*2) ) { // last velocity isn't accurate if too old
     return 0;
   } else {
-    return direction * (_2PI / (float)cpr) / (last_pulse_diff / 1000000.0f);
+    return last_direction * (_2PI / (float)cpr) / (last_pulse_diff / 1000000.0f);
   }
 
 }
