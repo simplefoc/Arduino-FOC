@@ -630,14 +630,14 @@ int CurrentSense::alignHybridDriver(float voltage, BLDCDriver* bldc_driver, bool
     if(c.a && c.c){
         // if a and mid-phase c measured
         // verify that they have almost the same magnitude
-        if((fabs(c.a) - fabs(c.c)) > 0.1f){
+        if(fabs(fabs(c.a) - fabs(c.c)) > 0.1f){
             SIMPLEFOC_DEBUG("CS: Err A-C currents not equal!");
             return 0;
         }
     }else if(c.b && c.c){
-        // if a and mid-phase c measured
+        // if b and mid-phase c measured
         // verify that they have almost the same magnitude
-        if((fabs(c.a) - fabs(c.c)) > 0.1f){
+        if(fabs(fabs(c.b) - fabs(c.c)) > 0.1f){
             SIMPLEFOC_DEBUG("CS: Err B-C currents not equal!");
             return 0;
         }else{
@@ -703,7 +703,7 @@ int CurrentSense::alignHybridDriver(float voltage, BLDCDriver* bldc_driver, bool
     if(c.b && c.c){
         // if b and mid-phase c measured
         // verify that they have almost the same magnitude
-        if((fabs(c.b) - fabs(c.c)) > 0.1f){
+        if(fabs(fabs(c.b) - fabs(c.c)) > 0.1f){
             SIMPLEFOC_DEBUG("CS: Err B-C currents not equal!");
             return 0;
         }
