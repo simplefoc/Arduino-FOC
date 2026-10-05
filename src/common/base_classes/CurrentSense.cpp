@@ -267,7 +267,7 @@ int CurrentSense::alignBLDCDriver(float voltage, BLDCDriver* bldc_driver, bool m
                 _swap(pinA, pinB);
                 _swap(offset_ia, offset_ib);
                 _swap(gain_a, gain_b);
-                _swap(c_a.b, c_a.b);
+                _swap(c_a.a, c_a.b);
                 phases_switched = true; // signal that pins have been switched
                 break;
             case 2: // phase C is the max current
@@ -297,14 +297,14 @@ int CurrentSense::alignBLDCDriver(float voltage, BLDCDriver* bldc_driver, bool m
             _swap(pinA, pinB);
             _swap(offset_ia, offset_ib);
             _swap(gain_a, gain_b);
-            _swap(c_a.b, c_a.b);
+            _swap(c_a.a, c_a.b);
             phases_switched = true; // signal that pins have been switched
         }else if(_isset(pinA) && !_isset(pinC)){
             SIMPLEFOC_DEBUG("CS: Switch A-(C)NC");
             _swap(pinA, pinC);
             _swap(offset_ia, offset_ic);
             _swap(gain_a, gain_c);
-            _swap(c_a.b, c_a.c);
+            _swap(c_a.a, c_a.c);
             phases_switched = true; // signal that pins have been switched
         }
     }
