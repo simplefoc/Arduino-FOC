@@ -11,7 +11,7 @@ LowPassFilter::LowPassFilter(float time_constant, float sampling_time)
 
 float LowPassFilter::operator() (float x)
 {
-    // initalise the elapsed time with the fixed sampling tims Ts
+    // initialize the elapsed time with the fixed sampling time Ts
     float dt = Ts; 
     // if Ts is not set, use adaptive sampling time
     // calculate the ellapsed time dt

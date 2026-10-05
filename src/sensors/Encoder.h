@@ -19,7 +19,7 @@ class Encoder: public Sensor{
  public:
     /**
     Encoder class constructor
-    @param encA  encoder B pin
+    @param encA  encoder A pin
     @param encB  encoder B pin
     @param ppr  impulses per rotation  (cpr=ppr*4)
     @param index index pin number (optional input)

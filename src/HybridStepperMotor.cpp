@@ -10,7 +10,7 @@
 HybridStepperMotor::HybridStepperMotor(int pp, float _R, float _KV, float _Lq, float _Ld)
     : FOCMotor()
 {
-  // number od pole pairs
+  // number of pole pairs
   pole_pairs = pp;
   // save phase resistance number
   phase_resistance = _R;

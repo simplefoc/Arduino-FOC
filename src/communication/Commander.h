@@ -131,8 +131,8 @@ class Commander
      *          '2' - foc_current
      *    'E' - Motor status (enable/disable)
      *          sub-commands:
-     *          '0' - enable
-     *          '1' - disable
+     *          '0' - disable
+     *          '1' - enable
      *    'R' - Motor resistance
      *    'S' - Sensor offsets
      *          sub-commands:
@@ -230,8 +230,8 @@ class Commander
      *          '2' - foc_current
      *    'E' - Motor status (enable/disable)
      *          sub-commands:
-     *          '0' - enable
-     *          '1' - disable
+     *          '0' - disable
+     *          '1' - enable
      *    '' - Target setting interface 
      *         Depends of the motion control mode:
      *          - torque                          : torque (ex. M2.5) 

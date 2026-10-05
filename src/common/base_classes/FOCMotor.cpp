@@ -446,7 +446,7 @@ float FOCMotor::angleOpenloop(float target_angle){
 void FOCMotor::updateVelocityLimit(float new_velocity_limit) {
   velocity_limit = new_velocity_limit;
   if(controller != MotionControlType::angle_nocascade) 
-    P_angle.limit = abs(velocity_limit); // if angle control but no velocity cascade, limit the angle controller by the velocity limit
+    P_angle.limit = abs(velocity_limit); // in cascaded angle control the angle controller outputs the velocity set point, so limit it by the velocity limit
 }
 
 // Update limit values in controllers when changed

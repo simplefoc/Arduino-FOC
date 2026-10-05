@@ -17,7 +17,7 @@
 #define DEF_PID_CURR_D 0.0f //!<  default PID controller D value
 #define DEF_PID_CURR_RAMP 1000.0f //!< default PID controller voltage ramp value
 #define DEF_PID_CURR_LIMIT (DEF_POWER_SUPPLY) //!< default PID controller voltage limit
-#define DEF_CURR_FILTER_Tf 0.01f //!< default velocity filter time constant
+#define DEF_CURR_FILTER_Tf 0.01f //!< default current filter time constant
 #define DEF_CURR_BANDWIDTH 100.0f //!< current bandwidth
 #else
 // for stm32, due, teensy, esp32 and similar

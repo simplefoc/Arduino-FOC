@@ -41,7 +41,7 @@ typedef struct GenericDriverParams {
 
 /** 
  * Configuring PWM frequency, resolution and alignment
- * - Stepper driver - 2PWM setting
+ * - Stepper driver - 1PWM setting
  * - hardware specific
  * 
  * @param pwm_frequency - frequency in hertz - if applicable
@@ -102,10 +102,10 @@ void* _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const
  * @param dead_zone  duty cycle protection zone [0, 1] - both low and high side low - if applicable
  * @param pinA_h pinA high-side bldc driver 
  * @param pinA_l pinA low-side bldc driver 
- * @param pinB_h pinA high-side bldc driver 
- * @param pinB_l pinA low-side bldc driver 
- * @param pinC_h pinA high-side bldc driver 
- * @param pinC_l pinA low-side bldc driver 
+ * @param pinB_h pinB high-side bldc driver 
+ * @param pinB_l pinB low-side bldc driver 
+ * @param pinC_h pinC high-side bldc driver 
+ * @param pinC_l pinC low-side bldc driver 
  * 
  * @return -1 if failed, or pointer to internal driver parameters struct if successful
  */
