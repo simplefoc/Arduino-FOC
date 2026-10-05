@@ -450,6 +450,7 @@ int CurrentSense::alignStepperDriver(float voltage, StepperDriver* stepper_drive
         _swap(pinA, pinB);
         _swap(offset_ia, offset_ib);
         _swap(gain_a, gain_b);
+        _swap(c.a, c.b);
         phases_switched = true; // signal that pins have been switched
     }
     // 2) check if measured current a is positive and invert if not
