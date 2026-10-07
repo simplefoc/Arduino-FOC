@@ -434,8 +434,9 @@ float FOCMotor::angleOpenloop(float target_angle){
   //                        where small position changes are no longer captured by the precision of floats
   //                        when the total position is large.
   if(abs( target_angle - shaft_angle ) > abs(velocity_limit*Ts)){
-    shaft_angle += _sign(target_angle - shaft_angle) * abs( velocity_limit )*Ts;
-    shaft_velocity = velocity_limit;
+    float move_direction = _sign(target_angle - shaft_angle);
+    shaft_angle += move_direction * abs( velocity_limit ) * Ts;
+    shaft_velocity = move_direction * abs( velocity_limit );
   }else{
     shaft_angle = target_angle;
     shaft_velocity = 0;
