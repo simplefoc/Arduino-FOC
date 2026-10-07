@@ -40,6 +40,8 @@
 //sensor
 #define SCMD_SENS_MECH_OFFSET 'M' //!< Sensor offset
 #define SCMD_SENS_ELEC_OFFSET 'E' //!< Sensor electrical zero offset
+#define SCMD_SENS_VEL_DT 'T' //!< Sensor velocity minimum elapsed time between updates
+
 // monitoring
 #define SCMD_DOWNSAMPLE 'D' //!< Monitoring downsample value
 #define SCMD_CLEAR      'C' //!< Clear all monitored variables

@@ -123,7 +123,11 @@ TIM_HandleTypeDef* stm32_useTimer(PinMap* timer) {
   #if defined(TIM_RCR_REP)
   handle->Init.RepetitionCounter = 1;
   #endif
+  #if STM32_CORE_VERSION_MAJOR >= 3
+  enableTimerClock(handle->Instance);
+  #else
   enableTimerClock(handle);
+  #endif
   HAL_TIM_Base_Init(handle);
   stm32_pauseTimer(handle);
   timersUsed[numTimersUsed++] = handle;

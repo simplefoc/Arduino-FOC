@@ -4,6 +4,135 @@
 
 #if defined(_STM32_DEF_) || defined(TARGET_STM32H7) // if stm32duino or portenta
 
+#if defined(HAL_TIM_MODULE_ONLY)
+
+//Functions copied over and modified from HardwareTimer to allow disabling HardwareTimer
+void enableTimerClock(TIM_HandleTypeDef *htim)
+{
+  enableTimerClock(htim->Instance);
+}
+
+void enableTimerClock(TIM_TypeDef *tim)
+{
+  switch ((uintptr_t)tim)
+  {
+#if defined(TIM1_BASE)
+  case TIM1_BASE:
+    __HAL_RCC_TIM1_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM2_BASE)
+  case TIM2_BASE:
+    __HAL_RCC_TIM2_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM3_BASE)
+  case TIM3_BASE:
+    __HAL_RCC_TIM3_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM4_BASE)
+  case TIM4_BASE:
+    __HAL_RCC_TIM4_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM5_BASE)
+  case TIM5_BASE:
+    __HAL_RCC_TIM5_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM6_BASE)
+  case TIM6_BASE:
+    __HAL_RCC_TIM6_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM7_BASE)
+  case TIM7_BASE:
+    __HAL_RCC_TIM7_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM8_BASE)
+  case TIM8_BASE:
+    __HAL_RCC_TIM8_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM9_BASE)
+  case TIM9_BASE:
+    __HAL_RCC_TIM9_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM10_BASE)
+  case TIM10_BASE:
+    __HAL_RCC_TIM10_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM11_BASE)
+  case TIM11_BASE:
+    __HAL_RCC_TIM11_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM12_BASE)
+  case TIM12_BASE:
+    __HAL_RCC_TIM12_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM13_BASE)
+  case TIM13_BASE:
+    __HAL_RCC_TIM13_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM14_BASE)
+  case TIM14_BASE:
+    __HAL_RCC_TIM14_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM15_BASE)
+  case TIM15_BASE:
+    __HAL_RCC_TIM15_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM16_BASE)
+  case TIM16_BASE:
+    __HAL_RCC_TIM16_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM17_BASE)
+  case TIM17_BASE:
+    __HAL_RCC_TIM17_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM18_BASE)
+  case TIM18_BASE:
+    __HAL_RCC_TIM18_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM19_BASE)
+  case TIM19_BASE:
+    __HAL_RCC_TIM19_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM20_BASE)
+  case TIM20_BASE:
+    __HAL_RCC_TIM20_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM21_BASE)
+  case TIM21_BASE:
+    __HAL_RCC_TIM21_CLK_ENABLE();
+    return;
+#endif
+#if defined(TIM22_BASE)
+  case TIM22_BASE:
+    __HAL_RCC_TIM22_CLK_ENABLE();
+    return;
+#endif
+  
+  default:
+    break;
+  }
+}
+
+#endif
 
 void stm32_pauseTimer(TIM_HandleTypeDef* handle){
   /* Disable timer unconditionally. Required to guarantee timer is stopped,

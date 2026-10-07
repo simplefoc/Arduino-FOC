@@ -94,14 +94,20 @@ void FOCMotor::useMonitoring(Print &print){
 
 // Measure resistance and inductance of a motor
 int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
+
+    auto old_status = motor_status;
+    motor_status = FOCMotorStatus::motor_calibrating;
+    
     if (!this->current_sense || !this->current_sense->initialized)
     {
       SIMPLEFOC_MOTOR_ERROR("Fail. CS not init.");
+      motor_status = old_status;
       return 1;
     }
 
     if (voltage <= 0.0f){
       SIMPLEFOC_MOTOR_ERROR("Fail. Volt. <= 0");
+      motor_status = old_status;
       return 2;
     }
     voltage = _constrain(voltage, 0.0f, voltage_limit);
@@ -122,7 +128,7 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
     // 300 ms of ramping
     current_electric_angle = electricalAngle();
     for(int i=0; i < 100; i++){
-        setPhaseVoltage(0, voltage/100.0*((float)i), current_electric_angle);
+        setPhaseVoltage(0, voltage/100.0f*((float)i), current_electric_angle);
         _delay(3);
     }
     _delay(10);
@@ -136,6 +142,7 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
     if (fabsf(r_currents.d - zerocurrent.d) < 0.2f)
     {
       SIMPLEFOC_MOTOR_ERROR("Fail. current too low");
+      motor_status = old_status;
       return 3;
     }
     
@@ -143,6 +150,7 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
     if (resistance <= 0.0f)
     {
       SIMPLEFOC_MOTOR_ERROR("Fail. Est. R<= 0");
+      motor_status = old_status;
       return 4;
     }
     
@@ -163,7 +171,7 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
     unsigned int iterations = 40;    // how often the algorithm gets repeated.
     unsigned int cycles = 3;         // averaged measurements for each iteration
     unsigned int risetime_us = 200;  // initially short for worst case scenario with low inductance
-    unsigned int settle_us = 100000; // initially long for worst case scenario with high inductance
+    unsigned int settle_us = 100000; // TODO out of range for ATMega // initially long for worst case scenario with high inductance
 
     // Pre-rotate the angle to the q-axis (only useful with sensor, else no harm in doing it)
     current_electric_angle += 0.5f * _PI;
@@ -205,7 +213,7 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
             continue;
           }
           
-          inductanced += fabsf(- (resistance * dt) / log((voltage - resistance * (l_currents.d - zerocurrent.d)) / voltage))/correction_factor;
+          inductanced += fabsf(- (resistance * dt) / logf((voltage - resistance * (l_currents.d - zerocurrent.d)) / voltage))/correction_factor;
           
           qcurrent+= l_currents.q - zerocurrent.q; // average the measured currents
           dcurrent+= l_currents.d - zerocurrent.d;
@@ -217,7 +225,7 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
 
 
         inductanced /= cycles;
-        Ltemp = i < 2 ? inductanced : Ltemp * 0.6 + inductanced * 0.4;
+        Ltemp = i < 2 ? inductanced : Ltemp * 0.6f + inductanced * 0.4f;
         
         float timeconstant = fabsf(Ltemp / resistance); // Timeconstant of an RL circuit (L/R) 
         // SIMPLEFOC_MOTOR_DEBUG("Estimated time constant in us: ", 1000000.0f * timeconstant);
@@ -254,7 +262,7 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
         // Average the d-axis angle further for calculating the electrical zero later
         if (axis)
         {
-          d_electrical_angle = i < 2 ? current_electric_angle : d_electrical_angle * 0.9 + current_electric_angle * 0.1;
+          d_electrical_angle = i < 2 ? current_electric_angle : d_electrical_angle * 0.9f + current_electric_angle * 0.1f;
         }
         
       }
@@ -312,6 +320,7 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor=1.0f){
     phase_resistance = 2.0f * resistance;
     axis_inductance = {Ld, Lq};
     phase_inductance = (Ld + Lq) / 2.0f; // FOR BACKWARDS COMPATIBILITY
+    motor_status = old_status;
     return 0;
     
 }
@@ -536,6 +545,9 @@ void FOCMotor::updateMotionControlType(MotionControlType new_motion_controller) 
 
 
 int FOCMotor::tuneCurrentController(float bandwidth) {
+  auto old_status = motor_status;
+  motor_status = FOCMotorStatus::motor_calibrating;
+
   if (bandwidth <= 0.0f) {
     // check bandwidth is positive
     SIMPLEFOC_MOTOR_ERROR("Fail. BW <= 0");
@@ -559,7 +571,7 @@ int FOCMotor::tuneCurrentController(float bandwidth) {
 
   PID_current_q.P = axis_inductance.q * (_2PI * bandwidth);
   PID_current_q.I = phase_resistance * (_2PI * bandwidth);
-  PID_current_d.P = axis_inductance.d * (_2PI * bandwidth);
+  PID_current_d.P = _isset(axis_inductance.d) ? axis_inductance.d * (_2PI * bandwidth) : phase_inductance * (_2PI * bandwidth);
   PID_current_d.I = phase_resistance * (_2PI * bandwidth);
   LPF_current_d.Tf = 1.0f / (_2PI * bandwidth * 5.0f); // filter cutoff at 5x bandwidth
   LPF_current_q.Tf = 1.0f / (_2PI * bandwidth * 5.0f); // filter cutoff at 5x bandwidth
@@ -570,6 +582,7 @@ int FOCMotor::tuneCurrentController(float bandwidth) {
   SIMPLEFOC_MOTOR_DEBUG("Pd: ", PID_current_d.P);
   SIMPLEFOC_MOTOR_DEBUG("Id: ", PID_current_d.I);
 
+  motor_status = old_status;
   return 0;
 }
 
@@ -649,9 +662,9 @@ void FOCMotor::loopFOC() {
       voltage.q = PID_current_q(current_sp - current.q);
       voltage.d = PID_current_d(feed_forward_current.d - current.d);
       // d voltage - lag compensation
-      if(_isset(axis_inductance.q)) voltage.d = _constrain( voltage.d - current_sp*shaft_velocity*pole_pairs*axis_inductance.q, -voltage_limit, voltage_limit);
+      //if(_isset(axis_inductance.q)) voltage.d = _constrain( voltage.d - current_sp*shaft_velocity*pole_pairs*axis_inductance.q, -voltage_limit, voltage_limit);
       // q voltage - cross coupling compensation - TODO verify
-      if(_isset(axis_inductance.d)) voltage.q = _constrain( voltage.q + current.d*shaft_velocity*pole_pairs*axis_inductance.d, -voltage_limit, voltage_limit);
+      //if(_isset(axis_inductance.d)) voltage.q = _constrain( voltage.q + current.d*shaft_velocity*pole_pairs*axis_inductance.d, -voltage_limit, voltage_limit);
       // add feed forward
       voltage.q += feed_forward_voltage.q;
       voltage.d += feed_forward_voltage.d;
@@ -883,7 +896,7 @@ int FOCMotor::alignSensor() {
     // setPhaseVoltage(0, 0, 0);
     _delay(200);
     // determine the direction the sensor moved
-    float moved =  fabs(mid_angle - end_angle);
+    float moved =  fabsf(mid_angle - end_angle);
     if (moved<MIN_ANGLE_DETECT_MOVEMENT) { // minimum angle to detect movement
       SIMPLEFOC_MOTOR_ERROR("Failed to notice movement");
       return 0; // failed calibration
@@ -895,7 +908,7 @@ int FOCMotor::alignSensor() {
       sensor_direction = Direction::CW;
     }
     // check pole pair number
-    pp_check_result = !(fabs(moved*pole_pairs - _2PI) > 0.5f);  // 0.5f is arbitrary number it can be lower or higher!
+    pp_check_result = !(fabsf(moved*pole_pairs - _2PI) > 0.5f);  // 0.5f is arbitrary number it can be lower or higher!
     if( pp_check_result==false ) {
       SIMPLEFOC_MOTOR_WARN("PP check: fail - est. pp: ", _2PI/moved);
     } else {
@@ -937,11 +950,16 @@ int FOCMotor::absoluteZeroSearch() {
   velocity_limit = velocity_index_search;
   voltage_limit = voltage_sensor_align;
   shaft_angle = 0;
-  while(sensor->needsSearch() && shaft_angle < _2PI){
-    angleOpenloop(1.5f*_2PI);
+  // angle equivalent for a 1.5 mechanical rotation
+  float search_rotation_target = 1.5f*_2PI;
+  while(sensor->needsSearch() && shaft_angle < search_rotation_target){
+    // updates shaft angle
+    angleOpenloop(search_rotation_target);
     // call important for some sensors not to loose count
     // not needed for the search
     sensor->update();
+    // set the voltage to the motor
+    setPhaseVoltage(voltage_limit, 0, _electricalAngle(shaft_angle, pole_pairs));
   }
   // disable motor
   setPhaseVoltage(0, 0, 0);

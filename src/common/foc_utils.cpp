@@ -75,7 +75,7 @@ __attribute__((weak)) float _atan2(float y, float x) {
 
 // normalizing radian angle to [0,2PI]
 __attribute__((weak)) float _normalizeAngle(float angle){
-  float a = fmod(angle, _2PI);
+  float a = fmodf(angle, _2PI);
   return a >= 0 ? a : (a + _2PI);
 }
 

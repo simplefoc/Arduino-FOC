@@ -103,7 +103,7 @@ void _writeDutyCycle2PWM(float dc_a,  float dc_b, void* params){
 // function setting the pwm duty cycle to the hardware 
 // - BLDC motor - 3PWM setting
 // - hardware specific
-void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, int pinA, void* params){
+void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* params){
   // transform duty cycle from [0,1] to [0,255]
   analogWrite(((GenericDriverParams*)params)->pins[0], 255.0f*dc_a);
   analogWrite(((GenericDriverParams*)params)->pins[1], 255.0f*dc_b);
@@ -216,9 +216,9 @@ void _setPwmPair(int pinH, int pinL, float val, int dead_time)
 //  - hardware specific
 // supports Arduino/ATmega328 
 void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params){
-  _setPwmPair(((GenericDriverParams*)params)->pins[0], ((GenericDriverParams*)params)->pins[1], dc_a*255.0, ((GenericDriverParams*)params)->dead_zone*255.0);
-  _setPwmPair(((GenericDriverParams*)params)->pins[2], ((GenericDriverParams*)params)->pins[3], dc_b*255.0, ((GenericDriverParams*)params)->dead_zone*255.0);
-  _setPwmPair(((GenericDriverParams*)params)->pins[4], ((GenericDriverParams*)params)->pins[5], dc_c*255.0, ((GenericDriverParams*)params)->dead_zone*255.0);
+  _setPwmPair(((GenericDriverParams*)params)->pins[0], ((GenericDriverParams*)params)->pins[1], dc_a*255.0f, ((GenericDriverParams*)params)->dead_zone*255.0f);
+  _setPwmPair(((GenericDriverParams*)params)->pins[2], ((GenericDriverParams*)params)->pins[3], dc_b*255.0f, ((GenericDriverParams*)params)->dead_zone*255.0f);
+  _setPwmPair(((GenericDriverParams*)params)->pins[4], ((GenericDriverParams*)params)->pins[5], dc_c*255.0f, ((GenericDriverParams*)params)->dead_zone*255.0f);
 
   _UNUSED(phase_state);
 }
