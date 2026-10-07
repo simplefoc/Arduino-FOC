@@ -3,12 +3,54 @@
 
 #include "Arduino.h"
 
-// sign function
-#define _sign(a) ( ( (a) < 0 )  ?  -1   : ( (a) > 0 ) )
+template<typename T>
+constexpr inline int _sign(T val) {
+  return __builtin_signbit(val);
+}
+
+#ifndef __AVR__
+#include <type_traits>
+
 #ifndef _round
-#define _round(x) ((x)>=0?(long)((x)+0.5f):(long)((x)-0.5f))
+// Use enable_if to select the roundf function for single precision floats.
+// This improves performance when -ffast-math is not set.
+template<typename T>
+constexpr inline typename std::enable_if<std::is_same<T, float>::value, long>::type _round(T x) {
+  return __builtin_roundf(x);
+}
+template<typename T>
+constexpr inline typename std::enable_if<std::is_same<T, double>::value, long>::type _round(T x) {
+  return __builtin_round(x);
+}
 #endif
-#define _constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+
+// Use enable_if to select the fastest implementation according to the amt type.
+// Using __builtin_fXf is measurably faster than using the ternary approach.
+template<typename T, typename L, typename H>
+constexpr inline typename std::enable_if<std::is_integral<T>::value, T>::type _constrain(T amt, L low, H high) {
+  return (amt < low) ? low : (amt > high) ? high : amt;
+}
+template<typename T, typename L, typename H>
+constexpr inline typename std::enable_if<std::is_same<T, float>::value, T>::type _constrain(T amt, L low, H high) {
+  return __builtin_fmaxf(low, __builtin_fminf(high, amt));
+}
+template<typename T, typename L, typename H>
+constexpr inline typename std::enable_if<std::is_same<T, double>::value, T>::type _constrain(T amt, L low, H high) {
+  return __builtin_fmax(low, __builtin_fmin(high, amt));
+}
+#else  // __AVR__
+// AVR compiler lacks type_traits, so we are forced to use the slower non-type inferenced
+// version. That's okay, right? If you wanted to go fast you would not be on AVR.
+template<typename T>
+constexpr long _round(T x) {
+  return __builtin_round(x);
+}
+template<typename T, typename L, typename H>
+constexpr T _constrain(T amt, L low, H high) {
+  return (amt < low) ? low : (amt > high) ? high : amt;
+}
+#endif
+
 #define _sqrt(a) (_sqrtApprox(a))
 #define _isset(a) ( (a) != (NOT_SET) )
 #define _UNUSED(v) (void) (v)
