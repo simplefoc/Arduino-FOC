@@ -165,7 +165,7 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
       // centering the voltages around either
       // modulation_centered == true > driver.voltage_limit/2
       // modulation_centered == false > or Adaptable centering, all phases drawn to 0 when Uq=0
-      center = modulation_centered ? (driver->voltage_limit)/2 : Uq;
+      center = modulation_centered ? (driver->voltage_limit)/2 : 0;
 
       if(trap_120_map[sector][0]  == _HIGH_IMPEDANCE){
         Ua= center;
@@ -184,6 +184,15 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
         driver->setPhaseState(PhaseState::PHASE_ON, PhaseState::PHASE_ON, PhaseState::PHASE_OFF);// disable phase if possible
       }
 
+      if(!modulation_centered){
+        // non-centered modulation: shift all phases up so the lowest one is at 0,
+        // same idiom as the sine/SVPWM branches
+        float Umin = min(Ua, min(Ub, Uc));
+        Ua -= Umin;
+        Ub -= Umin;
+        Uc -= Umin;
+      }
+
     break;
 
     case FOCModulationType::Trapezoid_150 :
@@ -193,7 +202,7 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
       // centering the voltages around either
       // modulation_centered == true > driver.voltage_limit/2
       // modulation_centered == false > or Adaptable centering, all phases drawn to 0 when Uq=0
-      center = modulation_centered ? (driver->voltage_limit)/2 : Uq;
+      center = modulation_centered ? (driver->voltage_limit)/2 : 0;
 
       if(trap_150_map[sector][0]  == _HIGH_IMPEDANCE){
         Ua= center;
@@ -215,6 +224,15 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
         Ub = trap_150_map[sector][1] * Uq + center;
         Uc = trap_150_map[sector][2] * Uq + center;
         driver->setPhaseState(PhaseState::PHASE_ON, PhaseState::PHASE_ON, PhaseState::PHASE_ON); // enable all phases
+      }
+
+      if(!modulation_centered){
+        // non-centered modulation: shift all phases up so the lowest one is at 0,
+        // same idiom as the sine/SVPWM branches
+        float Umin = min(Ua, min(Ub, Uc));
+        Ua -= Umin;
+        Ub -= Umin;
+        Uc -= Umin;
       }
 
     break;
