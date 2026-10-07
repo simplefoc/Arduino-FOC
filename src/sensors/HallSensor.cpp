@@ -18,6 +18,19 @@ HallSensor::HallSensor(int _hallA, int _hallB, int _hallC, int _pp){
 
   // extern pullup as default
   pullup = Pullup::USE_EXTERN;
+
+  // initialise the state variables - they would otherwise be indeterminate
+  // for sensors that do not live in the BSS section (heap/stack instances)
+  use_interrupt = false;
+  hall_state = 0;
+  electric_sector = 0;
+  electric_rotations = 0;
+  total_interrupts = 0;
+  pulse_diff = 0;
+  pulse_timestamp = _micros();
+  A_active = B_active = C_active = 0;
+  direction = Direction::UNKNOWN;
+  old_direction = Direction::UNKNOWN;
 }
 
 //  HallSensor interrupt callback functions
@@ -156,11 +169,15 @@ void HallSensor::init(){
     pinMode(pinC, INPUT);
   }
 
-    // init hall_state
+  // adopt the current hall state as the starting point instead of calling
+  // updateState(): that would compare the measured sector with the zeroed
+  // one and count a spurious +-1 electric rotation for 2 of the 6 power-up
+  // positions, offsetting the angle and the full-rotation counter
   A_active = digitalRead(pinA);
   B_active = digitalRead(pinB);
   C_active = digitalRead(pinC);
-  updateState();
+  hall_state = C_active + (B_active << 1) + (A_active << 2);
+  electric_sector = ELECTRIC_SECTORS[hall_state];
 
   pulse_timestamp = _micros();
 
