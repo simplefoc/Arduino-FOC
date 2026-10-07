@@ -164,17 +164,23 @@ constexpr uint32_t _OPAMP_internal_channel_to_ADC(uint8_t opamp_idx, ADC_TypeDef
   #if defined(STM32G4xx)
   switch (opamp_idx)
   {
+  #if defined(OPAMP1) && defined(ADC1) && defined(ADC_CHANNEL_13)
   case 1:
     return ADC == ADC1 ? ADC_CHANNEL_13 : 0; //adc1
+  #endif
+  #if defined(OPAMP2) && defined(ADC2) && defined(ADC_CHANNEL_16)
   case 2:
     return ADC == ADC2 ? ADC_CHANNEL_16 : 0; //adc2
-  #ifdef OPAMP3
+  #endif
+  #if defined(OPAMP3)
   case 3:
     switch ((uintptr_t)ADC)
     {
+    #if defined(ADC2) && defined(ADC_CHANNEL_18)
     case ADC2_BASE:
       return ADC_CHANNEL_18;
-    #ifdef ADC3
+    #endif
+    #if defined(ADC3) && defined(ADC_CHANNEL_13)
     case ADC3_BASE:
       return ADC_CHANNEL_13;
     #endif
@@ -182,20 +188,26 @@ constexpr uint32_t _OPAMP_internal_channel_to_ADC(uint8_t opamp_idx, ADC_TypeDef
       return 0;
     }
   #endif
-  #ifdef OPAMP4
+
+  #ifdef OPAMP4 && defined(ADC5) && defined(ADC_CHANNEL_5)
+  case 4:
     return ADC == ADC5 ? ADC_CHANNEL_5 : 0; //adc5
   #endif
-  #ifdef OPAMP5
+
+  #ifdef OPAMP5 && defined(ADC5) && defined(ADC_CHANNEL_3) 
+  case 5:
     return ADC == ADC5 ? ADC_CHANNEL_3 : 0; //adc5
   #endif
+
   #ifdef OPAMP6
+  case 6:
     switch ((uintptr_t)ADC)
     {
-    #ifdef ADC3
+    #if defined(ADC3) && defined(ADC_CHANNEL_17)
     case ADC3_BASE:
       return ADC_CHANNEL_17; //For stm32g3x4
     #endif
-    #ifdef ADC4
+    #if defined(ADC4) && defined(ADC_CHANNEL_17)
     case ADC4_BASE:
       return ADC_CHANNEL_17; //For stm32g4x3
     #endif
@@ -203,6 +215,7 @@ constexpr uint32_t _OPAMP_internal_channel_to_ADC(uint8_t opamp_idx, ADC_TypeDef
       return 0;
     }
   #endif
+
   default:
     return 0;
   }
