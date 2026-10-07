@@ -1,15 +1,15 @@
 
 #include "../hardware_api.h"
 
-// if the mcu doen't have defiend analogWrite
+// if the mcu doesn't have defined analogWrite
 #if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && !defined(analogWrite)
   __attribute__((weak)) void analogWrite(uint8_t pin, int value){ };
 #endif
 
 // function setting the high pwm frequency to the supplied pin
 // - Stepper motor - 1PWM setting
-// - hardware speciffic
-// in generic case dont do anything
+// - hardware specific
+// in generic case don't do anything
 __attribute__((weak)) void* _configure1PWM(long pwm_frequency, const int pinA) {
   GenericDriverParams* params = new GenericDriverParams {
     .pins = { pinA },
@@ -20,8 +20,8 @@ __attribute__((weak)) void* _configure1PWM(long pwm_frequency, const int pinA) {
 
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 2PWM setting
-// - hardware speciffic
-// in generic case dont do anything
+// - hardware specific
+// in generic case don't do anything
 __attribute__((weak)) void* _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
   GenericDriverParams* params = new GenericDriverParams {
     .pins = { pinA, pinB },
@@ -32,8 +32,8 @@ __attribute__((weak)) void* _configure2PWM(long pwm_frequency,const int pinA, co
 
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
-// - hardware speciffic
-// in generic case dont do anything
+// - hardware specific
+// in generic case don't do anything
 __attribute__((weak)) void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
   GenericDriverParams* params = new GenericDriverParams {
     .pins = { pinA, pinB, pinC },
@@ -45,8 +45,8 @@ __attribute__((weak)) void* _configure3PWM(long pwm_frequency,const int pinA, co
 
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 4PWM setting
-// - hardware speciffic
-// in generic case dont do anything
+// - hardware specific
+// in generic case don't do anything
 __attribute__((weak)) void* _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const int pin2A, const int pin2B) {
   GenericDriverParams* params = new GenericDriverParams {
     .pins = { pin1A, pin1B, pin2A, pin2B },
@@ -74,7 +74,7 @@ __attribute__((weak)) void* _configure6PWM(long pwm_frequency, float dead_zone, 
 
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 1PWM setting
-// - hardware speciffic
+// - hardware specific
 __attribute__((weak)) void _writeDutyCycle1PWM(float dc_a, void* params){
   // transform duty cycle from [0,1] to [0,255]
   analogWrite(((GenericDriverParams*)params)->pins[0], 255.0f*dc_a);
@@ -83,7 +83,7 @@ __attribute__((weak)) void _writeDutyCycle1PWM(float dc_a, void* params){
 
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 2PWM setting
-// - hardware speciffic
+// - hardware specific
 __attribute__((weak)) void _writeDutyCycle2PWM(float dc_a,  float dc_b, void* params){
   // transform duty cycle from [0,1] to [0,255]
   analogWrite(((GenericDriverParams*)params)->pins[0], 255.0f*dc_a);
@@ -92,7 +92,7 @@ __attribute__((weak)) void _writeDutyCycle2PWM(float dc_a,  float dc_b, void* pa
 
 // function setting the pwm duty cycle to the hardware
 // - BLDC motor - 3PWM setting
-// - hardware speciffic
+// - hardware specific
 __attribute__((weak)) void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* params){
   // transform duty cycle from [0,1] to [0,255]
   analogWrite(((GenericDriverParams*)params)->pins[0], 255.0f*dc_a);
@@ -102,7 +102,7 @@ __attribute__((weak)) void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc
 
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 4PWM setting
-// - hardware speciffic
+// - hardware specific
 __attribute__((weak)) void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, void* params){
   // transform duty cycle from [0,1] to [0,255]
   

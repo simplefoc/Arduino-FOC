@@ -17,7 +17,6 @@ class HallSensor: public Sensor{
     @param encB  HallSensor B pin
     @param encC  HallSensor C pin
     @param pp  pole pairs  (e.g hoverboard motor has 15pp and small gimbals often have 7pp)
-    @param index index pin number (optional input)
     */
     HallSensor(int encA, int encB, int encC, int pp);
 
@@ -29,7 +28,7 @@ class HallSensor: public Sensor{
      * 
      * @param doA pointer to the A channel interrupt handler function
      * @param doB pointer to the B channel interrupt handler function
-     * @param doIndex pointer to the Index channel interrupt handler function
+     * @param doC pointer to the Hall C channel interrupt handler function
      * 
      */
     void enableInterrupts(void (*doA)() = nullptr, void(*doB)() = nullptr, void(*doC)() = nullptr);

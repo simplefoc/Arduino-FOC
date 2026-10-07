@@ -16,7 +16,7 @@ PIDController::PIDController(float P, float I, float D, float ramp, float limit,
 
 // PID controller function
 float PIDController::operator() (float error){
-    // initalise the elapsed time with the fixed sampling tims Ts
+    // initialize the elapsed time with the fixed sampling time Ts
     float dt = Ts; 
     // if Ts is not set, use adaptive sampling time
     // calculate the ellapsed time dt

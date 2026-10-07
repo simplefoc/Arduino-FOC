@@ -99,7 +99,7 @@ int MagneticSensorI2C::getRawCount() {
   // read the angle register first MSB then LSB
 	byte readArray[2];
 	uint16_t readValue = 0;
-  // notify the device that is aboout to be read
+  // notify the device that is about to be read
 	wire->beginTransmission(_conf.chip_address);
 	wire->write(_conf.angle_register);
   currWireError = wire->endTransmission(false);

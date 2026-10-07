@@ -31,7 +31,7 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(INH_A, INH_B, INH_C, EN_GATE);
 // encoder instance
 Encoder encoder = Encoder(2, 3, 8192);
 
-// Interrupt routine intialisation
+// Interrupt routine initialization
 // channel A and B callbacks
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
@@ -82,7 +82,7 @@ void setup() {
   // set control loop type to be used
   motor.controller = MotionControlType::torque;
 
-  // contoller configuration based on the controll type
+  // controller configuration based on the control type
   motor.PID_velocity.P = 0.2f;
   motor.PID_velocity.I = 20;
   // default voltage_power_supply
@@ -104,7 +104,7 @@ void setup() {
   // align encoder and start FOC
   motor.initFOC();
 
-  // set the inital target value
+  // set the initial target value
   motor.target = 2;
 
   // define the motor id
@@ -125,7 +125,7 @@ void loop() {
 
   // iterative function setting the outter loop target
   // velocity, position or voltage
-  // if tatget not set in parameter uses motor.target variable
+  // if target not set in parameter uses motor.target variable
   motor.move();
 
   // user communication

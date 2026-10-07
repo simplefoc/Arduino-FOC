@@ -39,7 +39,7 @@ Therefore this is an attempt to:
 >   - BG341 low-side current sense sync was lost in v2.3.5 - fixed [#482](https://github.com/simplefoc/Arduino-FOC/pull/482)
 > - ESP32 
 >   - Many ESP32 safety optimisations by [@uLipe](https://github.com/uLipe): [#490](https://github.com/simplefoc/Arduino-FOC/pull/490),[#491](https://github.com/simplefoc/Arduino-FOC/pull/491),[#492](https://github.com/simplefoc/Arduino-FOC/pull/492),[#493](https://github.com/simplefoc/Arduino-FOC/pull/493),[#495](https://github.com/simplefoc/Arduino-FOC/pull/495)
->   - Better ADC-Timer alignement for more stable current sensing [See this commit](https://github.com/simplefoc/Arduino-FOC/commit/877699b4db4e6e3ecc16b16cc4337af928e746f4)
+>   - Better ADC-Timer alignment for more stable current sensing [See this commit](https://github.com/simplefoc/Arduino-FOC/commit/877699b4db4e6e3ecc16b16cc4337af928e746f4)
 >   - Now compiles for all v3.x arduino-esp32 versions (v2.3.5 was compatible with v3.2.x) 
 >   - `adcRead` small refactor - no more magic numbers
 > - Others
@@ -101,7 +101,7 @@ This video is a bit outdated but it demonstrates the *Simple**FOC**library* basi
    - Built-in communication and monitoring via Serial, I2C, or custom protocols
 - **Cross-platform**:
    - Seamless code transfer from one microcontroller family to another 
-   - Supports multiple [MCU architectures](https://docs.simplefoc.commicrocontrollers):
+   - Supports multiple [MCU architectures](https://docs.simplefoc.com/microcontrollers):
       - Arduino: UNO R4, UNO, MEGA, DUE, Leonardo, Nano, Nano33, MKR ....
       - STM32 (Nucleo, Bluepill, B-G431B-ESC1, H7 family, etc.)
       - ESP32 (ESP32, ESP32-S2, ESP32-S3, ESP32-C3, ESP32-C6)

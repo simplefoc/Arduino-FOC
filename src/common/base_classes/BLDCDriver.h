@@ -23,9 +23,9 @@ class BLDCDriver: public FOCDriver{
         /**
          * Set phase state, enable/disable
          *
-         * @param sc - phase A state : active / disabled ( high impedance )
+         * @param sa - phase A state : active / disabled ( high impedance )
          * @param sb - phase B state : active / disabled ( high impedance )
-         * @param sa - phase C state : active / disabled ( high impedance )
+         * @param sc - phase C state : active / disabled ( high impedance )
         */
         virtual void setPhaseState(PhaseState sa, PhaseState sb, PhaseState sc) = 0;
 

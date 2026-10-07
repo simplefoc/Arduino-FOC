@@ -20,7 +20,7 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 // hall sensor instance
 HallSensor sensor = HallSensor(2, 3, 4, 11);
 
-// Interrupt routine intialisation
+// Interrupt routine initialization
 // channel A and B callbacks
 void doA(){sensor.handleA();}
 void doB(){sensor.handleB();}

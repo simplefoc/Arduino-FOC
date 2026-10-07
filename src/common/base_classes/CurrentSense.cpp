@@ -148,7 +148,7 @@ void CurrentSense::disable(){
 // 2 - success but pins reconfigured
 // 3 - success but gains inverted
 // 4 - success but pins reconfigured and gains inverted
-// IMPORTANT, this function can be overriden in the child class
+// IMPORTANT, this function can be overridden in the child class
 int CurrentSense::driverAlign(float voltage, bool modulation_centered){
         
     int exit_flag = 1;

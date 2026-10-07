@@ -19,12 +19,12 @@
 //  - pp                     - pole pairs
 HallSensor sensor = HallSensor(2, 3, 4, 11);
 
-// Interrupt routine intialisation
+// Interrupt routine initialization
 // channel A and B callbacks
 void doA(){sensor.handleA();}
 void doB(){sensor.handleB();}
 void doC(){sensor.handleC();}
-// If no available hadware interrupt pins use the software interrupt
+// If no available hardware interrupt pins use the software interrupt
 PciListenerImp listenA(sensor.pinA, doA);
 PciListenerImp listenB(sensor.pinB, doB);
 PciListenerImp listenC(sensor.pinC, doC);

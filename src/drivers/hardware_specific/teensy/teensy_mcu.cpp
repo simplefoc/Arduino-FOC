@@ -43,7 +43,7 @@ void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
   return params;
 }
 
-// inital weak implementation of the center aligned 3pwm configuration
+// initial weak implementation of the center aligned 3pwm configuration
 // teensy 4 and 3 have center aligned pwm 
 __attribute__((weak)) void* _configureCenterAligned3PMW(long pwm_frequency, const int pinA, const int pinB, const int pinC) {
   return SIMPLEFOC_DRIVER_INIT_FAILED;
@@ -111,7 +111,7 @@ void _writeDutyCycle2PWM(float dc_a,  float dc_b, void* params) {
   analogWrite(((TeensyDriverParams*)params)->pins[1], 255.0f*dc_b);
 }
 
-// inital weak implementation of the center aligned 3pwm configuration
+// initial weak implementation of the center aligned 3pwm configuration
 // teensy 4 and 3 have center aligned pwm implementation of this function
 __attribute__((weak)) void _writeCenterAligned3PMW(float dc_a,  float dc_b, float dc_c, void* params){
   _UNUSED(dc_a);

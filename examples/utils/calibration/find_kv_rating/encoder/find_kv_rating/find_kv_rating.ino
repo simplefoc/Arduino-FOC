@@ -22,7 +22,7 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 // encoder instance
 Encoder sensor = Encoder(2, 3, 8192);
 
-// Interrupt routine intialisation
+// Interrupt routine initialization
 // channel A and B callbacks
 void doA(){sensor.handleA();}
 void doB(){sensor.handleB();}

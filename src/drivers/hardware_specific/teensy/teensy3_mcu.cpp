@@ -169,7 +169,7 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
   // find the best combination of prescalers and counter value
   double dead_time = dead_zone/pwm_freq;
   int prescaler = 1; // initial prescaler (1,4 or 16)
-  double count = 1; // inital count (1 - 63)
+  double count = 1; // initial count (1 - 63)
   for (; prescaler<=16; prescaler*=4){
     count = dead_time*((double)F_CPU)/((double)prescaler);
     if(count < 64) break; // found the solution
@@ -180,7 +180,7 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
   if(timer==0){
     // Configure FTM0
     // // inverting and deadtime insertion for FTM1
-    FTM0_COMBINE = 0x00121212; // 0x2 - complemetary mode, 0x1 - dead timer insertion enabled
+    FTM0_COMBINE = 0x00121212; // 0x2 - complementary mode, 0x1 - dead timer insertion enabled
 
     // Deadtime config
     FTM0_DEADTIME = (int)count; // set counter - 1-63
@@ -191,7 +191,7 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
   }else if(timer==3){
     // Configure FTM3
     // inverting and deadtime insertion for FTM1
-    FTM3_COMBINE = 0x00121212; // 0x2 - complemetary mode, 0x1 - dead timer insertion enabled
+    FTM3_COMBINE = 0x00121212; // 0x2 - complementary mode, 0x1 - dead timer insertion enabled
 
     // Deadtime config
     FTM3_DEADTIME = (int)count; // set counter - 1-63

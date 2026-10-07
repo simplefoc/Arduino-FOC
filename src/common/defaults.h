@@ -17,7 +17,7 @@
 #define DEF_PID_CURR_D 0.0f //!<  default PID controller D value
 #define DEF_PID_CURR_RAMP 1000.0f //!< default PID controller voltage ramp value
 #define DEF_PID_CURR_LIMIT (DEF_POWER_SUPPLY) //!< default PID controller voltage limit
-#define DEF_CURR_FILTER_Tf 0.01f //!< default velocity filter time constant
+#define DEF_CURR_FILTER_Tf 0.01f //!< default current filter time constant
 #define DEF_CURR_BANDWIDTH 100.0f //!< current bandwidth
 #else
 // for stm32, due, teensy, esp32 and similar
@@ -27,7 +27,7 @@
 #define DEF_PID_CURR_RAMP 0  //!< default PID controller voltage ramp value
 #define DEF_PID_CURR_LIMIT (DEF_POWER_SUPPLY) //!< default PID controller voltage limit
 #define DEF_CURR_BANDWIDTH 300.0f //!< current bandwidth
-#define DEF_CURR_FILTER_Tf 1/(_2PI*DEF_CURR_BANDWIDTH) //!< default currnet filter time constant
+#define DEF_CURR_FILTER_Tf 1/(_2PI*DEF_CURR_BANDWIDTH) //!< default current filter time constant
 #endif
 // default current limit values
 #define DEF_CURRENT_LIM 2.0f //!< 2Amps current limit by default
@@ -43,9 +43,9 @@
 // index search
 #define DEF_INDEX_SEARCH_TARGET_VELOCITY 1.0f //!< default index search velocity
 // align voltage
-#define DEF_VOLTAGE_SENSOR_ALIGN 3.0f //!< default voltage for sensor and motor zero alignemt
+#define DEF_VOLTAGE_SENSOR_ALIGN 3.0f //!< default voltage for sensor and motor zero alignment
 // low pass filter velocity
 #define DEF_VEL_FILTER_Tf 0.005f //!< default velocity filter time constant
 
 // current sense default parameters
-#define DEF_LPF_PER_PHASE_CURRENT_SENSE_Tf 0.0f  //!< default currnet sense per phase low pass filter time constant 
+#define DEF_LPF_PER_PHASE_CURRENT_SENSE_Tf 0.0f  //!< default current sense per phase low pass filter time constant 

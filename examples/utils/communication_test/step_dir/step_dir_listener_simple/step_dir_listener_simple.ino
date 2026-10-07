@@ -21,10 +21,10 @@ void setup() {
   // enable interrupts 
   step_dir.enableInterrupt(onStep);
   // attach the variable to be updated on each step (optional) 
-  // the same can be done asynchronously by caling step_dir.getValue();
+  // the same can be done asynchronously by calling step_dir.getValue();
   step_dir.attach(&received_angle);
     
-  Serial.println(F("Step/Dir listenning."));
+  Serial.println(F("Step/Dir listening."));
   _delay(1000);
 }
 

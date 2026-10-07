@@ -15,7 +15,7 @@ PhaseCurrent_s readCurrentSense(){
   return(c);
 }
 
-// user defined function for intialising the current sense
+// user defined function for initializing the current sense
 // it is optional and if provided it will be called in current_sense.init()
 void initCurrentSense(){
   pinMode(A0,INPUT);

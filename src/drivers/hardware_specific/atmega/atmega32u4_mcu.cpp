@@ -34,7 +34,7 @@ void _pinHighFrequency(const int pin){
 
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 2PWM setting
-// - hardware speciffic
+// - hardware specific
 void* _configure1PWM(long pwm_frequency,const int pinA) {
    //  High PWM frequency
    // - always max 32kHz
@@ -49,7 +49,7 @@ void* _configure1PWM(long pwm_frequency,const int pinA) {
 
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 2PWM setting
-// - hardware speciffic
+// - hardware specific
 void* _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
    //  High PWM frequency
    // - always max 32kHz
@@ -65,7 +65,7 @@ void* _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
 
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
-// - hardware speciffic
+// - hardware specific
 void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
    //  High PWM frequency
    // - always max 32kHz
@@ -84,7 +84,7 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
 
 // function setting the pwm duty cycle to the hardware 
 // - Stepper motor - 2PWM setting
-// - hardware speciffic
+// - hardware specific
 void _writeDutyCycle1PWM(float dc_a, void* params){
   // transform duty cycle from [0,1] to [0,255]
   analogWrite(((GenericDriverParams*)params)->pins[0], 255.0f*dc_a);
@@ -93,7 +93,7 @@ void _writeDutyCycle1PWM(float dc_a, void* params){
 
 // function setting the pwm duty cycle to the hardware 
 // - Stepper motor - 2PWM setting
-// - hardware speciffic
+// - hardware specific
 void _writeDutyCycle2PWM(float dc_a,  float dc_b, void* params){
   // transform duty cycle from [0,1] to [0,255]
   analogWrite(((GenericDriverParams*)params)->pins[0], 255.0f*dc_a);
@@ -102,7 +102,7 @@ void _writeDutyCycle2PWM(float dc_a,  float dc_b, void* params){
 
 // function setting the pwm duty cycle to the hardware 
 // - BLDC motor - 3PWM setting
-// - hardware speciffic
+// - hardware specific
 void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* params){
   // transform duty cycle from [0,1] to [0,255]
   analogWrite(((GenericDriverParams*)params)->pins[0], 255.0f*dc_a);
@@ -112,7 +112,7 @@ void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* params){
 
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 4PWM setting
-// - hardware speciffic
+// - hardware specific
 void* _configure4PWM(long pwm_frequency,const int pin1A, const int pin1B, const int pin2A, const int pin2B) {
    //  High PWM frequency
    // - always max 32kHz
@@ -130,7 +130,7 @@ void* _configure4PWM(long pwm_frequency,const int pin1A, const int pin1B, const 
 
 // function setting the pwm duty cycle to the hardware  
 // - Stepper motor - 4PWM setting
-// - hardware speciffic
+// - hardware specific
 void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, void* params){
   // transform duty cycle from [0,1] to [0,255]
   analogWrite(((GenericDriverParams*)params)->pins[0], 255.0f*dc_1a);
@@ -214,7 +214,7 @@ void _setPwmPair(int pinH, int pinL, float val, int dead_time)
 // Function setting the duty cycle to the pwm pin (ex. analogWrite())
 //  - BLDC driver - 6PWM setting
 //  - hardware specific
-// supports Arudino/ATmega328 
+// supports Arduino/ATmega328 
 void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params){
   _setPwmPair(((GenericDriverParams*)params)->pins[0], ((GenericDriverParams*)params)->pins[1], dc_a*255.0f, ((GenericDriverParams*)params)->dead_zone*255.0f);
   _setPwmPair(((GenericDriverParams*)params)->pins[2], ((GenericDriverParams*)params)->pins[3], dc_b*255.0f, ((GenericDriverParams*)params)->dead_zone*255.0f);

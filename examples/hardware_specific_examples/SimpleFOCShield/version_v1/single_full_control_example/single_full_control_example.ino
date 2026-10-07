@@ -39,7 +39,7 @@ void setup() {
   // set control loop type to be used
   motor.controller = MotionControlType::torque;
 
-  // contoller configuration based on the controll type
+  // controller configuration based on the control type
   motor.PID_velocity.P = 0.05f;
   motor.PID_velocity.I = 1;
   motor.PID_velocity.D = 0;
@@ -56,7 +56,7 @@ void setup() {
 
   // comment out if not needed
   motor.useMonitoring(Serial);
-  motor.monitor_downsample = 0; // disable intially
+  motor.monitor_downsample = 0; // disable initially
   motor.monitor_variables = _MON_TARGET | _MON_VEL | _MON_ANGLE; // monitor target velocity and angle
 
   // initialise motor
@@ -64,7 +64,7 @@ void setup() {
   // align encoder and start FOC
   motor.initFOC();
 
-  // set the inital target value
+  // set the initial target value
   motor.target = 2;
 
   // subscribe motor to the commander

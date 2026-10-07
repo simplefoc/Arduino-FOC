@@ -15,7 +15,7 @@
 #define M0_INL_A PB13
 #define M0_INL_B PB14
 #define M0_INL_C PB15
-// M0 currnets
+// M0 currents
 #define M0_IB PC0
 #define M0_IC PC1
 // Odrive M0 encoder pinout
@@ -31,7 +31,7 @@
 #define M1_INL_A PA7
 #define M1_INL_B PB0
 #define M1_INL_C PB1
-// M0 currnets
+// M0 currents
 #define M1_IB PC2
 #define M1_IC PC3
 // Odrive M1 encoder pinout

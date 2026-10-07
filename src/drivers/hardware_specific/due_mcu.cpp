@@ -341,7 +341,7 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
   // save the pwm frequency
   _pwm_frequency = pwm_frequency;
-  // cinfigure pwm pins
+  // configure pwm pins
   initPWM(pinA, _pwm_frequency);
   initPWM(pinB, _pwm_frequency);
   initPWM(pinC, _pwm_frequency);
@@ -366,7 +366,7 @@ void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
   // save the pwm frequency
   _pwm_frequency = pwm_frequency;
-  // cinfigure pwm pins
+  // configure pwm pins
   initPWM(pinA, _pwm_frequency);
   initPWM(pinB, _pwm_frequency);
   // sync the timers if possible
@@ -384,13 +384,13 @@ void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 4PWM setting
-// - hardware speciffic
+// - hardware specific
 void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
   if(!pwm_frequency || !_isset(pwm_frequency)) pwm_frequency = _PWM_FREQUENCY; // default frequency 50khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
   // save the pwm frequency
   _pwm_frequency = pwm_frequency;
-  // cinfigure pwm pins
+  // configure pwm pins
   initPWM(pinA, _pwm_frequency);
   initPWM(pinB, _pwm_frequency);
   initPWM(pinC, _pwm_frequency);
@@ -410,7 +410,7 @@ void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const in
 
 // function setting the pwm duty cycle to the hardware
 // - BLDC motor - 3PWM setting
-// - hardware speciffic
+// - hardware specific
 void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* param){
   // transform duty cycle from [0,1] to [0,_max_pwm_value]
   GenericDriverParams* p = (GenericDriverParams*)param;
@@ -423,7 +423,7 @@ void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* param){
 
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 4PWM setting
-// - hardware speciffic
+// - hardware specific
 void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, void* param){
   // transform duty cycle from [0,1] to [0,_max_pwm_value]
   GenericDriverParams* p = (GenericDriverParams*)param;

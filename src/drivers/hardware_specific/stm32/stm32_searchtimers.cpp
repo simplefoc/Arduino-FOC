@@ -154,7 +154,7 @@ int _stm32_findBestTimerCombination(int numPins, int index, int pins[], PinMap* 
       #endif
     }
     if (score==-1)
-      return -1; // pin not connected to any timer, propagate driectly
+      return -1; // pin not connected to any timer, propagate directly
     if (score>=0 && score<bestScore) {
       bestScore = score;
       for (int j=index;j<numPins;j++)

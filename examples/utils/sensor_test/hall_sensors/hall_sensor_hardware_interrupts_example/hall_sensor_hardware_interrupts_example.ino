@@ -13,7 +13,7 @@
 //  - pp                     - pole pairs
 HallSensor sensor = HallSensor(2, 3, 4, 14);
 
-// Interrupt routine intialisation
+// Interrupt routine initialization
 // channel A and B callbacks
 void doA(){sensor.handleA();}
 void doB(){sensor.handleB();}

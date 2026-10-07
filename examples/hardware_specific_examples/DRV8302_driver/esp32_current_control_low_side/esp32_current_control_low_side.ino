@@ -39,7 +39,7 @@ LowsideCurrentSense cs = LowsideCurrentSense(0.005f, 12.22f, IOUTA, IOUTB, IOUTC
 // encoder instance
 Encoder encoder = Encoder(22, 23, 500);
 
-// Interrupt routine intialisation
+// Interrupt routine initialization
 // channel A and B callbacks
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
@@ -137,7 +137,7 @@ void setup() {
   // align encoder and start FOC
   motor.initFOC();
 
-  // set the inital target value
+  // set the initial target value
   motor.target = 0;
 
   // define the motor id

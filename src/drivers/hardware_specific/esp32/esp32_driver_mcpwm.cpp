@@ -433,7 +433,7 @@ void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int
     // save variables for later
     pwm_periods[mcpwm_group][timer_no] = pwm_config.period_ticks / 2;
     params->timers[0] = timers[mcpwm_group][timer_no];
-    // if the numer of used channels it not pair skip one channel
+    // if the number of used channels it not pair skip one channel
     // the skipped channel cannot be used with the new timer
     // TODO avoid loosing channels like this
     if(group_pins_used[mcpwm_group] %2) group_pins_used[mcpwm_group]++;

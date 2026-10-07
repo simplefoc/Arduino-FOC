@@ -45,7 +45,7 @@ String m1Prefix("/M1");
 String m2Prefix("/M2");
 
 
-// we store seperate set-points for each motor, of course
+// we store separate set-points for each motor, of course
 float set_point1 = 0.0f;
 float set_point2 = 0.0f;
 

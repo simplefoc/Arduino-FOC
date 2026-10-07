@@ -151,7 +151,7 @@ ADC_TypeDef* _findBestADCForRegularPin(int pin, ADC_HandleTypeDef adc_handles[])
 // if not possible it will return nullptr
 ADC_TypeDef* _findBestADCForInjectedPins(int numPins, int pins[], ADC_HandleTypeDef adc_handles[]) {
 
-  // assuning that there is at most 5 ADCs
+  // assuming that there is at most 5 ADCs
   uint8_t pins_at_adc[ADC_COUNT] = {0};
 
   // check how many pins are there and are not set
@@ -187,7 +187,7 @@ ADC_TypeDef* _findBestADCForInjectedPins(int numPins, int pins[], ADC_HandleType
     SimpleFOCDebug::print(" pins: ");
     SimpleFOCDebug::println(pins_at_adc[i]);
     if (adc_handles[i].Instance != NP) {
-      // check if ADC injeted is already in use
+      // check if ADC injected is already in use
       if(!LL_ADC_INJ_IsTriggerSourceSWStart(adc_handles[i].Instance)) {
        SimpleFOCDebug::print("STM32-CS: ADC");
         SimpleFOCDebug::print(i+1);
@@ -523,7 +523,7 @@ uint32_t _initTimerInterruptDownsampling(Stm32CurrentSenseParams* cs_params, STM
     if(!adc_interrupt_config.use_adc_interrupt){
       // If the timer has no repetition counter, it needs to use the interrupt to downsample for low side sensing
       adc_interrupt_config.use_adc_interrupt = 1;
-      // remember that this timer does not have the repetition counter - need to downasmple
+      // remember that this timer does not have the repetition counter - need to downsample
       adc_interrupt_config.needs_downsample = 1;
 
       if(next_event_high_side) // Next event is high-side active
@@ -543,7 +543,7 @@ uint8_t _handleInjectedConvCpltCallback(ADC_HandleTypeDef *AdcHandle, Stm32AdcIn
     return 0; // error: function not available
   #else
 
-    // if the timer han't repetition counter - downsample two times
+    // if the timer hasn't repetition counter - downsample two times
     if( adc_interrupt_config.needs_downsample && adc_interrupt_config.tim_downsample++ > 0) {
       adc_interrupt_config.tim_downsample = 0;
       return 1;
@@ -651,7 +651,7 @@ float _readRegularADCVoltage(const int pin){
 
   ADC_ChannelConfTypeDef sConfig = {0};
   sConfig.Channel = last_channel[adc_index];
-  // the shortes possible sampling time 
+  // the shortest possible sampling time 
   // this seems to be a constant in HAL - the shortest time enum is equal to 0
   // G4 - 2.5 cycles
   // F1, H7 - 1.5 cycles

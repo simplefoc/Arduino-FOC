@@ -20,7 +20,7 @@ typedef struct ESP32CurrentSenseParams {
   void* pretrig_comparator = nullptr; // MCPWM comparator handle for ADC pre-trigger
 } ESP32CurrentSenseParams;
 
-// macros for debugging wuing the simplefoc debug system
+// macros for debugging using the simplefoc debug system
 #ifndef SIMPLEFOC_DISABLE_DEBUG  
 #define SIMPLEFOC_ESP32_CS_DEBUG(str)\
   SimpleFOCDebug::println( "ESP32-CS: "+ String(str));  

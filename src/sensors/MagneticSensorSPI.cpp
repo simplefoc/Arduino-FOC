@@ -13,7 +13,7 @@ MagneticSensorSPIConfig_s AS5147_SPI = {
 };
 
 // AS5048 and AS5047 share the same configuration as AS5147
-// we have to explicilty assign them anyway due to compiler issues
+// we have to explicitly assign them anyway due to compiler issues
 // Ex. https://community.simplefoc.com/t/esp32s3-qtpy-platformio-spi-problem/7444
 MagneticSensorSPIConfig_s AS5048_SPI = {
   .spi_mode = SPI_MODE1,
@@ -61,9 +61,9 @@ MagneticSensorSPI::MagneticSensorSPI(int cs, int _bit_resolution, int _angle_reg
   clock_speed = _isset(_clock_speed) ? _clock_speed : 1000000; 
   bit_resolution = _bit_resolution;
 
-  command_parity_bit = 15; // for backwards compatibilty
-  command_rw_bit = 14; // for backwards compatibilty
-  data_start_bit = 13; // for backwards compatibilty
+  command_parity_bit = 15; // for backwards compatibility
+  command_rw_bit = 14; // for backwards compatibility
+  data_start_bit = 13; // for backwards compatibility
 }
 
 MagneticSensorSPI::MagneticSensorSPI(MagneticSensorSPIConfig_s config, int cs, long _clock_speed){
@@ -78,9 +78,9 @@ MagneticSensorSPI::MagneticSensorSPI(MagneticSensorSPIConfig_s config, int cs, l
   clock_speed = _isset(_clock_speed) ? _clock_speed : config.clock_speed;
   bit_resolution = config.bit_resolution;
 
-  command_parity_bit = config.command_parity_bit; // for backwards compatibilty
-  command_rw_bit = config.command_rw_bit; // for backwards compatibilty
-  data_start_bit = config.data_start_bit; // for backwards compatibilty
+  command_parity_bit = config.command_parity_bit; // for backwards compatibility
+  command_rw_bit = config.command_rw_bit; // for backwards compatibility
+  data_start_bit = config.data_start_bit; // for backwards compatibility
 }
 
 void MagneticSensorSPI::init(SPIClass* _spi){

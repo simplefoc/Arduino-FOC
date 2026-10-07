@@ -9,7 +9,7 @@
 
 
 Encoder encoder = Encoder(2, 3, 8192);
-// interrupt routine intialisation
+// interrupt routine initialization
 void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 
