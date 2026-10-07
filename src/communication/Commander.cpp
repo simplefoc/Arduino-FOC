@@ -12,6 +12,8 @@ Commander::Commander(char eol, bool echo){
 
 
 void Commander::add(char id, CommandCallback onCommand, const char* label ){
+  // guard the fixed-size callback arrays (call_list/call_ids/call_label)
+  if (call_count >= (int)(sizeof(call_list) / sizeof(call_list[0]))) return;
   call_list[call_count] = onCommand;
   call_ids[call_count] = id;
   call_label[call_count] = (char*)label;
