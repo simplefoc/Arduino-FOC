@@ -46,11 +46,15 @@ MagneticSensorI2C::MagneticSensorI2C(uint8_t _chip_address, int _bit_resolution,
   _conf.msb_mask = (uint8_t)( (1 << _bits_used_msb) - 1 );
   
   uint8_t lsb_used = _bit_resolution - _bits_used_msb; // used bits in LSB
-  _conf.lsb_mask = (uint8_t)( (1 << (lsb_used)) - 1 );
-  if (!lsb_right_aligned)
+  if (!lsb_right_aligned){
+    // left aligned: the remaining bits are in the upper part of the low byte,
+    // e.g. 6 bits -> 0xFC, read with >> 2
+    _conf.lsb_mask = (uint8_t)( ((1 << (lsb_used)) - 1) << (8 - lsb_used) );
     _conf.lsb_shift = 8-lsb_used;
-  else
+  }else{
+    _conf.lsb_mask = (uint8_t)( (1 << (lsb_used)) - 1 );
     _conf.lsb_shift = 0;
+  }
   _conf.msb_shift = lsb_used;
 
   cpr = _powtwo(_bit_resolution);
