@@ -194,6 +194,7 @@ int _adc_gpio_init(Stm32CurrentSenseParams* cs_params, const int pinA, const int
   return 0;
 }
 
+#ifndef SIMPLEFOC_STM32_ADC_DISABLE_RC_FALLBACK
 extern "C" {
   void ADC_IRQHandler(void)
   {
@@ -203,5 +204,5 @@ extern "C" {
     }
   }
 }
-
+#endif
 #endif
