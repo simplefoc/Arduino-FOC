@@ -1,7 +1,5 @@
 #include "foc_utils.h"
 
-#include <float.h>
-
 
 // function approximating the sine calculation by using fixed size array
 // uses a 65 element lookup table and interpolation
@@ -57,8 +55,14 @@ __attribute__((weak)) float _atan2(float y, float x) {
     // a := min (|x|, |y|) / max (|x|, |y|)
     float abs_y = fabsf(y);
     float abs_x = fabsf(x);
-    // inject FLT_MIN in denominator to avoid division by zero
-    float a = min(abs_x, abs_y) / (max(abs_x, abs_y) + FLT_MIN);
+    // the single comparison chain avoids the division by zero without an epsilon in the
+    // denominator; the |x| == |y| case still needs to divide (a == 1), only the
+    // degenerate (0,0) input returns early - atan2(0,0) is 0
+    float a;
+    if (abs_x < abs_y)        a = abs_x / abs_y;
+    else if (abs_x > abs_y)   a = abs_y / abs_x;
+    else if (abs_x == 0.0f)   return 0.0f;
+    else                      a = 1.0f;
     // s := a * a
     float s = a * a;
     // r := ((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a + a
