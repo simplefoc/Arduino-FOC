@@ -61,6 +61,10 @@ void* _driverSyncLowSide(void* _driver_params, void* _cs_params){
   if(tim_interrupt) {
   // error in the timer interrupt initialization
     SIMPLEFOC_DEBUG("STM32-CS: timer has no repetition counter, ADC interrupt has to be used");
+  #ifdef SIMPLEFOC_STM32_ADC_DISABLE_RC_FALLBACK
+    SIMPLEFOC_DEBUG("STM32-CS: ERROR: Interrupts disabled!");
+    return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
+  #endif
   }
   
   // set the trigger output event
