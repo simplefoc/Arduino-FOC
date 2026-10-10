@@ -84,6 +84,12 @@ class StepperMotor: public FOCMotor
       return FOCMotor::characteriseMotor(voltage, 1.0f);
     }
 
+    void updateVoltageLimit(float voltage){
+      float new_voltage_limit = voltage;
+      // voltage limit considering the driver constraints
+      if(driver) new_voltage_limit = _constrain(new_voltage_limit, 0, driver->voltage_limit); 
+      FOCMotor::updateVoltageLimit(new_voltage_limit);
+    }
 };
 
 

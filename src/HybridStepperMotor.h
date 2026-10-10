@@ -89,6 +89,17 @@ public:
      */
     void linkCurrentSense(CurrentSense* current_sense);
 
+    /** 
+     * Update voltage limit considering the driver constraints 
+     * @param voltage The new voltage limit to set [V]
+    */
+
+    void updateVoltageLimit(float voltage){
+      float new_voltage_limit = voltage;
+      // volage_limit /2 for sine pwm and / SQRT2 for space vector modulation
+      if(driver) new_voltage_limit = _constrain(new_voltage_limit, 0, driver->voltage_limit/ _SQRT2); 
+      FOCMotor::updateVoltageLimit(new_voltage_limit);
+    }
     
 };
 

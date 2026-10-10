@@ -43,6 +43,16 @@ class FOCDriver{
 
         /** get the driver type*/
         virtual DriverType type() = 0;
-};
+
+        /** Update voltage limit considering the driver constraints */
+        void updateVoltageLimit(float voltage) {
+            voltage_limit = voltage;
+            if(voltage_limit > voltage_power_supply) voltage_limit = voltage_power_supply;
+        }
+        void updateVoltagePowerSupply(float voltage) {
+            voltage_power_supply = voltage;
+            if(voltage_limit > voltage_power_supply) voltage_limit = voltage_power_supply;
+        } 
+    };
 
 #endif
