@@ -186,6 +186,7 @@ ADC_TypeDef* _findBestADCForInjectedPins(int numPins, int pins[], ADC_HandleType
     SimpleFOCDebug::print(i+1);
     SimpleFOCDebug::print(" pins: ");
     SimpleFOCDebug::println(pins_at_adc[i]);
+#if defined(LL_ADC_INJ_TRIG_SOFTWARE)
     if (adc_handles[i].Instance != NP) {
       // check if ADC injeted is already in use
       if(!LL_ADC_INJ_IsTriggerSourceSWStart(adc_handles[i].Instance)) {
@@ -194,15 +195,18 @@ ADC_TypeDef* _findBestADCForInjectedPins(int numPins, int pins[], ADC_HandleType
         SimpleFOCDebug::println(" already in use for injected channels!");
       }
     }
+#endif
   }
 #endif
 
   // now take the first ADC that has all pins connected
   for (int i = 0; i < ADC_COUNT; i++) {
+#if defined(LL_ADC_INJ_TRIG_SOFTWARE)
     if (adc_handles[i].Instance != NP) {
       if (!LL_ADC_INJ_IsTriggerSourceSWStart(adc_handles[i].Instance))
         continue; // ADC already in use for injected
     }
+#endif
     if (pins_at_adc[i] == no_pins) {
       return _indexToADC(i);
     }
@@ -670,9 +674,6 @@ float _readRegularADCVoltage(const int pin){
 #ifdef ADC_OFFSET_NONE
   sConfig.OffsetNumber = ADC_OFFSET_NONE;
 #endif
-#ifndef STM32F1xx
-  sConfig.Offset = 0;
-#endif 
 
   if (HAL_ADC_ConfigChannel(&hadc[adc_index], &sConfig) != HAL_OK) {
 #ifdef SIMPLEFOC_STM32_DEBUG
