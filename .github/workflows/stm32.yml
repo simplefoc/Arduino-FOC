@@ -24,6 +24,7 @@ jobs:
           - STMicroelectronics:stm32:Disco:pnum=B_G431B_ESC1        # B-G431-ESC1
           - STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_H723ZG  # stm32h7
           - STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_G431RB   # stm32g4
+          - STMicroelectronics:stm32:GenG0:pnum=GENERIC_G030C8TX    # stm32g0
 
         include:
           - arduino-boards-fqbn: STMicroelectronics:stm32:GenF1:pnum=BLUEPILL_F103C8 # bluepill - hs examples
@@ -60,6 +61,10 @@ jobs:
           - arduino-boards-fqbn: STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_G431RB # stm32g4 one full example
             platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json 
             sketch-names: single_full_control_example.ino, stm32_spi_alt_example.ino, double_full_control_example.ino, stm32_current_control_low_side.ino, custom_motion_control.ino
+
+          - arduino-boards-fqbn: STMicroelectronics:stm32:GenG0:pnum=GENERIC_G030C8TX # stm32g0 compile regression
+            platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json
+            sketch-names: step_dir_listener_simple.ino
 
       # Do not cancel all jobs / architectures if one job fails
       fail-fast: false
