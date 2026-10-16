@@ -6,6 +6,8 @@
 
 class StepperDriver: public FOCDriver{
     public:
+        float Ua; //!< currently set phase A voltage
+        float Ub; //!< currently set phase B voltage
         
         /** 
          * Set phase voltages to the hardware 

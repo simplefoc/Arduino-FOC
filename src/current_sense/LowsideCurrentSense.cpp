@@ -91,5 +91,12 @@ PhaseCurrent_s LowsideCurrentSense::getPhaseCurrents(){
     current.a = (!_isset(pinA)) ? 0 : (_readADCVoltageLowSide(pinA, params) - offset_ia)*gain_a;// amps
     current.b = (!_isset(pinB)) ? 0 : (_readADCVoltageLowSide(pinB, params) - offset_ib)*gain_b;// amps
     current.c = (!_isset(pinC)) ? 0 : (_readADCVoltageLowSide(pinC, params) - offset_ic)*gain_c; // amps
+
+    if (driver_type == DriverType::Stepper){
+        static StepperDriver* stepper_driver = static_cast<StepperDriver*>(driver);
+        current.a *= _sign(stepper_driver->Ua);
+        current.b *= _sign(stepper_driver->Ub);
+    }
+
     return current;
 }
