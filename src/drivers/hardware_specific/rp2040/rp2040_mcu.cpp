@@ -37,12 +37,21 @@ uint16_t wrapvalues[NUM_PWM_SLICES];
 
 // TODO add checks which channels are already used...
 
-void setupPWM(int pin_nr, long pwm_frequency, bool invert, RP2040DriverParams* params, uint8_t index) {
+static uint pwmPinToGPIO(int pin_nr) {
 	#if defined(USE_ARDUINO_PINOUT)
-	uint pin = (uint)digitalPinToPinName(pin_nr);		// we could check for -DBOARD_HAS_PIN_REMAP ?
+	return (uint)digitalPinToPinName(pin_nr);		// we could check for -DBOARD_HAS_PIN_REMAP ?
 	#else
-	uint pin = (uint)pin_nr;
+	return (uint)pin_nr;
 	#endif
+}
+
+static uint pwmChannelIndex(int pin_nr) {
+	uint pin = pwmPinToGPIO(pin_nr);
+	return 2 * pwm_gpio_to_slice_num(pin) + pwm_gpio_to_channel(pin);
+}
+
+void setupPWM(int pin_nr, long pwm_frequency, bool invert, RP2040DriverParams* params, uint8_t index) {
+	uint pin = pwmPinToGPIO(pin_nr);
 	gpio_set_function(pin, GPIO_FUNC_PWM);
 	uint slice = pwm_gpio_to_slice_num(pin);
 	uint chan = pwm_gpio_to_channel(pin);
@@ -124,6 +133,17 @@ void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
 
 
 void* _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const int pinC) {
+	// Different GPIOs can share one PWM compare register.
+	const uint channelA = pwmChannelIndex(pinA);
+	const uint channelB = pwmChannelIndex(pinB);
+	const uint channelC = pwmChannelIndex(pinC);
+	if (channelA == channelB || channelA == channelC || channelB == channelC) {
+#if defined(SIMPLEFOC_DEBUG_RP2040) && !defined(SIMPLEFOC_DISABLE_DEBUG)
+		SimpleFOCDebug::println("3-PWM pins share a PWM channel.");
+#endif
+		return SIMPLEFOC_DRIVER_INIT_FAILED;
+	}
+
 	RP2040DriverParams* params = new RP2040DriverParams();
 	if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY;
 	else pwm_frequency = _constrain(pwm_frequency, _PWM_FREQUENCY_MIN, _PWM_FREQUENCY_MAX);
