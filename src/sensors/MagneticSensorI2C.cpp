@@ -24,7 +24,7 @@ MagneticSensorI2CConfig_s AS5048_I2C = {
 
 /** Typical configuration for the 12bit MT6701 magnetic sensor over I2C interface */
 MagneticSensorI2CConfig_s MT6701_I2C = {
-  .chip_address = 0x06, 
+  .chip_address = 0x06,
   .bit_resolution = 14,
   .angle_register = 0x03,
   .msb_mask = 0xFF,
@@ -44,7 +44,7 @@ MagneticSensorI2C::MagneticSensorI2C(uint8_t _chip_address, int _bit_resolution,
   _conf.bit_resolution = _bit_resolution;
   _conf.angle_register = _angle_register_msb;
   _conf.msb_mask = (uint8_t)( (1 << _bits_used_msb) - 1 );
-  
+
   uint8_t lsb_used = _bit_resolution - _bits_used_msb; // used bits in LSB
   _conf.lsb_mask = (uint8_t)( (1 << (lsb_used)) - 1 );
   if (!lsb_right_aligned)
@@ -85,7 +85,7 @@ void MagneticSensorI2C::init(TwoWire* _wire){
 //  Shaft angle calculation
 //  angle is in radians [rad]
 float MagneticSensorI2C::getSensorAngle(){
-  // (number of full rotations)*2PI + current sensor angle 
+  // (number of full rotations)*2PI + current sensor angle
   return  ( getRawCount() / (float)cpr) * _2PI ;
 }
 
@@ -94,23 +94,33 @@ float MagneticSensorI2C::getSensorAngle(){
 // I2C functions
 /*
 * Read an angle from the angle register of the sensor
+* returns -1 if the read failed (eg i2c bus error)
 */
 int MagneticSensorI2C::getRawCount() {
   // read the angle register first MSB then LSB
-	byte readArray[2];
-	uint16_t readValue = 0;
+  byte readArray[2];
+  uint16_t readValue = 0;
+  uint8_t readCount = 0;
   // notify the device that is aboout to be read
-	wire->beginTransmission(_conf.chip_address);
-	wire->write(_conf.angle_register);
+  wire->beginTransmission(_conf.chip_address);
+  wire->write(_conf.angle_register);
   currWireError = wire->endTransmission(false);
+  if (currWireError != 0) {
+    return -1;
+  }
+
   // read the data msb and lsb
-	wire->requestFrom(_conf.chip_address, (uint8_t)2);
-	for (byte i=0; i < 2; i++) {
-		readArray[i] = wire->read();
-	}
+  readCount = wire->requestFrom(_conf.chip_address, (uint8_t)2);
+  // bus errors could result in incomplete data
+  if (readCount < 2) {
+    return -1;
+  }
+  for (byte i=0; i < 2; i++) {
+    readArray[i] = wire->read();
+  }
   readValue = (readArray[0] & _conf.msb_mask) << _conf.msb_shift;
   readValue |= (readArray[1] & _conf.lsb_mask) >> _conf.lsb_shift;
-	return readValue;
+  return readValue;
 }
 
 /*
