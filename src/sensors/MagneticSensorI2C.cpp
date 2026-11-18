@@ -97,8 +97,6 @@ float MagneticSensorI2C::getSensorAngle(){
 * returns -1 if the read failed (eg i2c bus error)
 */
 int MagneticSensorI2C::getRawCount() {
-  // read the angle register first MSB then LSB
-  byte readArray[2];
   uint16_t readValue = 0;
   uint8_t readCount = 0;
   // notify the device that is aboout to be read
@@ -115,11 +113,8 @@ int MagneticSensorI2C::getRawCount() {
   if (readCount < 2) {
     return -1;
   }
-  for (byte i=0; i < 2; i++) {
-    readArray[i] = wire->read();
-  }
-  readValue = (readArray[0] & _conf.msb_mask) << _conf.msb_shift;
-  readValue |= (readArray[1] & _conf.lsb_mask) >> _conf.lsb_shift;
+  readValue = (wire->read() & _conf.msb_mask) << _conf.msb_shift;
+  readValue |= (wire->read() & _conf.lsb_mask) >> _conf.lsb_shift;
   return readValue;
 }
 
