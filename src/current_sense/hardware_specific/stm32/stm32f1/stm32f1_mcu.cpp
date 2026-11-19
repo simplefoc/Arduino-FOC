@@ -100,6 +100,9 @@ extern "C" {
   void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef *AdcHandle){
     uint8_t adc_index = (uint8_t)_adcToIndex(AdcHandle);
     _handleInjectedConvCpltCallback(AdcHandle, adc_interrupt_config[adc_index], adc_val[adc_index]);
+    // The F1 HAL_ADC_IRQHandler disables the JEOC interrupt after each injected conversion when the regular
+    // group is software triggered and not continuous (our configuration): enable it again for the next one.
+    __HAL_ADC_ENABLE_IT(AdcHandle, ADC_IT_JEOC);
   }
 }
 
