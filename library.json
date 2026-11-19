@@ -1,5 +1,15 @@
 {
-    "build": {
-      "libArchive": false
-    }
+  "name": "Simple FOC",
+  "version": "2.4.1",
+  "description": "A library demistifying FOC for BLDC motors",
+  "keywords": "FOC, BLDC, stepper, motor control",
+  "repository": { "type": "git", "url": "https://github.com/simplefoc/Arduino-FOC.git" },
+  "homepage": "https://docs.simplefoc.com",
+  "license": "MIT",
+  "frameworks": "arduino",
+  "platforms": "*",
+  "headers": "SimpleFOC.h",
+  "build": {
+    "libArchive": false
+  }
 }
