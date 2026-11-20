@@ -655,12 +655,22 @@ void FOCMotor::loopFOC() {
       current_sp = _constrain(current_sp, -current_limit, current_limit) + feed_forward_current.q;
       // read dq currents
       current = current_sense->getFOCCurrents(electrical_angle);
-      // filter values
-      current.q = LPF_current_q(current.q);
-      current.d = LPF_current_d(current.d); 
-      // calculate the phase voltages
-      voltage.q = PID_current_q(current_sp - current.q);
-      voltage.d = PID_current_d(feed_forward_current.d - current.d);
+      {
+        // one elapsed time for the 2 filters and the 2 controllers (time since the previous loopFOC)
+        float dt = last_loopfoc_time_us * 1e-6f;
+        if (dt > 0.0f && dt < 0.3f) {
+          current.q = LPF_current_q.filter(current.q, dt);
+          current.d = LPF_current_d.filter(current.d, dt);
+          voltage.q = PID_current_q.compute(current_sp - current.q, dt);
+          voltage.d = PID_current_d.compute(feed_forward_current.d - current.d, dt);
+        } else {
+          // first loop or long pause: the filters and controllers apply their own dt checks (as before)
+          current.q = LPF_current_q(current.q);
+          current.d = LPF_current_d(current.d);
+          voltage.q = PID_current_q(current_sp - current.q);
+          voltage.d = PID_current_d(feed_forward_current.d - current.d);
+        }
+      }
       // d voltage - lag compensation
       //if(_isset(axis_inductance.q)) voltage.d = _constrain( voltage.d - current_sp*shaft_velocity*pole_pairs*axis_inductance.q, -voltage_limit, voltage_limit);
       // q voltage - cross coupling compensation - TODO verify
