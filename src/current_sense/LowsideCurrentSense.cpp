@@ -73,23 +73,23 @@ void LowsideCurrentSense::calibrateOffsets(){
     // read the adc voltage 1000 times ( arbitrary number )
     for (int i = 0; i < calibration_rounds; i++) {
         _startADC3PinConversionLowSide();
-        if(_isset(pinA)) offset_ia += (_readADCVoltageLowSide(pinA, params));
-        if(_isset(pinB)) offset_ib += (_readADCVoltageLowSide(pinB, params));
-        if(_isset(pinC)) offset_ic += (_readADCVoltageLowSide(pinC, params));
+        if(pinA != _NC) offset_ia += (_readADCVoltageLowSide(pinA, params));
+        if(pinB != _NC) offset_ib += (_readADCVoltageLowSide(pinB, params));
+        if(pinC != _NC) offset_ic += (_readADCVoltageLowSide(pinC, params));
         _delay(1);
     }
     // calculate the mean offsets
-    if(_isset(pinA)) offset_ia = offset_ia / calibration_rounds;
-    if(_isset(pinB)) offset_ib = offset_ib / calibration_rounds;
-    if(_isset(pinC)) offset_ic = offset_ic / calibration_rounds;
+    if(pinA != _NC) offset_ia = offset_ia / calibration_rounds;
+    if(pinB != _NC) offset_ib = offset_ib / calibration_rounds;
+    if(pinC != _NC) offset_ic = offset_ic / calibration_rounds;
 }
 
 // read all three phase currents (if possible 2 or 3)
 PhaseCurrent_s LowsideCurrentSense::getPhaseCurrents(){
     PhaseCurrent_s current;
     _startADC3PinConversionLowSide();
-    current.a = (!_isset(pinA)) ? 0 : (_readADCVoltageLowSide(pinA, params) - offset_ia)*gain_a;// amps
-    current.b = (!_isset(pinB)) ? 0 : (_readADCVoltageLowSide(pinB, params) - offset_ib)*gain_b;// amps
-    current.c = (!_isset(pinC)) ? 0 : (_readADCVoltageLowSide(pinC, params) - offset_ic)*gain_c; // amps
+    current.a = (pinA == _NC) ? 0 : (_readADCVoltageLowSide(pinA, params) - offset_ia)*gain_a;// amps
+    current.b = (pinB == _NC) ? 0 : (_readADCVoltageLowSide(pinB, params) - offset_ib)*gain_b;// amps
+    current.c = (pinC == _NC) ? 0 : (_readADCVoltageLowSide(pinC, params) - offset_ic)*gain_c; // amps
     return current;
 }
