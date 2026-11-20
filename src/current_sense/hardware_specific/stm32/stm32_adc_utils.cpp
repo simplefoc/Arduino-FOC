@@ -157,13 +157,13 @@ ADC_TypeDef* _findBestADCForInjectedPins(int numPins, int pins[], ADC_HandleType
   // check how many pins are there and are not set
   int no_pins = 0;
   for (int i = 0; i < numPins; i++) {
-    if(_isset(pins[i])) no_pins++;
+    if(pins[i] != _NC) no_pins++;
   }
 
   // loop over all elements and count the pins connected to each ADC
   for (int i = 0; i < numPins; i++) {
     int pin = pins[i];
-    if(!_isset(pin)) continue;
+    if(pin == _NC) continue;
 
     int index = _findIndexOfFirstPinMapADCEntry(pin);
     int last_index = _findIndexOfLastPinMapADCEntry(pin);
@@ -579,7 +579,7 @@ float _readADCInjectedChannelVoltage(int pin, void* cs_params, Stm32AdcInterrupt
           return HAL_ADCEx_InjectedGetValue(cs_p->adc_handle, channel) * cs_p->adc_voltage_conv;
         }
       }
-      if(_isset(cs_p->pins[i])) channel_no++;
+      if(cs_p->pins[i] != _NC) channel_no++;
     } 
     return 0; // pin not found
   #endif
