@@ -28,7 +28,10 @@ public:
     PIDController(float P, float I, float D, float ramp = NOT_SET, float limit = NOT_SET, float sampling_time = NOT_SET);
     ~PIDController() = default;
 
+    /** measures the elapsed time since the previous call (or uses Ts), then calls compute() */
     float operator() (float error);
+    /** the PID computation, with the elapsed time dt [s] given by the caller (e.g. measured once per loop) */
+    float compute(float error, float dt);
     void reset();
 
     float P; //!< Proportional gain 

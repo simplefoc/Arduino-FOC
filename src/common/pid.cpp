@@ -27,7 +27,11 @@ float PIDController::operator() (float error){
         if(dt <= 0 || dt > 0.5f) dt = 1e-3f;
         timestamp_prev = timestamp_now;
     }
+    return compute(error, dt);
+}
 
+// PID computation with a given elapsed time dt [s]
+float PIDController::compute(float error, float dt){
     // u(s) = (P + I/s + Ds)e(s)
     // Discrete implementations
     // proportional part

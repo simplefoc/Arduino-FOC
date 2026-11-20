@@ -23,7 +23,10 @@ public:
     LowPassFilter(float Tf, float Ts = NOT_SET);
     ~LowPassFilter() = default;
 
+    /** measures the elapsed time since the previous call (or uses Ts), then calls filter() */
     float operator() (float x);
+    /** the filter computation, with the elapsed time dt [s] given by the caller (must be > 0) */
+    float filter(float x, float dt);
     float Tf; //!< Low pass filter time constant
     float Ts; //!< Fixed sampling time (optional default NOT_SET)
 

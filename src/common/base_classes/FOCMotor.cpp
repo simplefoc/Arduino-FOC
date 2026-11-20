@@ -655,12 +655,26 @@ void FOCMotor::loopFOC() {
       current_sp = _constrain(current_sp, -current_limit, current_limit) + feed_forward_current.q;
       // read dq currents
       current = current_sense->getFOCCurrents(electrical_angle);
-      // filter values
-      current.q = LPF_current_q(current.q);
-      current.d = LPF_current_d(current.d); 
-      // calculate the phase voltages
-      voltage.q = PID_current_q(current_sp - current.q);
-      voltage.d = PID_current_d(feed_forward_current.d - current.d);
+      {
+        // one elapsed time for the 2 filters and the 2 controllers: time since the previous foc_current step,
+        // from the timestamp read at the start of loopFOC (no extra clock read)
+        float dt = (last_loopfoc_timestamp_us - foc_current_timestamp_us) * 1e-6f;
+        foc_current_timestamp_us = last_loopfoc_timestamp_us;
+        if (dt > 0.0f && dt < 0.3f) {
+          // a fixed sampling time Ts set by the user has priority, as in operator()
+          current.q = LPF_current_q.filter(current.q, _isset(LPF_current_q.Ts) ? LPF_current_q.Ts : dt);
+          current.d = LPF_current_d.filter(current.d, _isset(LPF_current_d.Ts) ? LPF_current_d.Ts : dt);
+          voltage.q = PID_current_q.compute(current_sp - current.q, _isset(PID_current_q.Ts) ? PID_current_q.Ts : dt);
+          voltage.d = PID_current_d.compute(feed_forward_current.d - current.d, _isset(PID_current_d.Ts) ? PID_current_d.Ts : dt);
+        } else {
+          // first step, or after a pause (motor disabled, other torque mode): the filters and controllers
+          // apply their own dt checks, as before (the filters restart from the new value)
+          current.q = LPF_current_q(current.q);
+          current.d = LPF_current_d(current.d);
+          voltage.q = PID_current_q(current_sp - current.q);
+          voltage.d = PID_current_d(feed_forward_current.d - current.d);
+        }
+      }
       // d voltage - lag compensation
       //if(_isset(axis_inductance.q)) voltage.d = _constrain( voltage.d - current_sp*shaft_velocity*pole_pairs*axis_inductance.q, -voltage_limit, voltage_limit);
       // q voltage - cross coupling compensation - TODO verify

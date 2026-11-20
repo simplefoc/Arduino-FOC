@@ -408,6 +408,7 @@ class FOCMotor
     
     uint32_t last_loopfoc_timestamp_us = 0; //!< timestamp of the last loopFOC execution in microseconds
     uint32_t last_loopfoc_time_us = 0; //!< last elapsed time of loopFOC in microseconds
+    uint32_t foc_current_timestamp_us = 0; //!< timestamp of the last foc_current step (loopFOC timestamp)
     uint32_t last_move_timestamp_us = 0; //!< timestamp of the last move execution in microseconds
     uint32_t last_move_time_us = 0; //!< last elapsed time of move in microseconds
   private:
