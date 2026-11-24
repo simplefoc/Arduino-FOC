@@ -73,6 +73,11 @@ float FOCMotor::shaftVelocity() {
   if(!sensor) return shaft_velocity;
   return sensor_direction*LPF_velocity(sensor->getVelocity());
 }
+float FOCMotor::shaftVelocity(float dt) {
+  // if no sensor linked return previous value ( for open loop )
+  if(!sensor) return shaft_velocity;
+  return sensor_direction*LPF_velocity(sensor->getVelocity(), dt);
+}
 
 float FOCMotor::electricalAngle(){
   // if no sensor linked return previous value ( for open loop )
@@ -400,16 +405,18 @@ float FOCMotor::velocityOpenloop(float target_velocity){
   unsigned long now_us = _micros();
   // calculate the sample time from last call
   float Ts = (now_us - open_loop_timestamp) * 1e-6f;
-  // quick fix for strange cases (micros overflow + timestamp not defined)
-  if(Ts <= 0 || Ts > 0.5f) Ts = 1e-3f;
-
-  // calculate the necessary angle to achieve target velocity
-  shaft_angle = _normalizeAngle(shaft_angle + target_velocity*Ts);
-  // for display purposes
-  shaft_velocity = target_velocity;
-
   // save timestamp for next call
   open_loop_timestamp = now_us;
+  return velocityOpenloop(target_velocity, Ts);
+}
+
+float FOCMotor::velocityOpenloop(float target_velocity, float dt){
+  if(dt <= 0 || dt > 0.5f) dt = 1e-3f;
+
+  // calculate the necessary angle to achieve target velocity
+  shaft_angle = _normalizeAngle(shaft_angle + target_velocity*dt);
+  // for display purposes
+  shaft_velocity = target_velocity;
 
   if (torque_controller == TorqueControlType::voltage)
     return voltage_limit;
@@ -425,24 +432,26 @@ float FOCMotor::angleOpenloop(float target_angle){
   unsigned long now_us = _micros();
   // calculate the sample time from last call
   float Ts = (now_us - open_loop_timestamp) * 1e-6f;
-  // quick fix for strange cases (micros overflow + timestamp not defined)
-  if(Ts <= 0 || Ts > 0.5f) Ts = 1e-3f;
+  // save timestamp for next call
+  open_loop_timestamp = now_us;
+  return angleOpenloop(target_angle, Ts);
+}
+
+float FOCMotor::angleOpenloop(float target_angle, float dt){
+  if(dt <= 0 || dt > 0.5f) dt = 1e-3f;
 
   // calculate the necessary angle to move from current position towards target angle
   // with maximal velocity (velocity_limit)
   // TODO sensor precision: this calculation is not numerically precise. The angle can grow to the point
   //                        where small position changes are no longer captured by the precision of floats
   //                        when the total position is large.
-  if(abs( target_angle - shaft_angle ) > abs(velocity_limit*Ts)){
-    shaft_angle += _sign(target_angle - shaft_angle) * abs( velocity_limit )*Ts;
+  if(abs( target_angle - shaft_angle ) > abs(velocity_limit*dt)){
+    shaft_angle += _sign(target_angle - shaft_angle) * abs( velocity_limit )*dt;
     shaft_velocity = velocity_limit;
   }else{
     shaft_angle = target_angle;
     shaft_velocity = 0;
   }
-
-  // save timestamp for next call
-  open_loop_timestamp = now_us;
 
   // use voltage limit or current limit
   if (torque_controller == TorqueControlType::voltage)

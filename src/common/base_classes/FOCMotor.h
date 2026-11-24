@@ -180,6 +180,7 @@ class FOCMotor
      * It implements low pass filtering
      */
     float shaftVelocity();
+    float shaftVelocity(float dt);
 
     /** 
      * Electrical angle calculation  
@@ -365,6 +366,7 @@ class FOCMotor
      * @param target_velocity - rad/s
      */
     float velocityOpenloop(float target_velocity);
+    float velocityOpenloop(float target_velocity, float dt);
     /**
      * Function (iterative) generating open loop movement towards the target angle
      * it uses voltage_limit and velocity_limit variables
@@ -372,6 +374,7 @@ class FOCMotor
      * @param target_angle - rad
      */
     float angleOpenloop(float target_angle);
+    float angleOpenloop(float target_angle, float dt);
   
 
     /**
