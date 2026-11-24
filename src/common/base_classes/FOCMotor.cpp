@@ -602,6 +602,8 @@ int FOCMotor::tuneCurrentController(float bandwidth) {
 void FOCMotor::loopFOC() {
   // update loop time measurement
   updateLoopFOCTime();
+
+  float dt = last_loopfoc_time_us * 1e-6f;
   
   // if initFOC is being executed at the moment, do nothing
   if(motor_status == FOCMotorStatus::motor_calibrating) return;
@@ -635,7 +637,7 @@ void FOCMotor::loopFOC() {
       // calculate the back-emf voltage if KV_rating available U_bemf = vel*(1/KV)
       if (_isset(KV_rating)) voltage_bemf = estimateBEMF(shaft_velocity);
       // filter the value values
-      current.q = LPF_current_q(current_sp);
+      current.q = LPF_current_q(current_sp, dt);
       // calculate the phase voltage
       voltage.q = current.q * phase_resistance + voltage_bemf;
       // constrain voltage within limits
@@ -651,9 +653,9 @@ void FOCMotor::loopFOC() {
       // read overall current magnitude
       current.q = current_sense->getDCCurrent(electrical_angle);
       // filter the value values
-      current.q = LPF_current_q(current.q);
+      current.q = LPF_current_q(current.q, dt);
       // calculate the phase voltage
-      voltage.q = PID_current_q(current_sp - current.q) + feed_forward_voltage.q;
+      voltage.q = PID_current_q(current_sp - current.q, dt) + feed_forward_voltage.q;
       // d voltage  - lag compensation
       if(_isset(axis_inductance.q)) voltage.d = _constrain( -current_sp*shaft_velocity*pole_pairs*axis_inductance.q, -voltage_limit, voltage_limit) + feed_forward_voltage.d;
       else voltage.d = feed_forward_voltage.d;
@@ -665,11 +667,11 @@ void FOCMotor::loopFOC() {
       // read dq currents
       current = current_sense->getFOCCurrents(electrical_angle);
       // filter values
-      current.q = LPF_current_q(current.q);
-      current.d = LPF_current_d(current.d); 
+      current.q = LPF_current_q(current.q, dt);
+      current.d = LPF_current_d(current.d, dt); 
       // calculate the phase voltages
-      voltage.q = PID_current_q(current_sp - current.q);
-      voltage.d = PID_current_d(feed_forward_current.d - current.d);
+      voltage.q = PID_current_q(current_sp - current.q, dt);
+      voltage.d = PID_current_d(feed_forward_current.d - current.d, dt);
       // d voltage - lag compensation
       //if(_isset(axis_inductance.q)) voltage.d = _constrain( voltage.d - current_sp*shaft_velocity*pole_pairs*axis_inductance.q, -voltage_limit, voltage_limit);
       // q voltage - cross coupling compensation - TODO verify
@@ -709,6 +711,7 @@ void FOCMotor::move(float new_target) {
   // a specific frequency (or almost)
   updateMotionControlTime();
 
+  float dt = last_move_time_us * 1e-6f;
   // read value even if motor is disabled to keep the monitoring updated
   // except for the open loop modes where the values are updated within angle/velocityOpenLoop functions
   
@@ -722,7 +725,7 @@ void FOCMotor::move(float new_target) {
     // read the values only if the motor is not in open loop
     // because in open loop the shaft angle/velocity is updated within angle/velocityOpenLoop functions
     shaft_angle = shaftAngle(); 
-    shaft_velocity = shaftVelocity(); 
+    shaft_velocity = shaftVelocity(dt); 
   }
 
   // if disabled do nothing
@@ -742,7 +745,7 @@ void FOCMotor::move(float new_target) {
       // angle set point
       shaft_angle_sp = target;
       // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
-      current_sp = P_angle(shaft_angle_sp - LPF_angle(shaft_angle));
+      current_sp = P_angle(shaft_angle_sp - LPF_angle(shaft_angle, dt), dt);
       break;
     case MotionControlType::angle:
       // TODO sensor precision: this calculation is not numerically precise. The target value cannot express precise positions when
@@ -751,16 +754,16 @@ void FOCMotor::move(float new_target) {
       // angle set point
       shaft_angle_sp = target;
       // calculate velocity set point
-      shaft_velocity_sp = feed_forward_velocity + P_angle( shaft_angle_sp - LPF_angle(shaft_angle) );
+      shaft_velocity_sp = feed_forward_velocity + P_angle(shaft_angle_sp - LPF_angle(shaft_angle, dt), dt);
       shaft_velocity_sp = _constrain(shaft_velocity_sp, -velocity_limit, velocity_limit);
       // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
-      current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); 
+      current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity, dt); 
       break;
     case MotionControlType::velocity:
       // velocity set point - sensor precision: this calculation is numerically precise.
       shaft_velocity_sp = target;
       // calculate the torque command
-      current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); 
+      current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity, dt); 
       break;
     case MotionControlType::velocity_openloop:
       // velocity control in open loop - sensor precision: this calculation is numerically precise.
@@ -768,7 +771,7 @@ void FOCMotor::move(float new_target) {
       // this function updates the shaft_angle and shaft_velocity
       // returns the voltage or current that is to be set to the motor (depending on torque control mode)
       // returned values correspond to the voltage_limit and current_limit
-      current_sp = velocityOpenloop(shaft_velocity_sp); 
+      current_sp = velocityOpenloop(shaft_velocity_sp, dt); 
       break;
     case MotionControlType::angle_openloop:
       // angle control in open loop - 
@@ -779,7 +782,7 @@ void FOCMotor::move(float new_target) {
       // this function updates the shaft_angle and shaft_velocity
       // returns the voltage or current that is to be set to the motor (depending on torque control mode)
       // returned values correspond to the voltage_limit and current_limit
-      current_sp = angleOpenloop(shaft_angle_sp); 
+      current_sp = angleOpenloop(shaft_angle_sp, dt); 
       break;
     case MotionControlType::custom:
       // custom control - user provides the function that calculates the current_sp 
