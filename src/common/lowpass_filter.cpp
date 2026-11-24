@@ -28,6 +28,11 @@ float LowPassFilter::operator() (float x)
         timestamp_prev = timestamp;
     }
 
+    return operator()(x, dt);
+}
+
+float LowPassFilter::operator() (float x, float dt)
+{
     // calculate the first order filer
     float alpha = Tf/(Tf + dt);
     float y = alpha*y_prev + (1.0f - alpha)*x;

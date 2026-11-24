@@ -28,6 +28,12 @@ float PIDController::operator() (float error){
         timestamp_prev = timestamp_now;
     }
 
+    return operator()(error, dt);
+}
+
+
+float PIDController::operator() (float error, float dt)
+{
     // u(s) = (P + I/s + Ds)e(s)
     // Discrete implementations
     // proportional part
