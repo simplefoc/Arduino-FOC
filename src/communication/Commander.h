@@ -102,6 +102,8 @@ class Commander
     char eol = '\n'; //!< end of line sentinel character
     bool echo = false; //!< echo last typed character (for command line feedback)
 
+    parsed_user_command parse_user_command(char* user_command);
+
     /**
      *
      * FOC motor (StepperMotor and BLDCMotor) command interface
@@ -155,6 +157,7 @@ class Commander
      *
      */
     void motor(FOCMotor* motor, char* user_cmd);
+    void motor(FOCMotor* motor, parsed_user_command command);
 
     /**
      * Low pass fileter command interface
@@ -166,6 +169,7 @@ class Commander
      *  - It can be set by sending 'Fvalue' - (ex. F0.01 for settin Tf=0.01)
      */
     void lpf(LowPassFilter* lpf, char* user_cmd);
+    void lpf(LowPassFilter* lpf, parsed_user_command command);
     /**
      * PID controller command interface
      * @param pid      - PIDController instance 
@@ -181,6 +185,7 @@ class Commander
      *  - Each of them can be set by sending 'IDvalue' - (ex. I1.5 for setting I=1.5)
      */
     void pid(PIDController* pid, char* user_cmd);
+    void pid(PIDController* pid, parsed_user_command command);
     /**
      * Float variable scalar command interface
      * @param value    - float variable pointer 
@@ -191,6 +196,7 @@ class Commander
      *  - It can be set by sending 'value' - (ex. 0.01f for settin *value=0.01)
      */
     void scalar(float* value, char* user_cmd);
+    void scalar(float* value, parsed_user_command command);
     /**
      *  Target setting interface, enables setting the target and limiting variables at once. 
      *  The values are sent separated by a separator specified as the third argument. The default separator is the space.
@@ -209,6 +215,7 @@ class Commander
      *    - angle    : angle velocity torque (ex.P3.5 10 2.5 or P3.5 to only chanage the target witout limits)
      */
     void target(FOCMotor* motor, char* user_cmd, char* separator = (char *)" ");
+    void target(FOCMotor* motor, parsed_user_command command, char* separator = (char *)" ");
 
     /**
      * FOC motor (StepperMotor and BLDCMotor) motion control interfaces
@@ -239,6 +246,7 @@ class Commander
      *          - angle    (open and closed loop) : angle velocity torque (ex.M3.5 10 2.5 or M3.5 to only chanage the target witout limits)
      */
     void motion(FOCMotor* motor, char* user_cmd, char* separator = (char *)" ");
+    void motion(FOCMotor* motor, parsed_user_command command, char* separator = (char *)" ");
 
     bool isSentinel(char ch);
   private:

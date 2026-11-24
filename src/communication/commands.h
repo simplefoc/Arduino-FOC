@@ -62,4 +62,17 @@
 #define SCMD_INDUCT_D     'D' //!< inductance d axis
 #define SCMD_INDUCT_Q     'Q' //!< inductance q axis
 
+struct parsed_user_command
+{
+	float value; //parsed value from data_chars
+	char *command_chars; //pointer to the start of the user command, not null terminated so use num_command_chars
+	int num_command_chars; //how many valid command chars are there
+	char *data_chars; //data chars, contains only digits and decimals (valid for atof)
+	bool has_data;
+	parsed_user_command consume_command_chars(int n)
+	{
+		return {value, &command_chars[n], num_command_chars-n, data_chars, has_data};
+	}
+};
+
 #endif
