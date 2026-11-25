@@ -674,6 +674,17 @@ void FOCMotor::loopFOC() {
       SIMPLEFOC_MOTOR_ERROR("no torque control selected!");
       break;
   }
+  // optionally limit the magnitude of the dq voltage vector
+  // d and q are scaled together, so the direction of the voltage vector is preserved
+  if(limit_voltage_vector){
+    float magnitude_sq = voltage.q*voltage.q + voltage.d*voltage.d;
+    float limit_sq = voltage_limit*voltage_limit;
+    if(magnitude_sq > limit_sq){
+      float scale = voltage_limit / sqrtf(magnitude_sq);
+      voltage.q *= scale;
+      voltage.d *= scale;
+    }
+  }
   // set the phase voltage - FOC heart function :)
   setPhaseVoltage(voltage.q, voltage.d, electrical_angle);
 }
