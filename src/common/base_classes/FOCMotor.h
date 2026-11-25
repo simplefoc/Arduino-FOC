@@ -237,6 +237,7 @@ class FOCMotor
 
     // limiting variables
     float voltage_limit; //!< Voltage limiting variable - global limit
+    bool limit_voltage_vector = false; //!< if true, the d and q voltages are scaled together so that the voltage vector magnitude does not exceed voltage_limit (default: false, d and q are limited independently)
     float current_limit; //!< Current limiting variable - global limit
     float velocity_limit; //!< Velocity limiting variable - global limit
 
