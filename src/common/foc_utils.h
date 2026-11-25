@@ -10,7 +10,6 @@
 #endif
 #define _constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 #define _sqrt(a) (_sqrtApprox(a))
-#define _isset(a) ( (a) != (NOT_SET) )
 #define _UNUSED(v) (void) (v)
 #define _powtwo(x) (1 << (x))
 
@@ -36,6 +35,15 @@
 #define _HIGH_Z _HIGH_IMPEDANCE
 #define _ACTIVE 1
 #define _NC ((int) NOT_SET)
+
+// check if a value is set (not NOT_SET)
+// - integers (pins, ...) are compared as integers: a single instruction, no float conversion
+// - float parameters (resistance, inductance, ...) are compared as floats
+// other types (unsigned, enums, ...) are ambiguous: cast them to one of the types below
+inline bool _isset(int a)    { return a != (int) NOT_SET; }
+inline bool _isset(long a)   { return a != (long) NOT_SET; }
+inline bool _isset(float a)  { return a != NOT_SET; }
+inline bool _isset(double a) { return a != NOT_SET; }
 
 #define MIN_ANGLE_DETECT_MOVEMENT (_2PI/101.0f)
 
